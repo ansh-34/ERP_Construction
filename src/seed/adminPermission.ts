@@ -7,7 +7,7 @@ export const giveFullAdminAccess = async () => {
     const adminRole = await prisma.role.findUnique({
       where: {
         code: roles[0].code,
-        is_deleted: false,
+        isDeleted: false,
         status: StatusEnum.ACTIVE,
       },
     });
@@ -15,13 +15,13 @@ export const giveFullAdminAccess = async () => {
     if (adminRole) {
       const modules = await prisma.module.findMany({
         where: {
-          is_deleted: false,
+          isDeleted: false,
         },
       });
 
       const permissions = await prisma.permission.findMany({
         where: {
-          is_deleted: false,
+          isDeleted: false,
         },
       });
 
@@ -31,18 +31,18 @@ export const giveFullAdminAccess = async () => {
         for (const permission of permissions) {
           const existing = await prisma.roleModulePermission.findFirst({
             where: {
-              role_id: adminRole.id,
-              module_id: module.id,
-              permission_id: permission.id,
-              is_deleted: false,
+              roleId: adminRole.id,
+              moduleId: module.id,
+              permissionId: permission.id,
+              isDeleted: false,
             },
           });
 
           if (!existing) {
             rolePermissionsData.push({
-              role_id: adminRole.id,
-              module_id: module.id,
-              permission_id: permission.id,
+              roleId: adminRole.id,
+              moduleId: module.id,
+              permissionId: permission.id,
             });
           }
         }

@@ -1,36 +1,71 @@
-import AWS from 'aws-sdk';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import variables from '@/config/variables.config';
 
-const s3 = new AWS.S3({
-  accessKeyId: variables.AWS_ACCESS_KEY_ID,
-  secretAccessKey: variables.AWS_SECRET_ACCESS_KEY,
-  region: variables.AWS_REGION,
+function getRequiredS3Config() {
+  const {
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+    AWS_REGION,
+    AWS_BUCKET_NAME,
+  } = variables;
+
+  if (
+    !AWS_ACCESS_KEY_ID ||
+    !AWS_SECRET_ACCESS_KEY ||
+    !AWS_REGION ||
+    !AWS_BUCKET_NAME
+  ) {
+    throw new Error('invalid aws s3 config');
+  }
+
+  return {
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    region: AWS_REGION,
+    bucketName: AWS_BUCKET_NAME,
+  };
+}
+
+const s3Config = getRequiredS3Config();
+
+const s3 = new S3Client({
+  region: s3Config.region,
+  credentials: {
+    accessKeyId: s3Config.accessKeyId,
+    secretAccessKey: s3Config.secretAccessKey,
+  },
 });
 
 export const uploadToS3 = async (file: Express.Multer.File, folder: string) => {
-  const params = {
-    Bucket: variables.AWS_BUCKET_NAME as string,
-    Key: `${folder}/${Date.now()}-${file.originalname}`,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-    ACL: 'public-read', // Uncomment if public access is needed directly
-  };
+  const key = `${folder}/${Date.now()}-${file.originalname}`;
 
-  const uploadResult = await s3.upload(params).promise();
-  return uploadResult.Location;
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: s3Config.bucketName,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    }),
+  );
+
+  return `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${encodeURI(key)}`;
 };
 
 export const deleteFromS3 = async (url: string) => {
   try {
-    const bucketUrl = `https://${variables.AWS_BUCKET_NAME}.s3.${variables.AWS_REGION}.amazonaws.com/`;
-    const key = url.replace(bucketUrl, '');
+    const parsedUrl = new URL(url);
+    const key = decodeURIComponent(parsedUrl.pathname.replace(/^\//, ''));
 
-    const params = {
-      Bucket: variables.AWS_BUCKET_NAME as string,
-      Key: key,
-    };
-
-    await s3.deleteObject(params).promise();
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: s3Config.bucketName,
+        Key: key,
+      }),
+    );
   } catch (error) {
     console.error('Error deleting from S3:', error);
   }

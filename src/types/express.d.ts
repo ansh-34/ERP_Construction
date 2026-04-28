@@ -6,8 +6,8 @@ declare module 'express-serve-static-core' {
       id: string;
       name: string;
       email: string;
-      role_id: string;
-      domain_id: string;
+      roleId: string;
+      domainId: string;
     };
     file?: Multer.File;
   }

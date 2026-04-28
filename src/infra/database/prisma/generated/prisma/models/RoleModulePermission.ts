@@ -26,75 +26,75 @@ export type AggregateRoleModulePermission = {
 
 export type RoleModulePermissionMinAggregateOutputType = {
   id: string | null;
-  role_id: string | null;
-  module_id: string | null;
-  permission_id: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  roleId: string | null;
+  moduleId: string | null;
+  permissionId: string | null;
+  domainId: string | null;
+  status: $Enums.StatusEnum | null;
+  isDeleted: boolean | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type RoleModulePermissionMaxAggregateOutputType = {
   id: string | null;
-  role_id: string | null;
-  module_id: string | null;
-  permission_id: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  roleId: string | null;
+  moduleId: string | null;
+  permissionId: string | null;
+  domainId: string | null;
+  status: $Enums.StatusEnum | null;
+  isDeleted: boolean | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type RoleModulePermissionCountAggregateOutputType = {
   id: number;
-  role_id: number;
-  module_id: number;
-  permission_id: number;
-  domain_id: number;
-  is_deleted: number;
+  roleId: number;
+  moduleId: number;
+  permissionId: number;
+  domainId: number;
   status: number;
-  created_at: number;
-  updated_at: number;
+  isDeleted: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
 export type RoleModulePermissionMinAggregateInputType = {
   id?: true;
-  role_id?: true;
-  module_id?: true;
-  permission_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  moduleId?: true;
+  permissionId?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type RoleModulePermissionMaxAggregateInputType = {
   id?: true;
-  role_id?: true;
-  module_id?: true;
-  permission_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  moduleId?: true;
+  permissionId?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type RoleModulePermissionCountAggregateInputType = {
   id?: true;
-  role_id?: true;
-  module_id?: true;
-  permission_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  moduleId?: true;
+  permissionId?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -185,20 +185,20 @@ export type RoleModulePermissionGroupByArgs<
 
 export type RoleModulePermissionGroupByOutputType = {
   id: string;
-  role_id: string;
-  module_id: string;
-  permission_id: string;
-  domain_id: string | null;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
+  roleId: string;
+  moduleId: string;
+  permissionId: string;
+  domainId: string | null;
+  status: $Enums.StatusEnum;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   _count: RoleModulePermissionCountAggregateOutputType | null;
   _min: RoleModulePermissionMinAggregateOutputType | null;
   _max: RoleModulePermissionMaxAggregateOutputType | null;
 };
 
-type GetRoleModulePermissionGroupByPayload<
+export type GetRoleModulePermissionGroupByPayload<
   T extends RoleModulePermissionGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -221,18 +221,17 @@ export type RoleModulePermissionWhereInput = {
   NOT?:
     | Prisma.RoleModulePermissionWhereInput
     | Prisma.RoleModulePermissionWhereInput[];
-  id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  role_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  module_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  permission_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  domain_id?:
-    | Prisma.StringNullableFilter<'RoleModulePermission'>
-    | string
-    | null;
-  is_deleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'RoleModulePermission'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
+  id?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  roleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  moduleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  permissionId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  domainId?: Prisma.UuidNullableFilter<'RoleModulePermission'> | string | null;
+  status?:
+    | Prisma.EnumStatusEnumFilter<'RoleModulePermission'>
+    | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
+  createdAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
   module?: Prisma.XOR<
     Prisma.ModuleScalarRelationFilter,
@@ -250,14 +249,14 @@ export type RoleModulePermissionWhereInput = {
 
 export type RoleModulePermissionOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  module_id?: Prisma.SortOrder;
-  permission_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  moduleId?: Prisma.SortOrder;
+  permissionId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   role?: Prisma.RoleOrderByWithRelationInput;
   module?: Prisma.ModuleOrderByWithRelationInput;
   permission?: Prisma.PermissionOrderByWithRelationInput;
@@ -274,17 +273,19 @@ export type RoleModulePermissionWhereUniqueInput = Prisma.AtLeast<
     NOT?:
       | Prisma.RoleModulePermissionWhereInput
       | Prisma.RoleModulePermissionWhereInput[];
-    role_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-    module_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-    permission_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-    domain_id?:
-      | Prisma.StringNullableFilter<'RoleModulePermission'>
+    roleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+    moduleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+    permissionId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+    domainId?:
+      | Prisma.UuidNullableFilter<'RoleModulePermission'>
       | string
       | null;
-    is_deleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'RoleModulePermission'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
+    status?:
+      | Prisma.EnumStatusEnumFilter<'RoleModulePermission'>
+      | $Enums.StatusEnum;
+    isDeleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
+    createdAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
     role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
     module?: Prisma.XOR<
       Prisma.ModuleScalarRelationFilter,
@@ -304,14 +305,14 @@ export type RoleModulePermissionWhereUniqueInput = Prisma.AtLeast<
 
 export type RoleModulePermissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  module_id?: Prisma.SortOrder;
-  permission_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  moduleId?: Prisma.SortOrder;
+  permissionId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.RoleModulePermissionCountOrderByAggregateInput;
   _max?: Prisma.RoleModulePermissionMaxOrderByAggregateInput;
   _min?: Prisma.RoleModulePermissionMinOrderByAggregateInput;
@@ -325,29 +326,25 @@ export type RoleModulePermissionScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.RoleModulePermissionScalarWhereWithAggregatesInput
     | Prisma.RoleModulePermissionScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'RoleModulePermission'> | string;
-  role_id?: Prisma.StringWithAggregatesFilter<'RoleModulePermission'> | string;
-  module_id?:
-    | Prisma.StringWithAggregatesFilter<'RoleModulePermission'>
+  id?: Prisma.UuidWithAggregatesFilter<'RoleModulePermission'> | string;
+  roleId?: Prisma.UuidWithAggregatesFilter<'RoleModulePermission'> | string;
+  moduleId?: Prisma.UuidWithAggregatesFilter<'RoleModulePermission'> | string;
+  permissionId?:
+    | Prisma.UuidWithAggregatesFilter<'RoleModulePermission'>
     | string;
-  permission_id?:
-    | Prisma.StringWithAggregatesFilter<'RoleModulePermission'>
-    | string;
-  domain_id?:
-    | Prisma.StringNullableWithAggregatesFilter<'RoleModulePermission'>
+  domainId?:
+    | Prisma.UuidNullableWithAggregatesFilter<'RoleModulePermission'>
     | string
     | null;
-  is_deleted?:
-    | Prisma.BoolWithAggregatesFilter<'RoleModulePermission'>
-    | boolean;
   status?:
-    | Prisma.EnumSTATUSWithAggregatesFilter<'RoleModulePermission'>
-    | $Enums.STATUS;
-  created_at?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'RoleModulePermission'>
+    | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'RoleModulePermission'> | boolean;
+  createdAt?:
     | Prisma.DateTimeWithAggregatesFilter<'RoleModulePermission'>
     | Date
     | string;
-  updated_at?:
+  updatedAt?:
     | Prisma.DateTimeWithAggregatesFilter<'RoleModulePermission'>
     | Date
     | string;
@@ -355,82 +352,82 @@ export type RoleModulePermissionScalarWhereWithAggregatesInput = {
 
 export type RoleModulePermissionCreateInput = {
   id?: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutRole_module_permissionsInput;
-  module: Prisma.ModuleCreateNestedOneWithoutRole_module_permissionsInput;
-  permission: Prisma.PermissionCreateNestedOneWithoutRole_module_permissionsInput;
-  domain?: Prisma.DomainCreateNestedOneWithoutRole_module_permissionsInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutRoleModulePermissionsInput;
+  module: Prisma.ModuleCreateNestedOneWithoutRoleModulePermissionsInput;
+  permission: Prisma.PermissionCreateNestedOneWithoutRoleModulePermissionsInput;
+  domain?: Prisma.DomainCreateNestedOneWithoutRoleModulePermissionsInput;
 };
 
 export type RoleModulePermissionUncheckedCreateInput = {
   id?: string;
-  role_id: string;
-  module_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  moduleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  module?: Prisma.ModuleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  permission?: Prisma.PermissionUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  domain?: Prisma.DomainUpdateOneWithoutRole_module_permissionsNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  module?: Prisma.ModuleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  permission?: Prisma.PermissionUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  domain?: Prisma.DomainUpdateOneWithoutRoleModulePermissionsNestedInput;
 };
 
 export type RoleModulePermissionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionCreateManyInput = {
   id?: string;
-  role_id: string;
-  module_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  moduleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionListRelationFilter = {
@@ -445,38 +442,38 @@ export type RoleModulePermissionOrderByRelationAggregateInput = {
 
 export type RoleModulePermissionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  module_id?: Prisma.SortOrder;
-  permission_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  moduleId?: Prisma.SortOrder;
+  permissionId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleModulePermissionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  module_id?: Prisma.SortOrder;
-  permission_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  moduleId?: Prisma.SortOrder;
+  permissionId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleModulePermissionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  module_id?: Prisma.SortOrder;
-  permission_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  moduleId?: Prisma.SortOrder;
+  permissionId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleModulePermissionCreateNestedManyWithoutDomainInput = {
@@ -589,55 +586,55 @@ export type RoleModulePermissionUncheckedUpdateManyWithoutDomainNestedInput = {
     | Prisma.RoleModulePermissionScalarWhereInput[];
 };
 
-export type RoleModulePermissionCreateNestedManyWithoutRoleInput = {
+export type RoleModulePermissionCreateNestedManyWithoutModuleInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutRoleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+        Prisma.RoleModulePermissionCreateWithoutModuleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
   connect?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
 };
 
-export type RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput = {
+export type RoleModulePermissionUncheckedCreateNestedManyWithoutModuleInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutRoleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+        Prisma.RoleModulePermissionCreateWithoutModuleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
   connect?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
 };
 
-export type RoleModulePermissionUpdateManyWithoutRoleNestedInput = {
+export type RoleModulePermissionUpdateManyWithoutModuleNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutRoleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+        Prisma.RoleModulePermissionCreateWithoutModuleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
   upsert?:
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
   set?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
@@ -651,31 +648,31 @@ export type RoleModulePermissionUpdateManyWithoutRoleNestedInput = {
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
   update?:
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput[];
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput[];
   updateMany?:
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput[];
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput[];
   deleteMany?:
     | Prisma.RoleModulePermissionScalarWhereInput
     | Prisma.RoleModulePermissionScalarWhereInput[];
 };
 
-export type RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput = {
+export type RoleModulePermissionUncheckedUpdateManyWithoutModuleNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutRoleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+        Prisma.RoleModulePermissionCreateWithoutModuleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
   upsert?:
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
   set?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
@@ -689,11 +686,11 @@ export type RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput = {
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
   update?:
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput[];
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput[];
   updateMany?:
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput[];
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput[];
   deleteMany?:
     | Prisma.RoleModulePermissionScalarWhereInput
     | Prisma.RoleModulePermissionScalarWhereInput[];
@@ -811,55 +808,55 @@ export type RoleModulePermissionUncheckedUpdateManyWithoutPermissionNestedInput 
       | Prisma.RoleModulePermissionScalarWhereInput[];
   };
 
-export type RoleModulePermissionCreateNestedManyWithoutModuleInput = {
+export type RoleModulePermissionCreateNestedManyWithoutRoleInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutModuleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
+        Prisma.RoleModulePermissionCreateWithoutRoleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
   connect?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
 };
 
-export type RoleModulePermissionUncheckedCreateNestedManyWithoutModuleInput = {
+export type RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutModuleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
+        Prisma.RoleModulePermissionCreateWithoutRoleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
   connect?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
 };
 
-export type RoleModulePermissionUpdateManyWithoutModuleNestedInput = {
+export type RoleModulePermissionUpdateManyWithoutRoleNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutModuleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
+        Prisma.RoleModulePermissionCreateWithoutRoleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
   upsert?:
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
   set?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
@@ -873,31 +870,31 @@ export type RoleModulePermissionUpdateManyWithoutModuleNestedInput = {
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
   update?:
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput[];
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput[];
   updateMany?:
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput[];
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput[];
   deleteMany?:
     | Prisma.RoleModulePermissionScalarWhereInput
     | Prisma.RoleModulePermissionScalarWhereInput[];
 };
 
-export type RoleModulePermissionUncheckedUpdateManyWithoutModuleNestedInput = {
+export type RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.RoleModulePermissionCreateWithoutModuleInput,
-        Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput
+        Prisma.RoleModulePermissionCreateWithoutRoleInput,
+        Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
       >
-    | Prisma.RoleModulePermissionCreateWithoutModuleInput[]
-    | Prisma.RoleModulePermissionUncheckedCreateWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateWithoutRoleInput[]
+    | Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput[];
   connectOrCreate?:
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput
-    | Prisma.RoleModulePermissionCreateOrConnectWithoutModuleInput[];
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput
+    | Prisma.RoleModulePermissionCreateOrConnectWithoutRoleInput[];
   upsert?:
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput
-    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutModuleInput[];
-  createMany?: Prisma.RoleModulePermissionCreateManyModuleInputEnvelope;
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput
+    | Prisma.RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput[];
+  createMany?: Prisma.RoleModulePermissionCreateManyRoleInputEnvelope;
   set?:
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
@@ -911,11 +908,11 @@ export type RoleModulePermissionUncheckedUpdateManyWithoutModuleNestedInput = {
     | Prisma.RoleModulePermissionWhereUniqueInput
     | Prisma.RoleModulePermissionWhereUniqueInput[];
   update?:
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput
-    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutModuleInput[];
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput
+    | Prisma.RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput[];
   updateMany?:
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput
-    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutModuleInput[];
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput
+    | Prisma.RoleModulePermissionUpdateManyWithWhereWithoutRoleInput[];
   deleteMany?:
     | Prisma.RoleModulePermissionScalarWhereInput
     | Prisma.RoleModulePermissionScalarWhereInput[];
@@ -923,24 +920,24 @@ export type RoleModulePermissionUncheckedUpdateManyWithoutModuleNestedInput = {
 
 export type RoleModulePermissionCreateWithoutDomainInput = {
   id?: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutRole_module_permissionsInput;
-  module: Prisma.ModuleCreateNestedOneWithoutRole_module_permissionsInput;
-  permission: Prisma.PermissionCreateNestedOneWithoutRole_module_permissionsInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutRoleModulePermissionsInput;
+  module: Prisma.ModuleCreateNestedOneWithoutRoleModulePermissionsInput;
+  permission: Prisma.PermissionCreateNestedOneWithoutRoleModulePermissionsInput;
 };
 
 export type RoleModulePermissionUncheckedCreateWithoutDomainInput = {
   id?: string;
-  role_id: string;
-  module_id: string;
-  permission_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  moduleId: string;
+  permissionId: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionCreateOrConnectWithoutDomainInput = {
@@ -994,170 +991,39 @@ export type RoleModulePermissionScalarWhereInput = {
   NOT?:
     | Prisma.RoleModulePermissionScalarWhereInput
     | Prisma.RoleModulePermissionScalarWhereInput[];
-  id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  role_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  module_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  permission_id?: Prisma.StringFilter<'RoleModulePermission'> | string;
-  domain_id?:
-    | Prisma.StringNullableFilter<'RoleModulePermission'>
-    | string
-    | null;
-  is_deleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'RoleModulePermission'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
-};
-
-export type RoleModulePermissionCreateWithoutRoleInput = {
-  id?: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  module: Prisma.ModuleCreateNestedOneWithoutRole_module_permissionsInput;
-  permission: Prisma.PermissionCreateNestedOneWithoutRole_module_permissionsInput;
-  domain?: Prisma.DomainCreateNestedOneWithoutRole_module_permissionsInput;
-};
-
-export type RoleModulePermissionUncheckedCreateWithoutRoleInput = {
-  id?: string;
-  module_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type RoleModulePermissionCreateOrConnectWithoutRoleInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.RoleModulePermissionCreateWithoutRoleInput,
-    Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
-  >;
-};
-
-export type RoleModulePermissionCreateManyRoleInputEnvelope = {
-  data:
-    | Prisma.RoleModulePermissionCreateManyRoleInput
-    | Prisma.RoleModulePermissionCreateManyRoleInput[];
-  skipDuplicates?: boolean;
-};
-
-export type RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateWithoutRoleInput,
-    Prisma.RoleModulePermissionUncheckedUpdateWithoutRoleInput
-  >;
-  create: Prisma.XOR<
-    Prisma.RoleModulePermissionCreateWithoutRoleInput,
-    Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
-  >;
-};
-
-export type RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateWithoutRoleInput,
-    Prisma.RoleModulePermissionUncheckedUpdateWithoutRoleInput
-  >;
-};
-
-export type RoleModulePermissionUpdateManyWithWhereWithoutRoleInput = {
-  where: Prisma.RoleModulePermissionScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateManyMutationInput,
-    Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleInput
-  >;
-};
-
-export type RoleModulePermissionCreateWithoutPermissionInput = {
-  id?: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutRole_module_permissionsInput;
-  module: Prisma.ModuleCreateNestedOneWithoutRole_module_permissionsInput;
-  domain?: Prisma.DomainCreateNestedOneWithoutRole_module_permissionsInput;
-};
-
-export type RoleModulePermissionUncheckedCreateWithoutPermissionInput = {
-  id?: string;
-  role_id: string;
-  module_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type RoleModulePermissionCreateOrConnectWithoutPermissionInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.RoleModulePermissionCreateWithoutPermissionInput,
-    Prisma.RoleModulePermissionUncheckedCreateWithoutPermissionInput
-  >;
-};
-
-export type RoleModulePermissionCreateManyPermissionInputEnvelope = {
-  data:
-    | Prisma.RoleModulePermissionCreateManyPermissionInput
-    | Prisma.RoleModulePermissionCreateManyPermissionInput[];
-  skipDuplicates?: boolean;
-};
-
-export type RoleModulePermissionUpsertWithWhereUniqueWithoutPermissionInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateWithoutPermissionInput,
-    Prisma.RoleModulePermissionUncheckedUpdateWithoutPermissionInput
-  >;
-  create: Prisma.XOR<
-    Prisma.RoleModulePermissionCreateWithoutPermissionInput,
-    Prisma.RoleModulePermissionUncheckedCreateWithoutPermissionInput
-  >;
-};
-
-export type RoleModulePermissionUpdateWithWhereUniqueWithoutPermissionInput = {
-  where: Prisma.RoleModulePermissionWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateWithoutPermissionInput,
-    Prisma.RoleModulePermissionUncheckedUpdateWithoutPermissionInput
-  >;
-};
-
-export type RoleModulePermissionUpdateManyWithWhereWithoutPermissionInput = {
-  where: Prisma.RoleModulePermissionScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.RoleModulePermissionUpdateManyMutationInput,
-    Prisma.RoleModulePermissionUncheckedUpdateManyWithoutPermissionInput
-  >;
+  id?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  roleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  moduleId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  permissionId?: Prisma.UuidFilter<'RoleModulePermission'> | string;
+  domainId?: Prisma.UuidNullableFilter<'RoleModulePermission'> | string | null;
+  status?:
+    | Prisma.EnumStatusEnumFilter<'RoleModulePermission'>
+    | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFilter<'RoleModulePermission'> | boolean;
+  createdAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'RoleModulePermission'> | Date | string;
 };
 
 export type RoleModulePermissionCreateWithoutModuleInput = {
   id?: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutRole_module_permissionsInput;
-  permission: Prisma.PermissionCreateNestedOneWithoutRole_module_permissionsInput;
-  domain?: Prisma.DomainCreateNestedOneWithoutRole_module_permissionsInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutRoleModulePermissionsInput;
+  permission: Prisma.PermissionCreateNestedOneWithoutRoleModulePermissionsInput;
+  domain?: Prisma.DomainCreateNestedOneWithoutRoleModulePermissionsInput;
 };
 
 export type RoleModulePermissionUncheckedCreateWithoutModuleInput = {
   id?: string;
-  role_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionCreateOrConnectWithoutModuleInput = {
@@ -1203,180 +1069,310 @@ export type RoleModulePermissionUpdateManyWithWhereWithoutModuleInput = {
   >;
 };
 
+export type RoleModulePermissionCreateWithoutPermissionInput = {
+  id?: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutRoleModulePermissionsInput;
+  module: Prisma.ModuleCreateNestedOneWithoutRoleModulePermissionsInput;
+  domain?: Prisma.DomainCreateNestedOneWithoutRoleModulePermissionsInput;
+};
+
+export type RoleModulePermissionUncheckedCreateWithoutPermissionInput = {
+  id?: string;
+  roleId: string;
+  moduleId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type RoleModulePermissionCreateOrConnectWithoutPermissionInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.RoleModulePermissionCreateWithoutPermissionInput,
+    Prisma.RoleModulePermissionUncheckedCreateWithoutPermissionInput
+  >;
+};
+
+export type RoleModulePermissionCreateManyPermissionInputEnvelope = {
+  data:
+    | Prisma.RoleModulePermissionCreateManyPermissionInput
+    | Prisma.RoleModulePermissionCreateManyPermissionInput[];
+  skipDuplicates?: boolean;
+};
+
+export type RoleModulePermissionUpsertWithWhereUniqueWithoutPermissionInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateWithoutPermissionInput,
+    Prisma.RoleModulePermissionUncheckedUpdateWithoutPermissionInput
+  >;
+  create: Prisma.XOR<
+    Prisma.RoleModulePermissionCreateWithoutPermissionInput,
+    Prisma.RoleModulePermissionUncheckedCreateWithoutPermissionInput
+  >;
+};
+
+export type RoleModulePermissionUpdateWithWhereUniqueWithoutPermissionInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateWithoutPermissionInput,
+    Prisma.RoleModulePermissionUncheckedUpdateWithoutPermissionInput
+  >;
+};
+
+export type RoleModulePermissionUpdateManyWithWhereWithoutPermissionInput = {
+  where: Prisma.RoleModulePermissionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateManyMutationInput,
+    Prisma.RoleModulePermissionUncheckedUpdateManyWithoutPermissionInput
+  >;
+};
+
+export type RoleModulePermissionCreateWithoutRoleInput = {
+  id?: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  module: Prisma.ModuleCreateNestedOneWithoutRoleModulePermissionsInput;
+  permission: Prisma.PermissionCreateNestedOneWithoutRoleModulePermissionsInput;
+  domain?: Prisma.DomainCreateNestedOneWithoutRoleModulePermissionsInput;
+};
+
+export type RoleModulePermissionUncheckedCreateWithoutRoleInput = {
+  id?: string;
+  moduleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type RoleModulePermissionCreateOrConnectWithoutRoleInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.RoleModulePermissionCreateWithoutRoleInput,
+    Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+  >;
+};
+
+export type RoleModulePermissionCreateManyRoleInputEnvelope = {
+  data:
+    | Prisma.RoleModulePermissionCreateManyRoleInput
+    | Prisma.RoleModulePermissionCreateManyRoleInput[];
+  skipDuplicates?: boolean;
+};
+
+export type RoleModulePermissionUpsertWithWhereUniqueWithoutRoleInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateWithoutRoleInput,
+    Prisma.RoleModulePermissionUncheckedUpdateWithoutRoleInput
+  >;
+  create: Prisma.XOR<
+    Prisma.RoleModulePermissionCreateWithoutRoleInput,
+    Prisma.RoleModulePermissionUncheckedCreateWithoutRoleInput
+  >;
+};
+
+export type RoleModulePermissionUpdateWithWhereUniqueWithoutRoleInput = {
+  where: Prisma.RoleModulePermissionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateWithoutRoleInput,
+    Prisma.RoleModulePermissionUncheckedUpdateWithoutRoleInput
+  >;
+};
+
+export type RoleModulePermissionUpdateManyWithWhereWithoutRoleInput = {
+  where: Prisma.RoleModulePermissionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.RoleModulePermissionUpdateManyMutationInput,
+    Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleInput
+  >;
+};
+
 export type RoleModulePermissionCreateManyDomainInput = {
   id?: string;
-  role_id: string;
-  module_id: string;
-  permission_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  moduleId: string;
+  permissionId: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionUpdateWithoutDomainInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  module?: Prisma.ModuleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  permission?: Prisma.PermissionUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  module?: Prisma.ModuleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  permission?: Prisma.PermissionUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
 };
 
 export type RoleModulePermissionUncheckedUpdateWithoutDomainInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionUncheckedUpdateManyWithoutDomainInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type RoleModulePermissionCreateManyRoleInput = {
-  id?: string;
-  module_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type RoleModulePermissionUpdateWithoutRoleInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  module?: Prisma.ModuleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  permission?: Prisma.PermissionUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  domain?: Prisma.DomainUpdateOneWithoutRole_module_permissionsNestedInput;
-};
-
-export type RoleModulePermissionUncheckedUpdateWithoutRoleInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type RoleModulePermissionUncheckedUpdateManyWithoutRoleInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type RoleModulePermissionCreateManyPermissionInput = {
-  id?: string;
-  role_id: string;
-  module_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type RoleModulePermissionUpdateWithoutPermissionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  module?: Prisma.ModuleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  domain?: Prisma.DomainUpdateOneWithoutRole_module_permissionsNestedInput;
-};
-
-export type RoleModulePermissionUncheckedUpdateWithoutPermissionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type RoleModulePermissionUncheckedUpdateManyWithoutPermissionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  module_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionCreateManyModuleInput = {
   id?: string;
-  role_id: string;
-  permission_id: string;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleModulePermissionUpdateWithoutModuleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  permission?: Prisma.PermissionUpdateOneRequiredWithoutRole_module_permissionsNestedInput;
-  domain?: Prisma.DomainUpdateOneWithoutRole_module_permissionsNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  permission?: Prisma.PermissionUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  domain?: Prisma.DomainUpdateOneWithoutRoleModulePermissionsNestedInput;
 };
 
 export type RoleModulePermissionUncheckedUpdateWithoutModuleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionUncheckedUpdateManyWithoutModuleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  permission_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type RoleModulePermissionCreateManyPermissionInput = {
+  id?: string;
+  roleId: string;
+  moduleId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type RoleModulePermissionUpdateWithoutPermissionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  module?: Prisma.ModuleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  domain?: Prisma.DomainUpdateOneWithoutRoleModulePermissionsNestedInput;
+};
+
+export type RoleModulePermissionUncheckedUpdateWithoutPermissionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type RoleModulePermissionUncheckedUpdateManyWithoutPermissionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type RoleModulePermissionCreateManyRoleInput = {
+  id?: string;
+  moduleId: string;
+  permissionId: string;
+  domainId?: string | null;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type RoleModulePermissionUpdateWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  module?: Prisma.ModuleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  permission?: Prisma.PermissionUpdateOneRequiredWithoutRoleModulePermissionsNestedInput;
+  domain?: Prisma.DomainUpdateOneWithoutRoleModulePermissionsNestedInput;
+};
+
+export type RoleModulePermissionUncheckedUpdateWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type RoleModulePermissionUncheckedUpdateManyWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  moduleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  permissionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleModulePermissionSelect<
@@ -1385,14 +1381,14 @@ export type RoleModulePermissionSelect<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    role_id?: boolean;
-    module_id?: boolean;
-    permission_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    moduleId?: boolean;
+    permissionId?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>;
     permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>;
@@ -1407,14 +1403,14 @@ export type RoleModulePermissionSelectCreateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    role_id?: boolean;
-    module_id?: boolean;
-    permission_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    moduleId?: boolean;
+    permissionId?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>;
     permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>;
@@ -1429,14 +1425,14 @@ export type RoleModulePermissionSelectUpdateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    role_id?: boolean;
-    module_id?: boolean;
-    permission_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    moduleId?: boolean;
+    permissionId?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>;
     permission?: boolean | Prisma.PermissionDefaultArgs<ExtArgs>;
@@ -1447,14 +1443,14 @@ export type RoleModulePermissionSelectUpdateManyAndReturn<
 
 export type RoleModulePermissionSelectScalar = {
   id?: boolean;
-  role_id?: boolean;
-  module_id?: boolean;
-  permission_id?: boolean;
-  domain_id?: boolean;
-  is_deleted?: boolean;
+  roleId?: boolean;
+  moduleId?: boolean;
+  permissionId?: boolean;
+  domainId?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
+  isDeleted?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type RoleModulePermissionOmit<
@@ -1462,14 +1458,14 @@ export type RoleModulePermissionOmit<
     runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
   | 'id'
-  | 'role_id'
-  | 'module_id'
-  | 'permission_id'
-  | 'domain_id'
-  | 'is_deleted'
+  | 'roleId'
+  | 'moduleId'
+  | 'permissionId'
+  | 'domainId'
   | 'status'
-  | 'created_at'
-  | 'updated_at',
+  | 'isDeleted'
+  | 'createdAt'
+  | 'updatedAt',
   ExtArgs['result']['roleModulePermission']
 >;
 export type RoleModulePermissionInclude<
@@ -1514,14 +1510,14 @@ export type $RoleModulePermissionPayload<
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
-      role_id: string;
-      module_id: string;
-      permission_id: string;
-      domain_id: string | null;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
+      roleId: string;
+      moduleId: string;
+      permissionId: string;
+      domainId: string | null;
+      status: $Enums.StatusEnum;
+      isDeleted: boolean;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['roleModulePermission']
   >;
@@ -2192,14 +2188,14 @@ export interface Prisma__RoleModulePermissionClient<
  */
 export interface RoleModulePermissionFieldRefs {
   readonly id: Prisma.FieldRef<'RoleModulePermission', 'String'>;
-  readonly role_id: Prisma.FieldRef<'RoleModulePermission', 'String'>;
-  readonly module_id: Prisma.FieldRef<'RoleModulePermission', 'String'>;
-  readonly permission_id: Prisma.FieldRef<'RoleModulePermission', 'String'>;
-  readonly domain_id: Prisma.FieldRef<'RoleModulePermission', 'String'>;
-  readonly is_deleted: Prisma.FieldRef<'RoleModulePermission', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'RoleModulePermission', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'RoleModulePermission', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'RoleModulePermission', 'DateTime'>;
+  readonly roleId: Prisma.FieldRef<'RoleModulePermission', 'String'>;
+  readonly moduleId: Prisma.FieldRef<'RoleModulePermission', 'String'>;
+  readonly permissionId: Prisma.FieldRef<'RoleModulePermission', 'String'>;
+  readonly domainId: Prisma.FieldRef<'RoleModulePermission', 'String'>;
+  readonly status: Prisma.FieldRef<'RoleModulePermission', 'StatusEnum'>;
+  readonly isDeleted: Prisma.FieldRef<'RoleModulePermission', 'Boolean'>;
+  readonly createdAt: Prisma.FieldRef<'RoleModulePermission', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'RoleModulePermission', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -2420,6 +2416,11 @@ export type RoleModulePermissionFindManyArgs<
    * Skip the first `n` RoleModulePermissions.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of RoleModulePermissions.
+   */
   distinct?:
     | Prisma.RoleModulePermissionScalarFieldEnum
     | Prisma.RoleModulePermissionScalarFieldEnum[];

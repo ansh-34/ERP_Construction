@@ -29,11 +29,11 @@ export type SuperAdminMinAggregateOutputType = {
   name: string | null;
   email: string | null;
   password: string | null;
-  role_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  roleId: string | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type SuperAdminMaxAggregateOutputType = {
@@ -41,11 +41,11 @@ export type SuperAdminMaxAggregateOutputType = {
   name: string | null;
   email: string | null;
   password: string | null;
-  role_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  roleId: string | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type SuperAdminCountAggregateOutputType = {
@@ -53,11 +53,11 @@ export type SuperAdminCountAggregateOutputType = {
   name: number;
   email: number;
   password: number;
-  role_id: number;
-  is_deleted: number;
+  roleId: number;
+  isDeleted: number;
   status: number;
-  created_at: number;
-  updated_at: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
@@ -66,11 +66,11 @@ export type SuperAdminMinAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type SuperAdminMaxAggregateInputType = {
@@ -78,11 +78,11 @@ export type SuperAdminMaxAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type SuperAdminCountAggregateInputType = {
@@ -90,11 +90,11 @@ export type SuperAdminCountAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -182,17 +182,17 @@ export type SuperAdminGroupByOutputType = {
   name: string;
   email: string;
   password: string;
-  role_id: string | null;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
+  roleId: string;
+  isDeleted: boolean;
+  status: $Enums.StatusEnum;
+  createdAt: Date;
+  updatedAt: Date;
   _count: SuperAdminCountAggregateOutputType | null;
   _min: SuperAdminMinAggregateOutputType | null;
   _max: SuperAdminMaxAggregateOutputType | null;
 };
 
-type GetSuperAdminGroupByPayload<T extends SuperAdminGroupByArgs> =
+export type GetSuperAdminGroupByPayload<T extends SuperAdminGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<SuperAdminGroupByOutputType, T['by']> & {
@@ -209,19 +209,16 @@ export type SuperAdminWhereInput = {
   AND?: Prisma.SuperAdminWhereInput | Prisma.SuperAdminWhereInput[];
   OR?: Prisma.SuperAdminWhereInput[];
   NOT?: Prisma.SuperAdminWhereInput | Prisma.SuperAdminWhereInput[];
-  id?: Prisma.StringFilter<'SuperAdmin'> | string;
+  id?: Prisma.UuidFilter<'SuperAdmin'> | string;
   name?: Prisma.StringFilter<'SuperAdmin'> | string;
   email?: Prisma.StringFilter<'SuperAdmin'> | string;
   password?: Prisma.StringFilter<'SuperAdmin'> | string;
-  role_id?: Prisma.StringNullableFilter<'SuperAdmin'> | string | null;
-  is_deleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'SuperAdmin'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
-  role?: Prisma.XOR<
-    Prisma.RoleNullableScalarRelationFilter,
-    Prisma.RoleWhereInput
-  > | null;
+  roleId?: Prisma.UuidFilter<'SuperAdmin'> | string;
+  isDeleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'SuperAdmin'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+  role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
 };
 
 export type SuperAdminOrderByWithRelationInput = {
@@ -229,11 +226,11 @@ export type SuperAdminOrderByWithRelationInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   role?: Prisma.RoleOrderByWithRelationInput;
 };
 
@@ -246,15 +243,12 @@ export type SuperAdminWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.SuperAdminWhereInput | Prisma.SuperAdminWhereInput[];
     name?: Prisma.StringFilter<'SuperAdmin'> | string;
     password?: Prisma.StringFilter<'SuperAdmin'> | string;
-    role_id?: Prisma.StringNullableFilter<'SuperAdmin'> | string | null;
-    is_deleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'SuperAdmin'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
-    role?: Prisma.XOR<
-      Prisma.RoleNullableScalarRelationFilter,
-      Prisma.RoleWhereInput
-    > | null;
+    roleId?: Prisma.UuidFilter<'SuperAdmin'> | string;
+    isDeleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
+    status?: Prisma.EnumStatusEnumFilter<'SuperAdmin'> | $Enums.StatusEnum;
+    createdAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+    role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
   },
   'id' | 'email'
 >;
@@ -264,11 +258,11 @@ export type SuperAdminOrderByWithAggregationInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.SuperAdminCountOrderByAggregateInput;
   _max?: Prisma.SuperAdminMaxOrderByAggregateInput;
   _min?: Prisma.SuperAdminMinOrderByAggregateInput;
@@ -282,24 +276,17 @@ export type SuperAdminScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.SuperAdminScalarWhereWithAggregatesInput
     | Prisma.SuperAdminScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'SuperAdmin'> | string;
+  id?: Prisma.UuidWithAggregatesFilter<'SuperAdmin'> | string;
   name?: Prisma.StringWithAggregatesFilter<'SuperAdmin'> | string;
   email?: Prisma.StringWithAggregatesFilter<'SuperAdmin'> | string;
   password?: Prisma.StringWithAggregatesFilter<'SuperAdmin'> | string;
-  role_id?:
-    | Prisma.StringNullableWithAggregatesFilter<'SuperAdmin'>
-    | string
-    | null;
-  is_deleted?: Prisma.BoolWithAggregatesFilter<'SuperAdmin'> | boolean;
-  status?: Prisma.EnumSTATUSWithAggregatesFilter<'SuperAdmin'> | $Enums.STATUS;
-  created_at?:
-    | Prisma.DateTimeWithAggregatesFilter<'SuperAdmin'>
-    | Date
-    | string;
-  updated_at?:
-    | Prisma.DateTimeWithAggregatesFilter<'SuperAdmin'>
-    | Date
-    | string;
+  roleId?: Prisma.UuidWithAggregatesFilter<'SuperAdmin'> | string;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'SuperAdmin'> | boolean;
+  status?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'SuperAdmin'>
+    | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'SuperAdmin'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'SuperAdmin'> | Date | string;
 };
 
 export type SuperAdminCreateInput = {
@@ -307,11 +294,11 @@ export type SuperAdminCreateInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role?: Prisma.RoleCreateNestedOneWithoutSuperAdminsInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutSuperAdminsInput;
 };
 
 export type SuperAdminUncheckedCreateInput = {
@@ -319,11 +306,11 @@ export type SuperAdminUncheckedCreateInput = {
   name: string;
   email: string;
   password: string;
-  role_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type SuperAdminUpdateInput = {
@@ -331,11 +318,11 @@ export type SuperAdminUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneWithoutSuperAdminsNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutSuperAdminsNestedInput;
 };
 
 export type SuperAdminUncheckedUpdateInput = {
@@ -343,11 +330,11 @@ export type SuperAdminUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminCreateManyInput = {
@@ -355,11 +342,11 @@ export type SuperAdminCreateManyInput = {
   name: string;
   email: string;
   password: string;
-  role_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  roleId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type SuperAdminUpdateManyMutationInput = {
@@ -367,10 +354,10 @@ export type SuperAdminUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminUncheckedUpdateManyInput = {
@@ -378,47 +365,11 @@ export type SuperAdminUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type SuperAdminCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder;
-  name?: Prisma.SortOrder;
-  email?: Prisma.SortOrder;
-  password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-};
-
-export type SuperAdminMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder;
-  name?: Prisma.SortOrder;
-  email?: Prisma.SortOrder;
-  password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-};
-
-export type SuperAdminMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder;
-  name?: Prisma.SortOrder;
-  email?: Prisma.SortOrder;
-  password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminListRelationFilter = {
@@ -431,24 +382,40 @@ export type SuperAdminOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
 };
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string;
+export type SuperAdminCountOrderByAggregateInput = {
+  id?: Prisma.SortOrder;
+  name?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  password?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  status?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean;
+export type SuperAdminMaxOrderByAggregateInput = {
+  id?: Prisma.SortOrder;
+  name?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  password?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  status?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
-export type EnumSTATUSFieldUpdateOperationsInput = {
-  set?: $Enums.STATUS;
-};
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string;
-};
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null;
+export type SuperAdminMinOrderByAggregateInput = {
+  id?: Prisma.SortOrder;
+  name?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  password?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  status?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type SuperAdminCreateNestedManyWithoutRoleInput = {
@@ -562,10 +529,10 @@ export type SuperAdminCreateWithoutRoleInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type SuperAdminUncheckedCreateWithoutRoleInput = {
@@ -573,10 +540,10 @@ export type SuperAdminUncheckedCreateWithoutRoleInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type SuperAdminCreateOrConnectWithoutRoleInput = {
@@ -626,15 +593,15 @@ export type SuperAdminScalarWhereInput = {
   AND?: Prisma.SuperAdminScalarWhereInput | Prisma.SuperAdminScalarWhereInput[];
   OR?: Prisma.SuperAdminScalarWhereInput[];
   NOT?: Prisma.SuperAdminScalarWhereInput | Prisma.SuperAdminScalarWhereInput[];
-  id?: Prisma.StringFilter<'SuperAdmin'> | string;
+  id?: Prisma.UuidFilter<'SuperAdmin'> | string;
   name?: Prisma.StringFilter<'SuperAdmin'> | string;
   email?: Prisma.StringFilter<'SuperAdmin'> | string;
   password?: Prisma.StringFilter<'SuperAdmin'> | string;
-  role_id?: Prisma.StringNullableFilter<'SuperAdmin'> | string | null;
-  is_deleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'SuperAdmin'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+  roleId?: Prisma.UuidFilter<'SuperAdmin'> | string;
+  isDeleted?: Prisma.BoolFilter<'SuperAdmin'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'SuperAdmin'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'SuperAdmin'> | Date | string;
 };
 
 export type SuperAdminCreateManyRoleInput = {
@@ -642,10 +609,10 @@ export type SuperAdminCreateManyRoleInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type SuperAdminUpdateWithoutRoleInput = {
@@ -653,10 +620,10 @@ export type SuperAdminUpdateWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminUncheckedUpdateWithoutRoleInput = {
@@ -664,10 +631,10 @@ export type SuperAdminUncheckedUpdateWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminUncheckedUpdateManyWithoutRoleInput = {
@@ -675,10 +642,10 @@ export type SuperAdminUncheckedUpdateManyWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type SuperAdminSelect<
@@ -690,12 +657,12 @@ export type SuperAdminSelect<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['superAdmin']
 >;
@@ -709,12 +676,12 @@ export type SuperAdminSelectCreateManyAndReturn<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['superAdmin']
 >;
@@ -728,12 +695,12 @@ export type SuperAdminSelectUpdateManyAndReturn<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['superAdmin']
 >;
@@ -743,11 +710,11 @@ export type SuperAdminSelectScalar = {
   name?: boolean;
   email?: boolean;
   password?: boolean;
-  role_id?: boolean;
-  is_deleted?: boolean;
+  roleId?: boolean;
+  isDeleted?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type SuperAdminOmit<
@@ -758,30 +725,30 @@ export type SuperAdminOmit<
   | 'name'
   | 'email'
   | 'password'
-  | 'role_id'
-  | 'is_deleted'
+  | 'roleId'
+  | 'isDeleted'
   | 'status'
-  | 'created_at'
-  | 'updated_at',
+  | 'createdAt'
+  | 'updatedAt',
   ExtArgs['result']['superAdmin']
 >;
 export type SuperAdminInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
 };
 export type SuperAdminIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
 };
 export type SuperAdminIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role?: boolean | Prisma.SuperAdmin$roleArgs<ExtArgs>;
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
 };
 
 export type $SuperAdminPayload<
@@ -790,7 +757,7 @@ export type $SuperAdminPayload<
 > = {
   name: 'SuperAdmin';
   objects: {
-    role: Prisma.$RolePayload<ExtArgs> | null;
+    role: Prisma.$RolePayload<ExtArgs>;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -798,11 +765,11 @@ export type $SuperAdminPayload<
       name: string;
       email: string;
       password: string;
-      role_id: string | null;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
+      roleId: string;
+      isDeleted: boolean;
+      status: $Enums.StatusEnum;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['superAdmin']
   >;
@@ -1353,16 +1320,17 @@ export interface Prisma__SuperAdminClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: 'PrismaPromise';
-  role<T extends Prisma.SuperAdmin$roleArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.SuperAdmin$roleArgs<ExtArgs>>,
+  role<T extends Prisma.RoleDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.RoleDefaultArgs<ExtArgs>>,
   ): Prisma.Prisma__RoleClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$RolePayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
+    | runtime.Types.Result.GetResult<
+        Prisma.$RolePayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
     ExtArgs,
     GlobalOmitOptions
   >;
@@ -1412,11 +1380,11 @@ export interface SuperAdminFieldRefs {
   readonly name: Prisma.FieldRef<'SuperAdmin', 'String'>;
   readonly email: Prisma.FieldRef<'SuperAdmin', 'String'>;
   readonly password: Prisma.FieldRef<'SuperAdmin', 'String'>;
-  readonly role_id: Prisma.FieldRef<'SuperAdmin', 'String'>;
-  readonly is_deleted: Prisma.FieldRef<'SuperAdmin', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'SuperAdmin', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'SuperAdmin', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'SuperAdmin', 'DateTime'>;
+  readonly roleId: Prisma.FieldRef<'SuperAdmin', 'String'>;
+  readonly isDeleted: Prisma.FieldRef<'SuperAdmin', 'Boolean'>;
+  readonly status: Prisma.FieldRef<'SuperAdmin', 'StatusEnum'>;
+  readonly createdAt: Prisma.FieldRef<'SuperAdmin', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'SuperAdmin', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -1637,6 +1605,11 @@ export type SuperAdminFindManyArgs<
    * Skip the first `n` SuperAdmins.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of SuperAdmins.
+   */
   distinct?:
     | Prisma.SuperAdminScalarFieldEnum
     | Prisma.SuperAdminScalarFieldEnum[];
@@ -1881,28 +1854,6 @@ export type SuperAdminDeleteManyArgs<
    * Limit how many SuperAdmins to delete.
    */
   limit?: number;
-};
-
-/**
- * SuperAdmin.role
- */
-export type SuperAdmin$roleArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Role
-   */
-  select?: Prisma.RoleSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Role
-   */
-  omit?: Prisma.RoleOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RoleInclude<ExtArgs> | null;
-  where?: Prisma.RoleWhereInput;
 };
 
 /**

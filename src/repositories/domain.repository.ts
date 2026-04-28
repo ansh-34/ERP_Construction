@@ -6,17 +6,17 @@ export const DomainRepository = {
     return prisma.domain.findFirst({
       where: {
         id,
-        is_deleted: false,
+        isDeleted: false,
       },
       select: {
         id: true,
         name: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },
@@ -25,18 +25,18 @@ export const DomainRepository = {
     return prisma.domain.findFirst({
       where: {
         email,
-        is_deleted: false,
+        isDeleted: false,
       },
       select: {
         id: true,
         name: true,
         password: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },
@@ -48,16 +48,16 @@ export const DomainRepository = {
     roleId: string,
   ) => {
     return prisma.domain.create({
-      data: { name, email, password, role_id: roleId },
+      data: { name, email, password, roleId: roleId },
       select: {
         id: true,
         name: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },
@@ -76,17 +76,17 @@ export const DomainRepository = {
       where: { id },
       data: {
         ...data,
-        ...(data.roleId && { role_id: data.roleId }),
+        ...(data.roleId && { roleId: data.roleId }),
       },
       select: {
         id: true,
         name: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },
@@ -94,16 +94,16 @@ export const DomainRepository = {
   softDelete: async (id: string) => {
     return prisma.domain.update({
       where: { id },
-      data: { is_deleted: true },
+      data: { isDeleted: true },
       select: {
         id: true,
         name: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },
@@ -118,7 +118,7 @@ export const DomainRepository = {
     return prisma.domain.findMany({
       where: whereFilter,
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       take: limit,
       skip: offset,
@@ -126,11 +126,11 @@ export const DomainRepository = {
         id: true,
         name: true,
         email: true,
-        role_id: true,
-        is_deleted: true,
+        roleId: true,
+        isDeleted: true,
         status: true,
-        created_at: true,
-        updated_at: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   },

@@ -39,12 +39,10 @@ export type RoleMinAggregateOutputType = {
   name: string | null;
   code: string | null;
   level: number | null;
-  is_system: boolean | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type RoleMaxAggregateOutputType = {
@@ -52,12 +50,10 @@ export type RoleMaxAggregateOutputType = {
   name: string | null;
   code: string | null;
   level: number | null;
-  is_system: boolean | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type RoleCountAggregateOutputType = {
@@ -65,12 +61,10 @@ export type RoleCountAggregateOutputType = {
   name: number;
   code: number;
   level: number;
-  is_system: number;
-  domain_id: number;
-  is_deleted: number;
+  isDeleted: number;
   status: number;
-  created_at: number;
-  updated_at: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
@@ -87,12 +81,10 @@ export type RoleMinAggregateInputType = {
   name?: true;
   code?: true;
   level?: true;
-  is_system?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type RoleMaxAggregateInputType = {
@@ -100,12 +92,10 @@ export type RoleMaxAggregateInputType = {
   name?: true;
   code?: true;
   level?: true;
-  is_system?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type RoleCountAggregateInputType = {
@@ -113,12 +103,10 @@ export type RoleCountAggregateInputType = {
   name?: true;
   code?: true;
   level?: true;
-  is_system?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -220,12 +208,10 @@ export type RoleGroupByOutputType = {
   name: string;
   code: string;
   level: number;
-  is_system: boolean;
-  domain_id: string | null;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
+  isDeleted: boolean;
+  status: $Enums.StatusEnum;
+  createdAt: Date;
+  updatedAt: Date;
   _count: RoleCountAggregateOutputType | null;
   _avg: RoleAvgAggregateOutputType | null;
   _sum: RoleSumAggregateOutputType | null;
@@ -233,40 +219,35 @@ export type RoleGroupByOutputType = {
   _max: RoleMaxAggregateOutputType | null;
 };
 
-type GetRoleGroupByPayload<T extends RoleGroupByArgs> = Prisma.PrismaPromise<
-  Array<
-    Prisma.PickEnumerable<RoleGroupByOutputType, T['by']> & {
-      [P in keyof T & keyof RoleGroupByOutputType]: P extends '_count'
-        ? T[P] extends boolean
-          ? number
-          : Prisma.GetScalarType<T[P], RoleGroupByOutputType[P]>
-        : Prisma.GetScalarType<T[P], RoleGroupByOutputType[P]>;
-    }
-  >
->;
+export type GetRoleGroupByPayload<T extends RoleGroupByArgs> =
+  Prisma.PrismaPromise<
+    Array<
+      Prisma.PickEnumerable<RoleGroupByOutputType, T['by']> & {
+        [P in keyof T & keyof RoleGroupByOutputType]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : Prisma.GetScalarType<T[P], RoleGroupByOutputType[P]>
+          : Prisma.GetScalarType<T[P], RoleGroupByOutputType[P]>;
+      }
+    >
+  >;
 
 export type RoleWhereInput = {
   AND?: Prisma.RoleWhereInput | Prisma.RoleWhereInput[];
   OR?: Prisma.RoleWhereInput[];
   NOT?: Prisma.RoleWhereInput | Prisma.RoleWhereInput[];
-  id?: Prisma.StringFilter<'Role'> | string;
+  id?: Prisma.UuidFilter<'Role'> | string;
   name?: Prisma.StringFilter<'Role'> | string;
   code?: Prisma.StringFilter<'Role'> | string;
   level?: Prisma.IntFilter<'Role'> | number;
-  is_system?: Prisma.BoolFilter<'Role'> | boolean;
-  domain_id?: Prisma.StringNullableFilter<'Role'> | string | null;
-  is_deleted?: Prisma.BoolFilter<'Role'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'Role'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
-  domain?: Prisma.XOR<
-    Prisma.DomainNullableScalarRelationFilter,
-    Prisma.DomainWhereInput
-  > | null;
-  role_module_permissions?: Prisma.RoleModulePermissionListRelationFilter;
+  isDeleted?: Prisma.BoolFilter<'Role'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'Role'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'Role'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Role'> | Date | string;
+  domains?: Prisma.DomainListRelationFilter;
   superAdmins?: Prisma.SuperAdminListRelationFilter;
-  default_domains?: Prisma.DomainListRelationFilter;
   users?: Prisma.UserListRelationFilter;
+  roleModulePermissions?: Prisma.RoleModulePermissionListRelationFilter;
 };
 
 export type RoleOrderByWithRelationInput = {
@@ -274,17 +255,14 @@ export type RoleOrderByWithRelationInput = {
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  domain?: Prisma.DomainOrderByWithRelationInput;
-  role_module_permissions?: Prisma.RoleModulePermissionOrderByRelationAggregateInput;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
+  domains?: Prisma.DomainOrderByRelationAggregateInput;
   superAdmins?: Prisma.SuperAdminOrderByRelationAggregateInput;
-  default_domains?: Prisma.DomainOrderByRelationAggregateInput;
   users?: Prisma.UserOrderByRelationAggregateInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionOrderByRelationAggregateInput;
 };
 
 export type RoleWhereUniqueInput = Prisma.AtLeast<
@@ -296,20 +274,14 @@ export type RoleWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.RoleWhereInput | Prisma.RoleWhereInput[];
     name?: Prisma.StringFilter<'Role'> | string;
     level?: Prisma.IntFilter<'Role'> | number;
-    is_system?: Prisma.BoolFilter<'Role'> | boolean;
-    domain_id?: Prisma.StringNullableFilter<'Role'> | string | null;
-    is_deleted?: Prisma.BoolFilter<'Role'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'Role'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
-    domain?: Prisma.XOR<
-      Prisma.DomainNullableScalarRelationFilter,
-      Prisma.DomainWhereInput
-    > | null;
-    role_module_permissions?: Prisma.RoleModulePermissionListRelationFilter;
+    isDeleted?: Prisma.BoolFilter<'Role'> | boolean;
+    status?: Prisma.EnumStatusEnumFilter<'Role'> | $Enums.StatusEnum;
+    createdAt?: Prisma.DateTimeFilter<'Role'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'Role'> | Date | string;
+    domains?: Prisma.DomainListRelationFilter;
     superAdmins?: Prisma.SuperAdminListRelationFilter;
-    default_domains?: Prisma.DomainListRelationFilter;
     users?: Prisma.UserListRelationFilter;
+    roleModulePermissions?: Prisma.RoleModulePermissionListRelationFilter;
   },
   'id' | 'code'
 >;
@@ -319,12 +291,10 @@ export type RoleOrderByWithAggregationInput = {
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrderInput | Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.RoleCountOrderByAggregateInput;
   _avg?: Prisma.RoleAvgOrderByAggregateInput;
   _max?: Prisma.RoleMaxOrderByAggregateInput;
@@ -340,16 +310,16 @@ export type RoleScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.RoleScalarWhereWithAggregatesInput
     | Prisma.RoleScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'Role'> | string;
+  id?: Prisma.UuidWithAggregatesFilter<'Role'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Role'> | string;
   code?: Prisma.StringWithAggregatesFilter<'Role'> | string;
   level?: Prisma.IntWithAggregatesFilter<'Role'> | number;
-  is_system?: Prisma.BoolWithAggregatesFilter<'Role'> | boolean;
-  domain_id?: Prisma.StringNullableWithAggregatesFilter<'Role'> | string | null;
-  is_deleted?: Prisma.BoolWithAggregatesFilter<'Role'> | boolean;
-  status?: Prisma.EnumSTATUSWithAggregatesFilter<'Role'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeWithAggregatesFilter<'Role'> | Date | string;
-  updated_at?: Prisma.DateTimeWithAggregatesFilter<'Role'> | Date | string;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'Role'> | boolean;
+  status?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'Role'>
+    | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'Role'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Role'> | Date | string;
 };
 
 export type RoleCreateInput = {
@@ -357,16 +327,14 @@ export type RoleCreateInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain?: Prisma.DomainCreateNestedOneWithoutRolesInput;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
   superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
   users?: Prisma.UserCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleUncheckedCreateInput = {
@@ -374,16 +342,14 @@ export type RoleUncheckedCreateInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
   superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleUpdateInput = {
@@ -391,16 +357,14 @@ export type RoleUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneWithoutRolesNestedInput;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
   superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
   users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleUncheckedUpdateInput = {
@@ -408,16 +372,14 @@ export type RoleUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
   superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
   users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleCreateManyInput = {
@@ -425,12 +387,10 @@ export type RoleCreateManyInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type RoleUpdateManyMutationInput = {
@@ -438,11 +398,10 @@ export type RoleUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleUncheckedUpdateManyInput = {
@@ -450,27 +409,10 @@ export type RoleUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type RoleNullableScalarRelationFilter = {
-  is?: Prisma.RoleWhereInput | null;
-  isNot?: Prisma.RoleWhereInput | null;
-};
-
-export type RoleListRelationFilter = {
-  every?: Prisma.RoleWhereInput;
-  some?: Prisma.RoleWhereInput;
-  none?: Prisma.RoleWhereInput;
-};
-
-export type RoleOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type RoleScalarRelationFilter = {
@@ -483,12 +425,10 @@ export type RoleCountOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleAvgOrderByAggregateInput = {
@@ -500,12 +440,10 @@ export type RoleMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleMinOrderByAggregateInput = {
@@ -513,16 +451,74 @@ export type RoleMinOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type RoleSumOrderByAggregateInput = {
   level?: Prisma.SortOrder;
+};
+
+export type RoleCreateNestedOneWithoutDomainsInput = {
+  create?: Prisma.XOR<
+    Prisma.RoleCreateWithoutDomainsInput,
+    Prisma.RoleUncheckedCreateWithoutDomainsInput
+  >;
+  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutDomainsInput;
+  connect?: Prisma.RoleWhereUniqueInput;
+};
+
+export type RoleUpdateOneRequiredWithoutDomainsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.RoleCreateWithoutDomainsInput,
+    Prisma.RoleUncheckedCreateWithoutDomainsInput
+  >;
+  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutDomainsInput;
+  upsert?: Prisma.RoleUpsertWithoutDomainsInput;
+  connect?: Prisma.RoleWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.RoleUpdateToOneWithWhereWithoutDomainsInput,
+      Prisma.RoleUpdateWithoutDomainsInput
+    >,
+    Prisma.RoleUncheckedUpdateWithoutDomainsInput
+  >;
+};
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
+};
+
+export type RoleCreateNestedOneWithoutRoleModulePermissionsInput = {
+  create?: Prisma.XOR<
+    Prisma.RoleCreateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedCreateWithoutRoleModulePermissionsInput
+  >;
+  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutRoleModulePermissionsInput;
+  connect?: Prisma.RoleWhereUniqueInput;
+};
+
+export type RoleUpdateOneRequiredWithoutRoleModulePermissionsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.RoleCreateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedCreateWithoutRoleModulePermissionsInput
+  >;
+  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutRoleModulePermissionsInput;
+  upsert?: Prisma.RoleUpsertWithoutRoleModulePermissionsInput;
+  connect?: Prisma.RoleWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.RoleUpdateToOneWithWhereWithoutRoleModulePermissionsInput,
+      Prisma.RoleUpdateWithoutRoleModulePermissionsInput
+    >,
+    Prisma.RoleUncheckedUpdateWithoutRoleModulePermissionsInput
+  >;
 };
 
 export type RoleCreateNestedOneWithoutSuperAdminsInput = {
@@ -534,15 +530,13 @@ export type RoleCreateNestedOneWithoutSuperAdminsInput = {
   connect?: Prisma.RoleWhereUniqueInput;
 };
 
-export type RoleUpdateOneWithoutSuperAdminsNestedInput = {
+export type RoleUpdateOneRequiredWithoutSuperAdminsNestedInput = {
   create?: Prisma.XOR<
     Prisma.RoleCreateWithoutSuperAdminsInput,
     Prisma.RoleUncheckedCreateWithoutSuperAdminsInput
   >;
   connectOrCreate?: Prisma.RoleCreateOrConnectWithoutSuperAdminsInput;
   upsert?: Prisma.RoleUpsertWithoutSuperAdminsInput;
-  disconnect?: Prisma.RoleWhereInput | boolean;
-  delete?: Prisma.RoleWhereInput | boolean;
   connect?: Prisma.RoleWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
@@ -551,120 +545,6 @@ export type RoleUpdateOneWithoutSuperAdminsNestedInput = {
     >,
     Prisma.RoleUncheckedUpdateWithoutSuperAdminsInput
   >;
-};
-
-export type RoleCreateNestedOneWithoutDefault_domainsInput = {
-  create?: Prisma.XOR<
-    Prisma.RoleCreateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedCreateWithoutDefault_domainsInput
-  >;
-  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutDefault_domainsInput;
-  connect?: Prisma.RoleWhereUniqueInput;
-};
-
-export type RoleCreateNestedManyWithoutDomainInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.RoleCreateWithoutDomainInput,
-        Prisma.RoleUncheckedCreateWithoutDomainInput
-      >
-    | Prisma.RoleCreateWithoutDomainInput[]
-    | Prisma.RoleUncheckedCreateWithoutDomainInput[];
-  connectOrCreate?:
-    | Prisma.RoleCreateOrConnectWithoutDomainInput
-    | Prisma.RoleCreateOrConnectWithoutDomainInput[];
-  createMany?: Prisma.RoleCreateManyDomainInputEnvelope;
-  connect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-};
-
-export type RoleUncheckedCreateNestedManyWithoutDomainInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.RoleCreateWithoutDomainInput,
-        Prisma.RoleUncheckedCreateWithoutDomainInput
-      >
-    | Prisma.RoleCreateWithoutDomainInput[]
-    | Prisma.RoleUncheckedCreateWithoutDomainInput[];
-  connectOrCreate?:
-    | Prisma.RoleCreateOrConnectWithoutDomainInput
-    | Prisma.RoleCreateOrConnectWithoutDomainInput[];
-  createMany?: Prisma.RoleCreateManyDomainInputEnvelope;
-  connect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-};
-
-export type RoleUpdateOneWithoutDefault_domainsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.RoleCreateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedCreateWithoutDefault_domainsInput
-  >;
-  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutDefault_domainsInput;
-  upsert?: Prisma.RoleUpsertWithoutDefault_domainsInput;
-  disconnect?: Prisma.RoleWhereInput | boolean;
-  delete?: Prisma.RoleWhereInput | boolean;
-  connect?: Prisma.RoleWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.RoleUpdateToOneWithWhereWithoutDefault_domainsInput,
-      Prisma.RoleUpdateWithoutDefault_domainsInput
-    >,
-    Prisma.RoleUncheckedUpdateWithoutDefault_domainsInput
-  >;
-};
-
-export type RoleUpdateManyWithoutDomainNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.RoleCreateWithoutDomainInput,
-        Prisma.RoleUncheckedCreateWithoutDomainInput
-      >
-    | Prisma.RoleCreateWithoutDomainInput[]
-    | Prisma.RoleUncheckedCreateWithoutDomainInput[];
-  connectOrCreate?:
-    | Prisma.RoleCreateOrConnectWithoutDomainInput
-    | Prisma.RoleCreateOrConnectWithoutDomainInput[];
-  upsert?:
-    | Prisma.RoleUpsertWithWhereUniqueWithoutDomainInput
-    | Prisma.RoleUpsertWithWhereUniqueWithoutDomainInput[];
-  createMany?: Prisma.RoleCreateManyDomainInputEnvelope;
-  set?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  disconnect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  delete?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  connect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  update?:
-    | Prisma.RoleUpdateWithWhereUniqueWithoutDomainInput
-    | Prisma.RoleUpdateWithWhereUniqueWithoutDomainInput[];
-  updateMany?:
-    | Prisma.RoleUpdateManyWithWhereWithoutDomainInput
-    | Prisma.RoleUpdateManyWithWhereWithoutDomainInput[];
-  deleteMany?: Prisma.RoleScalarWhereInput | Prisma.RoleScalarWhereInput[];
-};
-
-export type RoleUncheckedUpdateManyWithoutDomainNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.RoleCreateWithoutDomainInput,
-        Prisma.RoleUncheckedCreateWithoutDomainInput
-      >
-    | Prisma.RoleCreateWithoutDomainInput[]
-    | Prisma.RoleUncheckedCreateWithoutDomainInput[];
-  connectOrCreate?:
-    | Prisma.RoleCreateOrConnectWithoutDomainInput
-    | Prisma.RoleCreateOrConnectWithoutDomainInput[];
-  upsert?:
-    | Prisma.RoleUpsertWithWhereUniqueWithoutDomainInput
-    | Prisma.RoleUpsertWithWhereUniqueWithoutDomainInput[];
-  createMany?: Prisma.RoleCreateManyDomainInputEnvelope;
-  set?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  disconnect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  delete?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  connect?: Prisma.RoleWhereUniqueInput | Prisma.RoleWhereUniqueInput[];
-  update?:
-    | Prisma.RoleUpdateWithWhereUniqueWithoutDomainInput
-    | Prisma.RoleUpdateWithWhereUniqueWithoutDomainInput[];
-  updateMany?:
-    | Prisma.RoleUpdateManyWithWhereWithoutDomainInput
-    | Prisma.RoleUpdateManyWithWhereWithoutDomainInput[];
-  deleteMany?: Prisma.RoleScalarWhereInput | Prisma.RoleScalarWhereInput[];
 };
 
 export type RoleCreateNestedOneWithoutUsersInput = {
@@ -693,38 +573,172 @@ export type RoleUpdateOneRequiredWithoutUsersNestedInput = {
   >;
 };
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
+export type RoleCreateWithoutDomainsInput = {
+  id?: string;
+  name: string;
+  code: string;
+  level: number;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
+  users?: Prisma.UserCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
 };
 
-export type RoleCreateNestedOneWithoutRole_module_permissionsInput = {
-  create?: Prisma.XOR<
-    Prisma.RoleCreateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedCreateWithoutRole_module_permissionsInput
-  >;
-  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutRole_module_permissionsInput;
-  connect?: Prisma.RoleWhereUniqueInput;
+export type RoleUncheckedCreateWithoutDomainsInput = {
+  id?: string;
+  name: string;
+  code: string;
+  level: number;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
 };
 
-export type RoleUpdateOneRequiredWithoutRole_module_permissionsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.RoleCreateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedCreateWithoutRole_module_permissionsInput
+export type RoleCreateOrConnectWithoutDomainsInput = {
+  where: Prisma.RoleWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.RoleCreateWithoutDomainsInput,
+    Prisma.RoleUncheckedCreateWithoutDomainsInput
   >;
-  connectOrCreate?: Prisma.RoleCreateOrConnectWithoutRole_module_permissionsInput;
-  upsert?: Prisma.RoleUpsertWithoutRole_module_permissionsInput;
-  connect?: Prisma.RoleWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.RoleUpdateToOneWithWhereWithoutRole_module_permissionsInput,
-      Prisma.RoleUpdateWithoutRole_module_permissionsInput
-    >,
-    Prisma.RoleUncheckedUpdateWithoutRole_module_permissionsInput
+};
+
+export type RoleUpsertWithoutDomainsInput = {
+  update: Prisma.XOR<
+    Prisma.RoleUpdateWithoutDomainsInput,
+    Prisma.RoleUncheckedUpdateWithoutDomainsInput
   >;
+  create: Prisma.XOR<
+    Prisma.RoleCreateWithoutDomainsInput,
+    Prisma.RoleUncheckedCreateWithoutDomainsInput
+  >;
+  where?: Prisma.RoleWhereInput;
+};
+
+export type RoleUpdateToOneWithWhereWithoutDomainsInput = {
+  where?: Prisma.RoleWhereInput;
+  data: Prisma.XOR<
+    Prisma.RoleUpdateWithoutDomainsInput,
+    Prisma.RoleUncheckedUpdateWithoutDomainsInput
+  >;
+};
+
+export type RoleUpdateWithoutDomainsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?: Prisma.IntFieldUpdateOperationsInput | number;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
+  users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
+};
+
+export type RoleUncheckedUpdateWithoutDomainsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?: Prisma.IntFieldUpdateOperationsInput | number;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
+  users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
+};
+
+export type RoleCreateWithoutRoleModulePermissionsInput = {
+  id?: string;
+  name: string;
+  code: string;
+  level: number;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
+  superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
+  users?: Prisma.UserCreateNestedManyWithoutRoleInput;
+};
+
+export type RoleUncheckedCreateWithoutRoleModulePermissionsInput = {
+  id?: string;
+  name: string;
+  code: string;
+  level: number;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
+  superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
+};
+
+export type RoleCreateOrConnectWithoutRoleModulePermissionsInput = {
+  where: Prisma.RoleWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.RoleCreateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedCreateWithoutRoleModulePermissionsInput
+  >;
+};
+
+export type RoleUpsertWithoutRoleModulePermissionsInput = {
+  update: Prisma.XOR<
+    Prisma.RoleUpdateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedUpdateWithoutRoleModulePermissionsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.RoleCreateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedCreateWithoutRoleModulePermissionsInput
+  >;
+  where?: Prisma.RoleWhereInput;
+};
+
+export type RoleUpdateToOneWithWhereWithoutRoleModulePermissionsInput = {
+  where?: Prisma.RoleWhereInput;
+  data: Prisma.XOR<
+    Prisma.RoleUpdateWithoutRoleModulePermissionsInput,
+    Prisma.RoleUncheckedUpdateWithoutRoleModulePermissionsInput
+  >;
+};
+
+export type RoleUpdateWithoutRoleModulePermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?: Prisma.IntFieldUpdateOperationsInput | number;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
+  superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
+  users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
+};
+
+export type RoleUncheckedUpdateWithoutRoleModulePermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?: Prisma.IntFieldUpdateOperationsInput | number;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
+  superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
+  users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleCreateWithoutSuperAdminsInput = {
@@ -732,15 +746,13 @@ export type RoleCreateWithoutSuperAdminsInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain?: Prisma.DomainCreateNestedOneWithoutRolesInput;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
   users?: Prisma.UserCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleUncheckedCreateWithoutSuperAdminsInput = {
@@ -748,15 +760,13 @@ export type RoleUncheckedCreateWithoutSuperAdminsInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
   users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleCreateOrConnectWithoutSuperAdminsInput = {
@@ -792,15 +802,13 @@ export type RoleUpdateWithoutSuperAdminsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneWithoutRolesNestedInput;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
   users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleUncheckedUpdateWithoutSuperAdminsInput = {
@@ -808,196 +816,13 @@ export type RoleUncheckedUpdateWithoutSuperAdminsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
   users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleCreateWithoutDefault_domainsInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain?: Prisma.DomainCreateNestedOneWithoutRolesInput;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
-  superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleUncheckedCreateWithoutDefault_domainsInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
-  superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleCreateOrConnectWithoutDefault_domainsInput = {
-  where: Prisma.RoleWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedCreateWithoutDefault_domainsInput
-  >;
-};
-
-export type RoleCreateWithoutDomainInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
-  superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleUncheckedCreateWithoutDomainInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
-  superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleCreateOrConnectWithoutDomainInput = {
-  where: Prisma.RoleWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutDomainInput,
-    Prisma.RoleUncheckedCreateWithoutDomainInput
-  >;
-};
-
-export type RoleCreateManyDomainInputEnvelope = {
-  data: Prisma.RoleCreateManyDomainInput | Prisma.RoleCreateManyDomainInput[];
-  skipDuplicates?: boolean;
-};
-
-export type RoleUpsertWithoutDefault_domainsInput = {
-  update: Prisma.XOR<
-    Prisma.RoleUpdateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedUpdateWithoutDefault_domainsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedCreateWithoutDefault_domainsInput
-  >;
-  where?: Prisma.RoleWhereInput;
-};
-
-export type RoleUpdateToOneWithWhereWithoutDefault_domainsInput = {
-  where?: Prisma.RoleWhereInput;
-  data: Prisma.XOR<
-    Prisma.RoleUpdateWithoutDefault_domainsInput,
-    Prisma.RoleUncheckedUpdateWithoutDefault_domainsInput
-  >;
-};
-
-export type RoleUpdateWithoutDefault_domainsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneWithoutRolesNestedInput;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
-  superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleUncheckedUpdateWithoutDefault_domainsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
-  superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleUpsertWithWhereUniqueWithoutDomainInput = {
-  where: Prisma.RoleWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.RoleUpdateWithoutDomainInput,
-    Prisma.RoleUncheckedUpdateWithoutDomainInput
-  >;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutDomainInput,
-    Prisma.RoleUncheckedCreateWithoutDomainInput
-  >;
-};
-
-export type RoleUpdateWithWhereUniqueWithoutDomainInput = {
-  where: Prisma.RoleWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.RoleUpdateWithoutDomainInput,
-    Prisma.RoleUncheckedUpdateWithoutDomainInput
-  >;
-};
-
-export type RoleUpdateManyWithWhereWithoutDomainInput = {
-  where: Prisma.RoleScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.RoleUpdateManyMutationInput,
-    Prisma.RoleUncheckedUpdateManyWithoutDomainInput
-  >;
-};
-
-export type RoleScalarWhereInput = {
-  AND?: Prisma.RoleScalarWhereInput | Prisma.RoleScalarWhereInput[];
-  OR?: Prisma.RoleScalarWhereInput[];
-  NOT?: Prisma.RoleScalarWhereInput | Prisma.RoleScalarWhereInput[];
-  id?: Prisma.StringFilter<'Role'> | string;
-  name?: Prisma.StringFilter<'Role'> | string;
-  code?: Prisma.StringFilter<'Role'> | string;
-  level?: Prisma.IntFilter<'Role'> | number;
-  is_system?: Prisma.BoolFilter<'Role'> | boolean;
-  domain_id?: Prisma.StringNullableFilter<'Role'> | string | null;
-  is_deleted?: Prisma.BoolFilter<'Role'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'Role'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'Role'> | Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleCreateWithoutUsersInput = {
@@ -1005,15 +830,13 @@ export type RoleCreateWithoutUsersInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain?: Prisma.DomainCreateNestedOneWithoutRolesInput;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
   superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleUncheckedCreateWithoutUsersInput = {
@@ -1021,15 +844,13 @@ export type RoleUncheckedCreateWithoutUsersInput = {
   name: string;
   code: string;
   level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
   superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutRoleInput;
 };
 
 export type RoleCreateOrConnectWithoutUsersInput = {
@@ -1065,15 +886,13 @@ export type RoleUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneWithoutRolesNestedInput;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
   superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
+  roleModulePermissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
 };
 
 export type RoleUncheckedUpdateWithoutUsersInput = {
@@ -1081,163 +900,13 @@ export type RoleUncheckedUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
   superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleCreateWithoutRole_module_permissionsInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain?: Prisma.DomainCreateNestedOneWithoutRolesInput;
-  superAdmins?: Prisma.SuperAdminCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleUncheckedCreateWithoutRole_module_permissionsInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  domain_id?: string | null;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  superAdmins?: Prisma.SuperAdminUncheckedCreateNestedManyWithoutRoleInput;
-  default_domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRoleInput;
-  users?: Prisma.UserUncheckedCreateNestedManyWithoutRoleInput;
-};
-
-export type RoleCreateOrConnectWithoutRole_module_permissionsInput = {
-  where: Prisma.RoleWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedCreateWithoutRole_module_permissionsInput
-  >;
-};
-
-export type RoleUpsertWithoutRole_module_permissionsInput = {
-  update: Prisma.XOR<
-    Prisma.RoleUpdateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedUpdateWithoutRole_module_permissionsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.RoleCreateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedCreateWithoutRole_module_permissionsInput
-  >;
-  where?: Prisma.RoleWhereInput;
-};
-
-export type RoleUpdateToOneWithWhereWithoutRole_module_permissionsInput = {
-  where?: Prisma.RoleWhereInput;
-  data: Prisma.XOR<
-    Prisma.RoleUpdateWithoutRole_module_permissionsInput,
-    Prisma.RoleUncheckedUpdateWithoutRole_module_permissionsInput
-  >;
-};
-
-export type RoleUpdateWithoutRole_module_permissionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneWithoutRolesNestedInput;
-  superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleUncheckedUpdateWithoutRole_module_permissionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  domain_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleCreateManyDomainInput = {
-  id?: string;
-  name: string;
-  code: string;
-  level: number;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type RoleUpdateWithoutDomainInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutRoleNestedInput;
-  superAdmins?: Prisma.SuperAdminUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleUncheckedUpdateWithoutDomainInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
-  superAdmins?: Prisma.SuperAdminUncheckedUpdateManyWithoutRoleNestedInput;
-  default_domains?: Prisma.DomainUncheckedUpdateManyWithoutRoleNestedInput;
-  users?: Prisma.UserUncheckedUpdateManyWithoutRoleNestedInput;
-};
-
-export type RoleUncheckedUpdateManyWithoutDomainInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  level?: Prisma.IntFieldUpdateOperationsInput | number;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutRoleNestedInput;
 };
 
 /**
@@ -1245,22 +914,22 @@ export type RoleUncheckedUpdateManyWithoutDomainInput = {
  */
 
 export type RoleCountOutputType = {
-  role_module_permissions: number;
+  domains: number;
   superAdmins: number;
-  default_domains: number;
   users: number;
+  roleModulePermissions: number;
 };
 
 export type RoleCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role_module_permissions?:
-    | boolean
-    | RoleCountOutputTypeCountRole_module_permissionsArgs;
+  domains?: boolean | RoleCountOutputTypeCountDomainsArgs;
   superAdmins?: boolean | RoleCountOutputTypeCountSuperAdminsArgs;
-  default_domains?: boolean | RoleCountOutputTypeCountDefault_domainsArgs;
   users?: boolean | RoleCountOutputTypeCountUsersArgs;
+  roleModulePermissions?:
+    | boolean
+    | RoleCountOutputTypeCountRoleModulePermissionsArgs;
 };
 
 /**
@@ -1279,11 +948,11 @@ export type RoleCountOutputTypeDefaultArgs<
 /**
  * RoleCountOutputType without action
  */
-export type RoleCountOutputTypeCountRole_module_permissionsArgs<
+export type RoleCountOutputTypeCountDomainsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  where?: Prisma.RoleModulePermissionWhereInput;
+  where?: Prisma.DomainWhereInput;
 };
 
 /**
@@ -1299,21 +968,21 @@ export type RoleCountOutputTypeCountSuperAdminsArgs<
 /**
  * RoleCountOutputType without action
  */
-export type RoleCountOutputTypeCountDefault_domainsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.DomainWhereInput;
-};
-
-/**
- * RoleCountOutputType without action
- */
 export type RoleCountOutputTypeCountUsersArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.UserWhereInput;
+};
+
+/**
+ * RoleCountOutputType without action
+ */
+export type RoleCountOutputTypeCountRoleModulePermissionsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.RoleModulePermissionWhereInput;
 };
 
 export type RoleSelect<
@@ -1325,19 +994,16 @@ export type RoleSelect<
     name?: boolean;
     code?: boolean;
     level?: boolean;
-    is_system?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
-    role_module_permissions?:
-      | boolean
-      | Prisma.Role$role_module_permissionsArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    domains?: boolean | Prisma.Role$domainsArgs<ExtArgs>;
     superAdmins?: boolean | Prisma.Role$superAdminsArgs<ExtArgs>;
-    default_domains?: boolean | Prisma.Role$default_domainsArgs<ExtArgs>;
     users?: boolean | Prisma.Role$usersArgs<ExtArgs>;
+    roleModulePermissions?:
+      | boolean
+      | Prisma.Role$roleModulePermissionsArgs<ExtArgs>;
     _count?: boolean | Prisma.RoleCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['role']
@@ -1352,13 +1018,10 @@ export type RoleSelectCreateManyAndReturn<
     name?: boolean;
     code?: boolean;
     level?: boolean;
-    is_system?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
   },
   ExtArgs['result']['role']
 >;
@@ -1372,13 +1035,10 @@ export type RoleSelectUpdateManyAndReturn<
     name?: boolean;
     code?: boolean;
     level?: boolean;
-    is_system?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
+    createdAt?: boolean;
+    updatedAt?: boolean;
   },
   ExtArgs['result']['role']
 >;
@@ -1388,12 +1048,10 @@ export type RoleSelectScalar = {
   name?: boolean;
   code?: boolean;
   level?: boolean;
-  is_system?: boolean;
-  domain_id?: boolean;
-  is_deleted?: boolean;
+  isDeleted?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type RoleOmit<
@@ -1404,39 +1062,32 @@ export type RoleOmit<
   | 'name'
   | 'code'
   | 'level'
-  | 'is_system'
-  | 'domain_id'
-  | 'is_deleted'
+  | 'isDeleted'
   | 'status'
-  | 'created_at'
-  | 'updated_at',
+  | 'createdAt'
+  | 'updatedAt',
   ExtArgs['result']['role']
 >;
 export type RoleInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
-  role_module_permissions?:
-    | boolean
-    | Prisma.Role$role_module_permissionsArgs<ExtArgs>;
+  domains?: boolean | Prisma.Role$domainsArgs<ExtArgs>;
   superAdmins?: boolean | Prisma.Role$superAdminsArgs<ExtArgs>;
-  default_domains?: boolean | Prisma.Role$default_domainsArgs<ExtArgs>;
   users?: boolean | Prisma.Role$usersArgs<ExtArgs>;
+  roleModulePermissions?:
+    | boolean
+    | Prisma.Role$roleModulePermissionsArgs<ExtArgs>;
   _count?: boolean | Prisma.RoleCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type RoleIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
-> = {
-  domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
-};
+> = {};
 export type RoleIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
-> = {
-  domain?: boolean | Prisma.Role$domainArgs<ExtArgs>;
-};
+> = {};
 
 export type $RolePayload<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -1444,11 +1095,10 @@ export type $RolePayload<
 > = {
   name: 'Role';
   objects: {
-    domain: Prisma.$DomainPayload<ExtArgs> | null;
-    role_module_permissions: Prisma.$RoleModulePermissionPayload<ExtArgs>[];
+    domains: Prisma.$DomainPayload<ExtArgs>[];
     superAdmins: Prisma.$SuperAdminPayload<ExtArgs>[];
-    default_domains: Prisma.$DomainPayload<ExtArgs>[];
     users: Prisma.$UserPayload<ExtArgs>[];
+    roleModulePermissions: Prisma.$RoleModulePermissionPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1456,12 +1106,10 @@ export type $RolePayload<
       name: string;
       code: string;
       level: number;
-      is_system: boolean;
-      domain_id: string | null;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
+      isDeleted: boolean;
+      status: $Enums.StatusEnum;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['role']
   >;
@@ -2012,26 +1660,11 @@ export interface Prisma__RoleClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: 'PrismaPromise';
-  domain<T extends Prisma.Role$domainArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Role$domainArgs<ExtArgs>>,
-  ): Prisma.Prisma__DomainClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$DomainPayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
-    ExtArgs,
-    GlobalOmitOptions
-  >;
-  role_module_permissions<
-    T extends Prisma.Role$role_module_permissionsArgs<ExtArgs> = {},
-  >(
-    args?: Prisma.Subset<T, Prisma.Role$role_module_permissionsArgs<ExtArgs>>,
+  domains<T extends Prisma.Role$domainsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Role$domainsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
-        Prisma.$RoleModulePermissionPayload<ExtArgs>,
+        Prisma.$DomainPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -2049,22 +1682,24 @@ export interface Prisma__RoleClient<
       >
     | Null
   >;
-  default_domains<T extends Prisma.Role$default_domainsArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Role$default_domainsArgs<ExtArgs>>,
+  users<T extends Prisma.Role$usersArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Role$usersArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
-        Prisma.$DomainPayload<ExtArgs>,
+        Prisma.$UserPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
       >
     | Null
   >;
-  users<T extends Prisma.Role$usersArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Role$usersArgs<ExtArgs>>,
+  roleModulePermissions<
+    T extends Prisma.Role$roleModulePermissionsArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Role$roleModulePermissionsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
-        Prisma.$UserPayload<ExtArgs>,
+        Prisma.$RoleModulePermissionPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -2117,12 +1752,10 @@ export interface RoleFieldRefs {
   readonly name: Prisma.FieldRef<'Role', 'String'>;
   readonly code: Prisma.FieldRef<'Role', 'String'>;
   readonly level: Prisma.FieldRef<'Role', 'Int'>;
-  readonly is_system: Prisma.FieldRef<'Role', 'Boolean'>;
-  readonly domain_id: Prisma.FieldRef<'Role', 'String'>;
-  readonly is_deleted: Prisma.FieldRef<'Role', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'Role', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'Role', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'Role', 'DateTime'>;
+  readonly isDeleted: Prisma.FieldRef<'Role', 'Boolean'>;
+  readonly status: Prisma.FieldRef<'Role', 'StatusEnum'>;
+  readonly createdAt: Prisma.FieldRef<'Role', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'Role', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -2339,6 +1972,11 @@ export type RoleFindManyArgs<
    * Skip the first `n` Roles.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Roles.
+   */
   distinct?: Prisma.RoleScalarFieldEnum | Prisma.RoleScalarFieldEnum[];
 };
 
@@ -2401,10 +2039,6 @@ export type RoleCreateManyAndReturnArgs<
    */
   data: Prisma.RoleCreateManyInput | Prisma.RoleCreateManyInput[];
   skipDuplicates?: boolean;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RoleIncludeCreateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -2490,10 +2124,6 @@ export type RoleUpdateManyAndReturnArgs<
    * Limit how many Roles to update.
    */
   limit?: number;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RoleIncludeUpdateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -2572,9 +2202,9 @@ export type RoleDeleteManyArgs<
 };
 
 /**
- * Role.domain
+ * Role.domains
  */
-export type Role$domainArgs<
+export type Role$domainsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
@@ -2591,37 +2221,13 @@ export type Role$domainArgs<
    */
   include?: Prisma.DomainInclude<ExtArgs> | null;
   where?: Prisma.DomainWhereInput;
-};
-
-/**
- * Role.role_module_permissions
- */
-export type Role$role_module_permissionsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the RoleModulePermission
-   */
-  select?: Prisma.RoleModulePermissionSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the RoleModulePermission
-   */
-  omit?: Prisma.RoleModulePermissionOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RoleModulePermissionInclude<ExtArgs> | null;
-  where?: Prisma.RoleModulePermissionWhereInput;
   orderBy?:
-    | Prisma.RoleModulePermissionOrderByWithRelationInput
-    | Prisma.RoleModulePermissionOrderByWithRelationInput[];
-  cursor?: Prisma.RoleModulePermissionWhereUniqueInput;
+    | Prisma.DomainOrderByWithRelationInput
+    | Prisma.DomainOrderByWithRelationInput[];
+  cursor?: Prisma.DomainWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?:
-    | Prisma.RoleModulePermissionScalarFieldEnum
-    | Prisma.RoleModulePermissionScalarFieldEnum[];
+  distinct?: Prisma.DomainScalarFieldEnum | Prisma.DomainScalarFieldEnum[];
 };
 
 /**
@@ -2656,35 +2262,6 @@ export type Role$superAdminsArgs<
 };
 
 /**
- * Role.default_domains
- */
-export type Role$default_domainsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Domain
-   */
-  select?: Prisma.DomainSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Domain
-   */
-  omit?: Prisma.DomainOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.DomainInclude<ExtArgs> | null;
-  where?: Prisma.DomainWhereInput;
-  orderBy?:
-    | Prisma.DomainOrderByWithRelationInput
-    | Prisma.DomainOrderByWithRelationInput[];
-  cursor?: Prisma.DomainWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: Prisma.DomainScalarFieldEnum | Prisma.DomainScalarFieldEnum[];
-};
-
-/**
  * Role.users
  */
 export type Role$usersArgs<
@@ -2711,6 +2288,37 @@ export type Role$usersArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[];
+};
+
+/**
+ * Role.roleModulePermissions
+ */
+export type Role$roleModulePermissionsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the RoleModulePermission
+   */
+  select?: Prisma.RoleModulePermissionSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the RoleModulePermission
+   */
+  omit?: Prisma.RoleModulePermissionOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RoleModulePermissionInclude<ExtArgs> | null;
+  where?: Prisma.RoleModulePermissionWhereInput;
+  orderBy?:
+    | Prisma.RoleModulePermissionOrderByWithRelationInput
+    | Prisma.RoleModulePermissionOrderByWithRelationInput[];
+  cursor?: Prisma.RoleModulePermissionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.RoleModulePermissionScalarFieldEnum
+    | Prisma.RoleModulePermissionScalarFieldEnum[];
 };
 
 /**

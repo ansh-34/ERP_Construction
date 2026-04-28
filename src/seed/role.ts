@@ -8,7 +8,7 @@ export const roleData = async () => {
     for (const role of roles) {
       const existingRole = await prisma.role.findFirst({
         where: {
-          is_deleted: false,
+          isDeleted: false,
           code: role.code,
         },
       });
@@ -17,7 +17,7 @@ export const roleData = async () => {
           name: role.name,
           code: role.code,
           level: role.level,
-          is_system: true,
+          
         });
       }
     }

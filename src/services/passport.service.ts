@@ -20,14 +20,14 @@ export default {
           .findFirst({
             where: {
               id: jwtPayload,
-              is_deleted: false,
+              isDeleted: false,
               status: StatusEnum.ACTIVE,
             },
             select: {
               id: true,
               name: true,
               email: true,
-              role_id: true,
+              roleId: true,
             },
           })
           .then((u: any) => {
@@ -51,20 +51,20 @@ export default {
           .findFirst({
             where: {
               id: jwtPayload,
-              is_deleted: false,
+              isDeleted: false,
               status: StatusEnum.ACTIVE,
             },
             select: {
               id: true,
               name: true,
               email: true,
-              role_id: true,
+              roleId: true,
             },
           })
           .then((u: any) => {
             if (u) {
               // u = u.toJSON();
-              u.domain_id = u.id;
+              u.domainId = u.id;
               u.isSuperAdmin = false;
               done(null, u);
             } else done(null, false);
@@ -83,15 +83,15 @@ export default {
           .findFirst({
             where: {
               id: jwtPayload,
-              is_deleted: false,
+              isDeleted: false,
               status: StatusEnum.ACTIVE,
             },
             select: {
               id: true,
               name: true,
               email: true,
-              role_id: true,
-              domain_id: true,
+              roleId: true,
+              domainId: true,
               status: true,
             },
           })

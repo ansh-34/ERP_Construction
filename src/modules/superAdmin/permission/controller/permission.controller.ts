@@ -1,9 +1,14 @@
 import { Request, Response } from 'express';
 import { PermissionService } from '../service/permission.service';
+import { StatusEnum } from '@constants/index';
 
 export const addPermission = async (req: Request, res: Response) => {
   try {
-    const permission = await PermissionService.addPermission(req.body);
+    const { name } = req.body as { name?: string };
+
+    const permission = await PermissionService.addPermission({
+      name: name ?? '',
+    });
 
     return res.status(200).json({
       success: true,
@@ -20,10 +25,15 @@ export const addPermission = async (req: Request, res: Response) => {
 export const editPermission = async (req: Request, res: Response) => {
   try {
     const permissionId = req.params.id as string;
-    const permission = await PermissionService.editPermission(
-      permissionId,
-      req.body,
-    );
+    const { name, status } = req.body as {
+      name?: string;
+      status?: StatusEnum;
+    };
+
+    const permission = await PermissionService.editPermission(permissionId, {
+      ...(name !== undefined && { name }),
+      ...(status !== undefined && { status }),
+    });
 
     return res.status(200).json({
       success: true,

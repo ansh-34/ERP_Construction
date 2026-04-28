@@ -6,7 +6,7 @@ export const SuperAdminRepository = {
     return prisma.superAdmin.findFirst({
       where: {
         id,
-        is_deleted: false,
+        isDeleted: false,
       },
     });
   },
@@ -15,7 +15,7 @@ export const SuperAdminRepository = {
     return prisma.superAdmin.findFirst({
       where: {
         email,
-        is_deleted: false,
+        isDeleted: false,
       },
     });
   },
@@ -27,7 +27,7 @@ export const SuperAdminRepository = {
     roleId: string,
   ) => {
     return prisma.superAdmin.create({
-      data: { name, email, password, role_id: roleId },
+      data: { name, email, password, roleId: roleId },
     });
   },
 
@@ -45,7 +45,7 @@ export const SuperAdminRepository = {
       where: { id },
       data: {
         ...data,
-        ...(data.roleId && { role_id: data.roleId }),
+        ...(data.roleId && { roleId: data.roleId }),
       },
     });
   },
@@ -53,7 +53,7 @@ export const SuperAdminRepository = {
   softDelete: async (id: string) => {
     return prisma.superAdmin.update({
       where: { id },
-      data: { is_deleted: true },
+      data: { isDeleted: true },
     });
   },
 
@@ -67,7 +67,7 @@ export const SuperAdminRepository = {
     return prisma.superAdmin.findMany({
       where: whereFilter,
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       take: limit,
       skip: offset,

@@ -4,10 +4,10 @@ import { StatusEnum } from '@constants/index';
 export const RoleModulePermissionRepository = {
   async createMany(
     data: {
-      role_id: string;
-      module_id: string;
-      permission_id: string;
-      domain_id?: string | null;
+      roleId: string;
+      moduleId: string;
+      permissionId: string;
+      domainId?: string | null;
     }[],
   ) {
     return prisma.roleModulePermission.createMany({
@@ -15,20 +15,20 @@ export const RoleModulePermissionRepository = {
     });
   },
 
-  async deleteByRole(role_id: string) {
+  async deleteByRole(roleId: string) {
     return prisma.roleModulePermission.deleteMany({
       where: {
-        role_id,
-        is_deleted: false,
+        roleId,
+        isDeleted: false,
       },
     });
   },
 
-  async findByRole(role_id: string) {
+  async findByRole(roleId: string) {
     return prisma.roleModulePermission.findMany({
       where: {
-        role_id,
-        is_deleted: false,
+        roleId,
+        isDeleted: false,
       },
       include: {
         module: true,
@@ -43,7 +43,7 @@ export const RoleModulePermissionRepository = {
       take: limit,
       skip: offset,
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       include: {
         module: true,

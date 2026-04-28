@@ -8,7 +8,7 @@ export const moduleData = async () => {
     for (const module of modules) {
       const existingModule = await prisma.module.findFirst({
         where: {
-          is_deleted: false,
+          isDeleted: false,
           code: module.code,
         },
       });
@@ -16,7 +16,7 @@ export const moduleData = async () => {
         modulesData.push({
           name: module.name,
           code: module.code,
-          is_system: true,
+          
         });
       }
     }

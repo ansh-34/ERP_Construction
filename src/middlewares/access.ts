@@ -15,17 +15,17 @@ export const checkPermission =
 
       const permission = await prisma.roleModulePermission.findFirst({
         where: {
-          role_id: roleId,
-          is_deleted: false,
+          roleId: roleId,
+          isDeleted: false,
           status: StatusEnum.ACTIVE,
           module: {
             code: moduleCode,
-            is_deleted: false,
+            isDeleted: false,
             status: StatusEnum.ACTIVE,
           },
           permission: {
             code: permissionCode,
-            is_deleted: false,
+            isDeleted: false,
             status: StatusEnum.ACTIVE,
           },
         },

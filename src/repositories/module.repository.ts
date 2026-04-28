@@ -6,7 +6,7 @@ export const ModuleRepository = {
     return prisma.module.findFirst({
       where: {
         code,
-        is_deleted: false,
+        isDeleted: false,
       },
     });
   },
@@ -15,7 +15,7 @@ export const ModuleRepository = {
     return prisma.module.findFirst({
       where: {
         id,
-        is_deleted: false,
+        isDeleted: false,
       },
     });
   },
@@ -24,7 +24,7 @@ export const ModuleRepository = {
     return prisma.module.findFirst({
       where: {
         code,
-        is_deleted: false,
+        isDeleted: false,
         NOT: {
           id: moduleId,
         },
@@ -51,7 +51,7 @@ export const ModuleRepository = {
   softDelete: async (id: string) => {
     return prisma.module.update({
       where: { id },
-      data: { is_deleted: true },
+      data: { isDeleted: true },
     });
   },
 
@@ -65,7 +65,7 @@ export const ModuleRepository = {
     return prisma.module.findMany({
       where: whereFilter,
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       take: limit,
       skip: offset,

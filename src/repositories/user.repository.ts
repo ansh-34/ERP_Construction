@@ -2,12 +2,12 @@ import { prisma } from '@infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 
 export const UserRepository = {
-  findByEmail: async (email: string, domain_id: string) => {
+  findByEmail: async (email: string, domainId: string) => {
     return prisma.user.findFirst({
       where: {
         email,
-        domain_id,
-        is_deleted: false,
+        domainId,
+        isDeleted: false,
       },
     });
   },
@@ -15,7 +15,7 @@ export const UserRepository = {
     return prisma.user.findFirst({
       where: {
         email,
-        is_deleted: false,
+        isDeleted: false,
       },
     });
   },
@@ -24,29 +24,25 @@ export const UserRepository = {
     return prisma.user.findFirst({
       where: {
         id,
-        is_deleted: false,
+        isDeleted: false,
       },
       include: {
         role: true,
         domain: true,
-        loyalty_territory: true,
       },
     });
   },
 
-  assignToTerritory: async (user_id: string, territory_id: string | null) => {
-    return prisma.user.update({
-      where: { id: user_id },
-      data: { loyalty_territory_id: territory_id },
-    });
+  assignToTerritory: async (userId: string, territoryId: string | null) => {
+    return prisma.user.findFirst({ where: { id: userId } });
   },
 
   create: async (data: {
     name: string;
     email: string;
     password: string;
-    role_id: string;
-    domain_id: string;
+    roleId: string;
+    domainId: string;
   }) => {
     return prisma.user.create({
       data,
@@ -59,7 +55,7 @@ export const UserRepository = {
       name?: string;
       email?: string;
       password?: string;
-      role_id?: string;
+      roleId?: string;
       status?: StatusEnum;
     },
   ) => {
@@ -72,7 +68,7 @@ export const UserRepository = {
   softDelete: async (id: string) => {
     return prisma.user.update({
       where: { id },
-      data: { is_deleted: true },
+      data: { isDeleted: true },
     });
   },
 
@@ -90,7 +86,7 @@ export const UserRepository = {
         domain: true,
       },
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
       take: limit,
       skip: offset,
@@ -101,7 +97,7 @@ export const UserRepository = {
     return prisma.user.findFirst({
       where: {
         id,
-        is_deleted: false,
+        isDeleted: false,
       },
       include: {
         role: true,

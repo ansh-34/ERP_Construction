@@ -54,62 +54,19 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
-  SuperAdmin: 'SuperAdmin',
+  ApiKey: 'ApiKey',
   Domain: 'Domain',
-  User: 'User',
-  Role: 'Role',
-  Permission: 'Permission',
-  Module: 'Module',
-  RoleModulePermission: 'RoleModulePermission',
-  Integration: 'Integration',
-  IntegrationRequiredFields: 'IntegrationRequiredFields',
-  DomainConnections: 'DomainConnections',
-  DomainConnectionCreds: 'DomainConnectionCreds',
-  DomainConnectionAnalytics: 'DomainConnectionAnalytics',
-  Channels: 'Channels',
-  SubChannels: 'SubChannels',
-  ChannelAnalytics: 'ChannelAnalytics',
-  SubChannelAnalytics: 'SubChannelAnalytics',
-  UserCredential: 'UserCredential',
-  Attribute: 'Attribute',
-  SubAttribute: 'SubAttribute',
+  Location: 'Location',
   Media: 'Media',
-  Category: 'Category',
-  SubCategory: 'SubCategory',
-  Uom: 'Uom',
-  Product: 'Product',
-  Variant: 'Variant',
-  ProductImage: 'ProductImage',
-  ProductUom: 'ProductUom',
-  ImportLog: 'ImportLog',
-  Warehouse: 'Warehouse',
-  Inventory: 'Inventory',
-  StockBatch: 'StockBatch',
-  InventoryTransaction: 'InventoryTransaction',
-  Coupon: 'Coupon',
-  LoyaltyTerritory: 'LoyaltyTerritory',
-  LoyaltyProgram: 'LoyaltyProgram',
-  LoyaltyTier: 'LoyaltyTier',
-  LoyaltyRule: 'LoyaltyRule',
-  LoyaltyWallet: 'LoyaltyWallet',
-  LoyaltyQrCode: 'LoyaltyQrCode',
-  LoyaltyQrScan: 'LoyaltyQrScan',
-  LoyaltyLedger: 'LoyaltyLedger',
-  LoyaltyRedemption: 'LoyaltyRedemption',
-  Campaign: 'Campaign',
-  CampaignTerritory: 'CampaignTerritory',
-  ChannelCampaign: 'ChannelCampaign',
-  VariantCampaign: 'VariantCampaign',
-  Cart: 'Cart',
-  CartItem: 'CartItem',
-  Order: 'Order',
-  OrderItem: 'OrderItem',
-  PriceList: 'PriceList',
-  Price: 'Price',
-  PricingRule: 'PricingRule',
-  PricingRuleMapping: 'PricingRuleMapping',
-  Tax: 'Tax',
-  TaxMapping: 'TaxMapping',
+  Module: 'Module',
+  Permission: 'Permission',
+  Project: 'Project',
+  ProjectCategory: 'ProjectCategory',
+  ProjectStage: 'ProjectStage',
+  Role: 'Role',
+  RoleModulePermission: 'RoleModulePermission',
+  SuperAdmin: 'SuperAdmin',
+  User: 'User',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -128,957 +85,203 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
 
-export const SuperAdminScalarFieldEnum = {
+export const ApiKeyScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  email: 'email',
-  password: 'password',
-  role_id: 'role_id',
-  is_deleted: 'is_deleted',
+  description: 'description',
+  secret: 'secret',
+  domainId: 'domainId',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type SuperAdminScalarFieldEnum =
-  (typeof SuperAdminScalarFieldEnum)[keyof typeof SuperAdminScalarFieldEnum];
+export type ApiKeyScalarFieldEnum =
+  (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum];
 
 export const DomainScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
   password: 'password',
-  is_email_verified: 'is_email_verified',
-  role_id: 'role_id',
-  is_deleted: 'is_deleted',
+  roleId: 'roleId',
+  isDeleted: 'isDeleted',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
 export type DomainScalarFieldEnum =
   (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
 
-export const UserScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  email: 'email',
-  password: 'password',
-  role_id: 'role_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-  loyalty_territory_id: 'loyalty_territory_id',
-} as const;
-
-export type UserScalarFieldEnum =
-  (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
-
-export const RoleScalarFieldEnum = {
+export const LocationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  level: 'level',
-  is_system: 'is_system',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type RoleScalarFieldEnum =
-  (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum];
-
-export const PermissionScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  is_system: 'is_system',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type PermissionScalarFieldEnum =
-  (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum];
-
-export const ModuleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  is_system: 'is_system',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ModuleScalarFieldEnum =
-  (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum];
-
-export const RoleModulePermissionScalarFieldEnum = {
-  id: 'id',
-  role_id: 'role_id',
-  module_id: 'module_id',
-  permission_id: 'permission_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type RoleModulePermissionScalarFieldEnum =
-  (typeof RoleModulePermissionScalarFieldEnum)[keyof typeof RoleModulePermissionScalarFieldEnum];
-
-export const IntegrationScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  help_url: 'help_url',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type IntegrationScalarFieldEnum =
-  (typeof IntegrationScalarFieldEnum)[keyof typeof IntegrationScalarFieldEnum];
-
-export const IntegrationRequiredFieldsScalarFieldEnum = {
-  integration_id: 'integration_id',
-  field_name: 'field_name',
-  field_type: 'field_type',
-  is_sensitive: 'is_sensitive',
-  is_required: 'is_required',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type IntegrationRequiredFieldsScalarFieldEnum =
-  (typeof IntegrationRequiredFieldsScalarFieldEnum)[keyof typeof IntegrationRequiredFieldsScalarFieldEnum];
-
-export const DomainConnectionsScalarFieldEnum = {
-  id: 'id',
-  connection_name: 'connection_name',
-  connection_url: 'connection_url',
-  channel_id: 'channel_id',
-  sub_channel_id: 'sub_channel_id',
-  integration_id: 'integration_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type DomainConnectionsScalarFieldEnum =
-  (typeof DomainConnectionsScalarFieldEnum)[keyof typeof DomainConnectionsScalarFieldEnum];
-
-export const DomainConnectionCredsScalarFieldEnum = {
-  domain_connection_id: 'domain_connection_id',
-  field_name: 'field_name',
-  field_value: 'field_value',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type DomainConnectionCredsScalarFieldEnum =
-  (typeof DomainConnectionCredsScalarFieldEnum)[keyof typeof DomainConnectionCredsScalarFieldEnum];
-
-export const DomainConnectionAnalyticsScalarFieldEnum = {
-  date: 'date',
-  domain_connection_id: 'domain_connection_id',
-  domain_id: 'domain_id',
-  total_request_count: 'total_request_count',
-  total_error_count: 'total_error_count',
-  total_success_count: 'total_success_count',
-  avg_response_time: 'avg_response_time',
-  max_response_time: 'max_response_time',
-  min_response_time: 'min_response_time',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type DomainConnectionAnalyticsScalarFieldEnum =
-  (typeof DomainConnectionAnalyticsScalarFieldEnum)[keyof typeof DomainConnectionAnalyticsScalarFieldEnum];
-
-export const ChannelsScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  description: 'description',
-  sub_channel_count: 'sub_channel_count',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ChannelsScalarFieldEnum =
-  (typeof ChannelsScalarFieldEnum)[keyof typeof ChannelsScalarFieldEnum];
-
-export const SubChannelsScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  description: 'description',
-  channel_id: 'channel_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type SubChannelsScalarFieldEnum =
-  (typeof SubChannelsScalarFieldEnum)[keyof typeof SubChannelsScalarFieldEnum];
-
-export const ChannelAnalyticsScalarFieldEnum = {
-  id: 'id',
-  channel_id: 'channel_id',
-  date: 'date',
-  interaction_count: 'interaction_count',
-  visit_count: 'visit_count',
-  total_order_count: 'total_order_count',
-  total_revenue: 'total_revenue',
-  avg_order_value: 'avg_order_value',
-  max_order_value: 'max_order_value',
-  min_order_value: 'min_order_value',
-  avg_interaction_count_per_visit: 'avg_interaction_count_per_visit',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ChannelAnalyticsScalarFieldEnum =
-  (typeof ChannelAnalyticsScalarFieldEnum)[keyof typeof ChannelAnalyticsScalarFieldEnum];
-
-export const SubChannelAnalyticsScalarFieldEnum = {
-  id: 'id',
-  channel_id: 'channel_id',
-  date: 'date',
-  interaction_count: 'interaction_count',
-  visit_count: 'visit_count',
-  total_order_count: 'total_order_count',
-  total_revenue: 'total_revenue',
-  avg_order_value: 'avg_order_value',
-  max_order_value: 'max_order_value',
-  min_order_value: 'min_order_value',
-  avg_interaction_count_per_visit: 'avg_interaction_count_per_visit',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type SubChannelAnalyticsScalarFieldEnum =
-  (typeof SubChannelAnalyticsScalarFieldEnum)[keyof typeof SubChannelAnalyticsScalarFieldEnum];
-
-export const UserCredentialScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
   type: 'type',
-  value: 'value',
-  user_id: 'user_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  parentLocationId: 'parentLocationId',
+  domainId: 'domainId',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type UserCredentialScalarFieldEnum =
-  (typeof UserCredentialScalarFieldEnum)[keyof typeof UserCredentialScalarFieldEnum];
-
-export const AttributeScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type AttributeScalarFieldEnum =
-  (typeof AttributeScalarFieldEnum)[keyof typeof AttributeScalarFieldEnum];
-
-export const SubAttributeScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  attribute_id: 'attribute_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type SubAttributeScalarFieldEnum =
-  (typeof SubAttributeScalarFieldEnum)[keyof typeof SubAttributeScalarFieldEnum];
+export type LocationScalarFieldEnum =
+  (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum];
 
 export const MediaScalarFieldEnum = {
   id: 'id',
   name: 'name',
   type: 'type',
   url: 'url',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  domainId: 'domainId',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
 export type MediaScalarFieldEnum =
   (typeof MediaScalarFieldEnum)[keyof typeof MediaScalarFieldEnum];
 
-export const CategoryScalarFieldEnum = {
+export const ModuleScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  isDeleted: 'isDeleted',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CategoryScalarFieldEnum =
-  (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum];
+export type ModuleScalarFieldEnum =
+  (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum];
 
-export const SubCategoryScalarFieldEnum = {
+export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  category_id: 'category_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  isDeleted: 'isDeleted',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type SubCategoryScalarFieldEnum =
-  (typeof SubCategoryScalarFieldEnum)[keyof typeof SubCategoryScalarFieldEnum];
+export type PermissionScalarFieldEnum =
+  (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum];
 
-export const UomScalarFieldEnum = {
+export const ProjectScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  code: 'code',
+  projectCategoryId: 'projectCategoryId',
+  description: 'description',
+  budget: 'budget',
+  spent: 'spent',
+  locationId: 'locationId',
+  domainId: 'domainId',
+  status: 'status',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectScalarFieldEnum =
+  (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
+
+export const ProjectCategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
   description: 'description',
-  conversion_rate: 'conversion_rate',
-  is_base_uom: 'is_base_uom',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  domainId: 'domainId',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type UomScalarFieldEnum =
-  (typeof UomScalarFieldEnum)[keyof typeof UomScalarFieldEnum];
+export type ProjectCategoryScalarFieldEnum =
+  (typeof ProjectCategoryScalarFieldEnum)[keyof typeof ProjectCategoryScalarFieldEnum];
 
-export const ProductScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  description: 'description',
-  code: 'code',
-  channel_id: 'channel_id',
-  sub_channel_id: 'sub_channel_id',
-  category_id: 'category_id',
-  sub_category_id: 'sub_category_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ProductScalarFieldEnum =
-  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
-
-export const VariantScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  sku: 'sku',
-  product_id: 'product_id',
-  attribute_id: 'attribute_id',
-  sub_attribute_id: 'sub_attribute_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type VariantScalarFieldEnum =
-  (typeof VariantScalarFieldEnum)[keyof typeof VariantScalarFieldEnum];
-
-export const ProductImageScalarFieldEnum = {
-  id: 'id',
-  product_id: 'product_id',
-  media_id: 'media_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ProductImageScalarFieldEnum =
-  (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum];
-
-export const ProductUomScalarFieldEnum = {
-  id: 'id',
-  product_id: 'product_id',
-  uom_id: 'uom_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ProductUomScalarFieldEnum =
-  (typeof ProductUomScalarFieldEnum)[keyof typeof ProductUomScalarFieldEnum];
-
-export const ImportLogScalarFieldEnum = {
-  id: 'id',
-  module: 'module',
-  file_name: 'file_name',
-  total_records: 'total_records',
-  success_records: 'success_records',
-  failed_records: 'failed_records',
-  domain_id: 'domain_id',
-  created_at: 'created_at',
-} as const;
-
-export type ImportLogScalarFieldEnum =
-  (typeof ImportLogScalarFieldEnum)[keyof typeof ImportLogScalarFieldEnum];
-
-export const WarehouseScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type WarehouseScalarFieldEnum =
-  (typeof WarehouseScalarFieldEnum)[keyof typeof WarehouseScalarFieldEnum];
-
-export const InventoryScalarFieldEnum = {
-  id: 'id',
-  variant_id: 'variant_id',
-  uom_id: 'uom_id',
-  warehouse_id: 'warehouse_id',
-  domain_id: 'domain_id',
-  quantity: 'quantity',
-  reserved_qty: 'reserved_qty',
-  available_qty: 'available_qty',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  updated_at: 'updated_at',
-  created_at: 'created_at',
-} as const;
-
-export type InventoryScalarFieldEnum =
-  (typeof InventoryScalarFieldEnum)[keyof typeof InventoryScalarFieldEnum];
-
-export const StockBatchScalarFieldEnum = {
-  id: 'id',
-  variant_id: 'variant_id',
-  uom_id: 'uom_id',
-  warehouse_id: 'warehouse_id',
-  inventory_id: 'inventory_id',
-  batch_number: 'batch_number',
-  description: 'description',
-  supplier_name: 'supplier_name',
-  supplier_contact: 'supplier_contact',
-  mfg_date: 'mfg_date',
-  expiry_date: 'expiry_date',
-  total_qty_added: 'total_qty_added',
-  reserved_qty: 'reserved_qty',
-  available_qty: 'available_qty',
-  domain_id: 'domain_id',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type StockBatchScalarFieldEnum =
-  (typeof StockBatchScalarFieldEnum)[keyof typeof StockBatchScalarFieldEnum];
-
-export const InventoryTransactionScalarFieldEnum = {
-  id: 'id',
-  variant_id: 'variant_id',
-  uom_id: 'uom_id',
-  warehouse_id: 'warehouse_id',
-  type: 'type',
-  quantity: 'quantity',
-  reference_type: 'reference_type',
-  reference_id: 'reference_id',
-  domain_id: 'domain_id',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type InventoryTransactionScalarFieldEnum =
-  (typeof InventoryTransactionScalarFieldEnum)[keyof typeof InventoryTransactionScalarFieldEnum];
-
-export const CouponScalarFieldEnum = {
+export const ProjectStageScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
   description: 'description',
-  discount_type: 'discount_type',
-  discount_value: 'discount_value',
-  max_users: 'max_users',
-  used_count: 'used_count',
-  valid_from: 'valid_from',
-  valid_to: 'valid_to',
-  display: 'display',
-  max_discount_value: 'max_discount_value',
-  media_id: 'media_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
+  progress: 'progress',
+  projectId: 'projectId',
+  domainId: 'domainId',
   status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CouponScalarFieldEnum =
-  (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum];
+export type ProjectStageScalarFieldEnum =
+  (typeof ProjectStageScalarFieldEnum)[keyof typeof ProjectStageScalarFieldEnum];
 
-export const LoyaltyTerritoryScalarFieldEnum = {
+export const RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
-  territory_type: 'territory_type',
-  parent_id: 'parent_id',
-  domain_id: 'domain_id',
+  level: 'level',
+  isDeleted: 'isDeleted',
   status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type LoyaltyTerritoryScalarFieldEnum =
-  (typeof LoyaltyTerritoryScalarFieldEnum)[keyof typeof LoyaltyTerritoryScalarFieldEnum];
+export type RoleScalarFieldEnum =
+  (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum];
 
-export const LoyaltyProgramScalarFieldEnum = {
+export const RoleModulePermissionScalarFieldEnum = {
+  id: 'id',
+  roleId: 'roleId',
+  moduleId: 'moduleId',
+  permissionId: 'permissionId',
+  domainId: 'domainId',
+  status: 'status',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RoleModulePermissionScalarFieldEnum =
+  (typeof RoleModulePermissionScalarFieldEnum)[keyof typeof RoleModulePermissionScalarFieldEnum];
+
+export const SuperAdminScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  is_default: 'is_default',
-  territory_id: 'territory_id',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  daily_limit: 'daily_limit',
-  monthly_limit: 'monthly_limit',
-  points_equivalent: 'points_equivalent',
-  currency_equivalent: 'currency_equivalent',
-  points_expiry_days: 'points_expiry_days',
-  domain_id: 'domain_id',
+  email: 'email',
+  password: 'password',
+  roleId: 'roleId',
+  isDeleted: 'isDeleted',
   status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type LoyaltyProgramScalarFieldEnum =
-  (typeof LoyaltyProgramScalarFieldEnum)[keyof typeof LoyaltyProgramScalarFieldEnum];
+export type SuperAdminScalarFieldEnum =
+  (typeof SuperAdminScalarFieldEnum)[keyof typeof SuperAdminScalarFieldEnum];
 
-export const LoyaltyTierScalarFieldEnum = {
-  id: 'id',
-  program_id: 'program_id',
-  name: 'name',
-  min_points: 'min_points',
-  max_points: 'max_points',
-  multiplier: 'multiplier',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyTierScalarFieldEnum =
-  (typeof LoyaltyTierScalarFieldEnum)[keyof typeof LoyaltyTierScalarFieldEnum];
-
-export const LoyaltyRuleScalarFieldEnum = {
-  id: 'id',
-  program_id: 'program_id',
-  rule_type: 'rule_type',
-  rule_value: 'rule_value',
-  condition_type: 'condition_type',
-  condition_value: 'condition_value',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyRuleScalarFieldEnum =
-  (typeof LoyaltyRuleScalarFieldEnum)[keyof typeof LoyaltyRuleScalarFieldEnum];
-
-export const LoyaltyWalletScalarFieldEnum = {
-  id: 'id',
-  customer_id: 'customer_id',
-  program_id: 'program_id',
-  total_points: 'total_points',
-  current_tier_id: 'current_tier_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyWalletScalarFieldEnum =
-  (typeof LoyaltyWalletScalarFieldEnum)[keyof typeof LoyaltyWalletScalarFieldEnum];
-
-export const LoyaltyQrCodeScalarFieldEnum = {
-  id: 'id',
-  qr_token: 'qr_token',
-  program_id: 'program_id',
-  product_variant_id: 'product_variant_id',
-  quantity: 'quantity',
-  territory_id: 'territory_id',
-  expiry_date: 'expiry_date',
-  qr_status: 'qr_status',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyQrCodeScalarFieldEnum =
-  (typeof LoyaltyQrCodeScalarFieldEnum)[keyof typeof LoyaltyQrCodeScalarFieldEnum];
-
-export const LoyaltyQrScanScalarFieldEnum = {
-  id: 'id',
-  qr_id: 'qr_id',
-  customer_id: 'customer_id',
-  scanned_at: 'scanned_at',
-  scan_status: 'scan_status',
-  failure_reason: 'failure_reason',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyQrScanScalarFieldEnum =
-  (typeof LoyaltyQrScanScalarFieldEnum)[keyof typeof LoyaltyQrScanScalarFieldEnum];
-
-export const LoyaltyLedgerScalarFieldEnum = {
-  id: 'id',
-  wallet_id: 'wallet_id',
-  transaction_type: 'transaction_type',
-  points: 'points',
-  reference_type: 'reference_type',
-  reference_id: 'reference_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyLedgerScalarFieldEnum =
-  (typeof LoyaltyLedgerScalarFieldEnum)[keyof typeof LoyaltyLedgerScalarFieldEnum];
-
-export const LoyaltyRedemptionScalarFieldEnum = {
-  id: 'id',
-  wallet_id: 'wallet_id',
-  reward_type: 'reward_type',
-  reward_value: 'reward_value',
-  points_used: 'points_used',
-  redeem_status: 'redeem_status',
-  redeemed_at: 'redeemed_at',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type LoyaltyRedemptionScalarFieldEnum =
-  (typeof LoyaltyRedemptionScalarFieldEnum)[keyof typeof LoyaltyRedemptionScalarFieldEnum];
-
-export const CampaignScalarFieldEnum = {
+export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  goal: 'goal',
-  campaign_type: 'campaign_type',
-  campaign_status: 'campaign_status',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  daily_budget: 'daily_budget',
-  total_budget: 'total_budget',
-  spend_so_far: 'spend_so_far',
-  target_metric: 'target_metric',
-  target_value: 'target_value',
-  expected_roas: 'expected_roas',
-  actual_roas: 'actual_roas',
-  baseline_sales: 'baseline_sales',
-  campaign_sales: 'campaign_sales',
-  incremental_sales: 'incremental_sales',
-  lift_percentage: 'lift_percentage',
-  compliance_score: 'compliance_score',
-  complexity_score: 'complexity_score',
-  ai_control_mode: 'ai_control_mode',
-  pixel_connected: 'pixel_connected',
-  tracking_events: 'tracking_events',
-  domain_id: 'domain_id',
+  email: 'email',
+  password: 'password',
+  roleId: 'roleId',
+  domainId: 'domainId',
+  isDeleted: 'isDeleted',
   status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
 } as const;
 
-export type CampaignScalarFieldEnum =
-  (typeof CampaignScalarFieldEnum)[keyof typeof CampaignScalarFieldEnum];
-
-export const CampaignTerritoryScalarFieldEnum = {
-  id: 'id',
-  campaign_id: 'campaign_id',
-  territory_id: 'territory_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type CampaignTerritoryScalarFieldEnum =
-  (typeof CampaignTerritoryScalarFieldEnum)[keyof typeof CampaignTerritoryScalarFieldEnum];
-
-export const ChannelCampaignScalarFieldEnum = {
-  id: 'id',
-  campaign_id: 'campaign_id',
-  channel_id: 'channel_id',
-  domain_id: 'domain_id',
-  allocated_budget: 'allocated_budget',
-  spend: 'spend',
-  roas: 'roas',
-  is_active: 'is_active',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type ChannelCampaignScalarFieldEnum =
-  (typeof ChannelCampaignScalarFieldEnum)[keyof typeof ChannelCampaignScalarFieldEnum];
-
-export const VariantCampaignScalarFieldEnum = {
-  id: 'id',
-  campaign_id: 'campaign_id',
-  variant_id: 'variant_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type VariantCampaignScalarFieldEnum =
-  (typeof VariantCampaignScalarFieldEnum)[keyof typeof VariantCampaignScalarFieldEnum];
-
-export const CartScalarFieldEnum = {
-  id: 'id',
-  customer_id: 'customer_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type CartScalarFieldEnum =
-  (typeof CartScalarFieldEnum)[keyof typeof CartScalarFieldEnum];
-
-export const CartItemScalarFieldEnum = {
-  id: 'id',
-  cart_id: 'cart_id',
-  variant_id: 'variant_id',
-  quantity: 'quantity',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type CartItemScalarFieldEnum =
-  (typeof CartItemScalarFieldEnum)[keyof typeof CartItemScalarFieldEnum];
-
-export const OrderScalarFieldEnum = {
-  id: 'id',
-  order_number: 'order_number',
-  customer_id: 'customer_id',
-  domain_id: 'domain_id',
-  coupon_id: 'coupon_id',
-  subtotal: 'subtotal',
-  discount_amount: 'discount_amount',
-  tax_amount: 'tax_amount',
-  shipping_amount: 'shipping_amount',
-  total: 'total',
-  order_status: 'order_status',
-  payment_status: 'payment_status',
-  payment_mode: 'payment_mode',
-  channel_id: 'channel_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type OrderScalarFieldEnum =
-  (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum];
-
-export const OrderItemScalarFieldEnum = {
-  id: 'id',
-  order_id: 'order_id',
-  variant_id: 'variant_id',
-  product_name: 'product_name',
-  variant_name: 'variant_name',
-  sku: 'sku',
-  price: 'price',
-  quantity: 'quantity',
-  total: 'total',
-  tax_id: 'tax_id',
-  tax_percentage: 'tax_percentage',
-  tax_amount: 'tax_amount',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type OrderItemScalarFieldEnum =
-  (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum];
-
-export const PriceListScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  type: 'type',
-  domain_id: 'domain_id',
-  is_active: 'is_active',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type PriceListScalarFieldEnum =
-  (typeof PriceListScalarFieldEnum)[keyof typeof PriceListScalarFieldEnum];
-
-export const PriceScalarFieldEnum = {
-  id: 'id',
-  variant_id: 'variant_id',
-  price_list_id: 'price_list_id',
-  uom_id: 'uom_id',
-  mrp: 'mrp',
-  selling_price: 'selling_price',
-  cost_price: 'cost_price',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type PriceScalarFieldEnum =
-  (typeof PriceScalarFieldEnum)[keyof typeof PriceScalarFieldEnum];
-
-export const PricingRuleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  rule_type: 'rule_type',
-  discount_type: 'discount_type',
-  discount_value: 'discount_value',
-  min_qty: 'min_qty',
-  max_qty: 'max_qty',
-  uom_id: 'uom_id',
-  customer_group_id: 'customer_group_id',
-  start_date: 'start_date',
-  end_date: 'end_date',
-  priority: 'priority',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type PricingRuleScalarFieldEnum =
-  (typeof PricingRuleScalarFieldEnum)[keyof typeof PricingRuleScalarFieldEnum];
-
-export const PricingRuleMappingScalarFieldEnum = {
-  id: 'id',
-  pricing_rule_id: 'pricing_rule_id',
-  variant_id: 'variant_id',
-  category_id: 'category_id',
-  channel_id: 'channel_id',
-  domain_id: 'domain_id',
-  is_deleted: 'is_deleted',
-  status: 'status',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type PricingRuleMappingScalarFieldEnum =
-  (typeof PricingRuleMappingScalarFieldEnum)[keyof typeof PricingRuleMappingScalarFieldEnum];
-
-export const TaxScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  code: 'code',
-  percentage: 'percentage',
-  territory_id: 'territory_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type TaxScalarFieldEnum =
-  (typeof TaxScalarFieldEnum)[keyof typeof TaxScalarFieldEnum];
-
-export const TaxMappingScalarFieldEnum = {
-  id: 'id',
-  tax_id: 'tax_id',
-  variant_id: 'variant_id',
-  category_id: 'category_id',
-  domain_id: 'domain_id',
-  status: 'status',
-  is_deleted: 'is_deleted',
-  created_at: 'created_at',
-  updated_at: 'updated_at',
-} as const;
-
-export type TaxMappingScalarFieldEnum =
-  (typeof TaxMappingScalarFieldEnum)[keyof typeof TaxMappingScalarFieldEnum];
+export type UserScalarFieldEnum =
+  (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',
@@ -1086,6 +289,21 @@ export const SortOrder = {
 } as const;
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull,
+} as const;
+
+export type JsonNullValueInput =
+  (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+} as const;
+
+export type NullableJsonNullValueInput =
+  (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
 
 export const QueryMode = {
   default: 'default',
@@ -1100,3 +318,12 @@ export const NullsOrder = {
 } as const;
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull,
+} as const;
+
+export type JsonNullValueFilter =
+  (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];

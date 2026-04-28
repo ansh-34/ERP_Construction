@@ -1,9 +1,14 @@
 import { Request, Response } from 'express';
 import { ModuleService } from '../service/module.service';
+import { StatusEnum } from '@constants/index';
 
 export const addModule = async (req: Request, res: Response) => {
   try {
-    const module = await ModuleService.addModule(req.body);
+    const { name } = req.body as { name?: string };
+
+    const module = await ModuleService.addModule({
+      name: name ?? '',
+    });
 
     return res.status(200).json({
       success: true,
@@ -20,7 +25,15 @@ export const addModule = async (req: Request, res: Response) => {
 export const editModule = async (req: Request, res: Response) => {
   try {
     const moduleId = req.params.id as string;
-    const module = await ModuleService.editModule(moduleId, req.body);
+    const { name, status } = req.body as {
+      name?: string;
+      status?: StatusEnum;
+    };
+
+    const module = await ModuleService.editModule(moduleId, {
+      ...(name !== undefined && { name }),
+      ...(status !== undefined && { status }),
+    });
 
     return res.status(200).json({
       success: true,

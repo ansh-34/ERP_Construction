@@ -29,13 +29,12 @@ export type UserMinAggregateOutputType = {
   name: string | null;
   email: string | null;
   password: string | null;
-  role_id: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
-  loyalty_territory_id: string | null;
+  roleId: string | null;
+  domainId: string | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserMaxAggregateOutputType = {
@@ -43,13 +42,12 @@ export type UserMaxAggregateOutputType = {
   name: string | null;
   email: string | null;
   password: string | null;
-  role_id: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
-  loyalty_territory_id: string | null;
+  roleId: string | null;
+  domainId: string | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserCountAggregateOutputType = {
@@ -57,13 +55,12 @@ export type UserCountAggregateOutputType = {
   name: number;
   email: number;
   password: number;
-  role_id: number;
-  domain_id: number;
-  is_deleted: number;
+  roleId: number;
+  domainId: number;
+  isDeleted: number;
   status: number;
-  created_at: number;
-  updated_at: number;
-  loyalty_territory_id: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
@@ -72,13 +69,12 @@ export type UserMinAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  domainId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
-  loyalty_territory_id?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type UserMaxAggregateInputType = {
@@ -86,13 +82,12 @@ export type UserMaxAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  domainId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
-  loyalty_territory_id?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type UserCountAggregateInputType = {
@@ -100,13 +95,12 @@ export type UserCountAggregateInputType = {
   name?: true;
   email?: true;
   password?: true;
-  role_id?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  roleId?: true;
+  domainId?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
-  loyalty_territory_id?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -194,59 +188,49 @@ export type UserGroupByOutputType = {
   name: string;
   email: string;
   password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
-  loyalty_territory_id: string | null;
+  roleId: string;
+  domainId: string;
+  isDeleted: boolean;
+  status: $Enums.StatusEnum;
+  createdAt: Date;
+  updatedAt: Date;
   _count: UserCountAggregateOutputType | null;
   _min: UserMinAggregateOutputType | null;
   _max: UserMaxAggregateOutputType | null;
 };
 
-type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
-  Array<
-    Prisma.PickEnumerable<UserGroupByOutputType, T['by']> & {
-      [P in keyof T & keyof UserGroupByOutputType]: P extends '_count'
-        ? T[P] extends boolean
-          ? number
-          : Prisma.GetScalarType<T[P], UserGroupByOutputType[P]>
-        : Prisma.GetScalarType<T[P], UserGroupByOutputType[P]>;
-    }
-  >
->;
+export type GetUserGroupByPayload<T extends UserGroupByArgs> =
+  Prisma.PrismaPromise<
+    Array<
+      Prisma.PickEnumerable<UserGroupByOutputType, T['by']> & {
+        [P in keyof T & keyof UserGroupByOutputType]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : Prisma.GetScalarType<T[P], UserGroupByOutputType[P]>
+          : Prisma.GetScalarType<T[P], UserGroupByOutputType[P]>;
+      }
+    >
+  >;
 
 export type UserWhereInput = {
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
   OR?: Prisma.UserWhereInput[];
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
-  id?: Prisma.StringFilter<'User'> | string;
+  id?: Prisma.UuidFilter<'User'> | string;
   name?: Prisma.StringFilter<'User'> | string;
   email?: Prisma.StringFilter<'User'> | string;
   password?: Prisma.StringFilter<'User'> | string;
-  role_id?: Prisma.StringFilter<'User'> | string;
-  domain_id?: Prisma.StringFilter<'User'> | string;
-  is_deleted?: Prisma.BoolFilter<'User'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'User'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-  loyalty_territory_id?: Prisma.StringNullableFilter<'User'> | string | null;
+  roleId?: Prisma.UuidFilter<'User'> | string;
+  domainId?: Prisma.UuidFilter<'User'> | string;
+  isDeleted?: Prisma.BoolFilter<'User'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'User'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'User'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string;
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
   domain?: Prisma.XOR<
     Prisma.DomainScalarRelationFilter,
     Prisma.DomainWhereInput
   >;
-  userCredentials?: Prisma.UserCredentialListRelationFilter;
-  loyalty_wallets?: Prisma.LoyaltyWalletListRelationFilter;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanListRelationFilter;
-  loyalty_territory?: Prisma.XOR<
-    Prisma.LoyaltyTerritoryNullableScalarRelationFilter,
-    Prisma.LoyaltyTerritoryWhereInput
-  > | null;
-  carts?: Prisma.CartListRelationFilter;
-  orders?: Prisma.OrderListRelationFilter;
 };
 
 export type UserOrderByWithRelationInput = {
@@ -254,56 +238,39 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  loyalty_territory_id?: Prisma.SortOrderInput | Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   role?: Prisma.RoleOrderByWithRelationInput;
   domain?: Prisma.DomainOrderByWithRelationInput;
-  userCredentials?: Prisma.UserCredentialOrderByRelationAggregateInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletOrderByRelationAggregateInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanOrderByRelationAggregateInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryOrderByWithRelationInput;
-  carts?: Prisma.CartOrderByRelationAggregateInput;
-  orders?: Prisma.OrderOrderByRelationAggregateInput;
 };
 
 export type UserWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string;
-    email?: string;
-    email_domain_id?: Prisma.UserEmailDomain_idCompoundUniqueInput;
+    email_domainId?: Prisma.UserEmailDomainIdCompoundUniqueInput;
     AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     name?: Prisma.StringFilter<'User'> | string;
+    email?: Prisma.StringFilter<'User'> | string;
     password?: Prisma.StringFilter<'User'> | string;
-    role_id?: Prisma.StringFilter<'User'> | string;
-    domain_id?: Prisma.StringFilter<'User'> | string;
-    is_deleted?: Prisma.BoolFilter<'User'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'User'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-    loyalty_territory_id?: Prisma.StringNullableFilter<'User'> | string | null;
+    roleId?: Prisma.UuidFilter<'User'> | string;
+    domainId?: Prisma.UuidFilter<'User'> | string;
+    isDeleted?: Prisma.BoolFilter<'User'> | boolean;
+    status?: Prisma.EnumStatusEnumFilter<'User'> | $Enums.StatusEnum;
+    createdAt?: Prisma.DateTimeFilter<'User'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string;
     role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
     domain?: Prisma.XOR<
       Prisma.DomainScalarRelationFilter,
       Prisma.DomainWhereInput
     >;
-    userCredentials?: Prisma.UserCredentialListRelationFilter;
-    loyalty_wallets?: Prisma.LoyaltyWalletListRelationFilter;
-    loyalty_qr_scans?: Prisma.LoyaltyQrScanListRelationFilter;
-    loyalty_territory?: Prisma.XOR<
-      Prisma.LoyaltyTerritoryNullableScalarRelationFilter,
-      Prisma.LoyaltyTerritoryWhereInput
-    > | null;
-    carts?: Prisma.CartListRelationFilter;
-    orders?: Prisma.OrderListRelationFilter;
   },
-  'id' | 'email' | 'email_domain_id'
+  'id' | 'email_domainId'
 >;
 
 export type UserOrderByWithAggregationInput = {
@@ -311,13 +278,12 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  loyalty_territory_id?: Prisma.SortOrderInput | Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.UserCountOrderByAggregateInput;
   _max?: Prisma.UserMaxOrderByAggregateInput;
   _min?: Prisma.UserMinOrderByAggregateInput;
@@ -331,20 +297,18 @@ export type UserScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.UserScalarWhereWithAggregatesInput
     | Prisma.UserScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'User'> | string;
+  id?: Prisma.UuidWithAggregatesFilter<'User'> | string;
   name?: Prisma.StringWithAggregatesFilter<'User'> | string;
   email?: Prisma.StringWithAggregatesFilter<'User'> | string;
   password?: Prisma.StringWithAggregatesFilter<'User'> | string;
-  role_id?: Prisma.StringWithAggregatesFilter<'User'> | string;
-  domain_id?: Prisma.StringWithAggregatesFilter<'User'> | string;
-  is_deleted?: Prisma.BoolWithAggregatesFilter<'User'> | boolean;
-  status?: Prisma.EnumSTATUSWithAggregatesFilter<'User'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
-  updated_at?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
-  loyalty_territory_id?:
-    | Prisma.StringNullableWithAggregatesFilter<'User'>
-    | string
-    | null;
+  roleId?: Prisma.UuidWithAggregatesFilter<'User'> | string;
+  domainId?: Prisma.UuidWithAggregatesFilter<'User'> | string;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'User'> | boolean;
+  status?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'User'>
+    | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string;
 };
 
 export type UserCreateInput = {
@@ -352,18 +316,12 @@ export type UserCreateInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
   role: Prisma.RoleCreateNestedOneWithoutUsersInput;
   domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
 };
 
 export type UserUncheckedCreateInput = {
@@ -371,18 +329,12 @@ export type UserUncheckedCreateInput = {
   name: string;
   email: string;
   password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
+  roleId: string;
+  domainId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateInput = {
@@ -390,18 +342,12 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
   domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
 };
 
 export type UserUncheckedUpdateInput = {
@@ -409,21 +355,12 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserCreateManyInput = {
@@ -431,13 +368,12 @@ export type UserCreateManyInput = {
   name: string;
   email: string;
   password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
+  roleId: string;
+  domainId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateManyMutationInput = {
@@ -445,10 +381,10 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserUncheckedUpdateManyInput = {
@@ -456,16 +392,12 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserListRelationFilter = {
@@ -478,9 +410,9 @@ export type UserOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
 };
 
-export type UserEmailDomain_idCompoundUniqueInput = {
+export type UserEmailDomainIdCompoundUniqueInput = {
   email: string;
-  domain_id: string;
+  domainId: string;
 };
 
 export type UserCountOrderByAggregateInput = {
@@ -488,13 +420,12 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  loyalty_territory_id?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserMaxOrderByAggregateInput = {
@@ -502,13 +433,12 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  loyalty_territory_id?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserMinOrderByAggregateInput = {
@@ -516,18 +446,12 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   password?: Prisma.SortOrder;
-  role_id?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  loyalty_territory_id?: Prisma.SortOrder;
-};
-
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput;
-  isNot?: Prisma.UserWhereInput;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type UserCreateNestedManyWithoutDomainInput = {
@@ -702,238 +626,16 @@ export type UserUncheckedUpdateManyWithoutRoleNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
 };
 
-export type UserCreateNestedOneWithoutUserCredentialsInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedCreateWithoutUserCredentialsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserCredentialsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutUserCredentialsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedCreateWithoutUserCredentialsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserCredentialsInput;
-  upsert?: Prisma.UserUpsertWithoutUserCredentialsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.UserUpdateToOneWithWhereWithoutUserCredentialsInput,
-      Prisma.UserUpdateWithoutUserCredentialsInput
-    >,
-    Prisma.UserUncheckedUpdateWithoutUserCredentialsInput
-  >;
-};
-
-export type UserCreateNestedManyWithoutLoyalty_territoryInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.UserCreateWithoutLoyalty_territoryInput,
-        Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-      >
-    | Prisma.UserCreateWithoutLoyalty_territoryInput[]
-    | Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput[];
-  connectOrCreate?:
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput[];
-  createMany?: Prisma.UserCreateManyLoyalty_territoryInputEnvelope;
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-};
-
-export type UserUncheckedCreateNestedManyWithoutLoyalty_territoryInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.UserCreateWithoutLoyalty_territoryInput,
-        Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-      >
-    | Prisma.UserCreateWithoutLoyalty_territoryInput[]
-    | Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput[];
-  connectOrCreate?:
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput[];
-  createMany?: Prisma.UserCreateManyLoyalty_territoryInputEnvelope;
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-};
-
-export type UserUpdateManyWithoutLoyalty_territoryNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.UserCreateWithoutLoyalty_territoryInput,
-        Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-      >
-    | Prisma.UserCreateWithoutLoyalty_territoryInput[]
-    | Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput[];
-  connectOrCreate?:
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput[];
-  upsert?:
-    | Prisma.UserUpsertWithWhereUniqueWithoutLoyalty_territoryInput
-    | Prisma.UserUpsertWithWhereUniqueWithoutLoyalty_territoryInput[];
-  createMany?: Prisma.UserCreateManyLoyalty_territoryInputEnvelope;
-  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  update?:
-    | Prisma.UserUpdateWithWhereUniqueWithoutLoyalty_territoryInput
-    | Prisma.UserUpdateWithWhereUniqueWithoutLoyalty_territoryInput[];
-  updateMany?:
-    | Prisma.UserUpdateManyWithWhereWithoutLoyalty_territoryInput
-    | Prisma.UserUpdateManyWithWhereWithoutLoyalty_territoryInput[];
-  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-};
-
-export type UserUncheckedUpdateManyWithoutLoyalty_territoryNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.UserCreateWithoutLoyalty_territoryInput,
-        Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-      >
-    | Prisma.UserCreateWithoutLoyalty_territoryInput[]
-    | Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput[];
-  connectOrCreate?:
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput
-    | Prisma.UserCreateOrConnectWithoutLoyalty_territoryInput[];
-  upsert?:
-    | Prisma.UserUpsertWithWhereUniqueWithoutLoyalty_territoryInput
-    | Prisma.UserUpsertWithWhereUniqueWithoutLoyalty_territoryInput[];
-  createMany?: Prisma.UserCreateManyLoyalty_territoryInputEnvelope;
-  set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-  update?:
-    | Prisma.UserUpdateWithWhereUniqueWithoutLoyalty_territoryInput
-    | Prisma.UserUpdateWithWhereUniqueWithoutLoyalty_territoryInput[];
-  updateMany?:
-    | Prisma.UserUpdateManyWithWhereWithoutLoyalty_territoryInput
-    | Prisma.UserUpdateManyWithWhereWithoutLoyalty_territoryInput[];
-  deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-};
-
-export type UserCreateNestedOneWithoutLoyalty_walletsInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_walletsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLoyalty_walletsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutLoyalty_walletsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_walletsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLoyalty_walletsInput;
-  upsert?: Prisma.UserUpsertWithoutLoyalty_walletsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.UserUpdateToOneWithWhereWithoutLoyalty_walletsInput,
-      Prisma.UserUpdateWithoutLoyalty_walletsInput
-    >,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_walletsInput
-  >;
-};
-
-export type UserCreateNestedOneWithoutLoyalty_qr_scansInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_qr_scansInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLoyalty_qr_scansInput;
-  connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutLoyalty_qr_scansNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_qr_scansInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLoyalty_qr_scansInput;
-  upsert?: Prisma.UserUpsertWithoutLoyalty_qr_scansInput;
-  connect?: Prisma.UserWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.UserUpdateToOneWithWhereWithoutLoyalty_qr_scansInput,
-      Prisma.UserUpdateWithoutLoyalty_qr_scansInput
-    >,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_qr_scansInput
-  >;
-};
-
-export type UserCreateNestedOneWithoutCartsInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutCartsInput,
-    Prisma.UserUncheckedCreateWithoutCartsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCartsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutCartsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutCartsInput,
-    Prisma.UserUncheckedCreateWithoutCartsInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCartsInput;
-  upsert?: Prisma.UserUpsertWithoutCartsInput;
-  connect?: Prisma.UserWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.UserUpdateToOneWithWhereWithoutCartsInput,
-      Prisma.UserUpdateWithoutCartsInput
-    >,
-    Prisma.UserUncheckedUpdateWithoutCartsInput
-  >;
-};
-
-export type UserCreateNestedOneWithoutOrdersInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutOrdersInput,
-    Prisma.UserUncheckedCreateWithoutOrdersInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdersInput;
-  connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutOrdersNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.UserCreateWithoutOrdersInput,
-    Prisma.UserUncheckedCreateWithoutOrdersInput
-  >;
-  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrdersInput;
-  upsert?: Prisma.UserUpsertWithoutOrdersInput;
-  connect?: Prisma.UserWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.UserUpdateToOneWithWhereWithoutOrdersInput,
-      Prisma.UserUpdateWithoutOrdersInput
-    >,
-    Prisma.UserUncheckedUpdateWithoutOrdersInput
-  >;
-};
-
 export type UserCreateWithoutDomainInput = {
   id?: string;
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
   role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
 };
 
 export type UserUncheckedCreateWithoutDomainInput = {
@@ -941,17 +643,11 @@ export type UserUncheckedCreateWithoutDomainInput = {
   name: string;
   email: string;
   password: string;
-  role_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
+  roleId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserCreateOrConnectWithoutDomainInput = {
@@ -999,17 +695,16 @@ export type UserScalarWhereInput = {
   AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
   OR?: Prisma.UserScalarWhereInput[];
   NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-  id?: Prisma.StringFilter<'User'> | string;
+  id?: Prisma.UuidFilter<'User'> | string;
   name?: Prisma.StringFilter<'User'> | string;
   email?: Prisma.StringFilter<'User'> | string;
   password?: Prisma.StringFilter<'User'> | string;
-  role_id?: Prisma.StringFilter<'User'> | string;
-  domain_id?: Prisma.StringFilter<'User'> | string;
-  is_deleted?: Prisma.BoolFilter<'User'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'User'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'User'> | Date | string;
-  loyalty_territory_id?: Prisma.StringNullableFilter<'User'> | string | null;
+  roleId?: Prisma.UuidFilter<'User'> | string;
+  domainId?: Prisma.UuidFilter<'User'> | string;
+  isDeleted?: Prisma.BoolFilter<'User'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'User'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'User'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string;
 };
 
 export type UserCreateWithoutRoleInput = {
@@ -1017,17 +712,11 @@ export type UserCreateWithoutRoleInput = {
   name: string;
   email: string;
   password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
   domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
 };
 
 export type UserUncheckedCreateWithoutRoleInput = {
@@ -1035,17 +724,11 @@ export type UserUncheckedCreateWithoutRoleInput = {
   name: string;
   email: string;
   password: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
+  domainId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserCreateOrConnectWithoutRoleInput = {
@@ -1089,611 +772,16 @@ export type UserUpdateManyWithWhereWithoutRoleInput = {
   >;
 };
 
-export type UserCreateWithoutUserCredentialsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutUserCredentialsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutUserCredentialsInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedCreateWithoutUserCredentialsInput
-  >;
-};
-
-export type UserUpsertWithoutUserCredentialsInput = {
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedUpdateWithoutUserCredentialsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedCreateWithoutUserCredentialsInput
-  >;
-  where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutUserCredentialsInput = {
-  where?: Prisma.UserWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutUserCredentialsInput,
-    Prisma.UserUncheckedUpdateWithoutUserCredentialsInput
-  >;
-};
-
-export type UserUpdateWithoutUserCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutUserCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserCreateWithoutLoyalty_territoryInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutLoyalty_territoryInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutLoyalty_territoryInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_territoryInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-  >;
-};
-
-export type UserCreateManyLoyalty_territoryInputEnvelope = {
-  data:
-    | Prisma.UserCreateManyLoyalty_territoryInput
-    | Prisma.UserCreateManyLoyalty_territoryInput[];
-  skipDuplicates?: boolean;
-};
-
-export type UserUpsertWithWhereUniqueWithoutLoyalty_territoryInput = {
-  where: Prisma.UserWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_territoryInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_territoryInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_territoryInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_territoryInput
-  >;
-};
-
-export type UserUpdateWithWhereUniqueWithoutLoyalty_territoryInput = {
-  where: Prisma.UserWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_territoryInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_territoryInput
-  >;
-};
-
-export type UserUpdateManyWithWhereWithoutLoyalty_territoryInput = {
-  where: Prisma.UserScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateManyMutationInput,
-    Prisma.UserUncheckedUpdateManyWithoutLoyalty_territoryInput
-  >;
-};
-
-export type UserCreateWithoutLoyalty_walletsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutLoyalty_walletsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutLoyalty_walletsInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_walletsInput
-  >;
-};
-
-export type UserUpsertWithoutLoyalty_walletsInput = {
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_walletsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_walletsInput
-  >;
-  where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutLoyalty_walletsInput = {
-  where?: Prisma.UserWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_walletsInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_walletsInput
-  >;
-};
-
-export type UserUpdateWithoutLoyalty_walletsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutLoyalty_walletsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserCreateWithoutLoyalty_qr_scansInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutLoyalty_qr_scansInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutLoyalty_qr_scansInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_qr_scansInput
-  >;
-};
-
-export type UserUpsertWithoutLoyalty_qr_scansInput = {
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_qr_scansInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedCreateWithoutLoyalty_qr_scansInput
-  >;
-  where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutLoyalty_qr_scansInput = {
-  where?: Prisma.UserWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutLoyalty_qr_scansInput,
-    Prisma.UserUncheckedUpdateWithoutLoyalty_qr_scansInput
-  >;
-};
-
-export type UserUpdateWithoutLoyalty_qr_scansInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutLoyalty_qr_scansInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserCreateWithoutCartsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutCartsInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutCartsInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutCartsInput,
-    Prisma.UserUncheckedCreateWithoutCartsInput
-  >;
-};
-
-export type UserUpsertWithoutCartsInput = {
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutCartsInput,
-    Prisma.UserUncheckedUpdateWithoutCartsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutCartsInput,
-    Prisma.UserUncheckedCreateWithoutCartsInput
-  >;
-  where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutCartsInput = {
-  where?: Prisma.UserWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutCartsInput,
-    Prisma.UserUncheckedUpdateWithoutCartsInput
-  >;
-};
-
-export type UserUpdateWithoutCartsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutCartsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserCreateWithoutOrdersInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role: Prisma.RoleCreateNestedOneWithoutUsersInput;
-  domain: Prisma.DomainCreateNestedOneWithoutUsersInput;
-  userCredentials?: Prisma.UserCredentialCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanCreateNestedManyWithoutCustomerInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryCreateNestedOneWithoutUsersInput;
-  carts?: Prisma.CartCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserUncheckedCreateWithoutOrdersInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
-  userCredentials?: Prisma.UserCredentialUncheckedCreateNestedManyWithoutUserInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedCreateNestedManyWithoutCustomerInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedCreateNestedManyWithoutCustomerInput;
-  carts?: Prisma.CartUncheckedCreateNestedManyWithoutCustomerInput;
-};
-
-export type UserCreateOrConnectWithoutOrdersInput = {
-  where: Prisma.UserWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutOrdersInput,
-    Prisma.UserUncheckedCreateWithoutOrdersInput
-  >;
-};
-
-export type UserUpsertWithoutOrdersInput = {
-  update: Prisma.XOR<
-    Prisma.UserUpdateWithoutOrdersInput,
-    Prisma.UserUncheckedUpdateWithoutOrdersInput
-  >;
-  create: Prisma.XOR<
-    Prisma.UserCreateWithoutOrdersInput,
-    Prisma.UserUncheckedCreateWithoutOrdersInput
-  >;
-  where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutOrdersInput = {
-  where?: Prisma.UserWhereInput;
-  data: Prisma.XOR<
-    Prisma.UserUpdateWithoutOrdersInput,
-    Prisma.UserUncheckedUpdateWithoutOrdersInput
-  >;
-};
-
-export type UserUpdateWithoutOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
 export type UserCreateManyDomainInput = {
   id?: string;
   name: string;
   email: string;
   password: string;
-  role_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
+  roleId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateWithoutDomainInput = {
@@ -1701,17 +789,11 @@ export type UserUpdateWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutDomainInput = {
@@ -1719,20 +801,11 @@ export type UserUncheckedUpdateWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserUncheckedUpdateManyWithoutDomainInput = {
@@ -1740,15 +813,11 @@ export type UserUncheckedUpdateManyWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserCreateManyRoleInput = {
@@ -1756,12 +825,11 @@ export type UserCreateManyRoleInput = {
   name: string;
   email: string;
   password: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  loyalty_territory_id?: string | null;
+  domainId: string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type UserUpdateWithoutRoleInput = {
@@ -1769,17 +837,11 @@ export type UserUpdateWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  loyalty_territory?: Prisma.LoyaltyTerritoryUpdateOneWithoutUsersNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
 };
 
 export type UserUncheckedUpdateWithoutRoleInput = {
@@ -1787,20 +849,11 @@ export type UserUncheckedUpdateWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserUncheckedUpdateManyWithoutRoleInput = {
@@ -1808,163 +861,11 @@ export type UserUncheckedUpdateManyWithoutRoleInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
   password?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  loyalty_territory_id?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null;
-};
-
-export type UserCreateManyLoyalty_territoryInput = {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role_id: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-};
-
-export type UserUpdateWithoutLoyalty_territoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role?: Prisma.RoleUpdateOneRequiredWithoutUsersNestedInput;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutUsersNestedInput;
-  userCredentials?: Prisma.UserCredentialUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutLoyalty_territoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  userCredentials?: Prisma.UserCredentialUncheckedUpdateManyWithoutUserNestedInput;
-  loyalty_wallets?: Prisma.LoyaltyWalletUncheckedUpdateManyWithoutCustomerNestedInput;
-  loyalty_qr_scans?: Prisma.LoyaltyQrScanUncheckedUpdateManyWithoutCustomerNestedInput;
-  carts?: Prisma.CartUncheckedUpdateManyWithoutCustomerNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput;
-};
-
-export type UserUncheckedUpdateManyWithoutLoyalty_territoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  email?: Prisma.StringFieldUpdateOperationsInput | string;
-  password?: Prisma.StringFieldUpdateOperationsInput | string;
-  role_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-/**
- * Count Type UserCountOutputType
- */
-
-export type UserCountOutputType = {
-  userCredentials: number;
-  loyalty_wallets: number;
-  loyalty_qr_scans: number;
-  carts: number;
-  orders: number;
-};
-
-export type UserCountOutputTypeSelect<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  userCredentials?: boolean | UserCountOutputTypeCountUserCredentialsArgs;
-  loyalty_wallets?: boolean | UserCountOutputTypeCountLoyalty_walletsArgs;
-  loyalty_qr_scans?: boolean | UserCountOutputTypeCountLoyalty_qr_scansArgs;
-  carts?: boolean | UserCountOutputTypeCountCartsArgs;
-  orders?: boolean | UserCountOutputTypeCountOrdersArgs;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeDefaultArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the UserCountOutputType
-   */
-  select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountUserCredentialsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.UserCredentialWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountLoyalty_walletsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.LoyaltyWalletWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountLoyalty_qr_scansArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.LoyaltyQrScanWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountCartsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.CartWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountOrdersArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.OrderWhereInput;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type UserSelect<
@@ -1976,22 +877,14 @@ export type UserSelect<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    domainId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    loyalty_territory_id?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-    userCredentials?: boolean | Prisma.User$userCredentialsArgs<ExtArgs>;
-    loyalty_wallets?: boolean | Prisma.User$loyalty_walletsArgs<ExtArgs>;
-    loyalty_qr_scans?: boolean | Prisma.User$loyalty_qr_scansArgs<ExtArgs>;
-    loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
-    carts?: boolean | Prisma.User$cartsArgs<ExtArgs>;
-    orders?: boolean | Prisma.User$ordersArgs<ExtArgs>;
-    _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['user']
 >;
@@ -2005,16 +898,14 @@ export type UserSelectCreateManyAndReturn<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    domainId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    loyalty_territory_id?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-    loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
   },
   ExtArgs['result']['user']
 >;
@@ -2028,16 +919,14 @@ export type UserSelectUpdateManyAndReturn<
     name?: boolean;
     email?: boolean;
     password?: boolean;
-    role_id?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    roleId?: boolean;
+    domainId?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    loyalty_territory_id?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-    loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
   },
   ExtArgs['result']['user']
 >;
@@ -2047,13 +936,12 @@ export type UserSelectScalar = {
   name?: boolean;
   email?: boolean;
   password?: boolean;
-  role_id?: boolean;
-  domain_id?: boolean;
-  is_deleted?: boolean;
+  roleId?: boolean;
+  domainId?: boolean;
+  isDeleted?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
-  loyalty_territory_id?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type UserOmit<
@@ -2064,13 +952,12 @@ export type UserOmit<
   | 'name'
   | 'email'
   | 'password'
-  | 'role_id'
-  | 'domain_id'
-  | 'is_deleted'
+  | 'roleId'
+  | 'domainId'
+  | 'isDeleted'
   | 'status'
-  | 'created_at'
-  | 'updated_at'
-  | 'loyalty_territory_id',
+  | 'createdAt'
+  | 'updatedAt',
   ExtArgs['result']['user']
 >;
 export type UserInclude<
@@ -2079,13 +966,6 @@ export type UserInclude<
 > = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-  userCredentials?: boolean | Prisma.User$userCredentialsArgs<ExtArgs>;
-  loyalty_wallets?: boolean | Prisma.User$loyalty_walletsArgs<ExtArgs>;
-  loyalty_qr_scans?: boolean | Prisma.User$loyalty_qr_scansArgs<ExtArgs>;
-  loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
-  carts?: boolean | Prisma.User$cartsArgs<ExtArgs>;
-  orders?: boolean | Prisma.User$ordersArgs<ExtArgs>;
-  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type UserIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -2093,7 +973,6 @@ export type UserIncludeCreateManyAndReturn<
 > = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-  loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
 };
 export type UserIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -2101,7 +980,6 @@ export type UserIncludeUpdateManyAndReturn<
 > = {
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-  loyalty_territory?: boolean | Prisma.User$loyalty_territoryArgs<ExtArgs>;
 };
 
 export type $UserPayload<
@@ -2112,12 +990,6 @@ export type $UserPayload<
   objects: {
     role: Prisma.$RolePayload<ExtArgs>;
     domain: Prisma.$DomainPayload<ExtArgs>;
-    userCredentials: Prisma.$UserCredentialPayload<ExtArgs>[];
-    loyalty_wallets: Prisma.$LoyaltyWalletPayload<ExtArgs>[];
-    loyalty_qr_scans: Prisma.$LoyaltyQrScanPayload<ExtArgs>[];
-    loyalty_territory: Prisma.$LoyaltyTerritoryPayload<ExtArgs> | null;
-    carts: Prisma.$CartPayload<ExtArgs>[];
-    orders: Prisma.$OrderPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2125,13 +997,12 @@ export type $UserPayload<
       name: string;
       email: string;
       password: string;
-      role_id: string;
-      domain_id: string;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
-      loyalty_territory_id: string | null;
+      roleId: string;
+      domainId: string;
+      isDeleted: boolean;
+      status: $Enums.StatusEnum;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['user']
   >;
@@ -2710,74 +1581,6 @@ export interface Prisma__UserClient<
     ExtArgs,
     GlobalOmitOptions
   >;
-  userCredentials<T extends Prisma.User$userCredentialsArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$userCredentialsArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$UserCredentialPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
-  loyalty_wallets<T extends Prisma.User$loyalty_walletsArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$loyalty_walletsArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$LoyaltyWalletPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
-  loyalty_qr_scans<T extends Prisma.User$loyalty_qr_scansArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$loyalty_qr_scansArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$LoyaltyQrScanPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
-  loyalty_territory<T extends Prisma.User$loyalty_territoryArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$loyalty_territoryArgs<ExtArgs>>,
-  ): Prisma.Prisma__LoyaltyTerritoryClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$LoyaltyTerritoryPayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
-    ExtArgs,
-    GlobalOmitOptions
-  >;
-  carts<T extends Prisma.User$cartsArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$cartsArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$CartPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
-  orders<T extends Prisma.User$ordersArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.User$ordersArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$OrderPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2824,13 +1627,12 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<'User', 'String'>;
   readonly email: Prisma.FieldRef<'User', 'String'>;
   readonly password: Prisma.FieldRef<'User', 'String'>;
-  readonly role_id: Prisma.FieldRef<'User', 'String'>;
-  readonly domain_id: Prisma.FieldRef<'User', 'String'>;
-  readonly is_deleted: Prisma.FieldRef<'User', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'User', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'User', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'User', 'DateTime'>;
-  readonly loyalty_territory_id: Prisma.FieldRef<'User', 'String'>;
+  readonly roleId: Prisma.FieldRef<'User', 'String'>;
+  readonly domainId: Prisma.FieldRef<'User', 'String'>;
+  readonly isDeleted: Prisma.FieldRef<'User', 'Boolean'>;
+  readonly status: Prisma.FieldRef<'User', 'StatusEnum'>;
+  readonly createdAt: Prisma.FieldRef<'User', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'User', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -3047,6 +1849,11 @@ export type UserFindManyArgs<
    * Skip the first `n` Users.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Users.
+   */
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[];
 };
 
@@ -3277,179 +2084,6 @@ export type UserDeleteManyArgs<
    * Limit how many Users to delete.
    */
   limit?: number;
-};
-
-/**
- * User.userCredentials
- */
-export type User$userCredentialsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the UserCredential
-   */
-  select?: Prisma.UserCredentialSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the UserCredential
-   */
-  omit?: Prisma.UserCredentialOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserCredentialInclude<ExtArgs> | null;
-  where?: Prisma.UserCredentialWhereInput;
-  orderBy?:
-    | Prisma.UserCredentialOrderByWithRelationInput
-    | Prisma.UserCredentialOrderByWithRelationInput[];
-  cursor?: Prisma.UserCredentialWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?:
-    | Prisma.UserCredentialScalarFieldEnum
-    | Prisma.UserCredentialScalarFieldEnum[];
-};
-
-/**
- * User.loyalty_wallets
- */
-export type User$loyalty_walletsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the LoyaltyWallet
-   */
-  select?: Prisma.LoyaltyWalletSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the LoyaltyWallet
-   */
-  omit?: Prisma.LoyaltyWalletOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.LoyaltyWalletInclude<ExtArgs> | null;
-  where?: Prisma.LoyaltyWalletWhereInput;
-  orderBy?:
-    | Prisma.LoyaltyWalletOrderByWithRelationInput
-    | Prisma.LoyaltyWalletOrderByWithRelationInput[];
-  cursor?: Prisma.LoyaltyWalletWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?:
-    | Prisma.LoyaltyWalletScalarFieldEnum
-    | Prisma.LoyaltyWalletScalarFieldEnum[];
-};
-
-/**
- * User.loyalty_qr_scans
- */
-export type User$loyalty_qr_scansArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the LoyaltyQrScan
-   */
-  select?: Prisma.LoyaltyQrScanSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the LoyaltyQrScan
-   */
-  omit?: Prisma.LoyaltyQrScanOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.LoyaltyQrScanInclude<ExtArgs> | null;
-  where?: Prisma.LoyaltyQrScanWhereInput;
-  orderBy?:
-    | Prisma.LoyaltyQrScanOrderByWithRelationInput
-    | Prisma.LoyaltyQrScanOrderByWithRelationInput[];
-  cursor?: Prisma.LoyaltyQrScanWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?:
-    | Prisma.LoyaltyQrScanScalarFieldEnum
-    | Prisma.LoyaltyQrScanScalarFieldEnum[];
-};
-
-/**
- * User.loyalty_territory
- */
-export type User$loyalty_territoryArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the LoyaltyTerritory
-   */
-  select?: Prisma.LoyaltyTerritorySelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the LoyaltyTerritory
-   */
-  omit?: Prisma.LoyaltyTerritoryOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.LoyaltyTerritoryInclude<ExtArgs> | null;
-  where?: Prisma.LoyaltyTerritoryWhereInput;
-};
-
-/**
- * User.carts
- */
-export type User$cartsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Cart
-   */
-  select?: Prisma.CartSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Cart
-   */
-  omit?: Prisma.CartOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.CartInclude<ExtArgs> | null;
-  where?: Prisma.CartWhereInput;
-  orderBy?:
-    | Prisma.CartOrderByWithRelationInput
-    | Prisma.CartOrderByWithRelationInput[];
-  cursor?: Prisma.CartWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: Prisma.CartScalarFieldEnum | Prisma.CartScalarFieldEnum[];
-};
-
-/**
- * User.orders
- */
-export type User$ordersArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Order
-   */
-  select?: Prisma.OrderSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Order
-   */
-  omit?: Prisma.OrderOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.OrderInclude<ExtArgs> | null;
-  where?: Prisma.OrderWhereInput;
-  orderBy?:
-    | Prisma.OrderOrderByWithRelationInput
-    | Prisma.OrderOrderByWithRelationInput[];
-  cursor?: Prisma.OrderWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[];
 };
 
 /**

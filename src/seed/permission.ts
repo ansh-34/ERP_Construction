@@ -8,7 +8,7 @@ export const permissionData = async () => {
     for (const permission of permissions) {
       const existingPermission = await prisma.permission.findFirst({
         where: {
-          is_deleted: false,
+          isDeleted: false,
           code: permission.code,
         },
       });
@@ -16,7 +16,7 @@ export const permissionData = async () => {
         permissionsData.push({
           name: permission.name,
           code: permission.code,
-          is_system: true,
+          
         });
       }
     }

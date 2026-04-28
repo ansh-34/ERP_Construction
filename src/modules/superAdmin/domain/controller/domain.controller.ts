@@ -1,10 +1,22 @@
 import { Request, Response } from 'express';
 import { DomainService } from '../service/domain.service';
-import { HttpStatus, Messages } from '@constants/index';
+import { HttpStatus, Messages, StatusEnum } from '@constants/index';
 
 export const addDomain = async (req: Request, res: Response) => {
   try {
-    const domain = await DomainService.addDomain(req.body);
+    const { name, email, password, roleId } = req.body as {
+      name?: string;
+      email?: string;
+      password?: string;
+      roleId?: string;
+    };
+
+    const domain = await DomainService.addDomain({
+      name: name ?? '',
+      email: email ?? '',
+      password: password ?? '',
+      roleId: roleId ?? '',
+    });
 
     return res.status(HttpStatus.CREATED).json({
       success: true,
@@ -23,7 +35,15 @@ export const addDomain = async (req: Request, res: Response) => {
 export const updateDomain = async (req: Request, res: Response) => {
   try {
     const domainId = req.params.id as string;
-    const domain = await DomainService.editDomain(domainId, req.body);
+    const { name, status } = req.body as {
+      name?: string;
+      status?: StatusEnum;
+    };
+
+    const domain = await DomainService.editDomain(domainId, {
+      ...(name !== undefined && { name }),
+      ...(status !== undefined && { status }),
+    });
 
     return res.status(HttpStatus.OK).json({
       success: true,

@@ -29,11 +29,11 @@ export type MediaMinAggregateOutputType = {
   name: string | null;
   type: string | null;
   url: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  domainId: string | null;
+  status: $Enums.StatusEnum | null;
+  isDeleted: boolean | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type MediaMaxAggregateOutputType = {
@@ -41,11 +41,11 @@ export type MediaMaxAggregateOutputType = {
   name: string | null;
   type: string | null;
   url: string | null;
-  domain_id: string | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  domainId: string | null;
+  status: $Enums.StatusEnum | null;
+  isDeleted: boolean | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type MediaCountAggregateOutputType = {
@@ -53,11 +53,11 @@ export type MediaCountAggregateOutputType = {
   name: number;
   type: number;
   url: number;
-  domain_id: number;
-  is_deleted: number;
+  domainId: number;
   status: number;
-  created_at: number;
-  updated_at: number;
+  isDeleted: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
@@ -66,11 +66,11 @@ export type MediaMinAggregateInputType = {
   name?: true;
   type?: true;
   url?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type MediaMaxAggregateInputType = {
@@ -78,11 +78,11 @@ export type MediaMaxAggregateInputType = {
   name?: true;
   type?: true;
   url?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type MediaCountAggregateInputType = {
@@ -90,11 +90,11 @@ export type MediaCountAggregateInputType = {
   name?: true;
   type?: true;
   url?: true;
-  domain_id?: true;
-  is_deleted?: true;
+  domainId?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  isDeleted?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -182,47 +182,46 @@ export type MediaGroupByOutputType = {
   name: string;
   type: string;
   url: string;
-  domain_id: string;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
+  domainId: string;
+  status: $Enums.StatusEnum;
+  isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   _count: MediaCountAggregateOutputType | null;
   _min: MediaMinAggregateOutputType | null;
   _max: MediaMaxAggregateOutputType | null;
 };
 
-type GetMediaGroupByPayload<T extends MediaGroupByArgs> = Prisma.PrismaPromise<
-  Array<
-    Prisma.PickEnumerable<MediaGroupByOutputType, T['by']> & {
-      [P in keyof T & keyof MediaGroupByOutputType]: P extends '_count'
-        ? T[P] extends boolean
-          ? number
-          : Prisma.GetScalarType<T[P], MediaGroupByOutputType[P]>
-        : Prisma.GetScalarType<T[P], MediaGroupByOutputType[P]>;
-    }
-  >
->;
+export type GetMediaGroupByPayload<T extends MediaGroupByArgs> =
+  Prisma.PrismaPromise<
+    Array<
+      Prisma.PickEnumerable<MediaGroupByOutputType, T['by']> & {
+        [P in keyof T & keyof MediaGroupByOutputType]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : Prisma.GetScalarType<T[P], MediaGroupByOutputType[P]>
+          : Prisma.GetScalarType<T[P], MediaGroupByOutputType[P]>;
+      }
+    >
+  >;
 
 export type MediaWhereInput = {
   AND?: Prisma.MediaWhereInput | Prisma.MediaWhereInput[];
   OR?: Prisma.MediaWhereInput[];
   NOT?: Prisma.MediaWhereInput | Prisma.MediaWhereInput[];
-  id?: Prisma.StringFilter<'Media'> | string;
+  id?: Prisma.UuidFilter<'Media'> | string;
   name?: Prisma.StringFilter<'Media'> | string;
   type?: Prisma.StringFilter<'Media'> | string;
   url?: Prisma.StringFilter<'Media'> | string;
-  domain_id?: Prisma.StringFilter<'Media'> | string;
-  is_deleted?: Prisma.BoolFilter<'Media'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'Media'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
+  domainId?: Prisma.UuidFilter<'Media'> | string;
+  status?: Prisma.EnumStatusEnumFilter<'Media'> | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFilter<'Media'> | boolean;
+  createdAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
   domain?: Prisma.XOR<
     Prisma.DomainScalarRelationFilter,
     Prisma.DomainWhereInput
   >;
-  productImages?: Prisma.ProductImageListRelationFilter;
-  coupons?: Prisma.CouponListRelationFilter;
 };
 
 export type MediaOrderByWithRelationInput = {
@@ -230,38 +229,34 @@ export type MediaOrderByWithRelationInput = {
   name?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   url?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   domain?: Prisma.DomainOrderByWithRelationInput;
-  productImages?: Prisma.ProductImageOrderByRelationAggregateInput;
-  coupons?: Prisma.CouponOrderByRelationAggregateInput;
 };
 
 export type MediaWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string;
+    url?: string;
     AND?: Prisma.MediaWhereInput | Prisma.MediaWhereInput[];
     OR?: Prisma.MediaWhereInput[];
     NOT?: Prisma.MediaWhereInput | Prisma.MediaWhereInput[];
     name?: Prisma.StringFilter<'Media'> | string;
     type?: Prisma.StringFilter<'Media'> | string;
-    url?: Prisma.StringFilter<'Media'> | string;
-    domain_id?: Prisma.StringFilter<'Media'> | string;
-    is_deleted?: Prisma.BoolFilter<'Media'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'Media'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
+    domainId?: Prisma.UuidFilter<'Media'> | string;
+    status?: Prisma.EnumStatusEnumFilter<'Media'> | $Enums.StatusEnum;
+    isDeleted?: Prisma.BoolFilter<'Media'> | boolean;
+    createdAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
     domain?: Prisma.XOR<
       Prisma.DomainScalarRelationFilter,
       Prisma.DomainWhereInput
     >;
-    productImages?: Prisma.ProductImageListRelationFilter;
-    coupons?: Prisma.CouponListRelationFilter;
   },
-  'id'
+  'id' | 'url'
 >;
 
 export type MediaOrderByWithAggregationInput = {
@@ -269,11 +264,11 @@ export type MediaOrderByWithAggregationInput = {
   name?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   url?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.MediaCountOrderByAggregateInput;
   _max?: Prisma.MediaMaxOrderByAggregateInput;
   _min?: Prisma.MediaMinOrderByAggregateInput;
@@ -287,15 +282,17 @@ export type MediaScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.MediaScalarWhereWithAggregatesInput
     | Prisma.MediaScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'Media'> | string;
+  id?: Prisma.UuidWithAggregatesFilter<'Media'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Media'> | string;
   type?: Prisma.StringWithAggregatesFilter<'Media'> | string;
   url?: Prisma.StringWithAggregatesFilter<'Media'> | string;
-  domain_id?: Prisma.StringWithAggregatesFilter<'Media'> | string;
-  is_deleted?: Prisma.BoolWithAggregatesFilter<'Media'> | boolean;
-  status?: Prisma.EnumSTATUSWithAggregatesFilter<'Media'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeWithAggregatesFilter<'Media'> | Date | string;
-  updated_at?: Prisma.DateTimeWithAggregatesFilter<'Media'> | Date | string;
+  domainId?: Prisma.UuidWithAggregatesFilter<'Media'> | string;
+  status?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'Media'>
+    | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'Media'> | boolean;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'Media'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Media'> | Date | string;
 };
 
 export type MediaCreateInput = {
@@ -303,13 +300,11 @@ export type MediaCreateInput = {
   name: string;
   type: string;
   url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain: Prisma.DomainCreateNestedOneWithoutMediasInput;
-  productImages?: Prisma.ProductImageCreateNestedManyWithoutMediaInput;
-  coupons?: Prisma.CouponCreateNestedManyWithoutMediaInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  domain: Prisma.DomainCreateNestedOneWithoutMediaInput;
 };
 
 export type MediaUncheckedCreateInput = {
@@ -317,13 +312,11 @@ export type MediaUncheckedCreateInput = {
   name: string;
   type: string;
   url: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  productImages?: Prisma.ProductImageUncheckedCreateNestedManyWithoutMediaInput;
-  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutMediaInput;
+  domainId: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type MediaUpdateInput = {
@@ -331,13 +324,11 @@ export type MediaUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutMediasNestedInput;
-  productImages?: Prisma.ProductImageUpdateManyWithoutMediaNestedInput;
-  coupons?: Prisma.CouponUpdateManyWithoutMediaNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domain?: Prisma.DomainUpdateOneRequiredWithoutMediaNestedInput;
 };
 
 export type MediaUncheckedUpdateInput = {
@@ -345,13 +336,11 @@ export type MediaUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  productImages?: Prisma.ProductImageUncheckedUpdateManyWithoutMediaNestedInput;
-  coupons?: Prisma.CouponUncheckedUpdateManyWithoutMediaNestedInput;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaCreateManyInput = {
@@ -359,11 +348,11 @@ export type MediaCreateManyInput = {
   name: string;
   type: string;
   url: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  domainId: string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type MediaUpdateManyMutationInput = {
@@ -371,10 +360,10 @@ export type MediaUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaUncheckedUpdateManyInput = {
@@ -382,11 +371,11 @@ export type MediaUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  domainId?: Prisma.StringFieldUpdateOperationsInput | string;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaListRelationFilter = {
@@ -404,11 +393,11 @@ export type MediaCountOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   url?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type MediaMaxOrderByAggregateInput = {
@@ -416,11 +405,11 @@ export type MediaMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   url?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type MediaMinOrderByAggregateInput = {
@@ -428,16 +417,11 @@ export type MediaMinOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   url?: Prisma.SortOrder;
-  domain_id?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  domainId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-};
-
-export type MediaScalarRelationFilter = {
-  is?: Prisma.MediaWhereInput;
-  isNot?: Prisma.MediaWhereInput;
+  isDeleted?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type MediaCreateNestedManyWithoutDomainInput = {
@@ -526,69 +510,15 @@ export type MediaUncheckedUpdateManyWithoutDomainNestedInput = {
   deleteMany?: Prisma.MediaScalarWhereInput | Prisma.MediaScalarWhereInput[];
 };
 
-export type MediaCreateNestedOneWithoutProductImagesInput = {
-  create?: Prisma.XOR<
-    Prisma.MediaCreateWithoutProductImagesInput,
-    Prisma.MediaUncheckedCreateWithoutProductImagesInput
-  >;
-  connectOrCreate?: Prisma.MediaCreateOrConnectWithoutProductImagesInput;
-  connect?: Prisma.MediaWhereUniqueInput;
-};
-
-export type MediaUpdateOneRequiredWithoutProductImagesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.MediaCreateWithoutProductImagesInput,
-    Prisma.MediaUncheckedCreateWithoutProductImagesInput
-  >;
-  connectOrCreate?: Prisma.MediaCreateOrConnectWithoutProductImagesInput;
-  upsert?: Prisma.MediaUpsertWithoutProductImagesInput;
-  connect?: Prisma.MediaWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.MediaUpdateToOneWithWhereWithoutProductImagesInput,
-      Prisma.MediaUpdateWithoutProductImagesInput
-    >,
-    Prisma.MediaUncheckedUpdateWithoutProductImagesInput
-  >;
-};
-
-export type MediaCreateNestedOneWithoutCouponsInput = {
-  create?: Prisma.XOR<
-    Prisma.MediaCreateWithoutCouponsInput,
-    Prisma.MediaUncheckedCreateWithoutCouponsInput
-  >;
-  connectOrCreate?: Prisma.MediaCreateOrConnectWithoutCouponsInput;
-  connect?: Prisma.MediaWhereUniqueInput;
-};
-
-export type MediaUpdateOneRequiredWithoutCouponsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.MediaCreateWithoutCouponsInput,
-    Prisma.MediaUncheckedCreateWithoutCouponsInput
-  >;
-  connectOrCreate?: Prisma.MediaCreateOrConnectWithoutCouponsInput;
-  upsert?: Prisma.MediaUpsertWithoutCouponsInput;
-  connect?: Prisma.MediaWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.MediaUpdateToOneWithWhereWithoutCouponsInput,
-      Prisma.MediaUpdateWithoutCouponsInput
-    >,
-    Prisma.MediaUncheckedUpdateWithoutCouponsInput
-  >;
-};
-
 export type MediaCreateWithoutDomainInput = {
   id?: string;
   name: string;
   type: string;
   url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  productImages?: Prisma.ProductImageCreateNestedManyWithoutMediaInput;
-  coupons?: Prisma.CouponCreateNestedManyWithoutMediaInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type MediaUncheckedCreateWithoutDomainInput = {
@@ -596,12 +526,10 @@ export type MediaUncheckedCreateWithoutDomainInput = {
   name: string;
   type: string;
   url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  productImages?: Prisma.ProductImageUncheckedCreateNestedManyWithoutMediaInput;
-  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutMediaInput;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type MediaCreateOrConnectWithoutDomainInput = {
@@ -649,175 +577,15 @@ export type MediaScalarWhereInput = {
   AND?: Prisma.MediaScalarWhereInput | Prisma.MediaScalarWhereInput[];
   OR?: Prisma.MediaScalarWhereInput[];
   NOT?: Prisma.MediaScalarWhereInput | Prisma.MediaScalarWhereInput[];
-  id?: Prisma.StringFilter<'Media'> | string;
+  id?: Prisma.UuidFilter<'Media'> | string;
   name?: Prisma.StringFilter<'Media'> | string;
   type?: Prisma.StringFilter<'Media'> | string;
   url?: Prisma.StringFilter<'Media'> | string;
-  domain_id?: Prisma.StringFilter<'Media'> | string;
-  is_deleted?: Prisma.BoolFilter<'Media'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'Media'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'Media'> | Date | string;
-};
-
-export type MediaCreateWithoutProductImagesInput = {
-  id?: string;
-  name: string;
-  type: string;
-  url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain: Prisma.DomainCreateNestedOneWithoutMediasInput;
-  coupons?: Prisma.CouponCreateNestedManyWithoutMediaInput;
-};
-
-export type MediaUncheckedCreateWithoutProductImagesInput = {
-  id?: string;
-  name: string;
-  type: string;
-  url: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutMediaInput;
-};
-
-export type MediaCreateOrConnectWithoutProductImagesInput = {
-  where: Prisma.MediaWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.MediaCreateWithoutProductImagesInput,
-    Prisma.MediaUncheckedCreateWithoutProductImagesInput
-  >;
-};
-
-export type MediaUpsertWithoutProductImagesInput = {
-  update: Prisma.XOR<
-    Prisma.MediaUpdateWithoutProductImagesInput,
-    Prisma.MediaUncheckedUpdateWithoutProductImagesInput
-  >;
-  create: Prisma.XOR<
-    Prisma.MediaCreateWithoutProductImagesInput,
-    Prisma.MediaUncheckedCreateWithoutProductImagesInput
-  >;
-  where?: Prisma.MediaWhereInput;
-};
-
-export type MediaUpdateToOneWithWhereWithoutProductImagesInput = {
-  where?: Prisma.MediaWhereInput;
-  data: Prisma.XOR<
-    Prisma.MediaUpdateWithoutProductImagesInput,
-    Prisma.MediaUncheckedUpdateWithoutProductImagesInput
-  >;
-};
-
-export type MediaUpdateWithoutProductImagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutMediasNestedInput;
-  coupons?: Prisma.CouponUpdateManyWithoutMediaNestedInput;
-};
-
-export type MediaUncheckedUpdateWithoutProductImagesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  coupons?: Prisma.CouponUncheckedUpdateManyWithoutMediaNestedInput;
-};
-
-export type MediaCreateWithoutCouponsInput = {
-  id?: string;
-  name: string;
-  type: string;
-  url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  domain: Prisma.DomainCreateNestedOneWithoutMediasInput;
-  productImages?: Prisma.ProductImageCreateNestedManyWithoutMediaInput;
-};
-
-export type MediaUncheckedCreateWithoutCouponsInput = {
-  id?: string;
-  name: string;
-  type: string;
-  url: string;
-  domain_id: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  productImages?: Prisma.ProductImageUncheckedCreateNestedManyWithoutMediaInput;
-};
-
-export type MediaCreateOrConnectWithoutCouponsInput = {
-  where: Prisma.MediaWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.MediaCreateWithoutCouponsInput,
-    Prisma.MediaUncheckedCreateWithoutCouponsInput
-  >;
-};
-
-export type MediaUpsertWithoutCouponsInput = {
-  update: Prisma.XOR<
-    Prisma.MediaUpdateWithoutCouponsInput,
-    Prisma.MediaUncheckedUpdateWithoutCouponsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.MediaCreateWithoutCouponsInput,
-    Prisma.MediaUncheckedCreateWithoutCouponsInput
-  >;
-  where?: Prisma.MediaWhereInput;
-};
-
-export type MediaUpdateToOneWithWhereWithoutCouponsInput = {
-  where?: Prisma.MediaWhereInput;
-  data: Prisma.XOR<
-    Prisma.MediaUpdateWithoutCouponsInput,
-    Prisma.MediaUncheckedUpdateWithoutCouponsInput
-  >;
-};
-
-export type MediaUpdateWithoutCouponsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  domain?: Prisma.DomainUpdateOneRequiredWithoutMediasNestedInput;
-  productImages?: Prisma.ProductImageUpdateManyWithoutMediaNestedInput;
-};
-
-export type MediaUncheckedUpdateWithoutCouponsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.StringFieldUpdateOperationsInput | string;
-  domain_id?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  productImages?: Prisma.ProductImageUncheckedUpdateManyWithoutMediaNestedInput;
+  domainId?: Prisma.UuidFilter<'Media'> | string;
+  status?: Prisma.EnumStatusEnumFilter<'Media'> | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFilter<'Media'> | boolean;
+  createdAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Media'> | Date | string;
 };
 
 export type MediaCreateManyDomainInput = {
@@ -825,10 +593,10 @@ export type MediaCreateManyDomainInput = {
   name: string;
   type: string;
   url: string;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  status?: $Enums.StatusEnum;
+  isDeleted?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type MediaUpdateWithoutDomainInput = {
@@ -836,12 +604,10 @@ export type MediaUpdateWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  productImages?: Prisma.ProductImageUpdateManyWithoutMediaNestedInput;
-  coupons?: Prisma.CouponUpdateManyWithoutMediaNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaUncheckedUpdateWithoutDomainInput = {
@@ -849,12 +615,10 @@ export type MediaUncheckedUpdateWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  productImages?: Prisma.ProductImageUncheckedUpdateManyWithoutMediaNestedInput;
-  coupons?: Prisma.CouponUncheckedUpdateManyWithoutMediaNestedInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaUncheckedUpdateManyWithoutDomainInput = {
@@ -862,60 +626,10 @@ export type MediaUncheckedUpdateManyWithoutDomainInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
   url?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-/**
- * Count Type MediaCountOutputType
- */
-
-export type MediaCountOutputType = {
-  productImages: number;
-  coupons: number;
-};
-
-export type MediaCountOutputTypeSelect<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  productImages?: boolean | MediaCountOutputTypeCountProductImagesArgs;
-  coupons?: boolean | MediaCountOutputTypeCountCouponsArgs;
-};
-
-/**
- * MediaCountOutputType without action
- */
-export type MediaCountOutputTypeDefaultArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the MediaCountOutputType
-   */
-  select?: Prisma.MediaCountOutputTypeSelect<ExtArgs> | null;
-};
-
-/**
- * MediaCountOutputType without action
- */
-export type MediaCountOutputTypeCountProductImagesArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.ProductImageWhereInput;
-};
-
-/**
- * MediaCountOutputType without action
- */
-export type MediaCountOutputTypeCountCouponsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  where?: Prisma.CouponWhereInput;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type MediaSelect<
@@ -927,15 +641,12 @@ export type MediaSelect<
     name?: boolean;
     type?: boolean;
     url?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-    productImages?: boolean | Prisma.Media$productImagesArgs<ExtArgs>;
-    coupons?: boolean | Prisma.Media$couponsArgs<ExtArgs>;
-    _count?: boolean | Prisma.MediaCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['media']
 >;
@@ -949,11 +660,11 @@ export type MediaSelectCreateManyAndReturn<
     name?: boolean;
     type?: boolean;
     url?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['media']
@@ -968,11 +679,11 @@ export type MediaSelectUpdateManyAndReturn<
     name?: boolean;
     type?: boolean;
     url?: boolean;
-    domain_id?: boolean;
-    is_deleted?: boolean;
+    domainId?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    isDeleted?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
     domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['media']
@@ -983,11 +694,11 @@ export type MediaSelectScalar = {
   name?: boolean;
   type?: boolean;
   url?: boolean;
-  domain_id?: boolean;
-  is_deleted?: boolean;
+  domainId?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
+  isDeleted?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type MediaOmit<
@@ -998,11 +709,11 @@ export type MediaOmit<
   | 'name'
   | 'type'
   | 'url'
-  | 'domain_id'
-  | 'is_deleted'
+  | 'domainId'
   | 'status'
-  | 'created_at'
-  | 'updated_at',
+  | 'isDeleted'
+  | 'createdAt'
+  | 'updatedAt',
   ExtArgs['result']['media']
 >;
 export type MediaInclude<
@@ -1010,9 +721,6 @@ export type MediaInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   domain?: boolean | Prisma.DomainDefaultArgs<ExtArgs>;
-  productImages?: boolean | Prisma.Media$productImagesArgs<ExtArgs>;
-  coupons?: boolean | Prisma.Media$couponsArgs<ExtArgs>;
-  _count?: boolean | Prisma.MediaCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MediaIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -1034,8 +742,6 @@ export type $MediaPayload<
   name: 'Media';
   objects: {
     domain: Prisma.$DomainPayload<ExtArgs>;
-    productImages: Prisma.$ProductImagePayload<ExtArgs>[];
-    coupons: Prisma.$CouponPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1043,11 +749,11 @@ export type $MediaPayload<
       name: string;
       type: string;
       url: string;
-      domain_id: string;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
+      domainId: string;
+      status: $Enums.StatusEnum;
+      isDeleted: boolean;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['media']
   >;
@@ -1612,28 +1318,6 @@ export interface Prisma__MediaClient<
     ExtArgs,
     GlobalOmitOptions
   >;
-  productImages<T extends Prisma.Media$productImagesArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Media$productImagesArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$ProductImagePayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
-  coupons<T extends Prisma.Media$couponsArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Media$couponsArgs<ExtArgs>>,
-  ): Prisma.PrismaPromise<
-    | runtime.Types.Result.GetResult<
-        Prisma.$CouponPayload<ExtArgs>,
-        T,
-        'findMany',
-        GlobalOmitOptions
-      >
-    | Null
-  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1680,11 +1364,11 @@ export interface MediaFieldRefs {
   readonly name: Prisma.FieldRef<'Media', 'String'>;
   readonly type: Prisma.FieldRef<'Media', 'String'>;
   readonly url: Prisma.FieldRef<'Media', 'String'>;
-  readonly domain_id: Prisma.FieldRef<'Media', 'String'>;
-  readonly is_deleted: Prisma.FieldRef<'Media', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'Media', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'Media', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'Media', 'DateTime'>;
+  readonly domainId: Prisma.FieldRef<'Media', 'String'>;
+  readonly status: Prisma.FieldRef<'Media', 'StatusEnum'>;
+  readonly isDeleted: Prisma.FieldRef<'Media', 'Boolean'>;
+  readonly createdAt: Prisma.FieldRef<'Media', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'Media', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -1901,6 +1585,11 @@ export type MediaFindManyArgs<
    * Skip the first `n` Media.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Media.
+   */
   distinct?: Prisma.MediaScalarFieldEnum | Prisma.MediaScalarFieldEnum[];
 };
 
@@ -2131,66 +1820,6 @@ export type MediaDeleteManyArgs<
    * Limit how many Media to delete.
    */
   limit?: number;
-};
-
-/**
- * Media.productImages
- */
-export type Media$productImagesArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the ProductImage
-   */
-  select?: Prisma.ProductImageSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the ProductImage
-   */
-  omit?: Prisma.ProductImageOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProductImageInclude<ExtArgs> | null;
-  where?: Prisma.ProductImageWhereInput;
-  orderBy?:
-    | Prisma.ProductImageOrderByWithRelationInput
-    | Prisma.ProductImageOrderByWithRelationInput[];
-  cursor?: Prisma.ProductImageWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?:
-    | Prisma.ProductImageScalarFieldEnum
-    | Prisma.ProductImageScalarFieldEnum[];
-};
-
-/**
- * Media.coupons
- */
-export type Media$couponsArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs =
-    runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Coupon
-   */
-  select?: Prisma.CouponSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Coupon
-   */
-  omit?: Prisma.CouponOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.CouponInclude<ExtArgs> | null;
-  where?: Prisma.CouponWhereInput;
-  orderBy?:
-    | Prisma.CouponOrderByWithRelationInput
-    | Prisma.CouponOrderByWithRelationInput[];
-  cursor?: Prisma.CouponWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: Prisma.CouponScalarFieldEnum | Prisma.CouponScalarFieldEnum[];
 };
 
 /**

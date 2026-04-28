@@ -17,282 +17,67 @@ export { Prisma };
 export * as $Enums from './enums';
 export * from './enums';
 /**
- * Model SuperAdmin
+ * Model ApiKey
  *
  */
-export type SuperAdmin = Prisma.SuperAdminModel;
+export type ApiKey = Prisma.ApiKeyModel;
 /**
  * Model Domain
  *
  */
 export type Domain = Prisma.DomainModel;
 /**
- * Model User
+ * Model Location
  *
  */
-export type User = Prisma.UserModel;
-/**
- * Model Role
- *
- */
-export type Role = Prisma.RoleModel;
-/**
- * Model Permission
- *
- */
-export type Permission = Prisma.PermissionModel;
-/**
- * Model Module
- *
- */
-export type Module = Prisma.ModuleModel;
-/**
- * Model RoleModulePermission
- *
- */
-export type RoleModulePermission = Prisma.RoleModulePermissionModel;
-/**
- * Model Integration
- *
- */
-export type Integration = Prisma.IntegrationModel;
-/**
- * Model IntegrationRequiredFields
- *
- */
-export type IntegrationRequiredFields = Prisma.IntegrationRequiredFieldsModel;
-/**
- * Model DomainConnections
- *
- */
-export type DomainConnections = Prisma.DomainConnectionsModel;
-/**
- * Model DomainConnectionCreds
- *
- */
-export type DomainConnectionCreds = Prisma.DomainConnectionCredsModel;
-/**
- * Model DomainConnectionAnalytics
- *
- */
-export type DomainConnectionAnalytics = Prisma.DomainConnectionAnalyticsModel;
-/**
- * Model Channels
- *
- */
-export type Channels = Prisma.ChannelsModel;
-/**
- * Model SubChannels
- *
- */
-export type SubChannels = Prisma.SubChannelsModel;
-/**
- * Model ChannelAnalytics
- *
- */
-export type ChannelAnalytics = Prisma.ChannelAnalyticsModel;
-/**
- * Model SubChannelAnalytics
- *
- */
-export type SubChannelAnalytics = Prisma.SubChannelAnalyticsModel;
-/**
- * Model UserCredential
- *
- */
-export type UserCredential = Prisma.UserCredentialModel;
-/**
- * Model Attribute
- *
- */
-export type Attribute = Prisma.AttributeModel;
-/**
- * Model SubAttribute
- *
- */
-export type SubAttribute = Prisma.SubAttributeModel;
+export type Location = Prisma.LocationModel;
 /**
  * Model Media
  *
  */
 export type Media = Prisma.MediaModel;
 /**
- * Model Category
+ * Model Module
  *
  */
-export type Category = Prisma.CategoryModel;
+export type Module = Prisma.ModuleModel;
 /**
- * Model SubCategory
+ * Model Permission
  *
  */
-export type SubCategory = Prisma.SubCategoryModel;
+export type Permission = Prisma.PermissionModel;
 /**
- * Model Uom
+ * Model Project
  *
  */
-export type Uom = Prisma.UomModel;
+export type Project = Prisma.ProjectModel;
 /**
- * Model Product
+ * Model ProjectCategory
  *
  */
-export type Product = Prisma.ProductModel;
+export type ProjectCategory = Prisma.ProjectCategoryModel;
 /**
- * Model Variant
+ * Model ProjectStage
  *
  */
-export type Variant = Prisma.VariantModel;
+export type ProjectStage = Prisma.ProjectStageModel;
 /**
- * Model ProductImage
+ * Model Role
  *
  */
-export type ProductImage = Prisma.ProductImageModel;
+export type Role = Prisma.RoleModel;
 /**
- * Model ProductUom
+ * Model RoleModulePermission
  *
  */
-export type ProductUom = Prisma.ProductUomModel;
+export type RoleModulePermission = Prisma.RoleModulePermissionModel;
 /**
- * Model ImportLog
+ * Model SuperAdmin
  *
  */
-export type ImportLog = Prisma.ImportLogModel;
+export type SuperAdmin = Prisma.SuperAdminModel;
 /**
- * Model Warehouse
+ * Model User
  *
  */
-export type Warehouse = Prisma.WarehouseModel;
-/**
- * Model Inventory
- *
- */
-export type Inventory = Prisma.InventoryModel;
-/**
- * Model StockBatch
- *
- */
-export type StockBatch = Prisma.StockBatchModel;
-/**
- * Model InventoryTransaction
- *
- */
-export type InventoryTransaction = Prisma.InventoryTransactionModel;
-/**
- * Model Coupon
- *
- */
-export type Coupon = Prisma.CouponModel;
-/**
- * Model LoyaltyTerritory
- *
- */
-export type LoyaltyTerritory = Prisma.LoyaltyTerritoryModel;
-/**
- * Model LoyaltyProgram
- *
- */
-export type LoyaltyProgram = Prisma.LoyaltyProgramModel;
-/**
- * Model LoyaltyTier
- *
- */
-export type LoyaltyTier = Prisma.LoyaltyTierModel;
-/**
- * Model LoyaltyRule
- *
- */
-export type LoyaltyRule = Prisma.LoyaltyRuleModel;
-/**
- * Model LoyaltyWallet
- *
- */
-export type LoyaltyWallet = Prisma.LoyaltyWalletModel;
-/**
- * Model LoyaltyQrCode
- *
- */
-export type LoyaltyQrCode = Prisma.LoyaltyQrCodeModel;
-/**
- * Model LoyaltyQrScan
- *
- */
-export type LoyaltyQrScan = Prisma.LoyaltyQrScanModel;
-/**
- * Model LoyaltyLedger
- *
- */
-export type LoyaltyLedger = Prisma.LoyaltyLedgerModel;
-/**
- * Model LoyaltyRedemption
- *
- */
-export type LoyaltyRedemption = Prisma.LoyaltyRedemptionModel;
-/**
- * Model Campaign
- *
- */
-export type Campaign = Prisma.CampaignModel;
-/**
- * Model CampaignTerritory
- *
- */
-export type CampaignTerritory = Prisma.CampaignTerritoryModel;
-/**
- * Model ChannelCampaign
- *
- */
-export type ChannelCampaign = Prisma.ChannelCampaignModel;
-/**
- * Model VariantCampaign
- *
- */
-export type VariantCampaign = Prisma.VariantCampaignModel;
-/**
- * Model Cart
- *
- */
-export type Cart = Prisma.CartModel;
-/**
- * Model CartItem
- *
- */
-export type CartItem = Prisma.CartItemModel;
-/**
- * Model Order
- *
- */
-export type Order = Prisma.OrderModel;
-/**
- * Model OrderItem
- *
- */
-export type OrderItem = Prisma.OrderItemModel;
-/**
- * Model PriceList
- *
- */
-export type PriceList = Prisma.PriceListModel;
-/**
- * Model Price
- *
- */
-export type Price = Prisma.PriceModel;
-/**
- * Model PricingRule
- *
- */
-export type PricingRule = Prisma.PricingRuleModel;
-/**
- * Model PricingRuleMapping
- *
- */
-export type PricingRuleMapping = Prisma.PricingRuleMappingModel;
-/**
- * Model Tax
- *
- */
-export type Tax = Prisma.TaxModel;
-/**
- * Model TaxMapping
- *
- */
-export type TaxMapping = Prisma.TaxMappingModel;
+export type User = Prisma.UserModel;

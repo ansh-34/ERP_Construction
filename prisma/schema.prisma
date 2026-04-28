@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/infra/database/prisma/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+model ApiKey {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  description String?
+  secret    String
+  domainId  String     @db.Uuid
+  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([domainId])
+}
+
+model Domain {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  email       String     @unique
+  password    String
+  roleId      String     @db.Uuid @map("role_id")
+  role        Role       @relation(fields: [roleId], references: [id])
+  isDeleted   Boolean    @default(false) @map("is_deleted")
+  status      StatusEnum @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  apiKeys                ApiKey[]
+  locations              Location[]
+  media                  Media[]
+  projects               Project[]
+  projectCategories      ProjectCategory[]
+  projectStages          ProjectStage[]
+  roleModulePermissions  RoleModulePermission[]
+  users                  User[]
+
+  @@map("domain")
+  @@index([roleId])
+}
+
+model Location {
+  id                String     @id @default(uuid()) @db.Uuid
+  name              Json       @db.JsonB
+  code              String
+  type              String
+  parentLocationId   String?    @db.Uuid
+  parent            Location?  @relation("LocationHierarchy", fields: [parentLocationId], references: [id])
+  children          Location[] @relation("LocationHierarchy")
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  projects          Project[]
+
+  @@unique([code, isDeleted, domainId])
+  @@index([domainId])
+  @@index([parentLocationId])
+}
+
+model Media {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  type      String
+  url       String     @unique
+  domainId  String     @db.Uuid @map("domain_id")
+  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false) @map("is_deleted")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("media")
+  @@index([domainId])
+}
+
+model Module {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  name                  String
+  code                  String                 @unique
+  isDeleted             Boolean                @default(false)
+  status                StatusEnum             @default(ACTIVE)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  
+  roleModulePermissions RoleModulePermission[]
+
+  @@map("module")
+}
+
+model Permission {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  name                  String
+  code                  String                 @unique
+  isDeleted             Boolean                @default(false)
+  status                StatusEnum             @default(ACTIVE)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  
+  roleModulePermissions RoleModulePermission[]
+
+  @@map("permission")
+}
+
+model Project {
+  id                   String           @id @default(uuid()) @db.Uuid
+  name                 Json             @db.JsonB
+  code                 String
+  projectCategoryId    String           @db.Uuid
+  projectCategory      ProjectCategory  @relation(fields: [projectCategoryId], references: [id], onDelete: Restrict)
+  description          Json?            @db.JsonB
+  budget               Decimal          @db.Decimal(15, 2)
+  spent                Decimal          @default(0) @db.Decimal(15, 2)
+  locationId           String           @db.Uuid
+  location             Location         @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId             String           @db.Uuid
+  domain               Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status               StatusEnum       @default(ACTIVE)
+  isDeleted            Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  
+  projectStages        ProjectStage[]
+
+  @@unique([code, isDeleted, domainId])
+  @@index([projectCategoryId])
+  @@index([locationId])
+  @@index([domainId])
+}
+
+model ProjectCategory {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  description Json?      @db.JsonB
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  projects    Project[]
+
+  @@unique([code, isDeleted, domainId])
+  @@index([domainId])
+}
+
+model ProjectStage {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  description Json?      @db.JsonB
+  progress    Float?
+  projectId   String     @db.Uuid
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([code, isDeleted, domainId, projectId])
+  @@index([projectId])
+  @@index([domainId])
+}
+
+model Role {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  name                  String
+  code                  String                 @unique
+  level                 Int
+  isDeleted             Boolean                @default(false)
+  status                StatusEnum             @default(ACTIVE)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  
+  domains               Domain[]
+  superAdmins           SuperAdmin[]
+  users                 User[]
+  roleModulePermissions RoleModulePermission[]
+
+  @@map("role")
+}
+
+model RoleModulePermission {
+  id           String     @id @default(uuid()) @db.Uuid
+  roleId       String     @db.Uuid @map("role_id")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  moduleId     String     @db.Uuid @map("module_id")
+  module       Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  permissionId String     @db.Uuid @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  domainId     String?    @db.Uuid @map("domain_id")
+  domain       Domain?    @relation(fields: [domainId], references: [id], onDelete: SetNull)
+  status       StatusEnum @default(ACTIVE)
+  isDeleted    Boolean    @default(false) @map("is_deleted")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("roleModulePermission")
+  @@index([roleId])
+  @@index([moduleId])
+  @@index([permissionId])
+  @@index([domainId])
+}
+
+model SuperAdmin {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  email     String     @unique
+  password  String
+  roleId    String     @db.Uuid @map("role_id")
+  role      Role       @relation(fields: [roleId], references: [id])
+  isDeleted Boolean    @default(false) @map("is_deleted")
+  status    StatusEnum @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("superAdmin")
+  @@index([roleId])
+}
+
+model User {
+  id        String     @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  password  String
+  roleId    String     @db.Uuid @map("role_id")
+  role      Role       @relation(fields: [roleId], references: [id])
+  domainId  String     @db.Uuid @map("domain_id")
+  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  isDeleted Boolean    @default(false)
+  status    StatusEnum @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@unique([email, domainId])
+  @@map("user")
+  @@index([roleId])
+  @@index([domainId])
+}

@@ -28,33 +28,30 @@ export type PermissionMinAggregateOutputType = {
   id: string | null;
   name: string | null;
   code: string | null;
-  is_system: boolean | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type PermissionMaxAggregateOutputType = {
   id: string | null;
   name: string | null;
   code: string | null;
-  is_system: boolean | null;
-  is_deleted: boolean | null;
-  status: $Enums.STATUS | null;
-  created_at: Date | null;
-  updated_at: Date | null;
+  isDeleted: boolean | null;
+  status: $Enums.StatusEnum | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type PermissionCountAggregateOutputType = {
   id: number;
   name: number;
   code: number;
-  is_system: number;
-  is_deleted: number;
+  isDeleted: number;
   status: number;
-  created_at: number;
-  updated_at: number;
+  createdAt: number;
+  updatedAt: number;
   _all: number;
 };
 
@@ -62,33 +59,30 @@ export type PermissionMinAggregateInputType = {
   id?: true;
   name?: true;
   code?: true;
-  is_system?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type PermissionMaxAggregateInputType = {
   id?: true;
   name?: true;
   code?: true;
-  is_system?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
 };
 
 export type PermissionCountAggregateInputType = {
   id?: true;
   name?: true;
   code?: true;
-  is_system?: true;
-  is_deleted?: true;
+  isDeleted?: true;
   status?: true;
-  created_at?: true;
-  updated_at?: true;
+  createdAt?: true;
+  updatedAt?: true;
   _all?: true;
 };
 
@@ -175,17 +169,16 @@ export type PermissionGroupByOutputType = {
   id: string;
   name: string;
   code: string;
-  is_system: boolean;
-  is_deleted: boolean;
-  status: $Enums.STATUS;
-  created_at: Date;
-  updated_at: Date;
+  isDeleted: boolean;
+  status: $Enums.StatusEnum;
+  createdAt: Date;
+  updatedAt: Date;
   _count: PermissionCountAggregateOutputType | null;
   _min: PermissionMinAggregateOutputType | null;
   _max: PermissionMaxAggregateOutputType | null;
 };
 
-type GetPermissionGroupByPayload<T extends PermissionGroupByArgs> =
+export type GetPermissionGroupByPayload<T extends PermissionGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<PermissionGroupByOutputType, T['by']> & {
@@ -202,27 +195,25 @@ export type PermissionWhereInput = {
   AND?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[];
   OR?: Prisma.PermissionWhereInput[];
   NOT?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[];
-  id?: Prisma.StringFilter<'Permission'> | string;
+  id?: Prisma.UuidFilter<'Permission'> | string;
   name?: Prisma.StringFilter<'Permission'> | string;
   code?: Prisma.StringFilter<'Permission'> | string;
-  is_system?: Prisma.BoolFilter<'Permission'> | boolean;
-  is_deleted?: Prisma.BoolFilter<'Permission'> | boolean;
-  status?: Prisma.EnumSTATUSFilter<'Permission'> | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFilter<'Permission'> | Date | string;
-  updated_at?: Prisma.DateTimeFilter<'Permission'> | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionListRelationFilter;
+  isDeleted?: Prisma.BoolFilter<'Permission'> | boolean;
+  status?: Prisma.EnumStatusEnumFilter<'Permission'> | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'Permission'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Permission'> | Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionListRelationFilter;
 };
 
 export type PermissionOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
-  role_module_permissions?: Prisma.RoleModulePermissionOrderByRelationAggregateInput;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
+  roleModulePermissions?: Prisma.RoleModulePermissionOrderByRelationAggregateInput;
 };
 
 export type PermissionWhereUniqueInput = Prisma.AtLeast<
@@ -233,12 +224,11 @@ export type PermissionWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.PermissionWhereInput[];
     NOT?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[];
     name?: Prisma.StringFilter<'Permission'> | string;
-    is_system?: Prisma.BoolFilter<'Permission'> | boolean;
-    is_deleted?: Prisma.BoolFilter<'Permission'> | boolean;
-    status?: Prisma.EnumSTATUSFilter<'Permission'> | $Enums.STATUS;
-    created_at?: Prisma.DateTimeFilter<'Permission'> | Date | string;
-    updated_at?: Prisma.DateTimeFilter<'Permission'> | Date | string;
-    role_module_permissions?: Prisma.RoleModulePermissionListRelationFilter;
+    isDeleted?: Prisma.BoolFilter<'Permission'> | boolean;
+    status?: Prisma.EnumStatusEnumFilter<'Permission'> | $Enums.StatusEnum;
+    createdAt?: Prisma.DateTimeFilter<'Permission'> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<'Permission'> | Date | string;
+    roleModulePermissions?: Prisma.RoleModulePermissionListRelationFilter;
   },
   'id' | 'code'
 >;
@@ -247,11 +237,10 @@ export type PermissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
   _count?: Prisma.PermissionCountOrderByAggregateInput;
   _max?: Prisma.PermissionMaxOrderByAggregateInput;
   _min?: Prisma.PermissionMinOrderByAggregateInput;
@@ -265,134 +254,119 @@ export type PermissionScalarWhereWithAggregatesInput = {
   NOT?:
     | Prisma.PermissionScalarWhereWithAggregatesInput
     | Prisma.PermissionScalarWhereWithAggregatesInput[];
-  id?: Prisma.StringWithAggregatesFilter<'Permission'> | string;
+  id?: Prisma.UuidWithAggregatesFilter<'Permission'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Permission'> | string;
   code?: Prisma.StringWithAggregatesFilter<'Permission'> | string;
-  is_system?: Prisma.BoolWithAggregatesFilter<'Permission'> | boolean;
-  is_deleted?: Prisma.BoolWithAggregatesFilter<'Permission'> | boolean;
-  status?: Prisma.EnumSTATUSWithAggregatesFilter<'Permission'> | $Enums.STATUS;
-  created_at?:
-    | Prisma.DateTimeWithAggregatesFilter<'Permission'>
-    | Date
-    | string;
-  updated_at?:
-    | Prisma.DateTimeWithAggregatesFilter<'Permission'>
-    | Date
-    | string;
+  isDeleted?: Prisma.BoolWithAggregatesFilter<'Permission'> | boolean;
+  status?:
+    | Prisma.EnumStatusEnumWithAggregatesFilter<'Permission'>
+    | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<'Permission'> | Date | string;
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Permission'> | Date | string;
 };
 
 export type PermissionCreateInput = {
   id?: string;
   name: string;
   code: string;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutPermissionInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionCreateNestedManyWithoutPermissionInput;
 };
 
 export type PermissionUncheckedCreateInput = {
   id?: string;
   name: string;
   code: string;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutPermissionInput;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedCreateNestedManyWithoutPermissionInput;
 };
 
 export type PermissionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUpdateManyWithoutPermissionNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionUpdateManyWithoutPermissionNestedInput;
 };
 
 export type PermissionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  role_module_permissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutPermissionNestedInput;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  roleModulePermissions?: Prisma.RoleModulePermissionUncheckedUpdateManyWithoutPermissionNestedInput;
 };
 
 export type PermissionCreateManyInput = {
   id?: string;
   name: string;
   code: string;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 export type PermissionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type PermissionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type PermissionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type PermissionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type PermissionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   code?: Prisma.SortOrder;
-  is_system?: Prisma.SortOrder;
-  is_deleted?: Prisma.SortOrder;
+  isDeleted?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
-  created_at?: Prisma.SortOrder;
-  updated_at?: Prisma.SortOrder;
+  createdAt?: Prisma.SortOrder;
+  updatedAt?: Prisma.SortOrder;
 };
 
 export type PermissionScalarRelationFilter = {
@@ -400,104 +374,99 @@ export type PermissionScalarRelationFilter = {
   isNot?: Prisma.PermissionWhereInput;
 };
 
-export type PermissionCreateNestedOneWithoutRole_module_permissionsInput = {
+export type PermissionCreateNestedOneWithoutRoleModulePermissionsInput = {
   create?: Prisma.XOR<
-    Prisma.PermissionCreateWithoutRole_module_permissionsInput,
-    Prisma.PermissionUncheckedCreateWithoutRole_module_permissionsInput
+    Prisma.PermissionCreateWithoutRoleModulePermissionsInput,
+    Prisma.PermissionUncheckedCreateWithoutRoleModulePermissionsInput
   >;
-  connectOrCreate?: Prisma.PermissionCreateOrConnectWithoutRole_module_permissionsInput;
+  connectOrCreate?: Prisma.PermissionCreateOrConnectWithoutRoleModulePermissionsInput;
   connect?: Prisma.PermissionWhereUniqueInput;
 };
 
-export type PermissionUpdateOneRequiredWithoutRole_module_permissionsNestedInput =
+export type PermissionUpdateOneRequiredWithoutRoleModulePermissionsNestedInput =
   {
     create?: Prisma.XOR<
-      Prisma.PermissionCreateWithoutRole_module_permissionsInput,
-      Prisma.PermissionUncheckedCreateWithoutRole_module_permissionsInput
+      Prisma.PermissionCreateWithoutRoleModulePermissionsInput,
+      Prisma.PermissionUncheckedCreateWithoutRoleModulePermissionsInput
     >;
-    connectOrCreate?: Prisma.PermissionCreateOrConnectWithoutRole_module_permissionsInput;
-    upsert?: Prisma.PermissionUpsertWithoutRole_module_permissionsInput;
+    connectOrCreate?: Prisma.PermissionCreateOrConnectWithoutRoleModulePermissionsInput;
+    upsert?: Prisma.PermissionUpsertWithoutRoleModulePermissionsInput;
     connect?: Prisma.PermissionWhereUniqueInput;
     update?: Prisma.XOR<
       Prisma.XOR<
-        Prisma.PermissionUpdateToOneWithWhereWithoutRole_module_permissionsInput,
-        Prisma.PermissionUpdateWithoutRole_module_permissionsInput
+        Prisma.PermissionUpdateToOneWithWhereWithoutRoleModulePermissionsInput,
+        Prisma.PermissionUpdateWithoutRoleModulePermissionsInput
       >,
-      Prisma.PermissionUncheckedUpdateWithoutRole_module_permissionsInput
+      Prisma.PermissionUncheckedUpdateWithoutRoleModulePermissionsInput
     >;
   };
 
-export type PermissionCreateWithoutRole_module_permissionsInput = {
+export type PermissionCreateWithoutRoleModulePermissionsInput = {
   id?: string;
   name: string;
   code: string;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
-export type PermissionUncheckedCreateWithoutRole_module_permissionsInput = {
+export type PermissionUncheckedCreateWithoutRoleModulePermissionsInput = {
   id?: string;
   name: string;
   code: string;
-  is_system?: boolean;
-  is_deleted?: boolean;
-  status?: $Enums.STATUS;
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  isDeleted?: boolean;
+  status?: $Enums.StatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
-export type PermissionCreateOrConnectWithoutRole_module_permissionsInput = {
+export type PermissionCreateOrConnectWithoutRoleModulePermissionsInput = {
   where: Prisma.PermissionWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.PermissionCreateWithoutRole_module_permissionsInput,
-    Prisma.PermissionUncheckedCreateWithoutRole_module_permissionsInput
+    Prisma.PermissionCreateWithoutRoleModulePermissionsInput,
+    Prisma.PermissionUncheckedCreateWithoutRoleModulePermissionsInput
   >;
 };
 
-export type PermissionUpsertWithoutRole_module_permissionsInput = {
+export type PermissionUpsertWithoutRoleModulePermissionsInput = {
   update: Prisma.XOR<
-    Prisma.PermissionUpdateWithoutRole_module_permissionsInput,
-    Prisma.PermissionUncheckedUpdateWithoutRole_module_permissionsInput
+    Prisma.PermissionUpdateWithoutRoleModulePermissionsInput,
+    Prisma.PermissionUncheckedUpdateWithoutRoleModulePermissionsInput
   >;
   create: Prisma.XOR<
-    Prisma.PermissionCreateWithoutRole_module_permissionsInput,
-    Prisma.PermissionUncheckedCreateWithoutRole_module_permissionsInput
+    Prisma.PermissionCreateWithoutRoleModulePermissionsInput,
+    Prisma.PermissionUncheckedCreateWithoutRoleModulePermissionsInput
   >;
   where?: Prisma.PermissionWhereInput;
 };
 
-export type PermissionUpdateToOneWithWhereWithoutRole_module_permissionsInput =
-  {
-    where?: Prisma.PermissionWhereInput;
-    data: Prisma.XOR<
-      Prisma.PermissionUpdateWithoutRole_module_permissionsInput,
-      Prisma.PermissionUncheckedUpdateWithoutRole_module_permissionsInput
-    >;
-  };
-
-export type PermissionUpdateWithoutRole_module_permissionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type PermissionUpdateToOneWithWhereWithoutRoleModulePermissionsInput = {
+  where?: Prisma.PermissionWhereInput;
+  data: Prisma.XOR<
+    Prisma.PermissionUpdateWithoutRoleModulePermissionsInput,
+    Prisma.PermissionUncheckedUpdateWithoutRoleModulePermissionsInput
+  >;
 };
 
-export type PermissionUncheckedUpdateWithoutRole_module_permissionsInput = {
+export type PermissionUpdateWithoutRoleModulePermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
-  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  is_deleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  status?: Prisma.EnumSTATUSFieldUpdateOperationsInput | $Enums.STATUS;
-  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PermissionUncheckedUpdateWithoutRoleModulePermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  status?: Prisma.EnumStatusEnumFieldUpdateOperationsInput | $Enums.StatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 /**
@@ -505,16 +474,16 @@ export type PermissionUncheckedUpdateWithoutRole_module_permissionsInput = {
  */
 
 export type PermissionCountOutputType = {
-  role_module_permissions: number;
+  roleModulePermissions: number;
 };
 
 export type PermissionCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role_module_permissions?:
+  roleModulePermissions?:
     | boolean
-    | PermissionCountOutputTypeCountRole_module_permissionsArgs;
+    | PermissionCountOutputTypeCountRoleModulePermissionsArgs;
 };
 
 /**
@@ -533,7 +502,7 @@ export type PermissionCountOutputTypeDefaultArgs<
 /**
  * PermissionCountOutputType without action
  */
-export type PermissionCountOutputTypeCountRole_module_permissionsArgs<
+export type PermissionCountOutputTypeCountRoleModulePermissionsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
@@ -548,14 +517,13 @@ export type PermissionSelect<
     id?: boolean;
     name?: boolean;
     code?: boolean;
-    is_system?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
-    role_module_permissions?:
+    createdAt?: boolean;
+    updatedAt?: boolean;
+    roleModulePermissions?:
       | boolean
-      | Prisma.Permission$role_module_permissionsArgs<ExtArgs>;
+      | Prisma.Permission$roleModulePermissionsArgs<ExtArgs>;
     _count?: boolean | Prisma.PermissionCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['permission']
@@ -569,11 +537,10 @@ export type PermissionSelectCreateManyAndReturn<
     id?: boolean;
     name?: boolean;
     code?: boolean;
-    is_system?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
   },
   ExtArgs['result']['permission']
 >;
@@ -586,11 +553,10 @@ export type PermissionSelectUpdateManyAndReturn<
     id?: boolean;
     name?: boolean;
     code?: boolean;
-    is_system?: boolean;
-    is_deleted?: boolean;
+    isDeleted?: boolean;
     status?: boolean;
-    created_at?: boolean;
-    updated_at?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
   },
   ExtArgs['result']['permission']
 >;
@@ -599,34 +565,26 @@ export type PermissionSelectScalar = {
   id?: boolean;
   name?: boolean;
   code?: boolean;
-  is_system?: boolean;
-  is_deleted?: boolean;
+  isDeleted?: boolean;
   status?: boolean;
-  created_at?: boolean;
-  updated_at?: boolean;
+  createdAt?: boolean;
+  updatedAt?: boolean;
 };
 
 export type PermissionOmit<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
-  | 'id'
-  | 'name'
-  | 'code'
-  | 'is_system'
-  | 'is_deleted'
-  | 'status'
-  | 'created_at'
-  | 'updated_at',
+  'id' | 'name' | 'code' | 'isDeleted' | 'status' | 'createdAt' | 'updatedAt',
   ExtArgs['result']['permission']
 >;
 export type PermissionInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
-  role_module_permissions?:
+  roleModulePermissions?:
     | boolean
-    | Prisma.Permission$role_module_permissionsArgs<ExtArgs>;
+    | Prisma.Permission$roleModulePermissionsArgs<ExtArgs>;
   _count?: boolean | Prisma.PermissionCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type PermissionIncludeCreateManyAndReturn<
@@ -644,18 +602,17 @@ export type $PermissionPayload<
 > = {
   name: 'Permission';
   objects: {
-    role_module_permissions: Prisma.$RoleModulePermissionPayload<ExtArgs>[];
+    roleModulePermissions: Prisma.$RoleModulePermissionPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
       name: string;
       code: string;
-      is_system: boolean;
-      is_deleted: boolean;
-      status: $Enums.STATUS;
-      created_at: Date;
-      updated_at: Date;
+      isDeleted: boolean;
+      status: $Enums.StatusEnum;
+      createdAt: Date;
+      updatedAt: Date;
     },
     ExtArgs['result']['permission']
   >;
@@ -1206,12 +1163,12 @@ export interface Prisma__PermissionClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: 'PrismaPromise';
-  role_module_permissions<
-    T extends Prisma.Permission$role_module_permissionsArgs<ExtArgs> = {},
+  roleModulePermissions<
+    T extends Prisma.Permission$roleModulePermissionsArgs<ExtArgs> = {},
   >(
     args?: Prisma.Subset<
       T,
-      Prisma.Permission$role_module_permissionsArgs<ExtArgs>
+      Prisma.Permission$roleModulePermissionsArgs<ExtArgs>
     >,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
@@ -1267,11 +1224,10 @@ export interface PermissionFieldRefs {
   readonly id: Prisma.FieldRef<'Permission', 'String'>;
   readonly name: Prisma.FieldRef<'Permission', 'String'>;
   readonly code: Prisma.FieldRef<'Permission', 'String'>;
-  readonly is_system: Prisma.FieldRef<'Permission', 'Boolean'>;
-  readonly is_deleted: Prisma.FieldRef<'Permission', 'Boolean'>;
-  readonly status: Prisma.FieldRef<'Permission', 'STATUS'>;
-  readonly created_at: Prisma.FieldRef<'Permission', 'DateTime'>;
-  readonly updated_at: Prisma.FieldRef<'Permission', 'DateTime'>;
+  readonly isDeleted: Prisma.FieldRef<'Permission', 'Boolean'>;
+  readonly status: Prisma.FieldRef<'Permission', 'StatusEnum'>;
+  readonly createdAt: Prisma.FieldRef<'Permission', 'DateTime'>;
+  readonly updatedAt: Prisma.FieldRef<'Permission', 'DateTime'>;
 }
 
 // Custom InputTypes
@@ -1492,6 +1448,11 @@ export type PermissionFindManyArgs<
    * Skip the first `n` Permissions.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Permissions.
+   */
   distinct?:
     | Prisma.PermissionScalarFieldEnum
     | Prisma.PermissionScalarFieldEnum[];
@@ -1731,9 +1692,9 @@ export type PermissionDeleteManyArgs<
 };
 
 /**
- * Permission.role_module_permissions
+ * Permission.roleModulePermissions
  */
-export type Permission$role_module_permissionsArgs<
+export type Permission$roleModulePermissionsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {

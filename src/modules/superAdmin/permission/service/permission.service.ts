@@ -1,22 +1,22 @@
 import { PermissionRepository } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
+import { generateCode } from '@/utils/code';
 
 export const PermissionService = {
-  async addPermission(data: { name: string; code: string }) {
-    const existing = await PermissionRepository.findByCode(data.code);
+  async addPermission(data: { name: string }) {
+    let code = generateCode('PERMISSION');
 
-    if (existing) {
-      throw new Error('Permission already exists');
+    while (await PermissionRepository.findByCode(code)) {
+      code = generateCode('PERMISSION');
     }
 
-    return PermissionRepository.create(data.name, data.code);
+    return PermissionRepository.create(data.name, code);
   },
 
   async editPermission(
     permissionId: string,
     data: {
       name?: string;
-      code?: string;
       status?: StatusEnum;
     },
   ) {
@@ -26,20 +26,8 @@ export const PermissionService = {
       throw new Error('Permission not found');
     }
 
-    if (data.code && data.code !== existing.code) {
-      const duplicate = await PermissionRepository.findDuplicateCode(
-        data.code,
-        permissionId,
-      );
-
-      if (duplicate) {
-        throw new Error('A Permission with this code already exists');
-      }
-    }
-
     return PermissionRepository.update(permissionId, {
       name: data.name ?? existing.name,
-      code: data.code ?? existing.code,
       status: (data.status ?? existing.status) as StatusEnum,
     });
   },

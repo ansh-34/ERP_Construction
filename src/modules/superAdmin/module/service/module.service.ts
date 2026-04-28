@@ -1,22 +1,22 @@
 import { ModuleRepository } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
+import { generateCode } from '@/utils/code';
 
 export const ModuleService = {
-  async addModule(data: { name: string; code: string }) {
-    const existing = await ModuleRepository.findByCode(data.code);
+  async addModule(data: { name: string }) {
+    let code = generateCode('MODULE');
 
-    if (existing) {
-      throw new Error('Module already exists');
+    while (await ModuleRepository.findByCode(code)) {
+      code = generateCode('MODULE');
     }
 
-    return ModuleRepository.create(data.name, data.code);
+    return ModuleRepository.create(data.name, code);
   },
 
   async editModule(
     moduleId: string,
     data: {
       name?: string;
-      code?: string;
       status?: StatusEnum;
     },
   ) {
@@ -26,20 +26,8 @@ export const ModuleService = {
       throw new Error('Module not found');
     }
 
-    if (data.code && data.code !== existing.code) {
-      const duplicate = await ModuleRepository.findDuplicateCode(
-        data.code,
-        moduleId,
-      );
-
-      if (duplicate) {
-        throw new Error('A Module with this code already exists');
-      }
-    }
-
     return ModuleRepository.update(moduleId, {
       name: data.name ?? existing.name,
-      code: data.code ?? existing.code,
       status: (data.status ?? existing.status) as StatusEnum,
     });
   },
