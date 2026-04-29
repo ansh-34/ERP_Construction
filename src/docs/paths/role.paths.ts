@@ -1,100 +1,86 @@
+import { ok, created, errors } from './responses.js';
+
 export const RolePaths = {
-  '/superAdmin/role': {
+  '/api/roles/entry': {
     post: {
-      tags: ['SuperAdmin Role Apis'],
-      summary: 'Create Role',
+      tags: ['Roles'],
+      summary: 'Create role',
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/AddRoleRequest' },
+            schema: { $ref: '#/components/schemas/CreateRoleBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Role created',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/RoleMutationResponse' },
-            },
-          },
-        },
-      },
+      responses: { ...created, ...errors },
     },
   },
 
-  '/superAdmin/role/{id}': {
-    put: {
-      tags: ['SuperAdmin Role Apis'],
-      summary: 'Edit Role',
+  '/api/roles/{roleId}/permissions': {
+    post: {
+      tags: ['Roles'],
+      summary: 'Assign permissions to role for module',
+      security: [{ bearerAuth: [] }],
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        {
+          in: 'path',
+          name: 'roleId',
+          required: true,
+          schema: { type: 'string' },
+        },
       ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/EditRoleRequest' },
+            schema: { $ref: '#/components/schemas/AssignPermissionsBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Role edited',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/RoleMutationResponse' },
-            },
-          },
-        },
-      },
+      responses: { ...ok, ...errors },
     },
+  },
 
+  '/api/roles/list': {
     get: {
-      tags: ['SuperAdmin Role Apis'],
-      summary: 'List Roles (current behavior)',
-      description:
-        'Note: this endpoint is mounted as GET /superAdmin/role/:id in code but returns a list using query params. Swagger reflects current behavior without changing runtime routes.',
+      tags: ['Roles'],
+      summary: 'List roles',
+      security: [{ bearerAuth: [] }],
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-        { name: 'limit', in: 'query', schema: { type: 'string' } },
-        { name: 'offset', in: 'query', schema: { type: 'string' } },
-        { name: 'searchKey', in: 'query', schema: { type: 'string' } },
         {
-          name: 'status',
           in: 'query',
-          schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
         },
       ],
-      responses: {
-        200: {
-          description: 'Role list',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/RoleListResponse' },
-            },
-          },
-        },
-      },
+      responses: { ...ok, ...errors },
     },
+  },
 
-    delete: {
-      tags: ['SuperAdmin Role Apis'],
-      summary: 'Remove Role',
+  '/api/roles/{id}/role': {
+    post: {
+      tags: ['Roles'],
+      summary: 'Assign role to user',
+      security: [{ bearerAuth: [] }],
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
-      responses: {
-        200: {
-          description: 'Role removed',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/RoleMutationResponse' },
-            },
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/AssignRoleBody' },
           },
         },
       },
+      responses: { ...ok, ...errors },
     },
   },
 };

@@ -1,0 +1,26 @@
+export const DispatchSchemas = {
+  CreateDispatchBody: {
+    type: 'object',
+    required: ['vehicleId', 'code'],
+    properties: {
+      vehicleId: { type: 'string' },
+      code: { type: 'string' },
+      journeyScheduleId: { type: 'string' },
+      description: { type: 'string' },
+      date: { type: 'string' },
+      driverName: { type: 'string' },
+      startLocation: { type: 'string' },
+      endLocation: { type: 'string' },
+      distance: { type: 'number' },
+      average: { type: 'number' },
+      expectedFuelValue: { type: 'number' },
+      actualFuelValue: { type: 'number' },
+      fuelAlertThreshold: { type: 'number' },
+      loadedQuantity: { type: 'number' },
+      loadedQuantityUomId: { type: 'string' },
+      loadedAt: { type: 'string' },
+      loadingStatus: { type: 'string' },
+      journeyStatus: { type: 'string' },
+    },
+  },
+};

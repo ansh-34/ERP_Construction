@@ -2,12 +2,8 @@
 
 . "$(dirname -- "$0")/_/husky.sh"
 
-# echo "Runnig linting and fix..."
-
-# npm run lint:fix
-
-echo "formating code..."
+echo "formatting code..."
 npm run format
 
-echo "creating build..."
-npx tsc
+echo "type checking..."
+npm run typecheck

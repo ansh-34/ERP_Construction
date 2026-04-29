@@ -1,74 +1,44 @@
-import { StatusEnum } from '@constants/index';
-import { prisma } from '@infra/database/prisma/prisma.client';
+import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const ModuleRepository = {
-  findByCode: async (code: string) => {
+  findActiveByCode(code: string) {
+    return prisma.module.findFirst({ where: { code, isDeleted: false } });
+  },
+
+  findActiveById(id: string) {
+    return prisma.module.findFirst({ where: { id, isDeleted: false } });
+  },
+
+  findDuplicateCode(code: string, id: string) {
     return prisma.module.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-      },
+      where: { code, isDeleted: false, id: { not: id } },
     });
   },
 
-  findById: async (id: string) => {
-    return prisma.module.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
-    });
+  create(data: { name: any; code: string }) {
+    return prisma.module.create({ data });
   },
 
-  findDuplicateCode: async (code: string, moduleId: string) => {
-    return prisma.module.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-        NOT: {
-          id: moduleId,
-        },
-      },
-    });
+  listActive(limit: number, offset: number) {
+    return prisma.$transaction([
+      prisma.module.count({ where: { isDeleted: false } }),
+      prisma.module.findMany({
+        where: { isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+    ]);
   },
 
-  create: async (name: string, code: string) => {
-    return prisma.module.create({
-      data: { name, code },
-    });
+  update(id: string, data: { name?: any; code?: string; status?: string }) {
+    return prisma.module.update({ where: { id }, data });
   },
 
-  update: async (
-    id: string,
-    data: { name?: string; code?: string; status?: StatusEnum },
-  ) => {
-    return prisma.module.update({
-      where: { id },
-      data,
-    });
-  },
-
-  softDelete: async (id: string) => {
+  softDelete(id: string) {
     return prisma.module.update({
       where: { id },
       data: { isDeleted: true },
-    });
-  },
-
-  count: async (whereFilter: any) => {
-    return prisma.module.count({
-      where: whereFilter,
-    });
-  },
-
-  list: async (whereFilter: any, limit: number, offset: number) => {
-    return prisma.module.findMany({
-      where: whereFilter,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
     });
   },
 };

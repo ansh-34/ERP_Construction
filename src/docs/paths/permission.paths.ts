@@ -1,106 +1,70 @@
+import { ok, created, errors } from './responses.js';
+
 export const PermissionPaths = {
-  '/superAdmin/permission': {
+  '/api/permissions/entry': {
     post: {
-      tags: ['SuperAdmin Permission Apis'],
-      summary: 'Create Permission',
+      tags: ['Permissions'],
+      summary: 'Create permission',
+      security: [{ cookieAuth: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/AddPermissionRequest' },
+            schema: { $ref: '#/components/schemas/CreatePermissionBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Permission created',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/PermissionMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      responses: { ...created, ...errors },
     },
   },
 
-  '/superAdmin/permission/{id}': {
-    put: {
-      tags: ['SuperAdmin Permission Apis'],
-      summary: 'Edit Permission',
+  '/api/permissions/list': {
+    get: {
+      tags: ['Permissions'],
+      summary: 'List permissions',
+      security: [{ cookieAuth: [] }],
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+      ],
+      responses: { ...ok, ...errors },
+    },
+  },
+
+  '/api/permissions/{id}': {
+    put: {
+      tags: ['Permissions'],
+      summary: 'Update permission',
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/EditPermissionRequest' },
+            schema: { $ref: '#/components/schemas/UpdatePermissionBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Permission edited',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/PermissionMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      responses: { ...ok, ...errors },
     },
-
-    get: {
-      tags: ['SuperAdmin Permission Apis'],
-      summary: 'List Permissions (current behavior)',
-      description:
-        'Note: this endpoint is mounted as GET /superAdmin/permission/:id in code but returns a list using query params. Swagger reflects current behavior without changing runtime routes.',
-      parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-        { name: 'limit', in: 'query', schema: { type: 'string' } },
-        { name: 'offset', in: 'query', schema: { type: 'string' } },
-        { name: 'searchKey', in: 'query', schema: { type: 'string' } },
-        {
-          name: 'status',
-          in: 'query',
-          schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
-        },
-      ],
-      responses: {
-        200: {
-          description: 'Permission list',
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/PermissionListResponse' },
-            },
-          },
-        },
-      },
-    },
-
     delete: {
-      tags: ['SuperAdmin Permission Apis'],
-      summary: 'Remove Permission',
+      tags: ['Permissions'],
+      summary: 'Delete permission',
+      security: [{ cookieAuth: [] }],
       parameters: [
-        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
-      responses: {
-        200: {
-          description: 'Permission removed',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/PermissionMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      responses: { ...ok, ...errors },
     },
   },
 };

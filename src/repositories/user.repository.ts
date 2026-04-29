@@ -1,113 +1,93 @@
-import { prisma } from '@infra/database/prisma/prisma.client';
-import { StatusEnum } from '@constants/index';
+import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const UserRepository = {
-  findByEmail: async (email: string, domainId: string) => {
+  findActiveByEmailAndDomain(email: string, domainId: string) {
     return prisma.user.findFirst({
-      where: {
-        email,
-        domainId,
-        isDeleted: false,
-      },
-    });
-  },
-  findByEmailOnly: async (email: string) => {
-    return prisma.user.findFirst({
-      where: {
-        email,
-        isDeleted: false,
-      },
+      where: { email, domainId, isDeleted: false },
     });
   },
 
-  findById: async (id: string) => {
+  findActiveByEmail(email: string) {
     return prisma.user.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
-      include: {
-        role: true,
-        domain: true,
-      },
+      where: { email, isDeleted: false },
     });
   },
 
-  assignToTerritory: async (userId: string, territoryId: string | null) => {
-    return prisma.user.findFirst({ where: { id: userId } });
+  findActiveByEmailWithRoleAndDomain(email: string) {
+    return prisma.user.findFirst({
+      where: { email, isDeleted: false },
+      include: { role: true, domain: true },
+    });
   },
 
-  create: async (data: {
-    name: string;
+  findActiveByIdAndDomain(id: string, domainId: string) {
+    return prisma.user.findFirst({
+      where: { id, domainId, isDeleted: false },
+    });
+  },
+
+  create(data: {
+    name: any;
     email: string;
     password: string;
-    roleId: string;
+    phone?: string | null;
+    phoneCode?: string | null;
+    roleId?: string | null;
     domainId: string;
-  }) => {
-    return prisma.user.create({
-      data,
+    isEmailVerified?: boolean;
+  }) {
+    return prisma.user.create({ data });
+  },
+
+  activateAndDeleteToken(userId: string, password: string, tokenId: string) {
+    return prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          password,
+          isEmailVerified: true,
+        },
+      });
+
+      await tx.token.update({
+        where: { id: tokenId },
+        data: { isDeleted: true },
+      });
     });
   },
 
-  update: async (
-    id: string,
-    data: {
-      name?: string;
-      email?: string;
-      password?: string;
-      roleId?: string;
-      status?: StatusEnum;
-    },
-  ) => {
+  assignRole(userId: string, roleId: string) {
     return prisma.user.update({
-      where: { id },
-      data,
-    });
-  },
-
-  softDelete: async (id: string) => {
-    return prisma.user.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
-  },
-
-  count: async (whereFilter: any) => {
-    return prisma.user.count({
-      where: whereFilter,
-    });
-  },
-
-  list: async (whereFilter: any, limit: number, offset: number) => {
-    return prisma.user.findMany({
-      where: whereFilter,
-      include: {
-        role: true,
-        domain: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-  },
-
-  findByIdWithRole: async (id: string) => {
-    return prisma.user.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
-      include: {
-        role: true,
+      where: { id: userId },
+      data: { roleId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: { select: { id: true, name: true, code: true } },
       },
     });
   },
 
-  findByIdWithRoleUser: async (id: string) => {
-    return prisma.role.findFirst({
-      where: { id },
-    });
+  listByDomain(domainId: string, limit: number, offset: number) {
+    return prisma.$transaction([
+      prisma.user.count({ where: { domainId, isDeleted: false } }),
+      prisma.user.findMany({
+        where: { domainId, isDeleted: false },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          roleId: true,
+          role: { select: { id: true, name: true, code: true } },
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+    ]);
   },
 };

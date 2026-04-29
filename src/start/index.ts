@@ -1,19 +1,12 @@
-import { seedFullModuleAccessData } from './fullModuleAccess';
-import { seedRoleModulePermissionData } from './roleModulePermissionSeeder';
-import { seedSuperAdminData } from './superAdminSeeder';
-import { initDatabase } from '@infra/database/prisma/prisma.client';
+import { initSuperadmin } from '@/seed/superAdmin';
+import { permissionData } from '@/seed/permission';
 
 export const runFunctions = async () => {
   try {
-    await initDatabase();
-    await Promise.all([
-      seedRoleModulePermissionData(),
-      seedSuperAdminData(),
-      seedFullModuleAccessData(),
-    ]);
+    await Promise.all([initSuperadmin(), permissionData()]);
   } catch (error) {
-    throw new Error(
-      `error while running initialization functions: ${error.message}`,
-    );
+    const message =
+      error instanceof Error ? error.message : 'Unknown startup error';
+    throw new Error(`error while running initialization functions: ${message}`);
   }
 };

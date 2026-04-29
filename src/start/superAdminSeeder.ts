@@ -1,8 +1,8 @@
-import { superAdminData } from '@/seed/superAdmin';
+import { initSuperadmin } from '@/seed/superAdmin';
 
 export const seedSuperAdminData = async () => {
   try {
-    await superAdminData();
+    await initSuperadmin();
   } catch (error) {
     console.log('error', error);
   }

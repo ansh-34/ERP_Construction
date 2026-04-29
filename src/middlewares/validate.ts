@@ -1,6 +1,6 @@
-import { ZodSchema } from 'zod';
-import { Request, Response, NextFunction } from 'express';
-import { HttpStatus, Messages } from '@constants/index';
+import type { NextFunction, Request, Response } from 'express';
+import type { ZodSchema } from 'zod';
+import { HttpStatus, Messages } from '../constants/index.js';
 
 export const validate =
   (schema: ZodSchema, property: 'body' | 'query' | 'params' = 'body') =>
@@ -14,6 +14,7 @@ export const validate =
         errors: result.error.format(),
       });
     }
+
     Object.assign(req[property], result.data);
     next();
   };
