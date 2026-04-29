@@ -1,51 +1,64 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
 import { StatusEnum } from '@constants/index';
-import { locationService } from '@/services';
+import { projectStageService } from './projectStage.service';
 import { resolveHttpStatus } from '@/utils/httpError';
 
-export const locationController = {
+export const projectStageController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { name, type, parentLocationId, domainId, status } = req.body as {
-        name?: Record<string, unknown>;
-        type?: string;
-        parentLocationId?: string | null;
-        domainId?: string;
-        status?: StatusEnum;
-      };
+      const { name, description, progress, projectId, domainId, status } =
+        req.body as {
+          name?: Record<string, unknown>;
+          description?: Record<string, unknown> | null;
+          progress?: number | null;
+          projectId?: string;
+          domainId?: string;
+          status?: StatusEnum;
+        };
 
-      const location = await locationService.create({
+      const projectStage = await projectStageService.create({
         name: name ?? {},
-        type: type ?? '',
-        ...(parentLocationId !== undefined && { parentLocationId }),
+        ...(description !== undefined && { description }),
+        ...(progress !== undefined && { progress }),
+        projectId: projectId ?? '',
         domainId: domainId ?? '',
         status: status ?? StatusEnum.ACTIVE,
       });
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Location created successfully',
-        data: location,
+        message: 'Project stage created successfully',
+        data: projectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to create location';
+        error instanceof Error
+          ? error.message
+          : 'Failed to create project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
-      const locations = await locationService.getAll(domainId ?? '');
+      const { domainId, projectId } = req.query as {
+        domainId?: string;
+        projectId?: string;
+      };
+      const projectStages = await projectStageService.getAll(
+        domainId ?? '',
+        projectId ?? '',
+      );
 
       return res.status(HttpStatus.OK).json({
-        message: 'Locations fetched successfully',
-        data: locations,
+        message: 'Project stages fetched successfully',
+        data: projectStages,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch locations';
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project stages';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -54,19 +67,24 @@ export const locationController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const location = await locationService.getById(id ?? '', domainId ?? '');
+      const projectStage = await projectStageService.getById(
+        id ?? '',
+        domainId ?? '',
+      );
 
-      if (!location) {
+      if (!projectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location fetched successfully',
-        data: location,
+        message: 'Project stage fetched successfully',
+        data: projectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch location';
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -75,35 +93,37 @@ export const locationController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const { name, type, parentLocationId, status } = req.body as {
+      const { name, description, progress, status } = req.body as {
         name?: Record<string, unknown>;
-        type?: string;
-        parentLocationId?: string | null;
+        description?: Record<string, unknown> | null;
+        progress?: number | null;
         status?: StatusEnum;
       };
 
-      const updatedLocation = await locationService.update(
+      const updatedProjectStage = await projectStageService.update(
         id ?? '',
         domainId ?? '',
         {
           ...(name !== undefined && { name }),
-          ...(type !== undefined && { type }),
-          ...(parentLocationId !== undefined && { parentLocationId }),
+          ...(description !== undefined && { description }),
+          ...(progress !== undefined && { progress }),
           ...(status !== undefined && { status }),
         },
       );
 
-      if (!updatedLocation) {
+      if (!updatedProjectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location updated successfully',
-        data: updatedLocation,
+        message: 'Project stage updated successfully',
+        data: updatedProjectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update location';
+        error instanceof Error
+          ? error.message
+          : 'Failed to update project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -112,22 +132,24 @@ export const locationController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const deletedLocation = await locationService.softDelete(
+      const deletedProjectStage = await projectStageService.softDelete(
         id ?? '',
         domainId ?? '',
       );
 
-      if (!deletedLocation) {
+      if (!deletedProjectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location deleted successfully',
-        data: deletedLocation,
+        message: 'Project stage deleted successfully',
+        data: deletedProjectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete location';
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

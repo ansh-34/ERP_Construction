@@ -16,7 +16,6 @@ export const permissionData = async () => {
         permissionsData.push({
           name: permission.name,
           code: permission.code,
-          
         });
       }
     }

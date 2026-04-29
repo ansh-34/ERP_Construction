@@ -13,6 +13,7 @@ export function resolveHttpStatus(message: string): HttpStatus {
   if (
     message.includes('invalid') ||
     message.includes('duplicate') ||
+    message === 'invalid relation' ||
     message === 'empty update payload'
   ) {
     return message.includes('duplicate')

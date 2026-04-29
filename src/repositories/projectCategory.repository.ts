@@ -1,6 +1,7 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
+import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
 
@@ -52,11 +53,12 @@ export const projectCategoryRepository = {
   create: async (
     data: CreateProjectCategoryInput,
   ): Promise<ProjectCategoryRecord> => {
+    const id = randomUUID();
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectCategoryRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectCategory" ("name", "code", "description", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${JSON.stringify(data.name)}::jsonb, ${data.code}, ${descriptionSql}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      INSERT INTO "ProjectCategory" ("id", "name", "code", "description", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${descriptionSql}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 

@@ -1,4 +1,4 @@
-export const DATABASE_UNAVAILABLE_MESSAGE = 'Database connection unavailable';
+export const DATABASE_UNAVAILABLE_MESSAGE = 'Service temporarily unavailable';
 
 type PrismaErrorShape = {
   name?: string;
@@ -22,6 +22,7 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid numbers' ||
       error.message === 'invalid budget' ||
       error.message === 'invalid spent' ||
+      error.message === 'invalid relation' ||
       error.message === 'not found' ||
       error.message === 'empty update payload'
     ) {
@@ -49,10 +50,14 @@ export function normalizePrismaError(error: unknown): Error {
       return new Error('duplicate');
     }
 
+    if (error.code === 'P2003') {
+      return new Error('invalid relation');
+    }
+
     if (error.code === 'P2025') {
       return new Error('not found');
     }
   }
 
-  return new Error('Database operation failed');
+  return new Error('Something went wrong');
 }

@@ -6,11 +6,9 @@ import { initDatabase } from '@infra/database/prisma/prisma.client';
 export const runFunctions = async () => {
   try {
     await initDatabase();
-    await Promise.all([
-      seedRoleModulePermissionData(),
-      seedSuperAdminData(),
-      seedFullModuleAccessData(),
-    ]);
+    await seedRoleModulePermissionData();
+    await seedSuperAdminData();
+    await seedFullModuleAccessData();
   } catch (error) {
     throw new Error(
       `error while running initialization functions: ${error.message}`,

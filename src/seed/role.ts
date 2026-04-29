@@ -17,7 +17,6 @@ export const roleData = async () => {
           name: role.name,
           code: role.code,
           level: role.level,
-          
         });
       }
     }

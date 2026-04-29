@@ -16,7 +16,6 @@ export const moduleData = async () => {
         modulesData.push({
           name: module.name,
           code: module.code,
-          
         });
       }
     }

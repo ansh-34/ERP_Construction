@@ -1,6 +1,7 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
+import { randomUUID } from 'crypto';
 
 export interface ApiKeyRecord {
   id: string;
@@ -41,9 +42,11 @@ const apiKeySelect = Prisma.sql`
 
 export const apiKeyRepository = {
   create: async (data: CreateApiKeyInput): Promise<ApiKeyRecord> => {
+    const id = randomUUID();
+
     const result = await prisma.$queryRaw<ApiKeyRecord[]>(Prisma.sql`
-      INSERT INTO "ApiKey" ("name", "description", "secret", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${data.name}, ${data.description}, ${data.secret}, ${data.domainId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
+      INSERT INTO "ApiKey" ("id", "name", "description", "secret", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${data.name}, ${data.description}, ${data.secret}, ${data.domainId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
       RETURNING *
     `);
 

@@ -1,43 +1,35 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
-import { mediaService } from '@/services';
+import { StatusEnum } from '@constants/index';
+import { locationService } from './location.service';
 import { resolveHttpStatus } from '@/utils/httpError';
-import { deleteFromS3, uploadToS3 } from '@/utils/s3.utils';
 
-export const mediaController = {
+export const locationController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.body as {
+      const { name, type, parentLocationId, domainId, status } = req.body as {
+        name?: Record<string, unknown>;
+        type?: string;
+        parentLocationId?: string | null;
         domainId?: string;
+        status?: StatusEnum;
       };
-      const { file } = req;
 
-      if (!file) {
-        throw new Error('invalid file');
-      }
-
-      const url = await uploadToS3(file, 'media');
-      let media;
-
-      try {
-        media = await mediaService.create({
-          name: file.originalname,
-          type: file.mimetype,
-          url,
-          domainId: domainId ?? '',
-        });
-      } catch (error: unknown) {
-        await deleteFromS3(url);
-        throw error;
-      }
+      const location = await locationService.create({
+        name: name ?? {},
+        type: type ?? '',
+        ...(parentLocationId !== undefined && { parentLocationId }),
+        domainId: domainId ?? '',
+        status: status ?? StatusEnum.ACTIVE,
+      });
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Media created successfully',
-        data: media,
+        message: 'Location created successfully',
+        data: location,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to create media';
+        error instanceof Error ? error.message : 'Failed to create location';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -45,15 +37,15 @@ export const mediaController = {
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { domainId } = req.query as { domainId?: string };
-      const media = await mediaService.getAll(domainId ?? '');
+      const locations = await locationService.getAll(domainId ?? '');
 
       return res.status(HttpStatus.OK).json({
-        message: 'Media fetched successfully',
-        data: media,
+        message: 'Locations fetched successfully',
+        data: locations,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch media';
+        error instanceof Error ? error.message : 'Failed to fetch locations';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -62,19 +54,19 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const media = await mediaService.getById(id ?? '', domainId ?? '');
+      const location = await locationService.getById(id ?? '', domainId ?? '');
 
-      if (!media) {
+      if (!location) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Media fetched successfully',
-        data: media,
+        message: 'Location fetched successfully',
+        data: location,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch media';
+        error instanceof Error ? error.message : 'Failed to fetch location';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -83,27 +75,35 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const { name, type } = req.body as {
-        name?: string;
+      const { name, type, parentLocationId, status } = req.body as {
+        name?: Record<string, unknown>;
         type?: string;
+        parentLocationId?: string | null;
+        status?: StatusEnum;
       };
 
-      const updatedMedia = await mediaService.update(id ?? '', domainId ?? '', {
-        ...(name !== undefined && { name }),
-        ...(type !== undefined && { type }),
-      });
+      const updatedLocation = await locationService.update(
+        id ?? '',
+        domainId ?? '',
+        {
+          ...(name !== undefined && { name }),
+          ...(type !== undefined && { type }),
+          ...(parentLocationId !== undefined && { parentLocationId }),
+          ...(status !== undefined && { status }),
+        },
+      );
 
-      if (!updatedMedia) {
+      if (!updatedLocation) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Media updated successfully',
-        data: updatedMedia,
+        message: 'Location updated successfully',
+        data: updatedLocation,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update media';
+        error instanceof Error ? error.message : 'Failed to update location';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -112,22 +112,22 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const deletedMedia = await mediaService.softDelete(
+      const deletedLocation = await locationService.softDelete(
         id ?? '',
         domainId ?? '',
       );
 
-      if (!deletedMedia) {
+      if (!deletedLocation) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Media deleted successfully',
-        data: deletedMedia,
+        message: 'Location deleted successfully',
+        data: deletedLocation,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete media';
+        error instanceof Error ? error.message : 'Failed to delete location';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
 import { StatusEnum } from '@constants/index';
-import { projectCategoryService } from '@/services';
+import { projectCategoryService } from './projectCategory.service';
 import { resolveHttpStatus } from '@/utils/httpError';
 
 export const projectCategoryController = {

@@ -1,6 +1,7 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
+import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
 
@@ -59,11 +60,13 @@ export const projectStageRepository = {
   create: async (
     data: CreateProjectStageInput,
   ): Promise<ProjectStageRecord> => {
+    const id = randomUUID();
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectStage" ("name", "code", "description", "progress", "projectId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "ProjectStage" ("id", "name", "code", "description", "progress", "projectId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
+        ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
         ${descriptionSql},

@@ -1,30 +1,43 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../constants/httpStatus';
-import { apiKeyService } from '../services';
-import { resolveHttpStatus } from '../utils/httpError';
+import { HttpStatus } from '@constants/httpStatus';
+import { mediaService } from './media.service';
+import { resolveHttpStatus } from '@/utils/httpError';
+import { deleteFromS3, uploadToS3 } from '@/utils/s3.utils';
 
-export const apiKeyController = {
+export const mediaController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { name, description, domainId } = req.body as {
-        name?: string;
-        description?: string;
+      const { domainId } = req.body as {
         domainId?: string;
       };
+      const { file } = req;
 
-      const apiKey = await apiKeyService.create({
-        name: name ?? '',
-        description: description ?? '',
-        domainId: domainId ?? '',
-      });
+      if (!file) {
+        throw new Error('invalid file');
+      }
+
+      const url = await uploadToS3(file, 'media');
+      let media;
+
+      try {
+        media = await mediaService.create({
+          name: file.originalname,
+          type: file.mimetype,
+          url,
+          domainId: domainId ?? '',
+        });
+      } catch (error: unknown) {
+        await deleteFromS3(url);
+        throw error;
+      }
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Api key created successfully',
-        data: apiKey,
+        message: 'Media created successfully',
+        data: media,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to create api key';
+        error instanceof Error ? error.message : 'Failed to create media';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -32,15 +45,15 @@ export const apiKeyController = {
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { domainId } = req.query as { domainId?: string };
-      const apiKeys = await apiKeyService.getAll(domainId ?? '');
+      const media = await mediaService.getAll(domainId ?? '');
 
       return res.status(HttpStatus.OK).json({
-        message: 'Api keys fetched successfully',
-        data: apiKeys,
+        message: 'Media fetched successfully',
+        data: media,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch api keys';
+        error instanceof Error ? error.message : 'Failed to fetch media';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -49,19 +62,19 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const apiKey = await apiKeyService.getById(id ?? '', domainId ?? '');
+      const media = await mediaService.getById(id ?? '', domainId ?? '');
 
-      if (!apiKey) {
+      if (!media) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Api key fetched successfully',
-        data: apiKey,
+        message: 'Media fetched successfully',
+        data: media,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch api key';
+        error instanceof Error ? error.message : 'Failed to fetch media';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -70,31 +83,27 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const { name, description } = req.body as {
+      const { name, type } = req.body as {
         name?: string;
-        description?: string;
+        type?: string;
       };
 
-      const updatedApiKey = await apiKeyService.update(
-        id ?? '',
-        domainId ?? '',
-        {
-          ...(name !== undefined && { name }),
-          ...(description !== undefined && { description }),
-        },
-      );
+      const updatedMedia = await mediaService.update(id ?? '', domainId ?? '', {
+        ...(name !== undefined && { name }),
+        ...(type !== undefined && { type }),
+      });
 
-      if (!updatedApiKey) {
+      if (!updatedMedia) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Api key updated successfully',
-        data: updatedApiKey,
+        message: 'Media updated successfully',
+        data: updatedMedia,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update api key';
+        error instanceof Error ? error.message : 'Failed to update media';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -103,22 +112,22 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const deletedApiKey = await apiKeyService.delete(
+      const deletedMedia = await mediaService.softDelete(
         id ?? '',
         domainId ?? '',
       );
 
-      if (!deletedApiKey) {
+      if (!deletedMedia) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Api key deleted successfully',
-        data: deletedApiKey,
+        message: 'Media deleted successfully',
+        data: deletedMedia,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete api key';
+        error instanceof Error ? error.message : 'Failed to delete media';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

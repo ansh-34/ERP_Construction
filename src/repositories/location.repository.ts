@@ -1,6 +1,7 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
+import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
 
@@ -48,9 +49,11 @@ const locationSelect = Prisma.sql`
 
 export const locationRepository = {
   create: async (data: CreateLocationInput): Promise<LocationRecord> => {
+    const id = randomUUID();
+
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
-      INSERT INTO "Location" ("name", "code", "type", "parentLocationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      INSERT INTO "Location" ("id", "name", "code", "type", "parentLocationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 
