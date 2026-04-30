@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { validate } from '../../../middlewares/validate.ts';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin.ts';
-import { seedDomain, verifyDomainToken } from './domain.controller.ts';
+import { validate } from '../../../middlewares/validate';
+import validateSuperadmin from '../../../middlewares/validateSuperadmin';
+import { seedDomain, verifyDomainToken } from './domain.controller';
 import {
   seedDomainBodySchema,
   verifyDomainTokenQuerySchema,
-} from './domain.validator.ts';
+} from './domain.validator';
 
 const router = Router();
 

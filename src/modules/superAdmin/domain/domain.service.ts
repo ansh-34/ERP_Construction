@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { Messages } from '../../../constants/index.ts';
+import { Messages } from '../../../constants/index';
 import {
   DomainRepository,
   RoleRepository,
   TokenRepository,
-} from '../../../repositories/index.ts';
-import { signToken } from '../../../services/jwt.services.ts';
-import { sendMail } from '../../../services/mail.services.ts';
+} from '../../../repositories/index';
+import { signToken } from '../../../services/jwt.services';
+import { sendMail } from '../../../services/mail.services';
 
 const SALT_ROUNDS = 12;
 
