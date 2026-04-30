@@ -5,7 +5,7 @@ export const ModuleDependencyPaths = {
     post: {
       tags: ['Module Dependencies'],
       summary: 'Create module dependency',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -22,7 +22,7 @@ export const ModuleDependencyPaths = {
     get: {
       tags: ['Module Dependencies'],
       summary: 'List module dependencies',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         {
           in: 'query',
@@ -43,7 +43,7 @@ export const ModuleDependencyPaths = {
     delete: {
       tags: ['Module Dependencies'],
       summary: 'Delete module dependency',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],

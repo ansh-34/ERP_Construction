@@ -8,7 +8,11 @@ const validateSuperadmin = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const token = req.cookies.token;
+    const token =
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1]
+        : req.cookies.token;
     if (!token) {
       res.status(401).json({
         success: false,

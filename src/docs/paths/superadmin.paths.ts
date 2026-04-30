@@ -21,7 +21,7 @@ export const SuperadminPaths = {
     post: {
       tags: ['Superadmin'],
       summary: 'Seed domain by superadmin',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {

@@ -5,7 +5,7 @@ export const ModulePermissionPaths = {
     post: {
       tags: ['Module Permissions'],
       summary: 'Set module permissions',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -22,7 +22,7 @@ export const ModulePermissionPaths = {
     get: {
       tags: ['Module Permissions'],
       summary: 'List module permissions',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         {
           in: 'query',
@@ -43,7 +43,7 @@ export const ModulePermissionPaths = {
     delete: {
       tags: ['Module Permissions'],
       summary: 'Delete module permissions record',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],

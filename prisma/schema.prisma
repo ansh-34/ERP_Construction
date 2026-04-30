@@ -32,6 +32,8 @@ model Domain {
   vehicleJourneySchedules VehicleJourneySchedule[]
   dispatchVehicles        DispatchVehicle[]
   uoms                    Uom[]
+  products                Product[]
+  productUoms             ProductUom[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -275,7 +277,8 @@ model Uom {
   isDeleted      Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
+  
+  productUoms              ProductUom[]             @relation("ProductUom")
   vehicleLoadCapacity      Vehicle[]                @relation("VehicleLoadCapacityUom")
   journeyScheduleLoadedQty VehicleJourneySchedule[] @relation("JourneyScheduleLoadedQtyUom")
   dispatchLoadedQty        DispatchVehicle[]        @relation("DispatchLoadedQtyUom")
@@ -372,4 +375,36 @@ model DispatchVehicle {
   @@unique([code, domainId, isDeleted, vehicleId])
   @@index([createdAt, isDeleted, domainId])
   @@index([journeyStatus, isDeleted, domainId])
+}
+
+
+model Product {
+  id          String   @id @default(uuid())
+  displayName Json
+  code        String
+  productType String
+  domainId    String
+  domain      Domain   @relation(fields: [domainId], references: [id])
+  status      String
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productUoms ProductUom[]
+}
+
+model ProductUom {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  uomId     String
+  uom       Uom      @relation("ProductUom", fields: [uomId], references: [id])
+  domainId  String
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, uomId]) 
 }

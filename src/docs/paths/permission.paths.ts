@@ -5,7 +5,7 @@ export const PermissionPaths = {
     post: {
       tags: ['Permissions'],
       summary: 'Create permission',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -22,7 +22,7 @@ export const PermissionPaths = {
     get: {
       tags: ['Permissions'],
       summary: 'List permissions',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         {
           in: 'query',
@@ -43,7 +43,7 @@ export const PermissionPaths = {
     put: {
       tags: ['Permissions'],
       summary: 'Update permission',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
@@ -60,7 +60,7 @@ export const PermissionPaths = {
     delete: {
       tags: ['Permissions'],
       summary: 'Delete permission',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],

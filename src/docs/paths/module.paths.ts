@@ -5,7 +5,7 @@ export const ModulePaths = {
     post: {
       tags: ['Modules'],
       summary: 'Create module',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -22,7 +22,7 @@ export const ModulePaths = {
     get: {
       tags: ['Modules'],
       summary: 'List modules',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       responses: { ...ok, ...errors },
     },
   },
@@ -31,7 +31,7 @@ export const ModulePaths = {
     post: {
       tags: ['Modules'],
       summary: 'Update module',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
@@ -48,7 +48,7 @@ export const ModulePaths = {
     delete: {
       tags: ['Modules'],
       summary: 'Delete module',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
