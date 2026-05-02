@@ -1,4 +1,5 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
+import type { IndustryEnum } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
 export const DomainRepository = {
   findActiveById(id: string) {
@@ -12,6 +13,7 @@ export const DomainRepository = {
   seedWithAdmin(data: {
     domainName: string;
     email: string;
+    industry: IndustryEnum[];
     password: string;
     phone?: string;
     phoneCode?: string;
@@ -29,6 +31,7 @@ export const DomainRepository = {
           phone: data.phone || null,
           phoneCode: data.phoneCode || null,
           organizationType: data.organizationType || null,
+          industry: data.industry,
           password: data.password,
           isEmailVerified: false,
         },

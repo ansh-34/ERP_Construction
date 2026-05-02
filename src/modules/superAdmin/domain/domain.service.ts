@@ -1,24 +1,37 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import type { IndustryEnum } from '../../../infra/database/prisma/generated/prisma/client/enums';
 import { Messages } from '../../../constants/index';
-import {
-  DomainRepository,
-  RoleRepository,
-  TokenRepository,
-} from '../../../repositories/index';
-import { signToken } from '../../../services/jwt.services';
+import { DomainRepository, TokenRepository } from '../../../repositories/index';
 import { sendMail } from '../../../services/mail.services';
 
 const SALT_ROUNDS = 12;
 
+const normalizeIndustryInput = (
+  industry: string | string[],
+): IndustryEnum[] => {
+  const industries = Array.isArray(industry) ? industry : [industry];
+
+  return industries.map((item) => item.trim().toUpperCase() as IndustryEnum);
+};
+
 export const DomainService = {
   async seedDomain(data: any, baseUrl: string) {
-    const { domainName, email, password, phone, phoneCode, organizationType } =
-      data;
+    const {
+      domainName,
+      email,
+      password,
+      industry,
+      phone,
+      phoneCode,
+      organizationType,
+    } = data;
 
-    if (!domainName || !email || !password) {
-      throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_REQUIRED);
+    if (!domainName || !email || !password || !industry?.length) {
+      throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED);
     }
+
+    const industries = normalizeIndustryInput(industry);
 
     const existingDomain = await DomainRepository.findActiveByEmail(email);
 
@@ -34,6 +47,7 @@ export const DomainService = {
     const result = await DomainRepository.seedWithAdmin({
       domainName,
       email,
+      industry: industries,
       phone,
       phoneCode,
       organizationType,
@@ -56,6 +70,7 @@ export const DomainService = {
         id: result.domain.id,
         name: result.domain.name,
         email: result.domain.email,
+        industry: result.domain.industry,
       },
     };
   },
@@ -95,6 +110,7 @@ export const DomainService = {
         id: domain.id,
         name: domain.name,
         email: domain.email,
+        industry: domain.industry,
       },
     };
   },

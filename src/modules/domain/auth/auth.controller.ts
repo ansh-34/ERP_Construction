@@ -13,11 +13,11 @@ export const login = async (req: Request, res: Response) => {
 
     return res
       .status(HttpStatus.OK)
-      .cookie('token', result.token, cookieOptions)
+      .cookie('accessToken', result.accessToken, cookieOptions)
       .json({
         success: true,
         message: Messages.AUTH.LOGIN_SUCCESS,
-        data: { ...result, token: undefined },
+        data: result,
       });
   } catch (error) {
     const message =

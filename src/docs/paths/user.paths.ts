@@ -41,7 +41,7 @@ export const UserPaths = {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/DomainLoginBody' },
+            schema: { $ref: '#/components/schemas/UserLoginBody' },
           },
         },
       },

@@ -1,27 +1,30 @@
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+import type { IndustryEnum } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { Messages } from '../../../constants/index.js';
 import {
   DomainRepository,
   RoleRepository,
-  TokenRepository,
 } from '../../../repositories/index.js';
 import { signToken } from '../../../services/jwt.services.js';
-import { sendMail } from '../../../services/mail.services.js';
-
-const SALT_ROUNDS = 12;
 
 export const AuthService = {
-  async login(data: { email: string; password: string }) {
-    const { email, password } = data;
+  async login(data: {
+    identifier: string;
+    password: string;
+    speciality: IndustryEnum;
+  }) {
+    const { speciality, identifier, password } = data;
 
-    if (!email || !password) {
-      throw new Error(Messages.AUTH.EMAIL_PASSWORD_REQUIRED);
+    if (!identifier || !password || !speciality) {
+      throw new Error(Messages.AUTH.DOMAIN_LOGIN_REQUIRED);
     }
 
-    const domainOwner = await DomainRepository.findActiveByEmail(email);
-
+    const domainOwner = await DomainRepository.findActiveByEmail(identifier);
     if (!domainOwner) {
+      throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
+    }
+
+    if (!domainOwner.industry.includes(speciality)) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
@@ -39,7 +42,8 @@ export const AuthService = {
     });
 
     return {
-      token,
+      accessToken: token,
+      refreshToken: token,
       user: {
         id: domainOwner.id,
         name: domainOwner.name,
@@ -49,6 +53,7 @@ export const AuthService = {
       domain: {
         id: domainOwner.id,
         name: domainOwner.name,
+        industry: domainOwner.industry,
       },
     };
   },

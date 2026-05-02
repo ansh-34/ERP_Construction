@@ -12,21 +12,28 @@ enum StatusEnum {
   INACTIVE
 }
 
+enum IndustryEnum {
+  CONSTRUCTION
+  MANUFACTURING
+  MINING
+  PROPERTY
+}
+
 model Domain {
-  id               String  @id @default(uuid()) @db.Uuid
+  id               String         @id @default(uuid()) @db.Uuid
   name             Json
   email            String
   organizationType Json?
   phoneCode        String?
   phone            String?
-  mediaId          String? @db.Uuid
-
-  password        String
-  isEmailVerified Boolean  @default(false)
-  status          String   @default("active")
-  isDeleted       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  mediaId          String?        @db.Uuid
+  industry         IndustryEnum[] @default([])
+  password         String
+  isEmailVerified  Boolean        @default(false)
+  status           String         @default("active")
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   users                   User[]
   tokens                  Token[]

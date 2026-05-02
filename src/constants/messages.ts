@@ -25,6 +25,7 @@ export const Messages = Object.freeze({
     VERIFICATION_FAILED: 'Verification failed',
     EMAIL_TOKEN_REQUIRED: 'email and token are required',
     EMAIL_PASSWORD_REQUIRED: 'email and password are required',
+    DOMAIN_LOGIN_REQUIRED: 'email, password, and speciality are required',
     INVALID_OR_EXPIRED_VERIFICATION_LINK:
       'Invalid or expired verification link',
   },
@@ -57,6 +58,8 @@ export const Messages = Object.freeze({
     OWNER_EMAIL_ALREADY_EXISTS: 'A domain owner with this email already exists',
     ALREADY_VERIFIED: 'Domain is already verified',
     NAME_EMAIL_PASSWORD_REQUIRED: 'domainName, email, password are required',
+    NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED:
+      'domainName, email, password, industry are required',
     USER_REGISTRATION_REQUIRED: 'name, email, password, domainId are required',
   },
   ROLE: {

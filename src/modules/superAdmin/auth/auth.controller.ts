@@ -12,8 +12,13 @@ export const loginSuperAdmin = async (req: Request, res: Response) => {
 
     return res
       .status(HttpStatus.OK)
-      .cookie('token', token, cookieOptions)
-      .json({ success: true, message: Messages.AUTH.SUPERADMIN_VERIFIED });
+      .cookie('accessToken', token, cookieOptions)
+      .json({
+        success: true,
+        message: Messages.AUTH.SUPERADMIN_VERIFIED,
+        accessToken: token,
+        refreshToken: token,
+      });
   } catch (error) {
     const message =
       error instanceof Error

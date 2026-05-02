@@ -4,33 +4,30 @@ import { Messages } from '../../../constants/index.js';
 import { SuperAdminRepository } from '../../../repositories/index.js';
 
 export const SuperAdminAuthService = {
-  async login(data: { superAdminEmail: string; superAdminPassword: string }) {
-    const { superAdminEmail, superAdminPassword } = data;
+  async login(data: { identifier: string; password: string }) {
+    const { identifier, password } = data;
 
-    if (!superAdminEmail || !superAdminPassword) {
+    if (!identifier || !password) {
       throw new Error(Messages.AUTH.SUPERADMIN_EMAIL_PASSWORD_REQUIRED);
     }
 
-    const superAdmin =
-      await SuperAdminRepository.findActiveByEmail(superAdminEmail);
+    const superAdmin = await SuperAdminRepository.findActiveByEmail(identifier);
 
     if (!superAdmin) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
-    const isMatch = await bcrypt.compare(
-      superAdminPassword,
-      superAdmin.password,
-    );
+    const isMatch = await bcrypt.compare(password, superAdmin.password);
 
     if (!isMatch) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
-    return jwt.sign(
+    const token = jwt.sign(
       { id: superAdmin.id, email: superAdmin.email },
       process.env.JWT_SECRET!,
       { expiresIn: '1d' },
     );
+    return token;
   },
 };

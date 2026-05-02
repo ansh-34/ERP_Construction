@@ -1,6 +1,18 @@
 export const UserSchemas = {
   DomainLoginBody: {
     type: 'object',
+    required: ['identifier', 'password', 'speciality'],
+    properties: {
+      identifier: { type: 'string', format: 'email' },
+      password: { type: 'string' },
+      speciality: {
+        type: 'string',
+        enum: ['CONSTRUCTION', 'MANUFACTURING', 'MINING', 'PROPERTY'],
+      },
+    },
+  },
+  UserLoginBody: {
+    type: 'object',
     required: ['email', 'password'],
     properties: {
       email: { type: 'string', format: 'email' },
