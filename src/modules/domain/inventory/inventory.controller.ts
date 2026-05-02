@@ -3,7 +3,6 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { InventoryService } from './inventory.service.js';
-import { addInventoryItemBodySchema } from './inventory.validator.js';
 
 export const getInventory = async (req: Request, res: Response) => {
   try {
@@ -31,17 +30,14 @@ export const getInventory = async (req: Request, res: Response) => {
 
 export const addItemToInventory = async (req: Request, res: Response) => {
   try {
-    const parsed = addInventoryItemBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((err) => err.message).join(', ');
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ success: false, message });
-    }
-
     const item = await InventoryService.addItemToInventory(
       req.user!.domainId,
-      parsed.data,
+      req.body as {
+        name: string;
+        quantity: number;
+        reorderLevel?: number;
+        code?: string;
+      },
     );
 
     return res.status(HttpStatus.CREATED).json({

@@ -1,8 +1,8 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
 
-export const SuperadminRepository = {
+export const SuperAdminRepository = {
   findActiveByEmail(email: string) {
-    return prisma.superadmin.findFirst({
+    return prisma.superAdmin.findFirst({
       where: { email, isDeleted: false },
     });
   },

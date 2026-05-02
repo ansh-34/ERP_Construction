@@ -21,12 +21,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.post(
-  '/entry',
-  isAdmin,
-  validate(createRoleBodySchema, 'body'),
-  createRole,
-);
+router.post('/', isAdmin, validate(createRoleBodySchema, 'body'), createRole);
 router.post(
   '/:roleId/permissions',
   isAdmin,
@@ -34,7 +29,7 @@ router.post(
   validate(assignPermissionsBodySchema, 'body'),
   assignPermissions,
 );
-router.get('/list', validate(listRolesQuerySchema, 'query'), listRoles);
+router.get('/', isAdmin, validate(listRolesQuerySchema, 'query'), listRoles);
 router.post(
   '/:id/role',
   isAdmin,

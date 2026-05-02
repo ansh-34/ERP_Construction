@@ -9,8 +9,8 @@ import permissionRouter from './permission/permission.router.js';
 
 const superAdminRouter = Router();
 
-superAdminRouter.use('/superadmin/domain', domainRouter);
-superAdminRouter.use('/superadmin/auth', authRouter);
+superAdminRouter.use('/domain', domainRouter);
+superAdminRouter.use('/auth', authRouter);
 superAdminRouter.use('/modules', moduleRouter);
 superAdminRouter.use('/module-dependencies', moduleDependencyRouter);
 superAdminRouter.use('/module-permissions', modulePermissionRouter);

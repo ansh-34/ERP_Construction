@@ -1,34 +1,8 @@
 import { ok, created, errors } from './responses.js';
 
 export const ModulePaths = {
-  '/api/modules/entry': {
-    post: {
-      tags: ['Modules'],
-      summary: 'Create module',
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/CreateModuleBody' },
-          },
-        },
-      },
-      responses: { ...created, ...errors },
-    },
-  },
-
-  '/api/modules/list': {
-    get: {
-      tags: ['Modules'],
-      summary: 'List modules',
-      security: [{ bearerAuth: [] }],
-      responses: { ...ok, ...errors },
-    },
-  },
-
   '/api/modules/{id}': {
-    post: {
+    put: {
       tags: ['Modules'],
       summary: 'Update module',
       security: [{ bearerAuth: [] }],
@@ -52,6 +26,28 @@ export const ModulePaths = {
       parameters: [
         { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
       ],
+      responses: { ...ok, ...errors },
+    },
+  },
+  '/api/modules': {
+    post: {
+      tags: ['Modules'],
+      summary: 'Create module',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/CreateModuleBody' },
+          },
+        },
+      },
+      responses: { ...created, ...errors },
+    },
+    get: {
+      tags: ['Modules'],
+      summary: 'List modules',
+      security: [{ bearerAuth: [] }],
       responses: { ...ok, ...errors },
     },
   },

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const superadminLoginBodySchema = z.object({
-  superadminEmail: z.string().email(),
-  superadminPassword: z.string().min(1),
+export const superAdminLoginBodySchema = z.object({
+  superAdminEmail: z.string().email(),
+  superAdminPassword: z.string().min(1),
 });

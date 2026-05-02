@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin.js';
+import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   setModulePermissions,
@@ -14,7 +14,7 @@ import {
 
 const router = Router();
 
-router.use(validateSuperadmin);
+router.use(validateSuperAdmin);
 
 router.post(
   '/set',
@@ -22,7 +22,7 @@ router.post(
   setModulePermissions,
 );
 router.get(
-  '/list',
+  '/',
   validate(listModulePermissionsQuerySchema, 'query'),
   listModulePermissions,
 );

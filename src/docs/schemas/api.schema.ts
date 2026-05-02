@@ -1,5 +1,5 @@
 import { CommonSchemas } from './common.schema.js';
-import { SuperadminSchemas } from './superadmin.schema.js';
+import { SuperAdminSchemas } from './superAdmin.schema.js';
 import { UserSchemas } from './user.schema.js';
 import { RoleSchemas } from './role.schema.js';
 import { ModuleSchemas } from './module.schema.js';
@@ -14,7 +14,7 @@ import { AppErrorSchemas } from './appError.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
-  ...SuperadminSchemas,
+  ...SuperAdminSchemas,
   ...UserSchemas,
   ...RoleSchemas,
   ...ModuleSchemas,

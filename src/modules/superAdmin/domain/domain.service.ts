@@ -41,7 +41,7 @@ export const DomainService = {
       token: rawToken,
       tokenExpiresAt,
       adminRoleId,
-      adminPermissions: ['read', 'write', 'approve', 'export', 'delete'],
+      adminPermissions: ['read', 'write', 'update', 'delete'],
     });
 
     const verificationLink = `${baseUrl}/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;

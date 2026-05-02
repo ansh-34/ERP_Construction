@@ -3,20 +3,11 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { ModuleService } from './module.service.js';
-import { createModuleBodySchema } from './module.validator.js';
 
 export const createModule = async (req: Request, res: Response) => {
   try {
-    const parsed = createModuleBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((err) => err.message).join(', ');
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ success: false, message });
-    }
-
     const mod = await ModuleService.createModule(
-      parsed.data as { name: any; code: string },
+      req.body as { name: any; code: string },
     );
 
     return res

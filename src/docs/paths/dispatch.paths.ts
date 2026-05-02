@@ -1,7 +1,7 @@
 import { ok, created, errors } from './responses.js';
 
 export const DispatchPaths = {
-  '/api/dispatch/entry': {
+  '/api/dispatch': {
     post: {
       tags: ['Dispatch'],
       summary: 'Create dispatch',
@@ -16,9 +16,6 @@ export const DispatchPaths = {
       },
       responses: { ...created, ...errors },
     },
-  },
-
-  '/api/dispatch/list': {
     get: {
       tags: ['Dispatch'],
       summary: 'List dispatch entries',

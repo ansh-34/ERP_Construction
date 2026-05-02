@@ -1,9 +1,9 @@
-import { initSuperadmin } from '@/seed/superAdmin';
+import { initSuperAdmin } from '@/seed/superAdmin';
 import { permissionData } from '@/seed/permission';
 
 export const runFunctions = async () => {
   try {
-    await Promise.all([initSuperadmin(), permissionData()]);
+    await Promise.all([initSuperAdmin(), permissionData()]);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Unknown startup error';

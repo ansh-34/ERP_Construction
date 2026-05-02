@@ -14,7 +14,11 @@ const isAdmin = async (
 
     if (req.user.roleId) {
       const role = await prisma.role.findUnique({
-        where: { id: req.user.roleId },
+        where: {
+          id: req.user.roleId,
+          isDeleted: false,
+          domainId: req.user.domainId,
+        },
       });
       if (role && role.code === 'admin') {
         return next();
@@ -23,7 +27,7 @@ const isAdmin = async (
 
     res.status(403).json({
       success: false,
-      message: 'Forbidden: Only Administrators can perform this action.',
+      message: 'Forbidden: Only Admin can perform this action.',
     });
   } catch (err) {
     console.error('isAdmin middleware error:', err);

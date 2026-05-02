@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import prisma from '../infra/database/prisma/prisma.client.js';
 import jwt from 'jsonwebtoken';
 
-const validateSuperadmin = async (
+const validateSuperAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -17,7 +17,7 @@ const validateSuperadmin = async (
       res.status(401).json({
         success: false,
         message:
-          'Superadmin credentials (email and password) are required for this action.',
+          'SuperAdmin credentials (email and password) are required for this action.',
       });
       return;
     }
@@ -26,7 +26,7 @@ const validateSuperadmin = async (
       id: string;
       email: string;
     };
-    const superadmin = await prisma.superadmin.findFirst({
+    const superAdmin = await prisma.superAdmin.findFirst({
       where: {
         id: decodedToken.id,
         email: decodedToken.email,
@@ -34,19 +34,19 @@ const validateSuperadmin = async (
       },
     });
 
-    if (!superadmin) {
+    if (!superAdmin) {
       res.status(401).json({
         success: false,
-        message: 'Invalid Superadmin credentials.',
+        message: 'Invalid SuperAdmin credentials.',
       });
       return;
     }
     // Success - move to the controller
     next();
   } catch (err) {
-    console.error('validateSuperadmin middleware error:', err);
+    console.error('validateSuperAdmin middleware error:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 
-export default validateSuperadmin;
+export default validateSuperAdmin;

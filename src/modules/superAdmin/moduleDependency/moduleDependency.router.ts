@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin.js';
+import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createModuleDependency,
@@ -14,15 +14,15 @@ import {
 
 const router = Router();
 
-router.use(validateSuperadmin);
+router.use(validateSuperAdmin);
 
 router.post(
-  '/entry',
+  '/',
   validate(createModuleDependencyBodySchema, 'body'),
   createModuleDependency,
 );
 router.get(
-  '/list',
+  '/',
   validate(listModuleDependenciesQuerySchema, 'query'),
   listModuleDependencies,
 );

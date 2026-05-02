@@ -1,7 +1,7 @@
 import { ok, created, errors } from './responses.js';
 
 export const JourneySchedulePaths = {
-  '/api/journey-schedules/entry': {
+  '/api/journey-schedules': {
     post: {
       tags: ['Journey Schedules'],
       summary: 'Create journey schedule',
@@ -16,9 +16,6 @@ export const JourneySchedulePaths = {
       },
       responses: { ...created, ...errors },
     },
-  },
-
-  '/api/journey-schedules/list': {
     get: {
       tags: ['Journey Schedules'],
       summary: 'List journey schedules',

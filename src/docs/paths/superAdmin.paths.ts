@@ -1,15 +1,15 @@
 import { ok, created, errors } from './responses.js';
 
-export const SuperadminPaths = {
-  '/api/superadmin/auth/login': {
+export const SuperAdminPaths = {
+  '/api/superAdmin/auth/login': {
     post: {
-      tags: ['Superadmin'],
-      summary: 'Login superadmin',
+      tags: ['SuperAdmin'],
+      summary: 'Login superAdmin',
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/SuperadminLoginBody' },
+            schema: { $ref: '#/components/schemas/SuperAdminLoginBody' },
           },
         },
       },
@@ -17,10 +17,10 @@ export const SuperadminPaths = {
     },
   },
 
-  '/api/superadmin/domain/seed': {
+  '/api/superAdmin/domain/seed': {
     post: {
-      tags: ['Superadmin'],
-      summary: 'Seed domain by superadmin',
+      tags: ['SuperAdmin'],
+      summary: 'Seed domain by superAdmin',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -34,9 +34,9 @@ export const SuperadminPaths = {
     },
   },
 
-  '/api/superadmin/domain/verify': {
+  '/api/superAdmin/domain/verify': {
     get: {
-      tags: ['Superadmin'],
+      tags: ['SuperAdmin'],
       summary: 'Verify seeded domain token',
       parameters: [
         {

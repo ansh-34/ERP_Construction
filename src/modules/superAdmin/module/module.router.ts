@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin.js';
+import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createModule,
@@ -9,17 +9,18 @@ import {
 } from './module.controller.js';
 import {
   createModuleBodySchema,
+  listModulesQuerySchema,
   moduleIdParamsSchema,
   updateModuleBodySchema,
 } from './module.validator.js';
 
 const router = Router();
 
-router.use(validateSuperadmin);
+router.use(validateSuperAdmin);
 
-router.post('/create', validate(createModuleBodySchema, 'body'), createModule);
-router.get('/list', listModules);
-router.post(
+router.post('/', validate(createModuleBodySchema, 'body'), createModule);
+router.get('/', validate(listModulesQuerySchema, 'query'), listModules);
+router.put(
   '/:id',
   validate(moduleIdParamsSchema, 'params'),
   validate(updateModuleBodySchema, 'body'),

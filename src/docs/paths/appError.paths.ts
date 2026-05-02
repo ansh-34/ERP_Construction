@@ -1,7 +1,7 @@
 import { ok, created, errors } from './responses.js';
 
 export const AppErrorPaths = {
-  '/api/app-errors/entry': {
+  '/api/app-errors': {
     post: {
       tags: ['App Errors'],
       summary: 'Create app error entry',
@@ -16,9 +16,6 @@ export const AppErrorPaths = {
       },
       responses: { ...created, ...errors },
     },
-  },
-
-  '/api/app-errors/list': {
     get: {
       tags: ['App Errors'],
       summary: 'List app errors',

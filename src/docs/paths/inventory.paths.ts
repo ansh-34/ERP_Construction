@@ -1,7 +1,7 @@
 import { ok, created, errors } from './responses.js';
 
 export const InventoryPaths = {
-  '/api/inventory/records/entry': {
+  '/api/inventory/records': {
     post: {
       tags: ['Inventory'],
       summary: 'Add inventory item',
@@ -16,9 +16,6 @@ export const InventoryPaths = {
       },
       responses: { ...created, ...errors },
     },
-  },
-
-  '/api/inventory/records/list': {
     get: {
       tags: ['Inventory'],
       summary: 'List inventory items',

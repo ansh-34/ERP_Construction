@@ -15,9 +15,9 @@ export const Messages = Object.freeze({
     LOGOUT_SUCCESS: 'Logout successful',
     INVALID_CREDENTIALS: 'Invalid credentials',
     TOKEN_EXPIRED: 'Authentication token expired',
-    SUPERADMIN_VERIFIED: 'Superadmin verified',
+    SUPERADMIN_VERIFIED: 'SuperAdmin verified',
     SUPERADMIN_EMAIL_PASSWORD_REQUIRED:
-      'Superadmin email and password are required',
+      'SuperAdmin email and password are required',
     SEED_DOMAIN_SUCCESS:
       'Domain seeded successfully. Verification link sent to email.',
     SEEDING_FAILED: 'Seeding failed',
@@ -129,6 +129,17 @@ export const Messages = Object.freeze({
     LIST_FAILED: 'Failed to list languages',
     NAME_CODE_REQUIRED: 'name and code are required',
     CODE_ALREADY_EXISTS: 'Language with this code already exists',
+  },
+  PRODUCT: {
+    CREATED: 'Product created successfully',
+    RETRIEVED: 'Products retrieved',
+    CREATE_FAILED: 'Failed to create product',
+    LIST_FAILED: 'Failed to list products',
+    UPDATED: 'Product updated successfully',
+    DELETED: 'Product deleted successfully',
+    NOT_FOUND: 'Product not found',
+    UPDATE_FAILED: 'Failed to update product',
+    DELETE_FAILED: 'Failed to delete product',
   },
   INVENTORY: {
     RETRIEVED: 'Inventory retrieved',

@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { idParamSchema } from '../../common/common.validator.js';
+import {
+  idParamSchema,
+  paginationQuerySchema,
+} from '../../common/common.validator.js';
 
 export const createModuleBodySchema = z.object({
   name: z.any(),
@@ -7,6 +10,8 @@ export const createModuleBodySchema = z.object({
 });
 
 export const moduleIdParamsSchema = idParamSchema;
+
+export const listModulesQuerySchema = paginationQuerySchema;
 
 export const updateModuleBodySchema = z.object({
   name: z.any().optional(),

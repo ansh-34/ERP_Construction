@@ -1,6 +1,6 @@
 export * from './domain.repository.js';
 export * from './token.repository.js';
-export * from './superadmin.repository.js';
+export * from './superAdmin.repository.js';
 export * from './user.repository.js';
 export * from './role.repository.js';
 export * from './roleModulePermission.repository.js';
@@ -15,3 +15,4 @@ export * from './language.repository.js';
 export * from './vehicle.repository.js';
 export * from './journeySchedule.repository.js';
 export * from './dispatch.repository.js';
+export * from './product.repository.js';

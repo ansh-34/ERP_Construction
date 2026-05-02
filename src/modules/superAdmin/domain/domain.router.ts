@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../../../middlewares/validate';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin';
+import validateSuperAdmin from '../../../middlewares/validateSuperAdmin';
 import { seedDomain, verifyDomainToken } from './domain.controller';
 import {
   seedDomainBodySchema,
@@ -11,7 +11,7 @@ const router = Router();
 
 router.post(
   '/seed',
-  validateSuperadmin,
+  validateSuperAdmin,
   validate(seedDomainBodySchema, 'body'),
   seedDomain,
 );

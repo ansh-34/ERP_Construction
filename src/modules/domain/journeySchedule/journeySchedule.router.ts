@@ -16,13 +16,13 @@ const router = Router();
 router.use(authMiddleware);
 
 router.post(
-  '/entry',
+  '/',
   authorize('journey', 'create'),
   validate(createJourneyScheduleBodySchema, 'body'),
   createJourneySchedule,
 );
 router.get(
-  '/list',
+  '/',
   authorize('journey', 'read'),
   validate(listJourneySchedulesQuerySchema, 'query'),
   listJourneySchedules,

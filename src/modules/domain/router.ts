@@ -9,10 +9,11 @@ import languageRouter from './language/language.router.js';
 import roleRouter from './role/role.router.js';
 import userRouter from './user/user.router.js';
 import vehicleRouter from './vehicle/vehicle.router.js';
+import productRouter from './product/product.router.js';
 
 const domainRouter = Router();
 
-domainRouter.use('/domain', authRouter);
+domainRouter.use('/auth', authRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);
 domainRouter.use('/inventory', inventoryRouter);
@@ -21,5 +22,6 @@ domainRouter.use('/language', languageRouter);
 domainRouter.use('/vehicles', vehicleRouter);
 domainRouter.use('/journey-schedules', journeyScheduleRouter);
 domainRouter.use('/dispatch', dispatchRouter);
+domainRouter.use('/products', productRouter);
 
 export default domainRouter;

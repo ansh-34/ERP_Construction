@@ -1,7 +1,7 @@
 import { ok, created, errors } from './responses.js';
 
 export const VehiclePaths = {
-  '/api/vehicles/entry': {
+  '/api/vehicles': {
     post: {
       tags: ['Vehicles'],
       summary: 'Create vehicle',
@@ -16,9 +16,6 @@ export const VehiclePaths = {
       },
       responses: { ...created, ...errors },
     },
-  },
-
-  '/api/vehicles/list': {
     get: {
       tags: ['Vehicles'],
       summary: 'List vehicles',

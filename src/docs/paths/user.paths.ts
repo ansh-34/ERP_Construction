@@ -66,7 +66,7 @@ export const UserPaths = {
     },
   },
 
-  '/api/users/list': {
+  '/api/users': {
     get: {
       tags: ['Users'],
       summary: 'List users',

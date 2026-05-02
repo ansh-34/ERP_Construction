@@ -40,6 +40,8 @@ model Domain {
   uoms                    Uom[]
   products                Product[]
   productUoms             ProductUom[]
+  productGrades           ProductGrades[]
+  productGradeStdRates    ProductGradeStdRates[]
   apiKeys                 ApiKey[]
   locations               Location[]
   media                   Media[]
@@ -276,7 +278,7 @@ model Language {
   @@index([createdAt, isDeleted, status])
 }
 
-model Superadmin {
+model SuperAdmin {
   id        String   @id @default(uuid()) @db.Uuid
   name      Json
   email     String
@@ -421,6 +423,8 @@ model Product {
   domainId    String @db.Uuid
 
   domain    Domain   @relation(fields: [domainId], references: [id])
+  productGrades           ProductGrades[]
+  productGradeStdRates    ProductGradeStdRates[]
   status    String
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -447,6 +451,40 @@ model ProductUom {
 
   @@unique([productId, uomId])
 }
+
+			
+model	ProductGrades{
+id String @id @default(uuid()) @db.Uuid
+productId	String @db.Uuid		
+gradeDisplayName	Json		
+gradeCode	String		
+domainId	String @db.Uuid
+domain   Domain   @relation(fields: [domainId], references: [id])
+product   Product  @relation(fields: [productId], references: [id])
+productGradeStdRates    ProductGradeStdRates[]
+status	String		
+isDeleted	Boolean		
+createdAt	DateTime @default(now())
+updatedAt	DateTime @updatedAt
+}
+
+
+model	ProductGradeStdRates{
+id String @id @default(uuid()) @db.Uuid
+productGradeId	String @db.Uuid	
+productId	String @db.Uuid		
+stdRateType	Json		
+stdRateValue	Float		
+alertThresold 	Float		
+domainId	String @db.Uuid
+domain   Domain   @relation(fields: [domainId], references: [id])
+product   Product  @relation(fields: [productId], references: [id])
+productGrade  ProductGrades @relation(fields: [productGradeId], references: [id])
+status	String		
+isDeleted	Boolean		
+createdAt	DateTime @default(now())
+updatedAt	DateTime @updatedAt
+			}
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid

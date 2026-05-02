@@ -3,21 +3,12 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { RoleService } from './role.service.js';
-import { createRoleBodySchema } from './role.validator.js';
 
 export const createRole = async (req: Request, res: Response) => {
   try {
-    const parsed = createRoleBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((err) => err.message).join(', ');
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ success: false, message });
-    }
-
     const role = await RoleService.createRole(
       req.user!.domainId,
-      parsed.data as { name: any; code: string; level?: number },
+      req.body as { name: any; code: string; level?: number },
     );
 
     return res

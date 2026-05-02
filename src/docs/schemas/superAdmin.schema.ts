@@ -1,10 +1,10 @@
-export const SuperadminSchemas = {
-  SuperadminLoginBody: {
+export const SuperAdminSchemas = {
+  SuperAdminLoginBody: {
     type: 'object',
-    required: ['superadminEmail', 'superadminPassword'],
+    required: ['superAdminEmail', 'superAdminPassword'],
     properties: {
-      superadminEmail: { type: 'string', format: 'email' },
-      superadminPassword: { type: 'string' },
+      superAdminEmail: { type: 'string', format: 'email' },
+      superAdminPassword: { type: 'string' },
     },
   },
   SeedDomainBody: {

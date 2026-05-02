@@ -49,7 +49,7 @@ export const DomainRepository = {
           id: data.adminRoleId,
           name: { en: 'Admin' },
           code: 'admin',
-          level: 0,
+          level: 1,
           domainId: domain.id,
         },
       });

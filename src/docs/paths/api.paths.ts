@@ -1,5 +1,5 @@
 import { HealthPaths } from './health.paths.js';
-import { SuperadminPaths } from './superadmin.paths.js';
+import { SuperAdminPaths } from './superAdmin.paths.js';
 import { DomainPaths } from './domain.paths.js';
 import { UserPaths } from './user.paths.js';
 import { RolePaths } from './role.paths.js';
@@ -16,7 +16,7 @@ import { ModulePermissionPaths } from './modulePermission.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
-  ...SuperadminPaths,
+  ...SuperAdminPaths,
   ...DomainPaths,
   ...UserPaths,
   ...RolePaths,

@@ -1,23 +1,6 @@
 import { ok, created, errors } from './responses.js';
 
 export const RolePaths = {
-  '/api/roles/entry': {
-    post: {
-      tags: ['Roles'],
-      summary: 'Create role',
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: { $ref: '#/components/schemas/CreateRoleBody' },
-          },
-        },
-      },
-      responses: { ...created, ...errors },
-    },
-  },
-
   '/api/roles/{roleId}/permissions': {
     post: {
       tags: ['Roles'],
@@ -43,27 +26,6 @@ export const RolePaths = {
     },
   },
 
-  '/api/roles/list': {
-    get: {
-      tags: ['Roles'],
-      summary: 'List roles',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'query',
-          name: 'offset',
-          schema: { type: 'integer', minimum: 0 },
-        },
-        {
-          in: 'query',
-          name: 'limit',
-          schema: { type: 'integer', minimum: 1, maximum: 100 },
-        },
-      ],
-      responses: { ...ok, ...errors },
-    },
-  },
-
   '/api/roles/{id}/role': {
     post: {
       tags: ['Roles'],
@@ -80,6 +42,40 @@ export const RolePaths = {
           },
         },
       },
+      responses: { ...ok, ...errors },
+    },
+  },
+  '/api/roles': {
+    post: {
+      tags: ['Roles'],
+      summary: 'Create role',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/CreateRoleBody' },
+          },
+        },
+      },
+      responses: { ...created, ...errors },
+    },
+    get: {
+      tags: ['Roles'],
+      summary: 'List roles',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+      ],
       responses: { ...ok, ...errors },
     },
   },

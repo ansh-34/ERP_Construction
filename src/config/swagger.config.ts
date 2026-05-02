@@ -16,7 +16,7 @@ export const swaggerSpec = {
   ],
   tags: [
     { name: 'Health' },
-    { name: 'Superadmin' },
+    { name: 'SuperAdmin' },
     { name: 'Domain Auth' },
     { name: 'Users' },
     { name: 'Roles' },

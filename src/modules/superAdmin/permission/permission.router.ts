@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import validateSuperadmin from '../../../middlewares/validateSuperadmin.js';
+import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createPermission,
@@ -16,18 +16,14 @@ import {
 
 const router = Router();
 
-router.use(validateSuperadmin);
+router.use(validateSuperAdmin);
 
 router.post(
-  '/entry',
+  '/',
   validate(createPermissionBodySchema, 'body'),
   createPermission,
 );
-router.get(
-  '/list',
-  validate(listPermissionsQuerySchema, 'query'),
-  listPermissions,
-);
+router.get('/', validate(listPermissionsQuerySchema, 'query'), listPermissions);
 router.put(
   '/:id',
   validate(permissionIdParamsSchema, 'params'),

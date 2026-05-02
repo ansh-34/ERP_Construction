@@ -13,13 +13,13 @@ const router = Router();
 router.use(authMiddleware);
 
 router.post(
-  '/entry',
+  '/',
   authorize('vehicle', 'create'),
   validate(createVehicleBodySchema, 'body'),
   createVehicle,
 );
 router.get(
-  '/list',
+  '/',
   authorize('vehicle', 'read'),
   validate(listVehiclesQuerySchema, 'query'),
   listVehicles,

@@ -12,13 +12,13 @@ const router = Router();
 
 router.use(authMiddleware);
 router.get(
-  '/records/list',
+  '/records',
   authorize('inventory', 'read'),
   validate(inventoryListQuerySchema, 'query'),
   getInventory,
 );
 router.post(
-  '/records/entry',
+  '/records',
   authorize('inventory', 'write'),
   validate(addInventoryItemBodySchema, 'body'),
   addItemToInventory,
