@@ -15,6 +15,10 @@ export const Messages = Object.freeze({
     LOGOUT_SUCCESS: 'Logout successful',
     INVALID_CREDENTIALS: 'Invalid credentials',
     TOKEN_EXPIRED: 'Authentication token expired',
+    REFRESH_TOKEN_SUCCESS: 'Token refreshed successfully',
+    REFRESH_TOKEN_INVALID: 'invalid or expired refresh token',
+    REFRESH_TOKEN_REQUIRED: 'Refresh token is required',
+    REFRESH_TOKEN_REVOKED: 'Refresh token has been revoked',
     SUPERADMIN_VERIFIED: 'SuperAdmin verified',
     SUPERADMIN_EMAIL_PASSWORD_REQUIRED:
       'SuperAdmin email and password are required',
@@ -26,8 +30,12 @@ export const Messages = Object.freeze({
     EMAIL_TOKEN_REQUIRED: 'email and token are required',
     EMAIL_PASSWORD_REQUIRED: 'email and password are required',
     DOMAIN_LOGIN_REQUIRED: 'email, password, and speciality are required',
+    EMAIL_VERIFICATION_REQUIRED:
+      'Email verification is required check you email and verify your account',
     INVALID_OR_EXPIRED_VERIFICATION_LINK:
       'Invalid or expired verification link',
+    CHANGE_PASSWORD_SUCCESS: 'Password changed successfully',
+    CURRENT_PASSWORD_WRONG: 'Current password is incorrect',
   },
   USER: {
     CREATED: 'User created successfully',
@@ -44,6 +52,8 @@ export const Messages = Object.freeze({
     NOT_FOUND: 'User not found',
     EMAIL_REQUIRED: 'Email is required',
     EMAIL_PASSWORD_REQUIRED: 'Email and password are required',
+    EMAIL_PASSWORD_SPECIALITY_REQUIRED:
+      'Email, password, and speciality are required',
     EMAIL_TOKEN_PASSWORD_REQUIRED: 'Email, Token, and password are required',
     ALREADY_EXISTS_IN_DOMAIN: 'User already exists in this domain',
     ALREADY_VERIFIED: 'User is already verified',
@@ -198,5 +208,26 @@ export const Messages = Object.freeze({
       'Parent module has no permissions defined. Add permissions to the parent module first.',
     ALREADY_EXISTS: 'This dependency already exists',
     NOT_FOUND: 'Module dependency not found',
+  },
+  UOM: {
+    CREATED: 'UOM created successfully',
+    RETRIEVED: 'UOMs retrieved',
+    UPDATED: 'UOM updated successfully',
+    DELETED: 'UOM deleted successfully',
+    NOT_FOUND: 'UOM not found',
+  },
+  PASSWORD_RESET: {
+    OTP_SENT:
+      'If an account with this email exists, an OTP has been sent',
+    OTP_VERIFIED: 'Password reset successful',
+    OTP_INVALID: 'invalid or expired OTP',
+    OTP_EXPIRED: 'OTP has expired. Please request a new one',
+    OTP_MAX_ATTEMPTS:
+      'Too many failed attempts. Please request a new OTP',
+    EMAIL_REQUIRED: 'Email is required',
+    OTP_REQUIRED: 'Email, OTP, and new password are required',
+    RESET_FAILED: 'Password reset failed',
+    PASSWORD_TOO_WEAK:
+      'Password must be at least 8 characters with uppercase, lowercase, number, and special character',
   },
 });

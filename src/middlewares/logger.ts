@@ -18,7 +18,7 @@ const formatDate = (date = new Date()) => {
 
 const getLogFilePath = () => {
   const date = formatDate();
-  return path.join(LOG_DIR, `log_${date}.log`);
+  return path.join(LOG_DIR, `log${date}.log`);
 };
 
 export const requestLogger = (

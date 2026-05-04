@@ -53,4 +53,12 @@ export const ProductService = {
     }
     return ProductRepository.softDelete(id);
   },
+
+  async updateProduct(domainId: string, id: string, data: any) {
+    const product = await ProductRepository.findByIdAndDomain(id, domainId);
+    if (!product) {
+      throw new Error(Messages.PRODUCT.NOT_FOUND);
+    }
+    return ProductRepository.update(id, data);
+  },
 };

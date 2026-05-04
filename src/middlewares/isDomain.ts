@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import prisma from '../infra/database/prisma/prisma.client.js';
 
-const isAdmin = async (
+const isDomain = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -20,21 +20,21 @@ const isAdmin = async (
           domainId: req.user.domainId,
         },
       });
-      if (role && role.code === 'admin') {
+      if (role && role.code === 'domain') {
         return next();
       }
     }
 
     res.status(403).json({
       success: false,
-      message: 'Forbidden: Only Admin can perform this action.',
+      message: 'Forbidden: Only Domain can perform this action.',
     });
   } catch (err) {
-    console.error('isAdmin middleware error:', err);
+    console.error('isDomain middleware error:', err);
     res
       .status(500)
       .json({ success: false, message: 'Server error during authorization' });
   }
 };
 
-export default isAdmin;
+export default isDomain;

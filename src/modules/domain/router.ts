@@ -10,8 +10,10 @@ import roleRouter from './role/role.router.js';
 import userRouter from './user/user.router.js';
 import vehicleRouter from './vehicle/vehicle.router.js';
 import productRouter from './product/product.router.js';
+import { uomRouter } from './uom/uom.router.js';
 
 const domainRouter = Router();
+
 
 domainRouter.use('/auth', authRouter);
 domainRouter.use('/roles', roleRouter);
@@ -23,5 +25,6 @@ domainRouter.use('/vehicles', vehicleRouter);
 domainRouter.use('/journey-schedules', journeyScheduleRouter);
 domainRouter.use('/dispatch', dispatchRouter);
 domainRouter.use('/products', productRouter);
+domainRouter.use('/uoms', uomRouter());
 
 export default domainRouter;

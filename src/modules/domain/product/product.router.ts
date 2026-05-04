@@ -7,12 +7,16 @@ import {
   listProducts,
   getProductById,
   deleteProduct,
+  updateProduct,
 } from './product.controller.js';
 import {
   createProductBodySchema,
   listProductsQuerySchema,
   productIdParamsSchema,
+  updateProductBodySchema,
 } from './product.validator.js';
+import { productGradeRouter } from '../productGrade/productGrade.router.js';
+import { productUomRouter } from '../productUom/productUom.router.js';
 
 const router = Router();
 
@@ -36,11 +40,20 @@ router.get(
   validate(productIdParamsSchema, 'params'),
   getProductById,
 );
+router.patch(
+  '/:id',
+  authorize('product', 'update'),
+  validate(updateProductBodySchema, 'body'),
+  updateProduct,
+);
 router.delete(
   '/:id',
   authorize('product', 'delete'),
   validate(productIdParamsSchema, 'params'),
   deleteProduct,
 );
+
+router.use('/:productId/grades', productGradeRouter());
+router.use('/:productId/uoms', productUomRouter());
 
 export default router;

@@ -52,7 +52,7 @@ export const UserPaths = {
   '/api/users/invite': {
     post: {
       tags: ['Users'],
-      summary: 'Invite user (admin)',
+      summary: 'Invite user (domain)',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,

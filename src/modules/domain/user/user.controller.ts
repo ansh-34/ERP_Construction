@@ -4,10 +4,6 @@ import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { UserService } from './user.service.js';
 
-const cookieOptions = {
-  httpOnly: true,
-};
-
 const getBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
 
 export const inviteUser = async (req: Request, res: Response) => {

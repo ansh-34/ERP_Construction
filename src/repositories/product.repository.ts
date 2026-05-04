@@ -1,4 +1,4 @@
-import type { Prisma } from '@infra/database/prisma/generated/prisma/client/client.d.ts';
+import type { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const ProductRepository = {

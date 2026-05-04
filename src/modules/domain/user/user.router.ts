@@ -2,7 +2,7 @@ import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
 import { validate } from '../../../middlewares/validate.js';
 import { listUsers, inviteUser } from './user.controller.js';
-import isAdmin from '../../../middlewares/isAdmin.js';
+import isDomain from '../../../middlewares/isDomain.js';
 import {
   inviteUserBodySchema,
   listUsersQuerySchema,
@@ -14,14 +14,14 @@ const router = Router();
 router.post(
   '/invite',
   authMiddleware,
-  isAdmin,
+  isDomain,
   validate(inviteUserBodySchema, 'body'),
   inviteUser,
 );
 router.get(
   '/',
   authMiddleware,
-  isAdmin,
+  isDomain,
   validate(listUsersQuerySchema, 'query'),
   listUsers,
 );

@@ -84,3 +84,24 @@ export const deleteProduct = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await ProductService.updateProduct(
+      req.user!.domainId,
+      req.params.id,
+      req.body
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT.UPDATED,
+      data: product,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.PRODUCT.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

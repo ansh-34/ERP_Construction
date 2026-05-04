@@ -13,10 +13,14 @@ export const UserSchemas = {
   },
   UserLoginBody: {
     type: 'object',
-    required: ['email', 'password'],
+    required: ['email', 'password', 'speciality'],
     properties: {
       email: { type: 'string', format: 'email' },
       password: { type: 'string' },
+      speciality: {
+        type: 'string',
+        enum: ['CONSTRUCTION', 'MANUFACTURING', 'MINING', 'PROPERTY'],
+      },
     },
   },
   RegisterUserBody: {

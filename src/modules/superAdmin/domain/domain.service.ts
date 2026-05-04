@@ -7,13 +7,8 @@ import { sendMail } from '../../../services/mail.services';
 
 const SALT_ROUNDS = 12;
 
-const normalizeIndustryInput = (
-  industry: string | string[],
-): IndustryEnum[] => {
-  const industries = Array.isArray(industry) ? industry : [industry];
-
-  return industries.map((item) => item.trim().toUpperCase() as IndustryEnum);
-};
+const normalizeIndustryInput = (industry: string): IndustryEnum =>
+  industry.trim().toUpperCase() as IndustryEnum;
 
 export const DomainService = {
   async seedDomain(data: any, baseUrl: string) {
@@ -27,11 +22,11 @@ export const DomainService = {
       organizationType,
     } = data;
 
-    if (!domainName || !email || !password || !industry?.length) {
+    if (!domainName || !email || !password || !industry) {
       throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED);
     }
 
-    const industries = normalizeIndustryInput(industry);
+    const normalizedIndustry = normalizeIndustryInput(industry);
 
     const existingDomain = await DomainRepository.findActiveByEmail(email);
 
@@ -40,25 +35,25 @@ export const DomainService = {
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const adminRoleId = crypto.randomUUID();
+    const domainRoleId = crypto.randomUUID();
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    const result = await DomainRepository.seedWithAdmin({
+    const result = await DomainRepository.seedWithDomainRole({
       domainName,
       email,
-      industry: industries,
+      industry: normalizedIndustry,
       phone,
       phoneCode,
       organizationType,
       password: hashedPassword,
       token: rawToken,
       tokenExpiresAt,
-      adminRoleId,
-      adminPermissions: ['read', 'write', 'update', 'delete'],
+      domainRoleId,
+      domainPermissions: ['read', 'write', 'update', 'delete'],
     });
 
-    const verificationLink = `${baseUrl}/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `${baseUrl}/api/superAdmin/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
     await sendMail(
       email,
       'Your Construction ERP Domain Account',

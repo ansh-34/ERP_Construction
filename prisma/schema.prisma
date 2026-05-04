@@ -19,24 +19,33 @@ enum IndustryEnum {
   PROPERTY
 }
 
+enum UserTypeEnum {
+  DOMAIN
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+
 model Domain {
-  id               String         @id @default(uuid()) @db.Uuid
+  id               String       @id @default(uuid()) @db.Uuid
   name             Json
   email            String
   organizationType Json?
   phoneCode        String?
   phone            String?
-  mediaId          String?        @db.Uuid
-  industry         IndustryEnum[] @default([])
+  mediaId          String?      @db.Uuid
+  industry         IndustryEnum
   password         String
-  isEmailVerified  Boolean        @default(false)
-  status           String         @default("active")
-  isDeleted        Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  isEmailVerified  Boolean      @default(false)
+  status           String       @default("active")
+  isDeleted        Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   users                   User[]
   tokens                  Token[]
+  otps                    Otp[]
   roles                   Role[]
   roleModulePermissions   RoleModulePermission[]
   inventory               Inventory?
@@ -61,13 +70,14 @@ model Domain {
 }
 
 model User {
-  id        String  @id @default(uuid()) @db.Uuid
-  name      Json
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
   email     String
   password  String
   phoneCode String?
   phone     String?
-  roleId    String? @db.Uuid
+  industry  IndustryEnum
+  roleId    String?      @db.Uuid
 
   role    Role?   @relation(fields: [roleId], references: [id])
   mediaId String? @db.Uuid
@@ -105,9 +115,42 @@ model Token {
   @@index([createdAt, isDeleted])
 }
 
+model Otp {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  otp       String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  domainId  String?  @db.Uuid
+
+  domain    Domain?  @relation(fields: [domainId], references: [id])
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email, isUsed])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  token     String       @unique
+  expiry    DateTime
+  userType  UserTypeEnum
+  userId    String       @db.Uuid
+  status    String       @default("active")
+  isDeleted Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([token, isDeleted])
+  @@index([userId, userType, isDeleted])
+  @@index([createdAt])
+}
+
 model Role {
   id       String  @id @default(uuid()) @db.Uuid
-  name     Json
+  name     String
   code     String?
   level    Int     @default(0)
   domainId String  @db.Uuid
@@ -429,13 +472,13 @@ model Product {
   productType String
   domainId    String @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  productGrades           ProductGrades[]
-  productGradeStdRates    ProductGradeStdRates[]
-  status    String
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain               Domain                 @relation(fields: [domainId], references: [id])
+  productGrades        ProductGrades[]
+  productGradeStdRates ProductGradeStdRates[]
+  status               String
+  isDeleted            Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 
   productUoms ProductUom[]
 }
@@ -459,39 +502,37 @@ model ProductUom {
   @@unique([productId, uomId])
 }
 
-			
-model	ProductGrades{
-id String @id @default(uuid()) @db.Uuid
-productId	String @db.Uuid		
-gradeDisplayName	Json		
-gradeCode	String		
-domainId	String @db.Uuid
-domain   Domain   @relation(fields: [domainId], references: [id])
-product   Product  @relation(fields: [productId], references: [id])
-productGradeStdRates    ProductGradeStdRates[]
-status	String		
-isDeleted	Boolean		
-createdAt	DateTime @default(now())
-updatedAt	DateTime @updatedAt
+model ProductGrades {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  productId            String                 @db.Uuid
+  gradeDisplayName     Json
+  gradeCode            String
+  domainId             String                 @db.Uuid
+  domain               Domain                 @relation(fields: [domainId], references: [id])
+  product              Product                @relation(fields: [productId], references: [id])
+  productGradeStdRates ProductGradeStdRates[]
+  status               String
+  isDeleted            Boolean
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 }
 
-
-model	ProductGradeStdRates{
-id String @id @default(uuid()) @db.Uuid
-productGradeId	String @db.Uuid	
-productId	String @db.Uuid		
-stdRateType	Json		
-stdRateValue	Float		
-alertThresold 	Float		
-domainId	String @db.Uuid
-domain   Domain   @relation(fields: [domainId], references: [id])
-product   Product  @relation(fields: [productId], references: [id])
-productGrade  ProductGrades @relation(fields: [productGradeId], references: [id])
-status	String		
-isDeleted	Boolean		
-createdAt	DateTime @default(now())
-updatedAt	DateTime @updatedAt
-			}
+model ProductGradeStdRates {
+  id             String        @id @default(uuid()) @db.Uuid
+  productGradeId String        @db.Uuid
+  productId      String        @db.Uuid
+  stdRateType    Json
+  stdRateValue   Float
+  alertThresold  Float
+  domainId       String        @db.Uuid
+  domain         Domain        @relation(fields: [domainId], references: [id])
+  product        Product       @relation(fields: [productId], references: [id])
+  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
+  status         String
+  isDeleted      Boolean
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
@@ -535,12 +576,12 @@ model Media {
   name      String
   type      String
   url       String     @unique
-  domainId  String     @map("domain_id") @db.Uuid
+  domainId  String     @db.Uuid
   domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false) @map("is_deleted")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([domainId])
   @@map("media")

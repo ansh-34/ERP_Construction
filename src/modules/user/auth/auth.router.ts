@@ -5,21 +5,28 @@ import {
   verifyAndActivateUser,
   registerUser,
   loginUser,
+  refreshToken,
+  logout,
+  changePassword,
+  forgotPassword,
+  resetPassword,
 } from './auth.controller.js';
-import isAdmin from '../../../middlewares/isAdmin.js';
 import {
-  listUsersQuerySchema,
-  loginUserBodySchema,
+  verifyAndActivateUserQuerySchema,
   registerUserBodySchema,
-  verifyAndActivateUserBodySchema,
+  loginUserBodySchema,
+  refreshTokenSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from './auth.validator.js';
 
 const router = Router();
 
 // Public routes
-router.post(
+router.get(
   '/verify',
-  validate(verifyAndActivateUserBodySchema, 'body'),
+  validate(verifyAndActivateUserQuerySchema, 'query'),
   verifyAndActivateUser,
 );
 router.post(
@@ -29,5 +36,32 @@ router.post(
   registerUser,
 );
 router.post('/login', validate(loginUserBodySchema, 'body'), loginUser);
+
+router.post(
+  '/refresh-token',
+  validate(refreshTokenSchema, 'body'),
+  refreshToken,
+);
+
+router.post('/logout', logout);
+
+router.post(
+  '/change-password',
+  authMiddleware,
+  validate(changePasswordSchema, 'body'),
+  changePassword,
+);
+
+router.post(
+  '/forgot-password',
+  validate(forgotPasswordSchema, 'body'),
+  forgotPassword,
+);
+
+router.post(
+  '/reset-password',
+  validate(resetPasswordSchema, 'body'),
+  resetPassword,
+);
 
 export default router;

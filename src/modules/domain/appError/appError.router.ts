@@ -12,10 +12,10 @@ const router = Router();
 // Apply auth middleware to all appError routes
 router.use(authMiddleware);
 
-// Endpoint for the mobile app to push errors (requires auth so req.user is populated)
+// Endpoint for the mobile app to push errors
 router.post('/', validate(createAppErrorBodySchema, 'body'), createAppError);
 
-// Secure endpoint to list errors (requires admin/user authentication)
+// Secure endpoint to list errors (requires domain/user authentication)
 router.get('/', validate(listAppErrorsQuerySchema, 'query'), listAppErrors);
 
 export default router;

@@ -3,7 +3,7 @@ export const RoleSchemas = {
     type: 'object',
     required: ['name', 'code'],
     properties: {
-      name: {},
+      name: { type: 'string' },
       code: { type: 'string' },
       level: { type: 'number' },
     },

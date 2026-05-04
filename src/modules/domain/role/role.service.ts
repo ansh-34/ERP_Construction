@@ -12,9 +12,16 @@ import { normalizePagination } from '../../../utils/pagination.js';
 export const RoleService = {
   async createRole(
     domainId: string,
-    data: { name: any; code: string; level?: number },
+    data: { name: string; code: string; level?: number },
   ) {
-    const { name, code, level } = data;
+    const { name: rawName, code: rawCode, level } = data;
+
+    if (!rawName || !rawCode) {
+      throw new Error(Messages.ROLE.NAME_CODE_REQUIRED);
+    }
+
+    const name = rawName.trim().toLowerCase();
+    const code = rawCode.trim().toLowerCase();
 
     if (!name || !code) {
       throw new Error(Messages.ROLE.NAME_CODE_REQUIRED);

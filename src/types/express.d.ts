@@ -5,6 +5,7 @@ declare global {
         userId: string;
         domainId: string;
         roleId: string | null;
+        industry: string;
       };
     }
   }

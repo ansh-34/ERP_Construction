@@ -13,13 +13,18 @@ export const RoleRepository = {
     });
   },
 
-  findAdminByDomain(domainId: string) {
+  findDomainRoleByDomain(domainId: string) {
     return prisma.role.findFirst({
-      where: { domainId, code: 'admin' },
+      where: { domainId, code: 'domain', isDeleted: false },
     });
   },
 
-  create(data: { name: any; code: string; level: number; domainId: string }) {
+  create(data: {
+    name: string;
+    code: string;
+    level: number;
+    domainId: string;
+  }) {
     return prisma.role.create({ data });
   },
 

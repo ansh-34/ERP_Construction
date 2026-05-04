@@ -3,10 +3,6 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { DomainService } from './domain.service.js';
 
-const cookieOptions = {
-  httpOnly: true,
-};
-
 const getBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
 
 export const seedDomain = async (req: Request, res: Response) => {

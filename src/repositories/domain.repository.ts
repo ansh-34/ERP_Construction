@@ -10,18 +10,18 @@ export const DomainRepository = {
     return prisma.domain.findFirst({ where: { email, isDeleted: false } });
   },
 
-  seedWithAdmin(data: {
+  seedWithDomainRole(data: {
     domainName: string;
     email: string;
-    industry: IndustryEnum[];
+    industry: IndustryEnum;
     password: string;
     phone?: string;
     phoneCode?: string;
     organizationType?: any;
     token: string;
     tokenExpiresAt: Date;
-    adminRoleId: string;
-    adminPermissions: string[];
+    domainRoleId: string;
+    domainPermissions: string[];
   }) {
     return prisma.$transaction(async (tx) => {
       const domain = await tx.domain.create({
@@ -47,11 +47,11 @@ export const DomainRepository = {
         },
       });
 
-      const adminRole = await tx.role.create({
+      const domainRole = await tx.role.create({
         data: {
-          id: data.adminRoleId,
-          name: { en: 'Admin' },
-          code: 'admin',
+          id: data.domainRoleId,
+          name: 'domain',
+          code: 'domain',
           level: 1,
           domainId: domain.id,
         },
@@ -62,15 +62,15 @@ export const DomainRepository = {
       if (modules.length) {
         await tx.roleModulePermission.createMany({
           data: modules.map((mod) => ({
-            roleId: adminRole.id,
+            roleId: domainRole.id,
             moduleId: mod.id,
-            permissions: data.adminPermissions,
+            permissions: data.domainPermissions,
             domainId: domain.id,
           })),
         });
       }
 
-      return { domain, adminRole };
+      return { domain, domainRole };
     });
   },
 
@@ -85,6 +85,13 @@ export const DomainRepository = {
         where: { id: tokenId },
         data: { isDeleted: true },
       });
+    });
+  },
+
+  updatePassword(id: string, password: string) {
+    return prisma.domain.update({
+      where: { id },
+      data: { password },
     });
   },
 };

@@ -17,3 +17,12 @@ export const paginationDateQuerySchema = paginationQuerySchema.extend({
   from: z.string().optional(),
   to: z.string().optional(),
 });
+
+export const pageBasedPaginationQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).optional().default('1'),
+  limit: z.string().regex(/^\d+$/).optional().default('10'),
+});
+
+export const statusFilterSchema = z.object({
+  status: z.enum(['active', 'inactive']).optional(),
+});

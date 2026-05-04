@@ -6,7 +6,6 @@ import {
   TokenRepository,
   UserRepository,
 } from '../../../repositories/index.js';
-import { signToken } from '../../../services/jwt.services.js';
 import { sendMail } from '../../../services/mail.services.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
@@ -14,7 +13,7 @@ import { normalizePagination } from '../../../utils/pagination.js';
 export const UserService = {
   async inviteUser(
     domainId: string,
-    data: { name: string; email: string; roleId?: string },
+    data: { name?: string; email: string; roleId?: string },
     baseUrl: string,
   ) {
     const { name, email, roleId } = data;
@@ -32,6 +31,12 @@ export const UserService = {
       throw new Error(Messages.USER.ALREADY_EXISTS_IN_DOMAIN);
     }
 
+    const domain = await DomainRepository.findActiveById(domainId);
+
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+
     const temporaryPassword = await bcrypt.hash(
       crypto.randomBytes(16).toString('hex'),
       10,
@@ -41,9 +46,10 @@ export const UserService = {
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
 
     await UserRepository.create({
-      name: { en: name },
+      name: name?.trim() || email.split('@')[0],
       email,
       password: temporaryPassword,
+      industry: domain.industry,
       roleId: roleId || null,
       domainId,
       isEmailVerified: false,
@@ -57,7 +63,7 @@ export const UserService = {
       domainId,
     });
 
-    const verificationLink = `${baseUrl}/users/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `${baseUrl}/api/user/auth/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
     await sendMail(
       email,
       'Your Verification Link',

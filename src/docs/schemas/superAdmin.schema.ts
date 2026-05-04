@@ -15,12 +15,8 @@ export const SuperAdminSchemas = {
       email: { type: 'string', format: 'email' },
       password: { type: 'string' },
       industry: {
-        type: 'array',
-        minItems: 1,
-        items: {
-          type: 'string',
-          enum: ['CONSTRUCTION', 'MANUFACTURING', 'MINING', 'PROPERTY'],
-        },
+        type: 'string',
+        enum: ['CONSTRUCTION', 'MANUFACTURING', 'MINING', 'PROPERTY'],
       },
       phone: { type: 'string' },
       phoneCode: { type: 'string' },

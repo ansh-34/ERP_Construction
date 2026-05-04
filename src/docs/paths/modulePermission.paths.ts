@@ -1,4 +1,4 @@
-import { ok, created, errors } from './responses.js';
+import { ok, errors } from './responses.js';
 
 export const ModulePermissionPaths = {
   '/api/module-permissions/{id}': {

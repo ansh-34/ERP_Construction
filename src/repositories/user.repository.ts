@@ -1,4 +1,5 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
+import type { IndustryEnum } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
 export const UserRepository = {
   findActiveByEmailAndDomain(email: string, domainId: string) {
@@ -26,10 +27,18 @@ export const UserRepository = {
     });
   },
 
+  findActiveByIdWithRoleAndDomain(id: string) {
+    return prisma.user.findFirst({
+      where: { id, isDeleted: false },
+      include: { role: true, domain: true },
+    });
+  },
+
   create(data: {
-    name: any;
+    name: string;
     email: string;
     password: string;
+    industry: IndustryEnum;
     phone?: string | null;
     phoneCode?: string | null;
     roleId?: string | null;
@@ -65,6 +74,7 @@ export const UserRepository = {
         name: true,
         email: true,
         role: { select: { id: true, name: true, code: true } },
+        industry: true,
       },
     });
   },
@@ -79,6 +89,7 @@ export const UserRepository = {
           name: true,
           email: true,
           phone: true,
+          industry: true,
           roleId: true,
           role: { select: { id: true, name: true, code: true } },
           status: true,
@@ -89,5 +100,12 @@ export const UserRepository = {
         take: limit,
       }),
     ]);
+  },
+
+  updatePassword(id: string, password: string) {
+    return prisma.user.update({
+      where: { id },
+      data: { password },
+    });
   },
 };

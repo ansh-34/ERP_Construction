@@ -6,7 +6,7 @@ import {
 } from '../../common/common.validator.js';
 
 export const createRoleBodySchema = z.object({
-  name: z.any(),
+  name: z.string().min(1),
   code: z.string().min(1),
   level: z.number().optional(),
 });

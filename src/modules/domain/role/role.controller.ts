@@ -8,7 +8,7 @@ export const createRole = async (req: Request, res: Response) => {
   try {
     const role = await RoleService.createRole(
       req.user!.domainId,
-      req.body as { name: any; code: string; level?: number },
+      req.body as { name: string; code: string; level?: number },
     );
 
     return res
