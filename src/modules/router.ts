@@ -9,7 +9,7 @@ const router = Router();
 router.use('/auth', authRouter);
 router.use('/profile', profileRouter);
 router.use('/domain', domainRouter);
-router.use('/superAdmin', superAdminRouter);
+router.use('/superadmin', superAdminRouter);
 router.use('/user', userRouter);
 
 export default router;

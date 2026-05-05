@@ -14,7 +14,7 @@ import {
   getOtpExpiry,
   OTP_EXPIRY_MINUTES,
   verifyOtp,
-  MAX_OTP_ATTEMPTS,
+  // MAX_OTP_ATTEMPTS,
 } from '../../../services/otp.service.js';
 import { forgotPasswordEmail } from '../../../templates/index.js';
 

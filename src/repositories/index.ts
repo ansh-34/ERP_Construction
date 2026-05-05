@@ -17,3 +17,4 @@ export * from './vehicle.repository.js';
 export * from './journeySchedule.repository.js';
 export * from './dispatch.repository.js';
 export * from './product.repository.js';
+export * from './moduleDependencyPermission.repository.js';

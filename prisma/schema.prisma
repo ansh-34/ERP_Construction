@@ -172,13 +172,14 @@ model Role {
 
 //Module - Seeded Globally
 model Module {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      Json
-  code      String
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid()) @db.Uuid
+  name       Json
+  code       String
+  searchText String   @default("")
+  status     String   @default("active")
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   roleModulePermissions RoleModulePermission[]
   modulePermissions     ModulePermission[]
@@ -192,13 +193,16 @@ model Module {
 }
 
 model Permission {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      Json
-  code      String
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                          String                       @id @default(uuid()) @db.Uuid
+  name                        Json
+  code                        String
+  searchText                  String                       @default("")
+  status                      String                       @default("active")
+  isDeleted                   Boolean                      @default(false)
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  modulePermissions           ModulePermission[]
+  moduleDependencyPermissions ModuleDependencyPermission[]
 
   @@unique([code, isDeleted])
   @@index([createdAt, isDeleted])
@@ -227,15 +231,16 @@ model RoleModulePermission {
 }
 
 model ModulePermission {
-  id       String @id @default(uuid()) @db.Uuid
-  moduleId String @db.Uuid
+  id           String @id @default(uuid()) @db.Uuid
+  moduleId     String @db.Uuid
+  permissionId String @db.Uuid
 
-  module      Module   @relation(fields: [moduleId], references: [id])
-  permissions String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  module     Module     @relation(fields: [moduleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
-  @@unique([moduleId])
+  @@unique([moduleId, permissionId])
   @@index([createdAt, moduleId])
   @@index([createdAt])
 }
@@ -247,14 +252,28 @@ model ModuleDependency {
   module            Module @relation("ParentModule", fields: [moduleId], references: [id])
   dependentModuleId String @db.Uuid
 
-  dependentModule Module   @relation("DependentModule", fields: [dependentModuleId], references: [id])
-  permissions     String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  dependentModule             Module                       @relation("DependentModule", fields: [dependentModuleId], references: [id])
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  moduleDependencyPermissions ModuleDependencyPermission[]
 
   @@unique([moduleId, dependentModuleId])
   @@index([createdAt])
   @@index([createdAt, moduleId])
+}
+
+model ModuleDependencyPermission {
+  id                 String @id @default(uuid()) @db.Uuid
+  moduleDependencyId String @db.Uuid
+
+  moduleDependency ModuleDependency @relation(fields: [moduleDependencyId], references: [id])
+  permissionId     String           @db.Uuid
+
+  permission Permission @relation(fields: [permissionId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([moduleDependencyId, permissionId])
 }
 
 model Inventory {
