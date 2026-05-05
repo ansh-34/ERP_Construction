@@ -38,7 +38,7 @@ router.post(
 );
 
 //  update reorder level
-router.patch(
+router.put(
   '/:id/reorder',
   authorize('inventory', 'update'),
   validate(inventoryIdParamsSchema, 'params'),

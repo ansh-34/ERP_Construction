@@ -132,7 +132,7 @@ export const ProductPaths = {
         ...errors,
       },
     },
-    patch: {
+    put: {
       tags: ['Products'],
       summary: 'Update product',
       security: [{ bearerAuth: [] }],
@@ -236,7 +236,7 @@ export const ProductPaths = {
       ],
       responses: { ...dataMsg('Product grade retrieved'), ...errors },
     },
-    patch: {
+    put: {
       tags: ['Product Grades'],
       summary: 'Update product grade',
       security: [{ bearerAuth: [] }],

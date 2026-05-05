@@ -33,7 +33,7 @@ export const productGradeRouter = (): Router => {
     validate(productGradeIdParamSchema, 'params'),
     getProductGradeById,
   );
-  router.patch(
+  router.put(
     '/:id',
     validate(updateProductGradeBodySchema, 'body'),
     updateProductGrade,

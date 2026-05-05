@@ -96,7 +96,7 @@ export const InventoryPaths = {
     },
   },
   '/api/domain/inventory/{id}/reorder': {
-    patch: {
+    put: {
       tags: ['Inventory'],
       summary: 'Update reorder level',
       description: 'Updates the reorder level for an inventory entry.',

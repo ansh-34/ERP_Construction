@@ -42,7 +42,7 @@ export const uomRouter = (): Router => {
     getUomById,
   );
 
-  router.patch(
+  router.put(
     '/:id',
     authorize('uom', 'update'),
     validate(updateUomBodySchema, 'body'),

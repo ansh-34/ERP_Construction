@@ -40,7 +40,7 @@ router.get(
   validate(productIdParamsSchema, 'params'),
   getProductById,
 );
-router.patch(
+router.put(
   '/:id',
   authorize('product', 'update'),
   validate(updateProductBodySchema, 'body'),

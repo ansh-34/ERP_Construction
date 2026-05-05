@@ -94,7 +94,7 @@ export const UomPaths = {
         ...errors,
       },
     },
-    patch: {
+    put: {
       tags: ['UOMs'],
       summary: 'Update UOM',
       security: [{ bearerAuth: [] }],
