@@ -66,8 +66,7 @@ const validateRefreshToken = async (refreshToken: string) => {
     throw new Error(Messages.AUTH.REFRESH_TOKEN_REQUIRED);
   }
 
-  const existing =
-    await RefreshTokenRepository.findActiveByToken(refreshToken);
+  const existing = await RefreshTokenRepository.findActiveByToken(refreshToken);
 
   if (!existing) {
     throw new Error(Messages.AUTH.REFRESH_TOKEN_INVALID);
@@ -127,12 +126,11 @@ const refreshDomainToken = async (
   });
 
   await RefreshTokenRepository.revoke(refreshTokenRecord.id);
-  const { token: newRefreshToken } =
-    await RefreshTokenRepository.createForUser(
-      domainOwner.id,
-      'DOMAIN',
-      refreshTokenRecord.expiry,
-    );
+  const { token: newRefreshToken } = await RefreshTokenRepository.createForUser(
+    domainOwner.id,
+    'DOMAIN',
+    refreshTokenRecord.expiry,
+  );
 
   return {
     accessToken,
@@ -192,12 +190,11 @@ const refreshUserToken = async (
   });
 
   await RefreshTokenRepository.revoke(refreshTokenRecord.id);
-  const { token: newRefreshToken } =
-    await RefreshTokenRepository.createForUser(
-      user.id,
-      'USER',
-      refreshTokenRecord.expiry,
-    );
+  const { token: newRefreshToken } = await RefreshTokenRepository.createForUser(
+    user.id,
+    'USER',
+    refreshTokenRecord.expiry,
+  );
 
   return {
     accessToken,
@@ -223,7 +220,10 @@ export const SharedRefreshService = {
     accessToken?: string;
   }): Promise<RefreshResult> {
     const existing = await validateRefreshToken(data.refreshToken);
-    const reusableAccessToken = isReusableAccessToken(data.accessToken, existing)
+    const reusableAccessToken = isReusableAccessToken(
+      data.accessToken,
+      existing,
+    )
       ? data.accessToken
       : undefined;
 
