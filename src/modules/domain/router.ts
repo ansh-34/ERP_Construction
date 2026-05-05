@@ -11,10 +11,12 @@ import userRouter from './user/user.router.js';
 import vehicleRouter from './vehicle/vehicle.router.js';
 import productRouter from './product/product.router.js';
 import { uomRouter } from './uom/uom.router.js';
+import profileRouter from './profile/profile.router.js';
 
 const domainRouter = Router();
 
 domainRouter.use('/auth', authRouter);
+domainRouter.use('/profile', profileRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);
 domainRouter.use('/inventory', inventoryRouter);
