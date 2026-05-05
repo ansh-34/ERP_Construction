@@ -3,16 +3,23 @@ import prisma from '../infra/database/prisma/prisma.client.js';
 export const ModuleDependencyRepository = {
   findByPair(moduleId: string, dependentModuleId: string) {
     return prisma.moduleDependency.findUnique({
-      where: { moduleId_dependentModuleId: { moduleId, dependentModuleId } },
+      where: {
+        moduleId_dependentModuleId: { moduleId, dependentModuleId },
+        isDeleted: false,
+      },
     });
   },
 
-  create(data: {
-    moduleId: string;
-    dependentModuleId: string;
-    permissions: string[];
-  }) {
-    return prisma.moduleDependency.create({
+  create(
+    data: {
+      moduleId: string;
+      dependentModuleId: string;
+    },
+    options: { transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    return prismaClient.moduleDependency.create({
       data,
       include: {
         module: { select: { id: true, name: true, code: true } },
@@ -42,5 +49,23 @@ export const ModuleDependencyRepository = {
 
   delete(id: string) {
     return prisma.moduleDependency.delete({ where: { id } });
+  },
+
+  bulkCreate(
+    data: {
+      moduleId: string;
+      dependentModuleId: string;
+    }[],
+    options: { transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    return Promise.all(
+      data.map((item) =>
+        prismaClient.moduleDependency.create({
+          data: item,
+        }),
+      ),
+    );
   },
 };

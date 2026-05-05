@@ -5,7 +5,7 @@ import userRouter from './user/router.js';
 const router = Router();
 
 router.use('/domain', domainRouter);
-router.use('/superAdmin', superAdminRouter);
+router.use('/superadmin', superAdminRouter);
 router.use('/user', userRouter);
 
 export default router;

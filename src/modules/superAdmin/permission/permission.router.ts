@@ -6,6 +6,7 @@ import {
   listPermissions,
   updatePermission,
   deletePermission,
+  getPermission,
 } from './permission.controller.js';
 import {
   createPermissionBodySchema,
@@ -24,6 +25,7 @@ router.post(
   createPermission,
 );
 router.get('/', validate(listPermissionsQuerySchema, 'query'), listPermissions);
+router.get('/:id', validate(permissionIdParamsSchema, 'params'), getPermission);
 router.put(
   '/:id',
   validate(permissionIdParamsSchema, 'params'),

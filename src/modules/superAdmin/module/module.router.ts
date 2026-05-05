@@ -6,6 +6,7 @@ import {
   listModules,
   updateModule,
   deleteModule,
+  getModule,
 } from './module.controller.js';
 import {
   createModuleBodySchema,
@@ -20,6 +21,7 @@ router.use(validateSuperAdmin);
 
 router.post('/', validate(createModuleBodySchema, 'body'), createModule);
 router.get('/', validate(listModulesQuerySchema, 'query'), listModules);
+router.get('/:id', validate(moduleIdParamsSchema, 'params'), getModule);
 router.put(
   '/:id',
   validate(moduleIdParamsSchema, 'params'),

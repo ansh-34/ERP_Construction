@@ -4,9 +4,11 @@ import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { ModulePermissionService } from './modulePermission.service.js';
 
-export const setModulePermissions = async (req: Request, res: Response) => {
+export const createModulePermissions = async (req: Request, res: Response) => {
   try {
-    const record = await ModulePermissionService.setModulePermissions(req.body);
+    const record = await ModulePermissionService.createModulePermissions(
+      req.body,
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,

@@ -5,6 +5,9 @@ const variables = {
   PORT: process.env.PORT || '5000',
   DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV: process.env.NODE_ENV || 'development',
+  BASE_URL:
+    process.env.BASE_URL || `http://localhost:${process.env.PORT || '5000'}`,
+  MAX_REQUEST_SIZE: process.env.MAX_REQUEST_SIZE || '5mb',
 
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRY: process.env.JWT_EXPIRY || '1d',

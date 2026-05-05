@@ -7,6 +7,7 @@ import {
 export const createModuleDependencyBodySchema = z.object({
   moduleId: z.string().min(1),
   dependentModuleId: z.string().min(1),
+  permissionIds: z.array(z.string().min(1)),
 });
 
 export const listModuleDependenciesQuerySchema = paginationQuerySchema;

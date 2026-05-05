@@ -8,6 +8,7 @@ export const Messages = Object.freeze({
     BAD_REQUEST: 'Invalid request',
     FORBIDDEN: 'Forbidden',
     INTERNAL_SERVER_ERROR: 'Something went wrong',
+    TOO_MANY_REQUESTS: 'Too many requests, try again in 15 minutes',
   },
   AUTH: {
     LOGIN_SUCCESS: 'Login successful',
@@ -91,8 +92,13 @@ export const Messages = Object.freeze({
     DELETED: 'Module deleted successfully',
     NOT_FOUND: 'Module not found',
     NAME_CODE_REQUIRED: 'name and code are required',
+    NAME_EN_CODE_REQUIRED: 'name in english is required',
     CODE_ALREADY_EXISTS: 'Module with this code already exists',
     INVALID_ID: 'Invalid module ID',
+    INVALID_DEPENDENCIES: 'One or more dependency module are invalid',
+    INVALID_PERMISSIONS: 'One or more module permission are invalid',
+    INVALID_DEPENDENCY_PERMISSIONS:
+      'One or more dependency modules have invalid permissions',
   },
   PERMISSION: {
     CREATED: 'Permission created',
@@ -182,6 +188,7 @@ export const Messages = Object.freeze({
     REQUIRED: 'moduleId and permissions (array) are required',
     INVALID_CODES_PREFIX: 'Invalid permission codes',
     RECORD_NOT_FOUND: 'Module permission record not found',
+    INVALID_PERMISSIONS: 'One or more permissions are invalid',
   },
   MODULE_DEPENDENCY: {
     CREATED: 'Module dependency created',
@@ -198,5 +205,6 @@ export const Messages = Object.freeze({
       'Parent module has no permissions defined. Add permissions to the parent module first.',
     ALREADY_EXISTS: 'This dependency already exists',
     NOT_FOUND: 'Module dependency not found',
+    INVALID_PERMISSIONS: 'One or more permissions are invalid',
   },
 });

@@ -6,7 +6,7 @@ import {
 
 export const setModulePermissionsBodySchema = z.object({
   moduleId: z.string().min(1),
-  permissions: z.array(z.string().min(1)).min(1),
+  permissionIds: z.array(z.string().min(1)).min(1),
 });
 
 export const listModulePermissionsQuerySchema = paginationQuerySchema;

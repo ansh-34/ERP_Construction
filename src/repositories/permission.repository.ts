@@ -6,7 +6,17 @@ export const PermissionRepository = {
   },
 
   findActiveById(id: string) {
-    return prisma.permission.findFirst({ where: { id, isDeleted: false } });
+    return prisma.permission.findFirst({
+      where: { id, isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   },
 
   findDuplicateCode(code: string, id: string) {
@@ -22,18 +32,42 @@ export const PermissionRepository = {
     });
   },
 
-  create(data: { name: any; code: string }) {
+  create(data: { name: any; code: string; searchText: string }) {
     return prisma.permission.create({ data });
   },
 
-  listActive(limit: number, offset: number) {
-    return prisma.$transaction([
-      prisma.permission.count({ where: { isDeleted: false } }),
-      prisma.permission.findMany({
-        where: { isDeleted: false },
+  listActive(
+    limit: number,
+    offset: number,
+    options: { filter?: { searchKey?: string }; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    const whereClause = {
+      isDeleted: false,
+      ...(options.filter?.searchKey && {
+        searchText: {
+          contains: options.filter.searchKey,
+          mode: 'insensitive',
+        },
+      }),
+    };
+
+    return prismaClient.$transaction([
+      prismaClient.permission.count({ where: whereClause }),
+      prismaClient.permission.findMany({
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         skip: offset,
         take: limit,
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       }),
     ]);
   },
@@ -47,5 +81,16 @@ export const PermissionRepository = {
       where: { id },
       data: { isDeleted: true },
     });
+  },
+
+  validatePermissionIds(ids: string[]) {
+    if (ids.length === 0) {
+      return true;
+    }
+    return prisma.permission
+      .count({
+        where: { id: { in: ids }, isDeleted: false },
+      })
+      .then((count) => count === ids.length);
   },
 };

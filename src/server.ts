@@ -2,8 +2,9 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import { variables } from './config/index.js';
 import prisma from './infra/database/prisma/prisma.client.js';
-dotenv.config();
 import { runFunctions } from './start/index.js';
+
+dotenv.config();
 
 const port = variables.PORT || 3000;
 
