@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import { HttpStatus } from '../../constants/index.js';
-import { ProfileService } from './profile.service.js';
+import { HttpStatus } from '../../../constants/index.js';
+import { SuperAdminProfileService } from './profile.service.js';
 
 const getTokenFromRequest = (req: Request): string | undefined => {
   if (
@@ -27,7 +27,7 @@ export const getProfile = async (req: Request, res: Response) => {
       });
     }
 
-    const profile = await ProfileService.getProfile(token);
+    const profile = await SuperAdminProfileService.getProfile(token);
 
     return res.status(HttpStatus.OK).json({
       success: true,
