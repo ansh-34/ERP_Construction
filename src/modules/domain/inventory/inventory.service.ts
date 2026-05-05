@@ -15,17 +15,22 @@ export const InventoryService = {
   async getStats(domainId: string) {
     const where = { domainId, isDeleted: false };
 
-    const [totalItems, activeCount, inactiveCount, outOfStockCount, aggregation] =
-      await prisma.$transaction([
-        prisma.inventory.count({ where }),
-        prisma.inventory.count({ where: { ...where, status: 'active' } }),
-        prisma.inventory.count({ where: { ...where, status: 'inactive' } }),
-        prisma.inventory.count({ where: { ...where, quantity: 0 } }),
-        prisma.inventory.aggregate({
-          where,
-          _sum: { quantity: true },
-        }),
-      ]);
+    const [
+      totalItems,
+      activeCount,
+      inactiveCount,
+      outOfStockCount,
+      aggregation,
+    ] = await prisma.$transaction([
+      prisma.inventory.count({ where }),
+      prisma.inventory.count({ where: { ...where, status: 'active' } }),
+      prisma.inventory.count({ where: { ...where, status: 'inactive' } }),
+      prisma.inventory.count({ where: { ...where, quantity: 0 } }),
+      prisma.inventory.aggregate({
+        where,
+        _sum: { quantity: true },
+      }),
+    ]);
 
     const lowStockCount = await InventoryRepository.getLowStockCount(domainId);
 
@@ -70,7 +75,6 @@ export const InventoryService = {
       },
     };
   },
-
 
   // ─── Create Entry ──────────────────────────────────────
   async createEntry(
@@ -124,11 +128,7 @@ export const InventoryService = {
   },
 
   // ─── Reorder Level Update ──────────────────────────────
-  async updateReorderLevel(
-    domainId: string,
-    id: string,
-    reorderLevel: number,
-  ) {
+  async updateReorderLevel(domainId: string, id: string, reorderLevel: number) {
     const record = await InventoryRepository.findByIdAndDomain(id, domainId);
     if (!record) throw new Error(Messages.INVENTORY.NOT_FOUND);
 

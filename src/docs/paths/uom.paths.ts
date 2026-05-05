@@ -7,8 +7,16 @@ export const UomPaths = {
       summary: 'List UOMs',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1, default: 1 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 } },
+        {
+          in: 'query',
+          name: 'page',
+          schema: { type: 'integer', minimum: 1, default: 1 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        },
       ],
       responses: {
         200: {
@@ -60,7 +68,12 @@ export const UomPaths = {
       summary: 'Get UOM by ID',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: {
         200: {
@@ -86,7 +99,12 @@ export const UomPaths = {
       summary: 'Update UOM',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
@@ -120,7 +138,12 @@ export const UomPaths = {
       summary: 'Delete UOM',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: {
         200: {

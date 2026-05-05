@@ -98,7 +98,11 @@ export const UserSchemas = {
             properties: {
               id: { type: 'string', format: 'uuid' },
               name: { type: 'object', example: { en: 'Domain Owner' } },
-              email: { type: 'string', format: 'email', example: 'owner@domain.com' },
+              email: {
+                type: 'string',
+                format: 'email',
+                example: 'owner@domain.com',
+              },
               role: { type: 'string', example: 'domain' },
             },
           },

@@ -4,10 +4,7 @@ import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { JourneyScheduleService } from './journeySchedule.service.js';
 
-export const getJourneyScheduleStats = async (
-  req: Request,
-  res: Response,
-) => {
+export const getJourneyScheduleStats = async (req: Request, res: Response) => {
   try {
     const stats = await JourneyScheduleService.getStats(req.user!.domainId);
 
@@ -25,7 +22,6 @@ export const getJourneyScheduleStats = async (
     return res.status(statusCode).json({ success: false, message });
   }
 };
-
 
 export const createJourneySchedule = async (req: Request, res: Response) => {
   try {

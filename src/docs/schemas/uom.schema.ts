@@ -3,7 +3,11 @@ export const UomSchemas = {
     type: 'object',
     required: ['displayName', 'code', 'baseUomId', 'conversionRate'],
     properties: {
-      displayName: { type: 'object', description: 'Localized name', example: { en: 'Kilogram' } },
+      displayName: {
+        type: 'object',
+        description: 'Localized name',
+        example: { en: 'Kilogram' },
+      },
       code: { type: 'string', example: 'KG' },
       baseUomId: { type: 'string', format: 'uuid' },
       conversionRate: { type: 'number', example: 1 },

@@ -3,7 +3,11 @@ export const ProductSchemas = {
     type: 'object',
     required: ['displayName', 'code', 'productType'],
     properties: {
-      displayName: { type: 'object', description: 'Localized name', example: { en: 'Sand' } },
+      displayName: {
+        type: 'object',
+        description: 'Localized name',
+        example: { en: 'Sand' },
+      },
       code: { type: 'string', example: 'SAND' },
       productType: { type: 'string', example: 'RAW_MATERIAL' },
       status: { type: 'string', default: 'active' },
@@ -76,7 +80,10 @@ export const ProductSchemas = {
               type: 'object',
               properties: {
                 id: { type: 'string', format: 'uuid' },
-                gradeDisplayName: { type: 'object', example: { en: 'Fine Sand' } },
+                gradeDisplayName: {
+                  type: 'object',
+                  example: { en: 'Fine Sand' },
+                },
                 gradeCode: { type: 'string', example: 'FS' },
                 status: { type: 'string', example: 'active' },
                 productGradeStdRates: {
@@ -85,7 +92,10 @@ export const ProductSchemas = {
                     type: 'object',
                     properties: {
                       id: { type: 'string', format: 'uuid' },
-                      stdRateType: { type: 'object', example: { en: 'Purchase Rate' } },
+                      stdRateType: {
+                        type: 'object',
+                        example: { en: 'Purchase Rate' },
+                      },
                       stdRateValue: { type: 'number', example: 450 },
                       alertThresold: { type: 'number', example: 500 },
                       status: { type: 'string', example: 'active' },
@@ -105,7 +115,10 @@ export const ProductSchemas = {
                         type: 'object',
                         properties: {
                           id: { type: 'string', format: 'uuid' },
-                          displayName: { type: 'object', example: { en: 'Kilogram' } },
+                          displayName: {
+                            type: 'object',
+                            example: { en: 'Kilogram' },
+                          },
                           code: { type: 'string', example: 'KG' },
                         },
                       },
@@ -127,7 +140,10 @@ export const ProductSchemas = {
                   type: 'object',
                   properties: {
                     id: { type: 'string', format: 'uuid' },
-                    displayName: { type: 'object', example: { en: 'Kilogram' } },
+                    displayName: {
+                      type: 'object',
+                      example: { en: 'Kilogram' },
+                    },
                     code: { type: 'string', example: 'KG' },
                     conversionRate: { type: 'number', example: 1 },
                   },
@@ -141,7 +157,10 @@ export const ProductSchemas = {
               type: 'object',
               properties: {
                 id: { type: 'string', format: 'uuid' },
-                stdRateType: { type: 'object', example: { en: 'Purchase Rate' } },
+                stdRateType: {
+                  type: 'object',
+                  example: { en: 'Purchase Rate' },
+                },
                 stdRateValue: { type: 'number', example: 450 },
                 alertThresold: { type: 'number', example: 500 },
                 status: { type: 'string', example: 'active' },
@@ -150,7 +169,10 @@ export const ProductSchemas = {
                   type: 'object',
                   properties: {
                     id: { type: 'string', format: 'uuid' },
-                    gradeDisplayName: { type: 'object', example: { en: 'Fine Sand' } },
+                    gradeDisplayName: {
+                      type: 'object',
+                      example: { en: 'Fine Sand' },
+                    },
                     gradeCode: { type: 'string', example: 'FS' },
                   },
                 },
@@ -171,7 +193,10 @@ export const ProductSchemas = {
                   type: 'object',
                   properties: {
                     id: { type: 'string', format: 'uuid' },
-                    gradeDisplayName: { type: 'object', example: { en: 'Fine Sand' } },
+                    gradeDisplayName: {
+                      type: 'object',
+                      example: { en: 'Fine Sand' },
+                    },
                     gradeCode: { type: 'string', example: 'FS' },
                   },
                 },
@@ -179,7 +204,10 @@ export const ProductSchemas = {
                   type: 'object',
                   properties: {
                     id: { type: 'string', format: 'uuid' },
-                    displayName: { type: 'object', example: { en: 'Kilogram' } },
+                    displayName: {
+                      type: 'object',
+                      example: { en: 'Kilogram' },
+                    },
                     code: { type: 'string', example: 'KG' },
                   },
                 },
@@ -196,7 +224,11 @@ export const ProductSchemas = {
     type: 'object',
     required: ['gradeDisplayName', 'gradeCode'],
     properties: {
-      gradeDisplayName: { type: 'object', description: 'Localized name', example: { en: 'Grade A' } },
+      gradeDisplayName: {
+        type: 'object',
+        description: 'Localized name',
+        example: { en: 'Grade A' },
+      },
       gradeCode: { type: 'string', example: 'GA' },
       status: { type: 'string', default: 'active' },
     },
@@ -213,7 +245,11 @@ export const ProductSchemas = {
     type: 'object',
     required: ['stdRateType', 'stdRateValue', 'alertThresold'],
     properties: {
-      stdRateType: { type: 'object', description: 'Localized type', example: { en: 'Base Rate' } },
+      stdRateType: {
+        type: 'object',
+        description: 'Localized type',
+        example: { en: 'Base Rate' },
+      },
       stdRateValue: { type: 'number', example: 450 },
       alertThresold: { type: 'number', example: 500 },
       status: { type: 'string', default: 'active' },

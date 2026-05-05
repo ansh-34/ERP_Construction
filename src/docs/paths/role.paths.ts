@@ -7,8 +7,16 @@ export const RolePaths = {
       summary: 'List roles',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'query', name: 'offset', schema: { type: 'integer', minimum: 0 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: {
         200: {
@@ -102,7 +110,12 @@ export const RolePaths = {
       summary: 'Assign permissions to role for module',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'roleId', required: true, schema: { type: 'string' } },
+        {
+          in: 'path',
+          name: 'roleId',
+          required: true,
+          schema: { type: 'string' },
+        },
       ],
       requestBody: {
         required: true,

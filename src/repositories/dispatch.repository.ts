@@ -100,8 +100,7 @@ export const DispatchRepository = {
       avgLoadedQuantity:
         Math.round((aggregation._avg.loadedQuantity ?? 0) * 100) / 100,
       totalDistance: aggregation._sum.distance ?? 0,
-      avgDistance:
-        Math.round((aggregation._avg.distance ?? 0) * 100) / 100,
+      avgDistance: Math.round((aggregation._avg.distance ?? 0) * 100) / 100,
       fuelSummary: {
         totalExpectedFuel: aggregation._sum.expectedFuelValue ?? 0,
         totalActualFuel: aggregation._sum.actualFuelValue ?? 0,

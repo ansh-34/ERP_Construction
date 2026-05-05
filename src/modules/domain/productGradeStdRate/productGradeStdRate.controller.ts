@@ -14,13 +14,11 @@ export const createProductGradeStdRate = async (
       req.params.gradeId,
       req.body as any,
     );
-    return res
-      .status(HttpStatus.CREATED)
-      .json({
-        success: true,
-        message: 'Std rate created successfully',
-        data: record,
-      });
+    return res.status(HttpStatus.CREATED).json({
+      success: true,
+      message: 'Std rate created successfully',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to create Std rate';
@@ -82,13 +80,11 @@ export const updateProductGradeStdRate = async (
       req.params.id,
       req.body as any,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Std rate updated successfully',
-        data: record,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Std rate updated successfully',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to update Std rate';
@@ -108,13 +104,11 @@ export const deleteProductGradeStdRate = async (
       req.params.gradeId,
       req.params.id,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Std rate deleted successfully',
-        data: null,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Std rate deleted successfully',
+      data: null,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to delete Std rate';

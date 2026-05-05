@@ -22,7 +22,6 @@ router.use(authMiddleware);
 //aggregate statistics
 router.get('/stats', authorize('inventory', 'read'), getInventoryStats);
 
-
 router.get(
   '/',
   authorize('inventory', 'read'),

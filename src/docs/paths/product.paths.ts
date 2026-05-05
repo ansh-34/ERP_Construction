@@ -27,7 +27,9 @@ const createdMsg = (msg: string, ref?: string) => ({
           properties: {
             success: { type: 'boolean', example: true },
             message: { type: 'string', example: msg },
-            ...(ref ? { data: { $ref: `#/components/schemas/${ref}` } } : { data: {} }),
+            ...(ref
+              ? { data: { $ref: `#/components/schemas/${ref}` } }
+              : { data: {} }),
           },
         },
       },
@@ -45,7 +47,9 @@ const dataMsg = (msg: string, ref?: string) => ({
           properties: {
             success: { type: 'boolean', example: true },
             message: { type: 'string', example: msg },
-            ...(ref ? { data: { $ref: `#/components/schemas/${ref}` } } : { data: {} }),
+            ...(ref
+              ? { data: { $ref: `#/components/schemas/${ref}` } }
+              : { data: {} }),
           },
         },
       },
@@ -58,11 +62,20 @@ export const ProductPaths = {
     get: {
       tags: ['Products'],
       summary: 'List products',
-      description: 'Returns paginated list with _count of grades, UOMs, and inventories per product.',
+      description:
+        'Returns paginated list with _count of grades, UOMs, and inventories per product.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1, default: 1 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 } },
+        {
+          in: 'query',
+          name: 'page',
+          schema: { type: 'integer', minimum: 1, default: 1 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        },
         { in: 'query', name: 'status', schema: { type: 'string' } },
       ],
       responses: {
@@ -96,10 +109,16 @@ export const ProductPaths = {
     get: {
       tags: ['Products'],
       summary: 'Get product by ID',
-      description: 'Returns full product detail with all nested grades, std rates, inventories, and UOMs.',
+      description:
+        'Returns full product detail with all nested grades, std rates, inventories, and UOMs.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: {
         200: {
@@ -118,7 +137,12 @@ export const ProductPaths = {
       summary: 'Update product',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
@@ -135,7 +159,12 @@ export const ProductPaths = {
       summary: 'Delete product',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { ...successMsg('Product deleted'), ...errors },
     },
@@ -148,9 +177,18 @@ export const ProductPaths = {
       summary: 'List product grades',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
         { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: { ...dataMsg('Product grades retrieved'), ...errors },
     },
@@ -159,7 +197,12 @@ export const ProductPaths = {
       summary: 'Create product grade',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
@@ -178,8 +221,18 @@ export const ProductPaths = {
       summary: 'Get product grade by ID',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { ...dataMsg('Product grade retrieved'), ...errors },
     },
@@ -188,8 +241,18 @@ export const ProductPaths = {
       summary: 'Update product grade',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
@@ -206,8 +269,18 @@ export const ProductPaths = {
       summary: 'Delete product grade',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { ...successMsg('Product grade deleted'), ...errors },
     },
@@ -220,10 +293,24 @@ export const ProductPaths = {
       summary: 'List product grade standard rates',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'gradeId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'gradeId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
         { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: { ...dataMsg('Standard rates retrieved'), ...errors },
     },
@@ -232,14 +319,26 @@ export const ProductPaths = {
       summary: 'Create product grade standard rate',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'gradeId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'gradeId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/CreateProductGradeStdRateBody' },
+            schema: {
+              $ref: '#/components/schemas/CreateProductGradeStdRateBody',
+            },
           },
         },
       },
@@ -254,9 +353,18 @@ export const ProductPaths = {
       summary: 'List product UOMs',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
         { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: { ...dataMsg('Product UOMs retrieved'), ...errors },
     },
@@ -265,7 +373,12 @@ export const ProductPaths = {
       summary: 'Assign UOM to product',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
@@ -284,8 +397,18 @@ export const ProductPaths = {
       summary: 'Get product UOM by ID',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { ...dataMsg('Product UOM retrieved'), ...errors },
     },
@@ -294,8 +417,18 @@ export const ProductPaths = {
       summary: 'Delete product UOM',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' } },
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { ...successMsg('Product UOM deleted'), ...errors },
     },

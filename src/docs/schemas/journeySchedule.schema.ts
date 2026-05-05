@@ -17,14 +17,21 @@ export const JourneyScheduleSchemas = {
       loadedQuantity: { type: 'number', example: 4200 },
       loadedQuantityUomId: { type: 'string', format: 'uuid' },
       loadedAt: { type: 'string', format: 'date-time' },
-      loadingStatus: { type: 'string', example: 'PENDING', enum: ['PENDING', 'LOADED', 'IN_TRANSIT'] },
+      loadingStatus: {
+        type: 'string',
+        example: 'PENDING',
+        enum: ['PENDING', 'LOADED', 'IN_TRANSIT'],
+      },
     },
   },
   JourneyScheduleStatsResponse: {
     type: 'object',
     properties: {
       success: { type: 'boolean', example: true },
-      message: { type: 'string', example: 'Truck load monitor stats retrieved' },
+      message: {
+        type: 'string',
+        example: 'Truck load monitor stats retrieved',
+      },
       data: {
         type: 'object',
         properties: {

@@ -81,7 +81,10 @@ export const InventoryPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Inventory entry created' },
+                  message: {
+                    type: 'string',
+                    example: 'Inventory entry created',
+                  },
                   data: { $ref: '#/components/schemas/InventoryEntryResponse' },
                 },
               },

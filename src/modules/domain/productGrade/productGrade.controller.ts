@@ -10,13 +10,11 @@ export const createProductGrade = async (req: Request, res: Response) => {
       req.params.productId,
       req.body as any,
     );
-    return res
-      .status(HttpStatus.CREATED)
-      .json({
-        success: true,
-        message: 'Product grade created successfully',
-        data: record,
-      });
+    return res.status(HttpStatus.CREATED).json({
+      success: true,
+      message: 'Product grade created successfully',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to create Product grade';
@@ -32,13 +30,11 @@ export const listProductGrades = async (req: Request, res: Response) => {
       req.params.productId,
       req.query as any,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Product grades retrieved',
-        data: result,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product grades retrieved',
+      data: result,
+    });
   } catch (error) {
     const message =
       error instanceof Error
@@ -56,13 +52,11 @@ export const getProductGradeById = async (req: Request, res: Response) => {
       req.params.productId,
       req.params.id,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Product grade retrieved',
-        data: record,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product grade retrieved',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error
@@ -81,13 +75,11 @@ export const updateProductGrade = async (req: Request, res: Response) => {
       req.params.id,
       req.body as any,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Product grade updated successfully',
-        data: record,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product grade updated successfully',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to update Product grade';
@@ -103,13 +95,11 @@ export const deleteProductGrade = async (req: Request, res: Response) => {
       req.params.productId,
       req.params.id,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Product grade deleted successfully',
-        data: null,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product grade deleted successfully',
+      data: null,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to delete Product grade';

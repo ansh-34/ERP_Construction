@@ -20,7 +20,6 @@ export const updateReorderLevelBodySchema = z.object({
 export const inventoryListQuerySchema =
   paginationQuerySchema.merge(statusFilterSchema);
 
-
 export const inventoryIdParamsSchema = idParamSchema;
 
 export type CreateInventoryDto = z.infer<typeof createInventoryBodySchema>;
@@ -28,4 +27,3 @@ export type UpdateReorderLevelDto = z.infer<
   typeof updateReorderLevelBodySchema
 >;
 export type InventoryListQuery = z.infer<typeof inventoryListQuerySchema>;
-

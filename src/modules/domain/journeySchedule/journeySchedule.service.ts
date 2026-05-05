@@ -11,7 +11,6 @@ export const JourneyScheduleService = {
     return JourneyScheduleRepository.getStats(domainId);
   },
 
-
   async createJourneySchedule(
     domainId: string,
     data: {

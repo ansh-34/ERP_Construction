@@ -84,7 +84,10 @@ export const DomainPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Logged out successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Logged out successfully',
+                  },
                 },
               },
             },
@@ -117,7 +120,10 @@ export const DomainPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Password changed successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Password changed successfully',
+                  },
                 },
               },
             },
@@ -149,7 +155,10 @@ export const DomainPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'If the email exists, an OTP has been sent' },
+                  message: {
+                    type: 'string',
+                    example: 'If the email exists, an OTP has been sent',
+                  },
                 },
               },
             },
@@ -181,7 +190,10 @@ export const DomainPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Password has been reset successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Password has been reset successfully',
+                  },
                 },
               },
             },

@@ -36,7 +36,10 @@ export const SuperAdminSchemas = {
     type: 'object',
     properties: {
       success: { type: 'boolean', example: true },
-      message: { type: 'string', example: 'Domain seeded successfully. Verification link sent to email.' },
+      message: {
+        type: 'string',
+        example: 'Domain seeded successfully. Verification link sent to email.',
+      },
       data: {
         type: 'object',
         properties: {

@@ -170,7 +170,8 @@ export const Messages = Object.freeze({
     STATS_FAILED: 'Failed to fetch inventory stats',
     EXPORT_FAILED: 'Failed to export inventory',
     REORDER_UPDATE_FAILED: 'Failed to update reorder level',
-    DUPLICATE_ENTRY: 'Inventory entry for this product and grade already exists',
+    DUPLICATE_ENTRY:
+      'Inventory entry for this product and grade already exists',
     PRODUCT_NOT_FOUND: 'Product not found',
     GRADE_NOT_FOUND: 'Product grade not found',
     UOM_NOT_FOUND: 'UOM not found',

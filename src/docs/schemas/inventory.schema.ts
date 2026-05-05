@@ -72,7 +72,10 @@ export const InventorySchemas = {
               type: 'object',
               properties: {
                 id: { type: 'string', format: 'uuid' },
-                stdRateType: { type: 'object', example: { en: 'Purchase Rate' } },
+                stdRateType: {
+                  type: 'object',
+                  example: { en: 'Purchase Rate' },
+                },
                 stdRateValue: { type: 'number', example: 450 },
                 alertThresold: { type: 'number', example: 500 },
                 status: { type: 'string', example: 'active' },

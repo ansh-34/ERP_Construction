@@ -6,11 +6,32 @@ export const ModulePermissionPaths = {
       tags: ['Module Permissions'],
       summary: 'Set module permissions',
       security: [{ bearerAuth: [] }],
-      requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/SetModulePermissionsBody' } } } },
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SetModulePermissionsBody' },
+          },
+        },
+      },
       responses: {
         200: {
           description: 'Module permissions set',
-          content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true }, message: { type: 'string', example: 'Module permissions set' }, data: { type: 'object' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions set',
+                  },
+                  data: { type: 'object' },
+                },
+              },
+            },
+          },
         },
         ...errors,
       },
@@ -22,21 +43,44 @@ export const ModulePermissionPaths = {
       summary: 'List module permissions',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'query', name: 'offset', schema: { type: 'integer', minimum: 0 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: {
         200: {
           description: 'Module permissions retrieved',
-          content: { 'application/json': { schema: {
-            type: 'object',
-            properties: {
-              success: { type: 'boolean', example: true },
-              message: { type: 'string', example: 'Module permissions retrieved' },
-              pagination: { type: 'object', properties: { currentCount: { type: 'integer' }, totalCount: { type: 'integer' }, offset: { type: 'integer' }, limit: { type: 'integer' } } },
-              data: { type: 'array', items: { type: 'object' } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions retrieved',
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: { type: 'array', items: { type: 'object' } },
+                },
+              },
             },
-          } } },
+          },
         },
         ...errors,
       },
@@ -47,11 +91,26 @@ export const ModulePermissionPaths = {
       tags: ['Module Permissions'],
       summary: 'Delete module permissions record',
       security: [{ bearerAuth: [] }],
-      parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+      ],
       responses: {
         200: {
           description: 'Module permissions deleted',
-          content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true }, message: { type: 'string', example: 'Module permissions deleted' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions deleted',
+                  },
+                },
+              },
+            },
+          },
         },
         ...errors,
       },

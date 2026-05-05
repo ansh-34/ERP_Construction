@@ -16,9 +16,7 @@ export const getInventoryStats = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : Messages.INVENTORY.STATS_FAILED;
+      error instanceof Error ? error.message : Messages.INVENTORY.STATS_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -64,9 +62,7 @@ export const createInventoryEntry = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : Messages.INVENTORY.CREATE_FAILED;
+      error instanceof Error ? error.message : Messages.INVENTORY.CREATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

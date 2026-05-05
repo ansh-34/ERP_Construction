@@ -6,8 +6,18 @@ export const UserPaths = {
       tags: ['User Auth'],
       summary: 'Verify and activate invited user',
       parameters: [
-        { in: 'query', name: 'email', required: true, schema: { type: 'string', format: 'email' } },
-        { in: 'query', name: 'token', required: true, schema: { type: 'string' } },
+        {
+          in: 'query',
+          name: 'email',
+          required: true,
+          schema: { type: 'string', format: 'email' },
+        },
+        {
+          in: 'query',
+          name: 'token',
+          required: true,
+          schema: { type: 'string' },
+        },
       ],
       responses: {
         200: {
@@ -18,12 +28,18 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Account verified successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Account verified successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
                       email: { type: 'string', format: 'email' },
-                      dummyPassword: { type: 'string', description: 'Generated temporary password' },
+                      dummyPassword: {
+                        type: 'string',
+                        description: 'Generated temporary password',
+                      },
                       industry: { type: 'string', example: 'CONSTRUCTION' },
                       domainId: { type: 'string', format: 'uuid' },
                     },
@@ -175,7 +191,10 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Logged out successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Logged out successfully',
+                  },
                 },
               },
             },
@@ -208,7 +227,10 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Password changed successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Password changed successfully',
+                  },
                 },
               },
             },
@@ -240,7 +262,10 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'If the email exists, an OTP has been sent' },
+                  message: {
+                    type: 'string',
+                    example: 'If the email exists, an OTP has been sent',
+                  },
                 },
               },
             },
@@ -272,7 +297,10 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Password has been reset successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Password has been reset successfully',
+                  },
                 },
               },
             },
@@ -305,7 +333,10 @@ export const UserPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'User invited successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'User invited successfully',
+                  },
                 },
               },
             },
@@ -322,8 +353,16 @@ export const UserPaths = {
       summary: 'List domain users',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'query', name: 'offset', schema: { type: 'integer', minimum: 0 } },
-        { in: 'query', name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
       ],
       responses: {
         200: {

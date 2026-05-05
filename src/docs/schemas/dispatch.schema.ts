@@ -19,8 +19,16 @@ export const DispatchSchemas = {
       loadedQuantity: { type: 'number', example: 4200 },
       loadedQuantityUomId: { type: 'string', format: 'uuid' },
       loadedAt: { type: 'string', format: 'date-time' },
-      loadingStatus: { type: 'string', example: 'PENDING', enum: ['PENDING', 'LOADED'] },
-      journeyStatus: { type: 'string', example: 'SCHEDULED', enum: ['SCHEDULED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'] },
+      loadingStatus: {
+        type: 'string',
+        example: 'PENDING',
+        enum: ['PENDING', 'LOADED'],
+      },
+      journeyStatus: {
+        type: 'string',
+        example: 'SCHEDULED',
+        enum: ['SCHEDULED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'],
+      },
     },
   },
   DispatchStatsResponse: {

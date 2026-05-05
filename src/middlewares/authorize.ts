@@ -27,7 +27,10 @@ const authorize = (moduleName: string, action: string) => {
       const directPermission = await prisma.roleModulePermission.findFirst({
         where: { roleId, moduleId, domainId },
       });
-      if (directPermission && directPermission.permissions.includes(actionUpper)) {
+      if (
+        directPermission &&
+        directPermission.permissions.includes(actionUpper)
+      ) {
         next();
         return;
       }

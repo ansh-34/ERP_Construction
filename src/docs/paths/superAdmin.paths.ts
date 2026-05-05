@@ -59,8 +59,18 @@ export const SuperAdminPaths = {
       tags: ['SuperAdmin'],
       summary: 'Verify seeded domain token',
       parameters: [
-        { in: 'query', name: 'email', required: true, schema: { type: 'string' } },
-        { in: 'query', name: 'token', required: true, schema: { type: 'string' } },
+        {
+          in: 'query',
+          name: 'email',
+          required: true,
+          schema: { type: 'string' },
+        },
+        {
+          in: 'query',
+          name: 'token',
+          required: true,
+          schema: { type: 'string' },
+        },
       ],
       responses: {
         200: {
@@ -71,7 +81,10 @@ export const SuperAdminPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Domain verified successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Domain verified successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -79,7 +92,10 @@ export const SuperAdminPaths = {
                         type: 'object',
                         properties: {
                           id: { type: 'string', format: 'uuid' },
-                          name: { type: 'object', example: { en: 'My Company' } },
+                          name: {
+                            type: 'object',
+                            example: { en: 'My Company' },
+                          },
                           email: { type: 'string', format: 'email' },
                           industry: { type: 'string', example: 'CONSTRUCTION' },
                         },

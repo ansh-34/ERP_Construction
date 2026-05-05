@@ -75,7 +75,10 @@ export const JourneySchedulePaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Journey schedule created' },
+                  message: {
+                    type: 'string',
+                    example: 'Journey schedule created',
+                  },
                   data: {
                     type: 'object',
                     properties: {
