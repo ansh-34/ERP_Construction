@@ -5,10 +5,11 @@ import {
   statusFilterSchema,
 } from '../../common/common.validator.js';
 
-const localizedName = z.record(z.string(), z.string()).refine(
-  (val) => Object.keys(val).length > 0,
-  { message: 'must have at least one language key' }
-);
+const localizedName = z
+  .record(z.string(), z.string())
+  .refine((val) => Object.keys(val).length > 0, {
+    message: 'must have at least one language key',
+  });
 
 // ── Body schemas ──────────────────────────────────────────────
 export const createUomBodySchema = z.object({
@@ -28,7 +29,8 @@ export const updateUomBodySchema = z.object({
 });
 
 // ── Query schemas ─────────────────────────────────────────────
-export const listUomsQuerySchema = pageBasedPaginationQuerySchema.merge(statusFilterSchema);
+export const listUomsQuerySchema =
+  pageBasedPaginationQuerySchema.merge(statusFilterSchema);
 
 // ── Param schemas ─────────────────────────────────────────────
 export const uomIdParamSchema = idParamSchema;

@@ -48,7 +48,7 @@ model Domain {
   otps                    Otp[]
   roles                   Role[]
   roleModulePermissions   RoleModulePermission[]
-  inventory               Inventory?
+  inventories             Inventory[]
   appErrors               AppError[]
   vehicles                Vehicle[]
   vehicleJourneySchedules VehicleJourneySchedule[]
@@ -258,28 +258,24 @@ model ModuleDependency {
 }
 
 model Inventory {
-  id        String   @id @default(uuid()) @db.Uuid
-  domainId  String   @unique @db.Uuid
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(uuid()) @db.Uuid
+  productId      String        @db.Uuid
+  product        Product       @relation(fields: [productId], references: [id])
+  productGradeId String        @db.Uuid
+  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
+  quantity       Float         @default(0)
+  uomId          String        @db.Uuid
+  uom            Uom           @relation("InventoryUom", fields: [uomId], references: [id])
+  reorderLevel   Float         @default(0)
+  domainId       String        @db.Uuid
+  domain         Domain        @relation(fields: [domainId], references: [id])
+  status         String        @default("active")
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  items InventoryItem[]
-}
-
-model InventoryItem {
-  id          String @id @default(uuid()) @db.Uuid
-  inventoryId String @db.Uuid
-
-  inventory    Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
-  name         String
-  code         String?
-  quantity     Float     @default(0)
-  reorderLevel Float     @default(0)
-
-  @@unique([inventoryId, name])
+  @@unique([productId, productGradeId, domainId, isDeleted])
+  @@index([domainId, isDeleted])
 }
 
 model AppError {
@@ -361,6 +357,7 @@ model Uom {
   vehicleLoadCapacity      Vehicle[]                @relation("VehicleLoadCapacityUom")
   journeyScheduleLoadedQty VehicleJourneySchedule[] @relation("JourneyScheduleLoadedQtyUom")
   dispatchLoadedQty        DispatchVehicle[]        @relation("DispatchLoadedQtyUom")
+  inventories              Inventory[]              @relation("InventoryUom")
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -475,6 +472,7 @@ model Product {
   domain               Domain                 @relation(fields: [domainId], references: [id])
   productGrades        ProductGrades[]
   productGradeStdRates ProductGradeStdRates[]
+  inventories          Inventory[]
   status               String
   isDeleted            Boolean                @default(false)
   createdAt            DateTime               @default(now())
@@ -511,6 +509,7 @@ model ProductGrades {
   domain               Domain                 @relation(fields: [domainId], references: [id])
   product              Product                @relation(fields: [productId], references: [id])
   productGradeStdRates ProductGradeStdRates[]
+  inventories          Inventory[]
   status               String
   isDeleted            Boolean
   createdAt            DateTime               @default(now())

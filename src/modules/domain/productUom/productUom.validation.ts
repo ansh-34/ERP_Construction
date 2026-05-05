@@ -12,7 +12,8 @@ export const createProductUomBodySchema = z.object({
 });
 
 // ── Query schemas ─────────────────────────────────────────────
-export const listProductUomQuerySchema = pageBasedPaginationQuerySchema.merge(statusFilterSchema);
+export const listProductUomQuerySchema =
+  pageBasedPaginationQuerySchema.merge(statusFilterSchema);
 
 // ── Param schemas ─────────────────────────────────────────────
 export const productUomProductIdParamSchema = z.object({

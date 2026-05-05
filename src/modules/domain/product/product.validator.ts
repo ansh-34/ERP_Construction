@@ -19,7 +19,8 @@ export const updateProductBodySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-export const listProductsQuerySchema = paginationQuerySchema.merge(statusFilterSchema);
+export const listProductsQuerySchema =
+  paginationQuerySchema.merge(statusFilterSchema);
 
 export const productIdParamsSchema = idParamSchema;
 

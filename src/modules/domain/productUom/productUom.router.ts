@@ -15,10 +15,26 @@ import {
 export const productUomRouter = (): Router => {
   const router = Router({ mergeParams: true });
 
-  router.post('/', validate(createProductUomBodySchema, 'body'), createProductUom);
-  router.get('/', validate(listProductUomQuerySchema, 'query'), listProductUoms);
-  router.get('/:id', validate(productUomIdParamSchema, 'params'), getProductUomById);
-  router.delete('/:id', validate(productUomIdParamSchema, 'params'), deleteProductUom);
+  router.post(
+    '/',
+    validate(createProductUomBodySchema, 'body'),
+    createProductUom,
+  );
+  router.get(
+    '/',
+    validate(listProductUomQuerySchema, 'query'),
+    listProductUoms,
+  );
+  router.get(
+    '/:id',
+    validate(productUomIdParamSchema, 'params'),
+    getProductUomById,
+  );
+  router.delete(
+    '/:id',
+    validate(productUomIdParamSchema, 'params'),
+    deleteProductUom,
+  );
 
   return router;
 };

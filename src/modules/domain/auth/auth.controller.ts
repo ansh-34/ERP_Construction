@@ -36,8 +36,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const token =
-      req.body.refreshToken || req.cookies?.refreshToken;
+    const token = req.body.refreshToken || req.cookies?.refreshToken;
 
     const result = await AuthService.refreshToken({
       refreshToken: token,
@@ -62,8 +61,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const token =
-      req.body.refreshToken || req.cookies?.refreshToken;
+    const token = req.body.refreshToken || req.cookies?.refreshToken;
 
     await AuthService.logout({ refreshToken: token });
 
@@ -139,4 +137,3 @@ export const changePassword = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
-

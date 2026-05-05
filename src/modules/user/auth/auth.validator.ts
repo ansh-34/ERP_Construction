@@ -64,4 +64,3 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: strongPasswordSchema,
 });
-

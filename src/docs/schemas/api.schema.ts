@@ -11,6 +11,8 @@ import { InventorySchemas } from './inventory.schema.js';
 import { JourneyScheduleSchemas } from './journeySchedule.schema.js';
 import { DispatchSchemas } from './dispatch.schema.js';
 import { AppErrorSchemas } from './appError.schema.js';
+import { ProductSchemas } from './product.schema.js';
+import { UomSchemas } from './uom.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -26,4 +28,6 @@ export const ApiSchemas = {
   ...JourneyScheduleSchemas,
   ...DispatchSchemas,
   ...AppErrorSchemas,
+  ...ProductSchemas,
+  ...UomSchemas,
 };

@@ -4,6 +4,23 @@ import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { DispatchService } from './dispatch.service.js';
 
+export const getDispatchStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await DispatchService.getStats(req.user!.domainId);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.DISPATCH.STATS_RETRIEVED,
+      data: stats,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.DISPATCH.STATS_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const createDispatch = async (req: Request, res: Response) => {
   try {
     const dispatch = await DispatchService.createDispatch(

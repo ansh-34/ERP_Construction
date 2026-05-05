@@ -34,4 +34,53 @@ export const JourneyScheduleRepository = {
       }),
     ]);
   },
+
+  async getStats(domainId: string) {
+    const where = { domainId, isDeleted: false };
+
+    const [
+      total,
+      pendingCount,
+      loadedCount,
+      inTransitCount,
+      aggregation,
+    ] = await prisma.$transaction([
+      prisma.vehicleJourneySchedule.count({ where }),
+      prisma.vehicleJourneySchedule.count({
+        where: { ...where, loadingStatus: 'PENDING' },
+      }),
+      prisma.vehicleJourneySchedule.count({
+        where: { ...where, loadingStatus: 'LOADED' },
+      }),
+      prisma.vehicleJourneySchedule.count({
+        where: { ...where, loadingStatus: 'IN_TRANSIT' },
+      }),
+      prisma.vehicleJourneySchedule.aggregate({
+        where,
+        _sum: {
+          loadedQuantity: true,
+          distance: true,
+          expectedFuelValue: true,
+        },
+        _avg: {
+          loadedQuantity: true,
+          distance: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalSchedules: total,
+      loadingStatusBreakdown: {
+        pending: pendingCount,
+        loaded: loadedCount,
+        inTransit: inTransitCount,
+      },
+      totalLoadedQuantity: aggregation._sum.loadedQuantity ?? 0,
+      avgLoadedQuantity: Math.round((aggregation._avg.loadedQuantity ?? 0) * 100) / 100,
+      totalDistance: aggregation._sum.distance ?? 0,
+      avgDistance: Math.round((aggregation._avg.distance ?? 0) * 100) / 100,
+      totalExpectedFuel: aggregation._sum.expectedFuelValue ?? 0,
+    };
+  },
 };

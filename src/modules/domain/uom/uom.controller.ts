@@ -21,7 +21,10 @@ export const createUom = async (req: Request, res: Response) => {
 
 export const listUoms = async (req: Request, res: Response) => {
   try {
-    const result = await UomService.findAll(req.user!.domainId, req.query as any);
+    const result = await UomService.findAll(
+      req.user!.domainId,
+      req.query as any,
+    );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.UOM.RETRIEVED,

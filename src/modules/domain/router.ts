@@ -14,7 +14,6 @@ import { uomRouter } from './uom/uom.router.js';
 
 const domainRouter = Router();
 
-
 domainRouter.use('/auth', authRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);

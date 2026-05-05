@@ -34,6 +34,25 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return HttpStatus.UNPROCESSABLE_ENTITY;
   }
 
+  // Auth/credential related errors
+  if (
+    message.includes('Invalid credentials') ||
+    message.includes('Invalid or expired verification link') ||
+    message.includes('Invalid or expired') ||
+    message.includes('Email verification is required')
+  ) {
+    return HttpStatus.BAD_REQUEST;
+  }
+
+  // Missing required fields
+  if (
+    message.includes('is required') ||
+    message.includes('already exists') ||
+    message.includes('not generated yet')
+  ) {
+    return HttpStatus.BAD_REQUEST;
+  }
+
   if (
     message.includes('invalid') ||
     message.includes('duplicate') ||

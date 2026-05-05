@@ -112,8 +112,10 @@ export const UserService = {
       industry: user.industry,
     });
 
-    const { token: refreshToken } =
-      await RefreshTokenRepository.createForUser(user.id, 'USER');
+    const { token: refreshToken } = await RefreshTokenRepository.createForUser(
+      user.id,
+      'USER',
+    );
 
     return {
       accessToken,
@@ -166,8 +168,10 @@ export const UserService = {
       industry: user.industry,
     });
 
-    const { token: refreshToken } =
-      await RefreshTokenRepository.createForUser(user.id, 'USER');
+    const { token: refreshToken } = await RefreshTokenRepository.createForUser(
+      user.id,
+      'USER',
+    );
 
     return {
       accessToken,
@@ -228,7 +232,11 @@ export const UserService = {
 
     await RefreshTokenRepository.revoke(existing.id);
     const { token: newRefreshToken } =
-      await RefreshTokenRepository.createForUser(user.id, 'USER', existing.expiry);
+      await RefreshTokenRepository.createForUser(
+        user.id,
+        'USER',
+        existing.expiry,
+      );
 
     return {
       accessToken,

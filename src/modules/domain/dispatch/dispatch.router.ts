@@ -2,7 +2,11 @@ import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
 import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
-import { createDispatch, listDispatches } from './dispatch.controller.js';
+import {
+  getDispatchStats,
+  createDispatch,
+  listDispatches,
+} from './dispatch.controller.js';
 import {
   createDispatchBodySchema,
   listDispatchesQuerySchema,
@@ -12,17 +16,23 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.post(
-  '/',
-  authorize('dispatch', 'create'),
-  validate(createDispatchBodySchema, 'body'),
-  createDispatch,
-);
+// stats
+router.get('/stats', authorize('dispatch', 'read'), getDispatchStats);
+
+// list
 router.get(
   '/',
   authorize('dispatch', 'read'),
   validate(listDispatchesQuerySchema, 'query'),
   listDispatches,
+);
+
+// create
+router.post(
+  '/',
+  authorize('dispatch', 'create'),
+  validate(createDispatchBodySchema, 'body'),
+  createDispatch,
 );
 
 export default router;

@@ -1,4 +1,4 @@
-import { ok, created, errors } from './responses.js';
+import { errors } from './responses.js';
 
 export const SuperAdminPaths = {
   '/api/superAdmin/auth/login': {
@@ -13,7 +13,17 @@ export const SuperAdminPaths = {
           },
         },
       },
-      responses: { ...ok, ...errors },
+      responses: {
+        200: {
+          description: 'SuperAdmin login successful',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SuperAdminLoginResponse' },
+            },
+          },
+        },
+        ...errors,
+      },
     },
   },
 
@@ -30,7 +40,17 @@ export const SuperAdminPaths = {
           },
         },
       },
-      responses: { ...created, ...errors },
+      responses: {
+        201: {
+          description: 'Domain seeded',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SeedDomainResponse' },
+            },
+          },
+        },
+        ...errors,
+      },
     },
   },
 
@@ -39,20 +59,40 @@ export const SuperAdminPaths = {
       tags: ['SuperAdmin'],
       summary: 'Verify seeded domain token',
       parameters: [
-        {
-          in: 'query',
-          name: 'email',
-          required: true,
-          schema: { type: 'string' },
-        },
-        {
-          in: 'query',
-          name: 'token',
-          required: true,
-          schema: { type: 'string' },
-        },
+        { in: 'query', name: 'email', required: true, schema: { type: 'string' } },
+        { in: 'query', name: 'token', required: true, schema: { type: 'string' } },
       ],
-      responses: { ...ok, ...errors },
+      responses: {
+        200: {
+          description: 'Domain verified',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Domain verified successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      domain: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string', format: 'uuid' },
+                          name: { type: 'object', example: { en: 'My Company' } },
+                          email: { type: 'string', format: 'email' },
+                          industry: { type: 'string', example: 'CONSTRUCTION' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
     },
   },
 };

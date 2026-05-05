@@ -13,6 +13,15 @@ export const ProductRepository = {
       }),
       prisma.product.findMany({
         where: { domainId, isDeleted: false },
+        include: {
+          _count: {
+            select: {
+              productGrades: { where: { isDeleted: false } },
+              productUoms: { where: { isDeleted: false } },
+              inventories: { where: { isDeleted: false } },
+            },
+          },
+        },
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },
@@ -23,6 +32,96 @@ export const ProductRepository = {
   findByIdAndDomain(id: string, domainId: string) {
     return prisma.product.findFirst({
       where: { id, domainId, isDeleted: false },
+    });
+  },
+
+  findByIdWithDetails(id: string, domainId: string) {
+    return prisma.product.findFirst({
+      where: { id, domainId, isDeleted: false },
+      include: {
+        productGrades: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            gradeDisplayName: true,
+            gradeCode: true,
+            status: true,
+            createdAt: true,
+            productGradeStdRates: {
+              where: { isDeleted: false },
+              select: {
+                id: true,
+                stdRateType: true,
+                stdRateValue: true,
+                alertThresold: true,
+                status: true,
+                createdAt: true,
+              },
+            },
+            inventories: {
+              where: { isDeleted: false },
+              select: {
+                id: true,
+                quantity: true,
+                reorderLevel: true,
+                status: true,
+                uom: {
+                  select: { id: true, displayName: true, code: true },
+                },
+              },
+            },
+          },
+        },
+        productUoms: {
+          where: { isDeleted: false },
+          select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            uom: {
+              select: {
+                id: true,
+                displayName: true,
+                code: true,
+                conversionRate: true,
+              },
+            },
+          },
+        },
+        productGradeStdRates: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            stdRateType: true,
+            stdRateValue: true,
+            alertThresold: true,
+            status: true,
+            createdAt: true,
+            productGrade: {
+              select: { id: true, gradeDisplayName: true, gradeCode: true },
+            },
+          },
+        },
+        inventories: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            quantity: true,
+            reorderLevel: true,
+            status: true,
+            createdAt: true,
+            productGrade: {
+              select: { id: true, gradeDisplayName: true, gradeCode: true },
+            },
+            uom: {
+              select: { id: true, displayName: true, code: true },
+            },
+          },
+        },
+      },
     });
   },
 

@@ -10,7 +10,6 @@ const industryValues = [
 const normalizeIndustry = (value: unknown) =>
   typeof value === 'string' ? value.trim().toUpperCase() : value;
 
-
 const strongPasswordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters')

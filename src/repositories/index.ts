@@ -12,7 +12,6 @@ export * from './modulePermission.repository.js';
 export * from './moduleDependency.repository.js';
 export * from './appError.repository.js';
 export * from './inventory.repository.js';
-export * from './inventoryItem.repository.js';
 export * from './language.repository.js';
 export * from './vehicle.repository.js';
 export * from './journeySchedule.repository.js';

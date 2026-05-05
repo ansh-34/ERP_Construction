@@ -90,7 +90,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     const product = await ProductService.updateProduct(
       req.user!.domainId,
       req.params.id,
-      req.body
+      req.body,
     );
 
     return res.status(HttpStatus.OK).json({

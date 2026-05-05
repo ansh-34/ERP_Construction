@@ -5,10 +5,11 @@ import {
   statusFilterSchema,
 } from '../../common/common.validator.js';
 
-const localizedName = z.record(z.string(), z.string()).refine(
-  (val) => Object.keys(val).length > 0,
-  { message: 'must have at least one language key' }
-);
+const localizedName = z
+  .record(z.string(), z.string())
+  .refine((val) => Object.keys(val).length > 0, {
+    message: 'must have at least one language key',
+  });
 
 // ── Body schemas ──────────────────────────────────────────────
 export const createProductGradeBodySchema = z.object({
@@ -24,7 +25,8 @@ export const updateProductGradeBodySchema = z.object({
 });
 
 // ── Query schemas ─────────────────────────────────────────────
-export const listProductGradeQuerySchema = pageBasedPaginationQuerySchema.merge(statusFilterSchema);
+export const listProductGradeQuerySchema =
+  pageBasedPaginationQuerySchema.merge(statusFilterSchema);
 
 // ── Param schemas ─────────────────────────────────────────────
 export const productGradeProductIdParamSchema = z.object({
@@ -36,6 +38,10 @@ export const productGradeIdParamSchema = idParamSchema.extend({
 });
 
 // ── DTO types ─────────────────────────────────────────────────
-export type CreateProductGradeDto = z.infer<typeof createProductGradeBodySchema>;
-export type UpdateProductGradeDto = z.infer<typeof updateProductGradeBodySchema>;
+export type CreateProductGradeDto = z.infer<
+  typeof createProductGradeBodySchema
+>;
+export type UpdateProductGradeDto = z.infer<
+  typeof updateProductGradeBodySchema
+>;
 export type ListProductGradeQuery = z.infer<typeof listProductGradeQuerySchema>;

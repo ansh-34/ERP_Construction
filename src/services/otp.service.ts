@@ -10,11 +10,7 @@ export async function generateOtp(): Promise<{ raw: string; hashed: string }> {
   return { raw, hashed };
 }
 
-
-export async function verifyOtp(
-  raw: string,
-  hashed: string,
-): Promise<boolean> {
+export async function verifyOtp(raw: string, hashed: string): Promise<boolean> {
   return bcrypt.compare(raw, hashed);
 }
 

@@ -1,10 +1,68 @@
-import { ok, created, errors } from './responses.js';
+import { errors } from './responses.js';
 
 export const InventoryPaths = {
-  '/api/inventory/records': {
+  '/api/domain/inventory/stats': {
+    get: {
+      tags: ['Inventory'],
+      summary: 'Inventory stats',
+      description:
+        'Returns total items, active/inactive counts, total quantity, low stock count, out of stock count, and unique product count.',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'Inventory stats retrieved',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/InventoryStatsResponse' },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/inventory': {
+    get: {
+      tags: ['Inventory'],
+      summary: 'List inventory items',
+      description:
+        'Returns paginated list. Each entry includes enriched product (with productType and _count), product grade (with std rates), and UOM (with conversionRate).',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0, default: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        },
+        {
+          in: 'query',
+          name: 'status',
+          schema: { type: 'string' },
+          description: 'Filter by status (e.g. active, inactive)',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Inventory retrieved',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/InventoryListResponse' },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
     post: {
       tags: ['Inventory'],
-      summary: 'Add inventory item',
+      summary: 'Create inventory entry',
+      description:
+        'Creates a new inventory record. Response includes enriched product, product grade (with std rates), and UOM (with conversion rate).',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -14,25 +72,66 @@ export const InventoryPaths = {
           },
         },
       },
-      responses: { ...created, ...errors },
+      responses: {
+        201: {
+          description: 'Inventory entry created',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Inventory entry created' },
+                  data: { $ref: '#/components/schemas/InventoryEntryResponse' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
     },
-    get: {
+  },
+  '/api/domain/inventory/{id}/reorder': {
+    patch: {
       tags: ['Inventory'],
-      summary: 'List inventory items',
+      summary: 'Update reorder level',
+      description: 'Updates the reorder level for an inventory entry.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
-          in: 'query',
-          name: 'offset',
-          schema: { type: 'integer', minimum: 0 },
-        },
-        {
-          in: 'query',
-          name: 'limit',
-          schema: { type: 'integer', minimum: 1, maximum: 100 },
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
         },
       ],
-      responses: { ...ok, ...errors },
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateReorderLevelBody' },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Reorder level updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Reorder level updated' },
+                  data: { $ref: '#/components/schemas/InventoryEntryResponse' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
     },
   },
 };

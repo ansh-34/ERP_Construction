@@ -4,7 +4,7 @@ import variables from '../config/variables.config.js';
 const transporter = nodemailer.createTransport({
   host: variables.SMTP_HOST,
   port: parseInt(variables.SMTP_PORT, 10),
-  secure: variables.SMTP_SECURE === 'true', // true for 465, false for other ports
+  secure: variables.SMTP_SECURE === 'true', 
   auth: {
     user: variables.SMTP_USER,
     pass: variables.SMTP_PASS,

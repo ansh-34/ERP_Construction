@@ -25,35 +25,35 @@ export const uomRouter = (): Router => {
     '/',
     authorize('uom', 'create'),
     validate(createUomBodySchema, 'body'),
-    createUom
+    createUom,
   );
-  
+
   router.get(
     '/',
     authorize('uom', 'read'),
     validate(listUomsQuerySchema, 'query'),
-    listUoms
+    listUoms,
   );
-  
+
   router.get(
     '/:id',
     authorize('uom', 'read'),
     validate(uomIdParamSchema, 'params'),
-    getUomById
+    getUomById,
   );
-  
+
   router.patch(
     '/:id',
     authorize('uom', 'update'),
     validate(updateUomBodySchema, 'body'),
-    updateUom
+    updateUom,
   );
-  
+
   router.delete(
     '/:id',
     authorize('uom', 'delete'),
     validate(uomIdParamSchema, 'params'),
-    deleteUom
+    deleteUom,
   );
 
   return router;

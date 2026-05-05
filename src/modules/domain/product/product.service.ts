@@ -39,7 +39,7 @@ export const ProductService = {
   },
 
   async getProductById(domainId: string, id: string) {
-    const product = await ProductRepository.findByIdAndDomain(id, domainId);
+    const product = await ProductRepository.findByIdWithDetails(id, domainId);
     if (!product) {
       throw new Error(Messages.PRODUCT.NOT_FOUND);
     }

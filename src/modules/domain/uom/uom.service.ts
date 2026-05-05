@@ -1,5 +1,9 @@
 import prisma from '../../../infra/database/prisma/prisma.client.js';
-import type { CreateUomDto, UpdateUomDto, ListUomsQuery } from './uom.validation.js';
+import type {
+  CreateUomDto,
+  UpdateUomDto,
+  ListUomsQuery,
+} from './uom.validation.js';
 
 export const UomService = {
   async create(domainId: string, dto: CreateUomDto) {

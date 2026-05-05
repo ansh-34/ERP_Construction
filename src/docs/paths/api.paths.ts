@@ -13,6 +13,8 @@ import { ModulePaths } from './module.paths.js';
 import { PermissionPaths } from './permission.paths.js';
 import { ModuleDependencyPaths } from './moduleDependency.paths.js';
 import { ModulePermissionPaths } from './modulePermission.paths.js';
+import { ProductPaths } from './product.paths.js';
+import { UomPaths } from './uom.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -30,4 +32,6 @@ export const ApiPaths = {
   ...PermissionPaths,
   ...ModuleDependencyPaths,
   ...ModulePermissionPaths,
+  ...ProductPaths,
+  ...UomPaths,
 };

@@ -3,12 +3,27 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { ProductGradeStdRateService } from './productGradeStdRate.service.js';
 
-export const createProductGradeStdRate = async (req: Request, res: Response) => {
+export const createProductGradeStdRate = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const record = await ProductGradeStdRateService.create(req.user!.domainId, req.params.productId, req.params.gradeId, req.body as any);
-    return res.status(HttpStatus.CREATED).json({ success: true, message: 'Std rate created successfully', data: record });
+    const record = await ProductGradeStdRateService.create(
+      req.user!.domainId,
+      req.params.productId,
+      req.params.gradeId,
+      req.body as any,
+    );
+    return res
+      .status(HttpStatus.CREATED)
+      .json({
+        success: true,
+        message: 'Std rate created successfully',
+        data: record,
+      });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create Std rate';
+    const message =
+      error instanceof Error ? error.message : 'Failed to create Std rate';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -16,43 +31,93 @@ export const createProductGradeStdRate = async (req: Request, res: Response) => 
 
 export const listProductGradeStdRates = async (req: Request, res: Response) => {
   try {
-    const result = await ProductGradeStdRateService.findAll(req.user!.domainId, req.params.productId, req.params.gradeId, req.query as any);
-    return res.status(HttpStatus.OK).json({ success: true, message: 'Std rates retrieved', data: result });
+    const result = await ProductGradeStdRateService.findAll(
+      req.user!.domainId,
+      req.params.productId,
+      req.params.gradeId,
+      req.query as any,
+    );
+    return res
+      .status(HttpStatus.OK)
+      .json({ success: true, message: 'Std rates retrieved', data: result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve Std rates';
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve Std rates';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
 };
 
-export const getProductGradeStdRateById = async (req: Request, res: Response) => {
+export const getProductGradeStdRateById = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const record = await ProductGradeStdRateService.findOne(req.user!.domainId, req.params.productId, req.params.gradeId, req.params.id);
-    return res.status(HttpStatus.OK).json({ success: true, message: 'Std rate retrieved', data: record });
+    const record = await ProductGradeStdRateService.findOne(
+      req.user!.domainId,
+      req.params.productId,
+      req.params.gradeId,
+      req.params.id,
+    );
+    return res
+      .status(HttpStatus.OK)
+      .json({ success: true, message: 'Std rate retrieved', data: record });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve Std rate';
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve Std rate';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
 };
 
-export const updateProductGradeStdRate = async (req: Request, res: Response) => {
+export const updateProductGradeStdRate = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const record = await ProductGradeStdRateService.update(req.user!.domainId, req.params.productId, req.params.gradeId, req.params.id, req.body as any);
-    return res.status(HttpStatus.OK).json({ success: true, message: 'Std rate updated successfully', data: record });
+    const record = await ProductGradeStdRateService.update(
+      req.user!.domainId,
+      req.params.productId,
+      req.params.gradeId,
+      req.params.id,
+      req.body as any,
+    );
+    return res
+      .status(HttpStatus.OK)
+      .json({
+        success: true,
+        message: 'Std rate updated successfully',
+        data: record,
+      });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update Std rate';
+    const message =
+      error instanceof Error ? error.message : 'Failed to update Std rate';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
 };
 
-export const deleteProductGradeStdRate = async (req: Request, res: Response) => {
+export const deleteProductGradeStdRate = async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    await ProductGradeStdRateService.softDelete(req.user!.domainId, req.params.productId, req.params.gradeId, req.params.id);
-    return res.status(HttpStatus.OK).json({ success: true, message: 'Std rate deleted successfully', data: null });
+    await ProductGradeStdRateService.softDelete(
+      req.user!.domainId,
+      req.params.productId,
+      req.params.gradeId,
+      req.params.id,
+    );
+    return res
+      .status(HttpStatus.OK)
+      .json({
+        success: true,
+        message: 'Std rate deleted successfully',
+        data: null,
+      });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to delete Std rate';
+    const message =
+      error instanceof Error ? error.message : 'Failed to delete Std rate';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

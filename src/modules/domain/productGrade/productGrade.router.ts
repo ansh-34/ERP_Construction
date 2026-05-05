@@ -18,11 +18,31 @@ import { productGradeStdRateRouter } from '../productGradeStdRate/productGradeSt
 export const productGradeRouter = (): Router => {
   const router = Router({ mergeParams: true });
 
-  router.post('/', validate(createProductGradeBodySchema, 'body'), createProductGrade);
-  router.get('/', validate(listProductGradeQuerySchema, 'query'), listProductGrades);
-  router.get('/:id', validate(productGradeIdParamSchema, 'params'), getProductGradeById);
-  router.patch('/:id', validate(updateProductGradeBodySchema, 'body'), updateProductGrade);
-  router.delete('/:id', validate(productGradeIdParamSchema, 'params'), deleteProductGrade);
+  router.post(
+    '/',
+    validate(createProductGradeBodySchema, 'body'),
+    createProductGrade,
+  );
+  router.get(
+    '/',
+    validate(listProductGradeQuerySchema, 'query'),
+    listProductGrades,
+  );
+  router.get(
+    '/:id',
+    validate(productGradeIdParamSchema, 'params'),
+    getProductGradeById,
+  );
+  router.patch(
+    '/:id',
+    validate(updateProductGradeBodySchema, 'body'),
+    updateProductGrade,
+  );
+  router.delete(
+    '/:id',
+    validate(productGradeIdParamSchema, 'params'),
+    deleteProductGrade,
+  );
 
   router.use('/:gradeId/std-rates', productGradeStdRateRouter());
 

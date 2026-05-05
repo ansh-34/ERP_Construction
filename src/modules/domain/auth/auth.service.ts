@@ -58,8 +58,10 @@ export const AuthService = {
       industry: domainOwner.industry,
     });
 
-    const { token: refreshToken } =
-      await RefreshTokenRepository.createForUser(domainOwner.id, 'DOMAIN');
+    const { token: refreshToken } = await RefreshTokenRepository.createForUser(
+      domainOwner.id,
+      'DOMAIN',
+    );
 
     return {
       accessToken,
@@ -120,7 +122,11 @@ export const AuthService = {
 
     await RefreshTokenRepository.revoke(existing.id);
     const { token: newRefreshToken } =
-      await RefreshTokenRepository.createForUser(domainOwner.id, 'DOMAIN', existing.expiry);
+      await RefreshTokenRepository.createForUser(
+        domainOwner.id,
+        'DOMAIN',
+        existing.expiry,
+      );
 
     return {
       accessToken,
@@ -165,7 +171,10 @@ export const AuthService = {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
-    const passwordMatch = await bcrypt.compare(currentPassword, domain.password);
+    const passwordMatch = await bcrypt.compare(
+      currentPassword,
+      domain.password,
+    );
     if (!passwordMatch) {
       throw new Error(Messages.AUTH.CURRENT_PASSWORD_WRONG);
     }
