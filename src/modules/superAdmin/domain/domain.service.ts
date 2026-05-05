@@ -59,7 +59,8 @@ export const DomainService = {
       email,
       'Activate Your Domain — Construction ERP',
       domainActivationEmail({
-        domainName: typeof domainName === 'string' ? domainName : String(domainName),
+        domainName:
+          typeof domainName === 'string' ? domainName : String(domainName),
         verificationLink,
       }),
     );

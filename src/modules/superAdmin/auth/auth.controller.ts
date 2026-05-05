@@ -8,16 +8,17 @@ const cookieOptions = {
 
 export const loginSuperAdmin = async (req: Request, res: Response) => {
   try {
-    const token = await SuperAdminAuthService.login(req.body);
+    const result = await SuperAdminAuthService.login(req.body);
 
     return res
       .status(HttpStatus.OK)
-      .cookie('accessToken', token, cookieOptions)
+      .cookie('accessToken', result.accessToken, cookieOptions)
       .json({
         success: true,
         message: Messages.AUTH.SUPERADMIN_VERIFIED,
-        accessToken: token,
-        refreshToken: token,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        data: result.user,
       });
   } catch (error) {
     const message =
