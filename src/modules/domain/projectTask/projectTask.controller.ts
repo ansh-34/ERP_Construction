@@ -95,7 +95,9 @@ export const projectTaskController = {
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch project tasks';
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project tasks';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -188,7 +190,9 @@ export const projectTaskController = {
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update project task';
+        error instanceof Error
+          ? error.message
+          : 'Failed to update project task';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -212,7 +216,9 @@ export const projectTaskController = {
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete project task';
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete project task';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

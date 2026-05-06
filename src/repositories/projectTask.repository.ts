@@ -232,7 +232,9 @@ export const projectTaskRepository = {
     }
 
     if (data.assignee !== undefined) {
-      assignments.unshift(Prisma.sql`"assignee" = ${toJsonbSql(data.assignee)}`);
+      assignments.unshift(
+        Prisma.sql`"assignee" = ${toJsonbSql(data.assignee)}`,
+      );
     }
 
     if (data.plannedStartDate !== undefined) {

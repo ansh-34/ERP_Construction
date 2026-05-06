@@ -10,13 +10,11 @@ export const createProductUom = async (req: Request, res: Response) => {
       req.params.productId,
       req.body as any,
     );
-    return res
-      .status(HttpStatus.CREATED)
-      .json({
-        success: true,
-        message: 'Product UOM assigned successfully',
-        data: record,
-      });
+    return res.status(HttpStatus.CREATED).json({
+      success: true,
+      message: 'Product UOM assigned successfully',
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to assign Product UOM';
@@ -70,13 +68,11 @@ export const deleteProductUom = async (req: Request, res: Response) => {
       req.params.productId,
       req.params.id,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: 'Product UOM removed successfully',
-        data: null,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product UOM removed successfully',
+      data: null,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Failed to remove Product UOM';

@@ -73,7 +73,10 @@ function assertStatus(status: StatusEnum | undefined): void {
   }
 }
 
-function assertTaskString(value: string | null | undefined, field: string): void {
+function assertTaskString(
+  value: string | null | undefined,
+  field: string,
+): void {
   if (value !== undefined && value !== null && !isNonEmptyString(value)) {
     throw new Error(`invalid ${field}`);
   }
