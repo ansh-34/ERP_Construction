@@ -23,7 +23,8 @@ export const apiKeyController = {
         data: apiKey,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to create api key';
+      const message =
+        error instanceof Error ? error.message : 'Failed to create api key';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -38,7 +39,8 @@ export const apiKeyController = {
         data: apiKeys,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch api keys';
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch api keys';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -58,7 +60,8 @@ export const apiKeyController = {
         data: apiKey,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch api key';
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch api key';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -67,12 +70,19 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const { name, description } = req.body as { name?: string; description?: string };
+      const { name, description } = req.body as {
+        name?: string;
+        description?: string;
+      };
 
-      const updatedApiKey = await apiKeyService.update(id ?? '', domainId ?? '', {
-        ...(name !== undefined && { name }),
-        ...(description !== undefined && { description }),
-      });
+      const updatedApiKey = await apiKeyService.update(
+        id ?? '',
+        domainId ?? '',
+        {
+          ...(name !== undefined && { name }),
+          ...(description !== undefined && { description }),
+        },
+      );
 
       if (!updatedApiKey) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -83,7 +93,8 @@ export const apiKeyController = {
         data: updatedApiKey,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to update api key';
+      const message =
+        error instanceof Error ? error.message : 'Failed to update api key';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -92,7 +103,10 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const deletedApiKey = await apiKeyService.delete(id ?? '', domainId ?? '');
+      const deletedApiKey = await apiKeyService.delete(
+        id ?? '',
+        domainId ?? '',
+      );
 
       if (!deletedApiKey) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -103,7 +117,8 @@ export const apiKeyController = {
         data: deletedApiKey,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to delete api key';
+      const message =
+        error instanceof Error ? error.message : 'Failed to delete api key';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

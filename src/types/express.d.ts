@@ -1,15 +1,13 @@
-import 'express-serve-static-core';
-import { Multer } from 'multer';
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: {
-      id: string;
-      name: string;
-      email: string;
-      roleId: string;
-      domainId: string;
-    };
-    file?: Multer.File;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        domainId: string;
+        roleId: string | null;
+        industry: string;
+      };
+    }
   }
 }
 

@@ -1,72 +1,46 @@
-import {
-  DeleteObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
+import fs from 'fs/promises';
+import path from 'path';
 import variables from '@/config/variables.config';
 
-function getRequiredS3Config() {
-  const {
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
-    AWS_REGION,
-    AWS_BUCKET_NAME,
-  } = variables;
+const uploadRoot = path.resolve(process.cwd(), 'uploads');
 
-  if (
-    !AWS_ACCESS_KEY_ID ||
-    !AWS_SECRET_ACCESS_KEY ||
-    !AWS_REGION ||
-    !AWS_BUCKET_NAME
-  ) {
-    throw new Error('invalid aws s3 config');
-  }
-
-  return {
-    accessKeyId: AWS_ACCESS_KEY_ID,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY,
-    region: AWS_REGION,
-    bucketName: AWS_BUCKET_NAME,
-  };
+function safeFileName(fileName: string): string {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
 
-const s3Config = getRequiredS3Config();
+export const uploadToS3 = async (
+  file: Express.Multer.File,
+  folder: string,
+): Promise<string> => {
+  const safeFolder = safeFileName(folder);
+  const key = `${safeFolder}/${Date.now()}-${safeFileName(file.originalname)}`;
+  const destination = path.join(uploadRoot, key);
 
-const s3 = new S3Client({
-  region: s3Config.region,
-  credentials: {
-    accessKeyId: s3Config.accessKeyId,
-    secretAccessKey: s3Config.secretAccessKey,
-  },
-});
+  await fs.mkdir(path.dirname(destination), { recursive: true });
+  await fs.writeFile(destination, file.buffer);
 
-export const uploadToS3 = async (file: Express.Multer.File, folder: string) => {
-  const key = `${folder}/${Date.now()}-${file.originalname}`;
-
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: s3Config.bucketName,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    }),
-  );
-
-  return `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${encodeURI(key)}`;
+  const port = variables.PORT || '5000';
+  return `http://localhost:${port}/uploads/${key.replace(/\\/g, '/')}`;
 };
 
-export const deleteFromS3 = async (url: string) => {
+export const deleteFromS3 = async (url: string): Promise<void> => {
   try {
-    const parsedUrl = new URL(url);
-    const key = decodeURIComponent(parsedUrl.pathname.replace(/^\//, ''));
+    const marker = '/uploads/';
+    const markerIndex = url.indexOf(marker);
 
-    await s3.send(
-      new DeleteObjectCommand({
-        Bucket: s3Config.bucketName,
-        Key: key,
-      }),
-    );
-  } catch (error) {
-    console.error('Error deleting from S3:', error);
+    if (markerIndex === -1) {
+      return;
+    }
+
+    const key = decodeURIComponent(url.slice(markerIndex + marker.length));
+    const filePath = path.resolve(uploadRoot, key);
+
+    if (!filePath.startsWith(uploadRoot)) {
+      return;
+    }
+
+    await fs.unlink(filePath);
+  } catch {
+    // Best-effort cleanup.
   }
 };

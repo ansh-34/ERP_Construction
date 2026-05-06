@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../src/infra/database/prisma/generated/prisma"
+  output   = "../src/infra/database/prisma/generated/prisma/client"
 }
 
 datasource db {
@@ -12,62 +12,564 @@ enum StatusEnum {
   INACTIVE
 }
 
-model ApiKey {
-  id        String     @id @default(uuid()) @db.Uuid
+enum IndustryEnum {
+  CONSTRUCTION
+  MANUFACTURING
+  MINING
+  PROPERTY
+}
+
+enum UserTypeEnum {
+  DOMAIN
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+
+model Domain {
+  id               String       @id @default(uuid()) @db.Uuid
+  name             Json
+  email            String
+  organizationType Json?
+  phoneCode        String?
+  phone            String?
+  mediaId          String?      @db.Uuid
+  industry         IndustryEnum
+  password         String
+  isEmailVerified  Boolean      @default(false)
+  status           String       @default("active")
+  isDeleted        Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  users                   User[]
+  tokens                  Token[]
+  otps                    Otp[]
+  roles                   Role[]
+  roleModulePermissions   RoleModulePermission[]
+  inventory               Inventory?
+  appErrors               AppError[]
+  vehicles                Vehicle[]
+  vehicleJourneySchedules VehicleJourneySchedule[]
+  dispatchVehicles        DispatchVehicle[]
+  uoms                    Uom[]
+  products                Product[]
+  productUoms             ProductUom[]
+  productGrades           ProductGrades[]
+  productGradeStdRates    ProductGradeStdRates[]
+  apiKeys                 ApiKey[]
+  locations               Location[]
+  media                   Media[]
+  projects                Project[]
+  projectCategories       ProjectCategory[]
+  projectStages           ProjectStage[]
+  projectTasks            ProjectTask[]
+  projectTaskDelays       ProjectTaskDelay[]
+  machineries             Machinery[]
+
+  @@unique([email, isDeleted])
+  @@unique([phone, isDeleted])
+}
+
+model User {
+  id        String       @id @default(uuid()) @db.Uuid
   name      String
+  email     String
+  password  String
+  phoneCode String?
+  phone     String?
+  industry  IndustryEnum
+  roleId    String?      @db.Uuid
+
+  role    Role?   @relation(fields: [roleId], references: [id])
+  mediaId String? @db.Uuid
+
+  isEmailVerified Boolean @default(false)
+  domainId        String  @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, isDeleted])
+  @@unique([phone, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, status])
+  @@index([createdAt, isDeleted, domainId, roleId])
+}
+
+model Token {
+  id                  String   @id @default(uuid()) @db.Uuid
+  token               String
+  email               String
+  tokenPurpose        String
+  tokenExpirationTime DateTime
+  domainId            String?  @db.Uuid
+
+  domain    Domain?  @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt, isDeleted])
+}
+
+model Otp {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  otp       String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  domainId  String?  @db.Uuid
+
+  domain    Domain?  @relation(fields: [domainId], references: [id])
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email, isUsed])
+  @@index([createdAt])
+}
+
+model RefreshToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  token     String       @unique
+  expiry    DateTime
+  userType  UserTypeEnum
+  userId    String       @db.Uuid
+  status    String       @default("active")
+  isDeleted Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([token, isDeleted])
+  @@index([userId, userType, isDeleted])
+  @@index([createdAt])
+}
+
+model Role {
+  id       String  @id @default(uuid()) @db.Uuid
+  name     String
+  code     String?
+  level    Int     @default(0)
+  domainId String  @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  roleModulePermissions RoleModulePermission[]
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+//Module - Seeded Globally
+model Module {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      Json
+  code      String
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roleModulePermissions RoleModulePermission[]
+  modulePermissions     ModulePermission[]
+  parentDependencies    ModuleDependency[]     @relation("ParentModule")
+  childDependencies     ModuleDependency[]     @relation("DependentModule")
+
+  @@unique([code, isDeleted])
+  @@index([isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+}
+
+model Permission {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      Json
+  code      String
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+  @@map("permission")
+}
+
+model RoleModulePermission {
+  id     String @id @default(uuid()) @db.Uuid
+  roleId String @db.Uuid
+
+  role     Role   @relation(fields: [roleId], references: [id])
+  moduleId String @db.Uuid
+
+  module      Module   @relation(fields: [moduleId], references: [id])
+  permissions String[]
+  domainId    String   @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, moduleId, domainId])
+  @@index([createdAt, domainId])
+  @@index([createdAt, roleId, domainId])
+  @@index([createdAt, roleId, moduleId, domainId])
+}
+
+model ModulePermission {
+  id       String @id @default(uuid()) @db.Uuid
+  moduleId String @db.Uuid
+
+  module      Module   @relation(fields: [moduleId], references: [id])
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([moduleId])
+  @@index([createdAt, moduleId])
+  @@index([createdAt])
+}
+
+model ModuleDependency {
+  id       String @id @default(uuid()) @db.Uuid
+  moduleId String @db.Uuid
+
+  module            Module @relation("ParentModule", fields: [moduleId], references: [id])
+  dependentModuleId String @db.Uuid
+
+  dependentModule Module   @relation("DependentModule", fields: [dependentModuleId], references: [id])
+  permissions     String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([moduleId, dependentModuleId])
+  @@index([createdAt])
+  @@index([createdAt, moduleId])
+}
+
+model Inventory {
+  id        String   @id @default(uuid()) @db.Uuid
+  domainId  String   @unique @db.Uuid
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items InventoryItem[]
+}
+
+model InventoryItem {
+  id          String @id @default(uuid()) @db.Uuid
+  inventoryId String @db.Uuid
+
+  inventory    Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  name         String
+  code         String?
+  quantity     Float     @default(0)
+  reorderLevel Float     @default(0)
+
+  @@unique([inventoryId, name])
+}
+
+model AppError {
+  id           String @id @default(uuid()) @db.Uuid
+  deviceName   String
+  version      String
+  error        String @db.Text
+  functionName String
+  domainId     String @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model Log {
+  id           String   @id @default(uuid()) @db.Uuid
+  endpoint     String
+  statusCode   Int
+  requestData  String?  @db.Text
+  responseData String?  @db.Text
+  method       String
+  responseTime Int
+  deviceId     String?
+  deviceIP     String?
+  appVersion   String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([createdAt, statusCode])
+}
+
+model Language {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  code      String
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+}
+
+model SuperAdmin {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      Json
+  email     String
+  password  String
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@map("superAdmin")
+}
+
+model Uom {
+  id          String @id @default(uuid()) @db.Uuid
+  displayName Json
+  code        String
+  baseUomId   String @db.Uuid
+
+  conversionRate Float
+  domainId       String @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productUoms              ProductUom[]             @relation("ProductUom")
+  vehicleLoadCapacity      Vehicle[]                @relation("VehicleLoadCapacityUom")
+  journeyScheduleLoadedQty VehicleJourneySchedule[] @relation("JourneyScheduleLoadedQtyUom")
+  dispatchLoadedQty        DispatchVehicle[]        @relation("DispatchLoadedQtyUom")
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted])
+}
+
+model Vehicle {
+  id                String  @id @default(uuid()) @db.Uuid
+  numberPlate       String
+  vehicleType       String  @default("TRUCK")
+  loadCapacity      Float   @default(0)
+  loadCapacityUomId String? @db.Uuid
+
+  loadCapacityUom    Uom?   @relation("VehicleLoadCapacityUom", fields: [loadCapacityUomId], references: [id])
+  alertLoadThreshold Float  @default(0)
+  domainId           String @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  journeySchedules VehicleJourneySchedule[]
+  dispatches       DispatchVehicle[]
+
+  @@unique([numberPlate, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+model VehicleJourneySchedule {
+  id      String @id @default(uuid()) @db.Uuid
+  truckId String @db.Uuid
+
+  truck               Vehicle   @relation(fields: [truckId], references: [id])
+  code                String
+  description         String?
+  date                DateTime?
+  driverName          String?
+  startLocation       String?
+  endLocation         String?
+  distance            Float     @default(0)
+  average             Float     @default(0)
+  expectedFuelValue   Float     @default(0)
+  fuelAlertThreshold  Float     @default(0)
+  loadedQuantity      Float     @default(0)
+  loadedQuantityUomId String?   @db.Uuid
+
+  loadedQuantityUom Uom?      @relation("JourneyScheduleLoadedQtyUom", fields: [loadedQuantityUomId], references: [id])
+  loadedAt          DateTime?
+  loadingStatus     String    @default("PENDING")
+  domainId          String    @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dispatches DispatchVehicle[]
+
+  @@unique([code, domainId, isDeleted, truckId])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+model DispatchVehicle {
+  id        String @id @default(uuid()) @db.Uuid
+  vehicleId String @db.Uuid
+
+  vehicle           Vehicle @relation(fields: [vehicleId], references: [id])
+  code              String
+  journeyScheduleId String? @db.Uuid
+
+  journeySchedule     VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
+  description         String?
+  date                DateTime?
+  driverName          String?
+  startLocation       String?
+  endLocation         String?
+  distance            Float                   @default(0)
+  average             Float                   @default(0)
+  expectedFuelValue   Float                   @default(0)
+  actualFuelValue     Float                   @default(0)
+  fuelAlertThreshold  Float                   @default(0)
+  loadedQuantity      Float                   @default(0)
+  loadedQuantityUomId String?                 @db.Uuid
+
+  loadedQuantityUom      Uom?      @relation("DispatchLoadedQtyUom", fields: [loadedQuantityUomId], references: [id])
+  loadedAt               DateTime?
+  loadingStatus          String    @default("PENDING")
+  journeyStatus          String    @default("SCHEDULED")
+  journeyStatusUpdatedAt DateTime?
+  domainId               String    @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, domainId, isDeleted, vehicleId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([journeyStatus, isDeleted, domainId])
+}
+
+model Product {
+  id          String @id @default(uuid()) @db.Uuid
+  displayName Json
+  code        String
+  productType String
+  domainId    String @db.Uuid
+
+  domain               Domain                 @relation(fields: [domainId], references: [id])
+  productGrades        ProductGrades[]
+  productGradeStdRates ProductGradeStdRates[]
+  status               String
+  isDeleted            Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  productUoms ProductUom[]
+}
+
+model ProductUom {
+  id        String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+
+  product Product @relation(fields: [productId], references: [id])
+  uomId   String  @db.Uuid
+
+  uom      Uom    @relation("ProductUom", fields: [uomId], references: [id])
+  domainId String @db.Uuid
+
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  status    String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, uomId])
+}
+
+model ProductGrades {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  productId            String                 @db.Uuid
+  gradeDisplayName     Json
+  gradeCode            String
+  domainId             String                 @db.Uuid
+  domain               Domain                 @relation(fields: [domainId], references: [id])
+  product              Product                @relation(fields: [productId], references: [id])
+  productGradeStdRates ProductGradeStdRates[]
+  status               String
+  isDeleted            Boolean
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+}
+
+model ProductGradeStdRates {
+  id             String        @id @default(uuid()) @db.Uuid
+  productGradeId String        @db.Uuid
+  productId      String        @db.Uuid
+  stdRateType    Json
+  stdRateValue   Float
+  alertThresold  Float
+  domainId       String        @db.Uuid
+  domain         Domain        @relation(fields: [domainId], references: [id])
+  product        Product       @relation(fields: [productId], references: [id])
+  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
+  status         String
+  isDeleted      Boolean
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model ApiKey {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
   description String?
-  secret    String
-  domainId  String     @db.Uuid
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  secret      String
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([domainId])
 }
 
-model Domain {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        String
-  email       String     @unique
-  password    String
-  roleId      String     @db.Uuid @map("role_id")
-  role        Role       @relation(fields: [roleId], references: [id])
-  isDeleted   Boolean    @default(false) @map("is_deleted")
-  status      StatusEnum @default(ACTIVE)
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
-
-  apiKeys                ApiKey[]
-  locations              Location[]
-  media                  Media[]
-  projects               Project[]
-  projectCategories      ProjectCategory[]
-  projectStages          ProjectStage[]
-  roleModulePermissions  RoleModulePermission[]
-  users                  User[]
-
-  @@map("domain")
-  @@index([roleId])
-}
-
 model Location {
-  id                String     @id @default(uuid()) @db.Uuid
-  name              Json       @db.JsonB
-  code              String
-  type              String
-  parentLocationId   String?    @db.Uuid
-  parent            Location?  @relation("LocationHierarchy", fields: [parentLocationId], references: [id])
-  children          Location[] @relation("LocationHierarchy")
-  domainId          String     @db.Uuid
-  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status            StatusEnum @default(ACTIVE)
-  isDeleted         Boolean    @default(false)
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  id               String     @id @default(uuid()) @db.Uuid
+  name             Json       @db.JsonB
+  code             String
+  type             String
+  parentLocationId String?    @db.Uuid
+  parent           Location?  @relation("LocationHierarchy", fields: [parentLocationId], references: [id])
+  children         Location[] @relation("LocationHierarchy")
+  domainId         String     @db.Uuid
+  domain           Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status           StatusEnum @default(ACTIVE)
+  isDeleted        Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
-  projects          Project[]
+  projects Project[]
 
   @@unique([code, isDeleted, domainId])
   @@index([domainId])
@@ -79,64 +581,39 @@ model Media {
   name      String
   type      String
   url       String     @unique
-  domainId  String     @db.Uuid @map("domain_id")
+  domainId  String     @db.Uuid
   domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false) @map("is_deleted")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  @@map("media")
   @@index([domainId])
-}
-
-model Module {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  name                  String
-  code                  String                 @unique
-  isDeleted             Boolean                @default(false)
-  status                StatusEnum             @default(ACTIVE)
-  createdAt             DateTime               @default(now()) @map("created_at")
-  updatedAt             DateTime               @updatedAt @map("updated_at")
-  
-  roleModulePermissions RoleModulePermission[]
-
-  @@map("module")
-}
-
-model Permission {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  name                  String
-  code                  String                 @unique
-  isDeleted             Boolean                @default(false)
-  status                StatusEnum             @default(ACTIVE)
-  createdAt             DateTime               @default(now()) @map("created_at")
-  updatedAt             DateTime               @updatedAt @map("updated_at")
-  
-  roleModulePermissions RoleModulePermission[]
-
-  @@map("permission")
+  @@map("media")
 }
 
 model Project {
-  id                   String           @id @default(uuid()) @db.Uuid
-  name                 Json             @db.JsonB
-  code                 String
-  projectCategoryId    String           @db.Uuid
-  projectCategory      ProjectCategory  @relation(fields: [projectCategoryId], references: [id], onDelete: Restrict)
-  description          Json?            @db.JsonB
-  budget               Decimal          @db.Decimal(15, 2)
-  spent                Decimal          @default(0) @db.Decimal(15, 2)
-  locationId           String           @db.Uuid
-  location             Location         @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId             String           @db.Uuid
-  domain               Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status               StatusEnum       @default(ACTIVE)
-  isDeleted            Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  
-  projectStages        ProjectStage[]
+  id                String          @id @default(uuid()) @db.Uuid
+  name              Json            @db.JsonB
+  code              String
+  projectCategoryId String          @db.Uuid
+  projectCategory   ProjectCategory @relation(fields: [projectCategoryId], references: [id], onDelete: Restrict)
+  description       Json?           @db.JsonB
+  budget            Decimal         @db.Decimal(15, 2)
+  spent             Decimal         @default(0) @db.Decimal(15, 2)
+  locationId        String          @db.Uuid
+  location          Location        @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId          String          @db.Uuid
+  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status            StatusEnum      @default(ACTIVE)
+  isDeleted         Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  projectStages ProjectStage[]
+  projectTasks  ProjectTask[]
+  projectTaskDelays ProjectTaskDelay[]
+  machineries Machinery[]
 
   @@unique([code, isDeleted, domainId])
   @@index([projectCategoryId])
@@ -155,8 +632,8 @@ model ProjectCategory {
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  
-  projects    Project[]
+
+  projects Project[]
 
   @@unique([code, isDeleted, domainId])
   @@index([domainId])
@@ -177,83 +654,90 @@ model ProjectStage {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
+  projectTasks ProjectTask[]
+  projectTaskDelays ProjectTaskDelay[]
+
   @@unique([code, isDeleted, domainId, projectId])
   @@index([projectId])
   @@index([domainId])
 }
 
-model Role {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  name                  String
-  code                  String                 @unique
-  level                 Int
-  isDeleted             Boolean                @default(false)
-  status                StatusEnum             @default(ACTIVE)
-  createdAt             DateTime               @default(now()) @map("created_at")
-  updatedAt             DateTime               @updatedAt @map("updated_at")
-  
-  domains               Domain[]
-  superAdmins           SuperAdmin[]
-  users                 User[]
-  roleModulePermissions RoleModulePermission[]
+model ProjectTask {
+  id                   String      @id @default(uuid()) @db.Uuid
+  name                 Json        @db.JsonB
+  code                 String
+  assignee             Json?       @db.JsonB
+  plannedStartDate     DateTime?
+  plannedEndDate       DateTime?
+  actualStartDate      DateTime?
+  actualEndDate        DateTime?
+  taskStatus           String      @default("PENDING")
+  taskProgress         Float       @default(0)
+  totalDelayInDays     Float       @default(0)
+  requiredApproval     Boolean     @default(false)
+  lastApprovedDeadline DateTime?
+  projectBatchCode     String?
+  stageId              String      @db.Uuid
+  stage                ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  projectId            String      @db.Uuid
+  project              Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId             String      @db.Uuid
+  domain               Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status               StatusEnum  @default(ACTIVE)
+  isDeleted            Boolean     @default(false)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
 
-  @@map("role")
+  projectTaskDelays ProjectTaskDelay[]
+
+  @@unique([code, isDeleted, domainId, projectId, stageId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([createdAt, isDeleted, domainId, projectId, stageId])
 }
 
-model RoleModulePermission {
-  id           String     @id @default(uuid()) @db.Uuid
-  roleId       String     @db.Uuid @map("role_id")
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  moduleId     String     @db.Uuid @map("module_id")
-  module       Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  permissionId String     @db.Uuid @map("permission_id")
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  domainId     String?    @db.Uuid @map("domain_id")
-  domain       Domain?    @relation(fields: [domainId], references: [id], onDelete: SetNull)
-  status       StatusEnum @default(ACTIVE)
-  isDeleted    Boolean    @default(false) @map("is_deleted")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+model ProjectTaskDelay {
+  id                   String       @id @default(uuid()) @db.Uuid
+  taskId               String       @db.Uuid
+  task                 ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  requestedDelayInDays Float        @default(0)
+  delayReason          String
+  requestApproved      Boolean      @default(false)
+  requestApprovalTime  DateTime?
+  stageId              String       @db.Uuid
+  stage                ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  projectId            String       @db.Uuid
+  project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId             String       @db.Uuid
+  domain               Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status               StatusEnum   @default(ACTIVE)
+  isDeleted            Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
-  @@map("roleModulePermission")
-  @@index([roleId])
-  @@index([moduleId])
-  @@index([permissionId])
-  @@index([domainId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([createdAt, isDeleted, domainId, projectId, stageId])
+  @@index([createdAt, isDeleted, domainId, projectId, taskId])
 }
 
-model SuperAdmin {
-  id        String     @id @default(uuid()) @db.Uuid
-  name      String
-  email     String     @unique
-  password  String
-  roleId    String     @db.Uuid @map("role_id")
-  role      Role       @relation(fields: [roleId], references: [id])
-  isDeleted Boolean    @default(false) @map("is_deleted")
-  status    StatusEnum @default(ACTIVE)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+model Machinery {
+  id                   String     @id @default(uuid()) @db.Uuid
+  code                 String
+  type                 String
+  expectedLitrePerHour Float      @default(0)
+  projectId            String     @db.Uuid
+  project              Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId             String     @db.Uuid
+  domain               Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status               StatusEnum @default(ACTIVE)
+  isDeleted            Boolean    @default(false)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 
-  @@map("superAdmin")
-  @@index([roleId])
-}
-
-model User {
-  id        String     @id @default(uuid()) @db.Uuid
-  name      String
-  email     String
-  password  String
-  roleId    String     @db.Uuid @map("role_id")
-  role      Role       @relation(fields: [roleId], references: [id])
-  domainId  String     @db.Uuid @map("domain_id")
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  isDeleted Boolean    @default(false)
-  status    StatusEnum @default(ACTIVE)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-
-  @@unique([email, domainId])
-  @@map("user")
-  @@index([roleId])
-  @@index([domainId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
 }

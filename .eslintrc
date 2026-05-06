@@ -16,12 +16,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
-
-    "comma-dangle": [
-      "error",
-      "always-multiline"
-    ],
-
+    "comma-dangle": ["error", "always-multiline"],
     "import/no-unresolved": "off",
     "import/extensions": [
       "error",
@@ -31,11 +26,9 @@
         "js": "never"
       }
     ],
-
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-var-requires": "off",
-
     "quotes": [
       "error",
       "single",
@@ -43,11 +36,7 @@
         "avoidEscape": true
       }
     ],
-
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      { "argsIgnorePattern": "^_" }
-    ]
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   },
   "settings": {
     "import/resolver": {

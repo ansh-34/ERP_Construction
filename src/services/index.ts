@@ -1,5 +1,5 @@
 export * from '../modules/domain/apiKey/apiKey.service';
-export * from './jwt.service';
+export * from './jwt.services';
 export * from '../modules/domain/location/location.service';
 export * from '../modules/domain/media/media.service';
 export * from './multer.service';

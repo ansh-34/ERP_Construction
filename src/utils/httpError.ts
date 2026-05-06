@@ -10,6 +10,30 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return HttpStatus.NOT_FOUND;
   }
 
+  if (message === 'Email verification is required') {
+    return HttpStatus.FORBIDDEN;
+  }
+
+  if (message.includes('Too many failed attempts')) {
+    return HttpStatus.TOO_MANY_REQUESTS;
+  }
+
+  if (message.includes('invalid or expired OTP')) {
+    return HttpStatus.UNAUTHORIZED;
+  }
+
+  if (message.includes('invalid or expired refresh token')) {
+    return HttpStatus.UNAUTHORIZED;
+  }
+
+  if (message.includes('OTP has expired')) {
+    return HttpStatus.BAD_REQUEST;
+  }
+
+  if (message.includes('Password must be at least')) {
+    return HttpStatus.UNPROCESSABLE_ENTITY;
+  }
+
   if (
     message.includes('invalid') ||
     message.includes('duplicate') ||

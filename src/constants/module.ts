@@ -1,18 +1,26 @@
 export const modules = [
   {
-    name: 'Role',
-    code: 'ROLE',
+    name: 'Inventory',
+    code: 'INVENTORY',
   },
   {
-    name: 'Permission',
-    code: 'PERMISSION',
+    name: 'Vehicle',
+    code: 'VEHICLE',
   },
   {
-    name: 'Module',
-    code: 'MODULE',
+    name: 'Journey',
+    code: 'JOURNEY',
   },
   {
-    name: 'Role_Module_Permission',
-    code: 'ROLE_MODULE_PERMISSION',
+    name: 'Dispatch',
+    code: 'DISPATCH',
+  },
+  {
+    name: 'Language',
+    code: 'LANGUAGE',
+  },
+  {
+    name: 'App_Error',
+    code: 'APP_ERROR',
   },
 ];

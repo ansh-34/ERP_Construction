@@ -1,16 +1,12 @@
 import bcrypt from 'bcryptjs';
-import { variables } from '@config/index';
 
-const SALT_ROUNDS = Number(variables.SALT_ROUNDS);
+export function hashPassword(password: string, saltRounds = 12): Promise<string> {
+  return bcrypt.hash(password, saltRounds);
+}
 
-export const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(SALT_ROUNDS);
-  return bcrypt.hash(password, salt);
-};
-
-export const verifyPassword = async (
+export function verifyPassword(
   password: string,
-  hash: string,
-): Promise<boolean> => {
-  return bcrypt.compare(password, hash);
-};
+  hashedPassword: string,
+): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword);
+}

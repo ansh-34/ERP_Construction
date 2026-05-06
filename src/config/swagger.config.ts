@@ -1,40 +1,54 @@
-import { ModulePaths } from '@/docs/paths/module.paths';
-import { ModuleSchemas } from '@/docs/schemas/module.schema';
-import { PermissionPaths } from '@/docs/paths/permission.paths';
-import { PermissionSchemas } from '@/docs/schemas/permission.schema';
-import { RolePaths } from '@/docs/paths/role.paths';
-import { RoleSchemas } from '@/docs/schemas/role.schema';
-import { RoleModulePermissionPaths } from '@/docs/paths/roleModulePermission.paths';
-import { RoleModulePermissionSchemas } from '@/docs/schemas/roleModulePermission.schema';
+import variables from './variables.config.js';
+import { ApiPaths } from '../docs/paths/api.paths.js';
+import { ApiSchemas } from '../docs/schemas/api.schema.js';
 
 export const swaggerSpec = {
   openapi: '3.0.0',
-
   info: {
-    title: 'Backend API',
+    title: 'RBAC Multi-Tenant API',
     version: '1.0.0',
-    description: 'API documentation',
+    description: 'Interactive API documentation for all RBAC endpoints.',
   },
-
   servers: [
     {
-      url: 'http://localhost:5000/api',
+      url: `http://localhost:${variables.PORT}`,
     },
   ],
-
+  tags: [
+    { name: 'Health' },
+    { name: 'SuperAdmin' },
+    { name: 'Domain Auth' },
+    { name: 'Users' },
+    { name: 'Roles' },
+    { name: 'Language' },
+    { name: 'Vehicles' },
+    { name: 'Inventory' },
+    { name: 'Journey Schedules' },
+    { name: 'Dispatch' },
+    { name: 'App Errors' },
+    { name: 'Modules' },
+    { name: 'Permissions' },
+    { name: 'Module Dependencies' },
+    { name: 'Module Permissions' },
+  ],
   paths: {
-    ...ModulePaths,
-    ...PermissionPaths,
-    ...RolePaths,
-    ...RoleModulePermissionPaths,
+    ...ApiPaths,
   },
-
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      cookieAuth: {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'token',
+      },
+    },
     schemas: {
-      ...ModuleSchemas,
-      ...PermissionSchemas,
-      ...RoleSchemas,
-      ...RoleModulePermissionSchemas,
+      ...ApiSchemas,
     },
   },
 };

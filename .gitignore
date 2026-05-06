@@ -1,6 +1,11 @@
-node_modules
+node_modules/
 .env
 /generated/prisma
 dist
 postman
 *.log
+dist/
+src/generated/
+src/infra/database/prisma/generated/
+postman/
+logs/

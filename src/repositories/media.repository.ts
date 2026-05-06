@@ -32,11 +32,11 @@ const mediaSelect = Prisma.sql`
   "name",
   "type",
   "url",
-  "domain_id" AS "domainId",
+  "domainId",
   "status",
-  "is_deleted" AS "isDeleted",
-  "created_at" AS "createdAt",
-  "updated_at" AS "updatedAt"
+  "isDeleted",
+  "createdAt",
+  "updatedAt"
 `;
 
 export const mediaRepository = {
@@ -44,31 +44,20 @@ export const mediaRepository = {
     const id = randomUUID();
 
     const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
-      INSERT INTO "media" ("id", "name", "type", "url", "domain_id", "status", "is_deleted", "created_at", "updated_at")
+      INSERT INTO "media" ("id", "name", "type", "url", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (${id}, ${data.name}, ${data.type}, ${data.url}, ${data.domainId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
-      RETURNING ${mediaSelect}
+      RETURNING *
     `);
 
     return result[0] as MediaRecord;
-  },
-
-  findByUrl: async (url: string): Promise<MediaRecord | null> => {
-    const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
-      SELECT ${mediaSelect}
-      FROM "media"
-      WHERE "url" = ${url} AND "is_deleted" = false
-      LIMIT 1
-    `);
-
-    return result[0] ?? null;
   },
 
   findMany: async (domainId: string): Promise<MediaRecord[]> => {
     return prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
       SELECT ${mediaSelect}
       FROM "media"
-      WHERE "domain_id" = ${domainId} AND "is_deleted" = false
-      ORDER BY "created_at" DESC
+      WHERE "domainId" = ${domainId} AND "isDeleted" = false
+      ORDER BY "createdAt" DESC
     `);
   },
 
@@ -79,7 +68,18 @@ export const mediaRepository = {
     const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
       SELECT ${mediaSelect}
       FROM "media"
-      WHERE "id" = ${id} AND "domain_id" = ${domainId} AND "is_deleted" = false
+      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      LIMIT 1
+    `);
+
+    return result[0] ?? null;
+  },
+
+  findByUrl: async (url: string): Promise<MediaRecord | null> => {
+    const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
+      SELECT ${mediaSelect}
+      FROM "media"
+      WHERE "url" = ${url} AND "isDeleted" = false
       LIMIT 1
     `);
 
@@ -91,7 +91,7 @@ export const mediaRepository = {
     domainId: string,
     data: UpdateMediaInput,
   ): Promise<MediaRecord | null> => {
-    const assignments = [Prisma.sql`"updated_at" = NOW()`];
+    const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
     if (data.name !== undefined) {
       assignments.unshift(Prisma.sql`"name" = ${data.name}`);
@@ -104,7 +104,7 @@ export const mediaRepository = {
     const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
       UPDATE "media"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domain_id" = ${domainId} AND "is_deleted" = false
+      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
       RETURNING ${mediaSelect}
     `);
 
@@ -117,8 +117,8 @@ export const mediaRepository = {
   ): Promise<MediaRecord | null> => {
     const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
       UPDATE "media"
-      SET "is_deleted" = true, "status" = ${StatusEnum.INACTIVE}, "updated_at" = NOW()
-      WHERE "id" = ${id} AND "domain_id" = ${domainId} AND "is_deleted" = false
+      SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
+      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
       RETURNING ${mediaSelect}
     `);
 

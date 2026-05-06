@@ -1,78 +1,51 @@
-import { prisma } from '@infra/database/prisma/prisma.client';
-import { StatusEnum } from '@constants/index';
+import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const PermissionRepository = {
-  findByCode: async (code: string) => {
+  findActiveByCode(code: string) {
+    return prisma.permission.findFirst({ where: { code, isDeleted: false } });
+  },
+
+  findActiveById(id: string) {
+    return prisma.permission.findFirst({ where: { id, isDeleted: false } });
+  },
+
+  findDuplicateCode(code: string, id: string) {
     return prisma.permission.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-      },
+      where: { code, isDeleted: false, id: { not: id } },
     });
   },
 
-  findById: async (id: string) => {
-    return prisma.permission.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
+  listActiveCodes() {
+    return prisma.permission.findMany({
+      where: { isDeleted: false },
+      select: { code: true },
     });
   },
 
-  findDuplicateCode: async (code: string, permissionId: string) => {
-    return prisma.permission.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-        NOT: {
-          id: permissionId,
-        },
-      },
-    });
+  create(data: { name: any; code: string }) {
+    return prisma.permission.create({ data });
   },
 
-  create: async (name: string, code: string) => {
-    return prisma.permission.create({
-      data: { name, code },
-    });
+  listActive(limit: number, offset: number) {
+    return prisma.$transaction([
+      prisma.permission.count({ where: { isDeleted: false } }),
+      prisma.permission.findMany({
+        where: { isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+    ]);
   },
 
-  update: async (
-    id: string,
-    data: { name?: string; code?: string; status?: StatusEnum },
-  ) => {
-    return prisma.permission.update({
-      where: { id },
-      data,
-    });
+  update(id: string, data: { name?: any; code?: string; status?: string }) {
+    return prisma.permission.update({ where: { id }, data });
   },
 
-  softDelete: async (id: string) => {
+  softDelete(id: string) {
     return prisma.permission.update({
       where: { id },
       data: { isDeleted: true },
-    });
-  },
-
-  count: async (whereFilter: Record<string, unknown>) => {
-    return prisma.permission.count({
-      where: whereFilter,
-    });
-  },
-
-  list: async (
-    whereFilter: Record<string, unknown>,
-    limit: number,
-    offset: number,
-  ) => {
-    return prisma.permission.findMany({
-      where: whereFilter,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
     });
   },
 };

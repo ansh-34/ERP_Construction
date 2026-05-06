@@ -1,7 +1,7 @@
 import { roles } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
 
-export const roleData = async () => {
+export const roleData = async (domainId: string) => {
   try {
     const rolesData = [];
 
@@ -10,6 +10,7 @@ export const roleData = async () => {
         where: {
           isDeleted: false,
           code: role.code,
+          domainId,
         },
       });
       if (!existingRole) {
@@ -17,6 +18,7 @@ export const roleData = async () => {
           name: role.name,
           code: role.code,
           level: role.level,
+          domainId,
         });
       }
     }

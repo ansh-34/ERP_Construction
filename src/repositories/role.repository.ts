@@ -1,74 +1,47 @@
-import { StatusEnum } from '@constants/index';
-import { prisma } from '@infra/database/prisma/prisma.client';
+import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const RoleRepository = {
-  findByCode: async (code: string) => {
+  findActiveByCodeAndDomain(code: string, domainId: string) {
     return prisma.role.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-      },
+      where: { code, domainId, isDeleted: false },
     });
   },
 
-  findById: async (id: string) => {
+  findActiveByIdAndDomain(id: string, domainId: string) {
     return prisma.role.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
+      where: { id, domainId, isDeleted: false },
     });
   },
 
-  findDuplicateCode: async (code: string, roleId: string) => {
+  findDomainRoleByDomain(domainId: string) {
     return prisma.role.findFirst({
-      where: {
-        code,
-        isDeleted: false,
-        NOT: {
-          id: roleId,
+      where: { domainId, code: 'domain', isDeleted: false },
+    });
+  },
+
+  create(data: {
+    name: string;
+    code: string;
+    level: number;
+    domainId: string;
+  }) {
+    return prisma.role.create({ data });
+  },
+
+  listByDomain(domainId: string, limit: number, offset: number) {
+    return prisma.$transaction([
+      prisma.role.count({ where: { domainId, isDeleted: false } }),
+      prisma.role.findMany({
+        where: { domainId, isDeleted: false },
+        include: {
+          roleModulePermissions: {
+            include: { module: { select: { name: true, code: true } } },
+          },
         },
-      },
-    });
-  },
-
-  create: async (name: string, code: string, level: number) => {
-    return prisma.role.create({
-      data: { name, code, level },
-    });
-  },
-
-  update: async (
-    id: string,
-    data: { name?: string; code?: string; status?: StatusEnum; level?: number },
-  ) => {
-    return prisma.role.update({
-      where: { id },
-      data,
-    });
-  },
-
-  softDelete: async (id: string) => {
-    return prisma.role.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
-  },
-
-  count: async (whereFilter: any) => {
-    return prisma.role.count({
-      where: whereFilter,
-    });
-  },
-
-  list: async (whereFilter: any, limit: number, offset: number) => {
-    return prisma.role.findMany({
-      where: whereFilter,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+    ]);
   },
 };

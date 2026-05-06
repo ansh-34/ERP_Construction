@@ -1,137 +1,97 @@
-import { StatusEnum } from '@constants/index';
-import { prisma } from '@infra/database/prisma/prisma.client';
+import prisma from '../infra/database/prisma/prisma.client.js';
+import type { IndustryEnum } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
 export const DomainRepository = {
-  findById: async (id: string) => {
-    return prisma.domain.findFirst({
-      where: {
-        id,
-        isDeleted: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+  findActiveById(id: string) {
+    return prisma.domain.findFirst({ where: { id, isDeleted: false } });
+  },
+
+  findActiveByEmail(email: string) {
+    return prisma.domain.findFirst({ where: { email, isDeleted: false } });
+  },
+
+  seedWithDomainRole(data: {
+    domainName: string;
+    email: string;
+    industry: IndustryEnum;
+    password: string;
+    phone?: string;
+    phoneCode?: string;
+    organizationType?: any;
+    token: string;
+    tokenExpiresAt: Date;
+    domainRoleId: string;
+    domainPermissions: string[];
+  }) {
+    return prisma.$transaction(async (tx) => {
+      const domain = await tx.domain.create({
+        data: {
+          name: { en: data.domainName },
+          email: data.email,
+          phone: data.phone || null,
+          phoneCode: data.phoneCode || null,
+          organizationType: data.organizationType || null,
+          industry: data.industry,
+          password: data.password,
+          isEmailVerified: false,
+        },
+      });
+
+      await tx.token.create({
+        data: {
+          token: data.token,
+          email: data.email,
+          tokenPurpose: 'DOMAIN_EMAIL_VERIFICATION',
+          tokenExpirationTime: data.tokenExpiresAt,
+          domainId: domain.id,
+        },
+      });
+
+      const domainRole = await tx.role.create({
+        data: {
+          id: data.domainRoleId,
+          name: 'domain',
+          code: 'domain',
+          level: 1,
+          domainId: domain.id,
+        },
+      });
+
+      const modules = await tx.module.findMany({ where: { isDeleted: false } });
+
+      if (modules.length) {
+        await tx.roleModulePermission.createMany({
+          data: modules.map((mod) => ({
+            roleId: domainRole.id,
+            moduleId: mod.id,
+            permissions: data.domainPermissions,
+            domainId: domain.id,
+          })),
+        });
+      }
+
+      return { domain, domainRole };
     });
   },
 
-  findByEmail: async (email: string) => {
-    return prisma.domain.findFirst({
-      where: {
-        email,
-        isDeleted: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        password: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+  verifyAndDeleteToken(domainId: string, tokenId: string) {
+    return prisma.$transaction(async (tx) => {
+      await tx.domain.update({
+        where: { id: domainId },
+        data: { isEmailVerified: true },
+      });
+
+      await tx.token.update({
+        where: { id: tokenId },
+        data: { isDeleted: true },
+      });
     });
   },
 
-  create: async (
-    name: string,
-    email: string,
-    password: string,
-    roleId: string,
-  ) => {
-    return prisma.domain.create({
-      data: { name, email, password, roleId: roleId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  },
-
-  update: async (
-    id: string,
-    data: {
-      name?: string;
-      email?: string;
-      password?: string;
-      roleId?: string;
-      status?: StatusEnum;
-    },
-  ) => {
+  updatePassword(id: string, password: string) {
     return prisma.domain.update({
       where: { id },
-      data: {
-        ...data,
-        ...(data.roleId && { roleId: data.roleId }),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  },
-
-  softDelete: async (id: string) => {
-    return prisma.domain.update({
-      where: { id },
-      data: { isDeleted: true },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  },
-
-  count: async (whereFilter: any) => {
-    return prisma.domain.count({
-      where: whereFilter,
-    });
-  },
-
-  list: async (whereFilter: any, limit: number, offset: number) => {
-    return prisma.domain.findMany({
-      where: whereFilter,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        roleId: true,
-        isDeleted: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      data: { password },
     });
   },
 };

@@ -1,18 +1,46 @@
 import { Router } from 'express';
 import apiKeyRouter from './apiKey/apiKey.routes';
 import locationRouter from './location/location.routes';
+import machineryRouter from './machinery/machinery.routes';
 import mediaRouter from './media/media.routes';
 import projectRouter from './project/project.routes';
 import projectCategoryRouter from './projectCategory/projectCategory.routes';
 import projectStageRouter from './projectStage/projectStage.routes';
+import projectTaskDelayRouter from './projectTaskDelay/projectTaskDelay.routes';
+import projectTaskRouter from './projectTask/projectTask.routes';
+import appErrorRouter from './appError/appError.router.js';
+import authRouter from './auth/auth.router.js';
+import dispatchRouter from './dispatch/dispatch.router.js';
+import inventoryRouter from './inventory/inventory.router.js';
+import journeyScheduleRouter from './journeySchedule/journeySchedule.router.js';
+import languageRouter from './language/language.router.js';
+import roleRouter from './role/role.router.js';
+import userRouter from './user/user.router.js';
+import vehicleRouter from './vehicle/vehicle.router.js';
+import productRouter from './product/product.router.js';
+import { uomRouter } from './uom/uom.router.js';
 
 const domainRouter = Router();
 
 domainRouter.use('/api-keys', apiKeyRouter);
 domainRouter.use('/media', mediaRouter);
+domainRouter.use('/machineries', machineryRouter);
 domainRouter.use('/locations', locationRouter);
 domainRouter.use('/project-categories', projectCategoryRouter);
 domainRouter.use('/projects', projectRouter);
 domainRouter.use('/project-stages', projectStageRouter);
+domainRouter.use('/project-tasks', projectTaskRouter);
+domainRouter.use('/project-task-delays', projectTaskDelayRouter);
+domainRouter.use('/auth', authRouter);
+domainRouter.use('/roles', roleRouter);
+domainRouter.use('/users', userRouter);
+domainRouter.use('/inventory', inventoryRouter);
+domainRouter.use('/app-errors', appErrorRouter);
+domainRouter.use('/language', languageRouter);
+domainRouter.use('/vehicles', vehicleRouter);
+domainRouter.use('/journey-schedules', journeyScheduleRouter);
+domainRouter.use('/dispatch', dispatchRouter);
+domainRouter.use('/products', productRouter);
+domainRouter.use('/uoms', uomRouter());
 
 export default domainRouter;

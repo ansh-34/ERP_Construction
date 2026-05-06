@@ -1,142 +1,54 @@
+import { ok, created, errors } from './responses.js';
+
 export const ModulePaths = {
-  '/superAdmin/module': {
-    post: {
-      tags: ['SuperAdmin Module Apis'],
-      summary: 'Create Module',
+  '/api/modules/{id}': {
+    put: {
+      tags: ['Modules'],
+      summary: 'Update module',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+      ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/AddModuleRequest',
-            },
+            schema: { $ref: '#/components/schemas/UpdateModuleBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Module created successfully',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ModuleMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      responses: { ...ok, ...errors },
+    },
+    delete: {
+      tags: ['Modules'],
+      summary: 'Delete module',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+      ],
+      responses: { ...ok, ...errors },
     },
   },
-
-  '/superAdmin/module/{id}': {
-    put: {
-      tags: ['SuperAdmin Module Apis'],
-      summary: 'Edit Module',
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          schema: { type: 'string' },
-        },
-      ],
+  '/api/modules': {
+    post: {
+      tags: ['Modules'],
+      summary: 'Create module',
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/EditModuleRequest',
-            },
+            schema: { $ref: '#/components/schemas/CreateModuleBody' },
           },
         },
       },
-      responses: {
-        200: {
-          description: 'Module edited successfully',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ModuleMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      responses: { ...created, ...errors },
     },
-
     get: {
-      tags: ['SuperAdmin Module Apis'],
-      summary: 'List Modules (current behavior)',
-      description:
-        'Note: this endpoint is mounted as GET /superAdmin/module/:id in code but returns a list using query params. Swagger reflects current behavior without changing runtime routes.',
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          schema: { type: 'string' },
-        },
-        {
-          name: 'limit',
-          in: 'query',
-          schema: { type: 'string' },
-        },
-        {
-          name: 'offset',
-          in: 'query',
-          schema: { type: 'string' },
-        },
-        {
-          name: 'searchKey',
-          in: 'query',
-          schema: { type: 'string' },
-        },
-        {
-          name: 'status',
-          in: 'query',
-          schema: {
-            type: 'string',
-            enum: ['ACTIVE', 'INACTIVE'],
-          },
-        },
-      ],
-      responses: {
-        200: {
-          description: 'Module list',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ModuleListResponse',
-              },
-            },
-          },
-        },
-      },
-    },
-
-    delete: {
-      tags: ['SuperAdmin Module Apis'],
-      summary: 'Remove Module',
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          schema: { type: 'string' },
-        },
-      ],
-      responses: {
-        200: {
-          description: 'Module deleted successfully',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ModuleMutationResponse',
-              },
-            },
-          },
-        },
-      },
+      tags: ['Modules'],
+      summary: 'List modules',
+      security: [{ bearerAuth: [] }],
+      responses: { ...ok, ...errors },
     },
   },
 };

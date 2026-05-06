@@ -11,6 +11,9 @@ export const permissionData = async () => {
           isDeleted: false,
           code: permission.code,
         },
+        select: {
+          id: true,
+        },
       });
       if (!existingPermission) {
         permissionsData.push({
