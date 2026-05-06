@@ -13,10 +13,11 @@ import { sendMail } from '../../../services/mail.services.js';
 import {
   generateOtp,
   getOtpExpiry,
-  buildOtpEmail,
+  OTP_EXPIRY_MINUTES,
   verifyOtp,
   MAX_OTP_ATTEMPTS,
 } from '../../../services/otp.service.js';
+import { forgotPasswordEmail } from '../../../templates/index.js';
 
 export const UserService = {
   async verifyAndActivateUser(data: { email: string; token: string }) {
@@ -319,7 +320,11 @@ export const UserService = {
     await sendMail(
       email,
       'Password Reset — Construction ERP',
-      buildOtpEmail(raw, recipientName),
+      forgotPasswordEmail({
+        recipientName,
+        otp: raw,
+        expiryMinutes: OTP_EXPIRY_MINUTES,
+      }),
     );
   },
 

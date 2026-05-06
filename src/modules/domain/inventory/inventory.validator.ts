@@ -1,13 +1,29 @@
 import { z } from 'zod';
-import { paginationQuerySchema } from '../../common/common.validator.js';
+import {
+  idParamSchema,
+  paginationQuerySchema,
+  statusFilterSchema,
+} from '../../common/common.validator.js';
 
-export const addInventoryItemBodySchema = z.object({
-  name: z.string().min(1),
-  quantity: z.number(),
-  reorderLevel: z.number().optional(),
-  code: z.string().optional(),
+export const createInventoryBodySchema = z.object({
+  productId: z.string().uuid(),
+  productGradeId: z.string().uuid(),
+  quantity: z.number().min(0),
+  uomId: z.string().uuid(),
+  reorderLevel: z.number().min(0).optional().default(0),
 });
 
-export const inventoryListQuerySchema = paginationQuerySchema;
+export const updateReorderLevelBodySchema = z.object({
+  reorderLevel: z.number().min(0),
+});
 
-export type AddInventoryItemData = z.infer<typeof addInventoryItemBodySchema>;
+export const inventoryListQuerySchema =
+  paginationQuerySchema.merge(statusFilterSchema);
+
+export const inventoryIdParamsSchema = idParamSchema;
+
+export type CreateInventoryDto = z.infer<typeof createInventoryBodySchema>;
+export type UpdateReorderLevelDto = z.infer<
+  typeof updateReorderLevelBodySchema
+>;
+export type InventoryListQuery = z.infer<typeof inventoryListQuerySchema>;

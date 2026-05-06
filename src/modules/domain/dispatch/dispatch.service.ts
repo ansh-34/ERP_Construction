@@ -8,6 +8,10 @@ import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
 export const DispatchService = {
+  async getStats(domainId: string) {
+    return DispatchRepository.getStats(domainId);
+  },
+
   async createDispatch(
     domainId: string,
     data: {

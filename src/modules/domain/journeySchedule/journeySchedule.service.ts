@@ -7,6 +7,10 @@ import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
 export const JourneyScheduleService = {
+  async getStats(domainId: string) {
+    return JourneyScheduleRepository.getStats(domainId);
+  },
+
   async createJourneySchedule(
     domainId: string,
     data: {

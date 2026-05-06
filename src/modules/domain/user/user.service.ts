@@ -7,6 +7,7 @@ import {
   UserRepository,
 } from '../../../repositories/index.js';
 import { sendMail } from '../../../services/mail.services.js';
+import { userInviteEmail } from '../../../templates/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -63,11 +64,21 @@ export const UserService = {
       domainId,
     });
 
+    const recipientName = name?.trim() || email.split('@')[0];
+    const domainDisplayName =
+      typeof domain.name === 'object' && domain.name !== null
+        ? (domain.name as Record<string, string>).en || 'your organization'
+        : String(domain.name || 'your organization');
+
     const verificationLink = `${baseUrl}/api/user/auth/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
     await sendMail(
       email,
-      'Your Verification Link',
-      `<p>You have been invited to join the platform. Click the link below to verify your account:</p><p><a href="${verificationLink}">${verificationLink}</a></p><p>This link expires in 1 day.</p>`,
+      `You're Invited to ${domainDisplayName} — Construction ERP`,
+      userInviteEmail({
+        recipientName,
+        domainName: domainDisplayName,
+        verificationLink,
+      }),
     );
   },
 

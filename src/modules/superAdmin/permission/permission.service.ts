@@ -9,31 +9,47 @@ import {
 
 export const PermissionService = {
   async createPermission(data: CreatePermissionData) {
-    const { name, code } = data;
+    const { name } = data;
 
-    if (!name || !code) {
-      throw new Error(Messages.PERMISSION.NAME_CODE_REQUIRED);
+    const incomingLanguageCodes: string[] = Object.keys(name);
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.MODULE.NAME_EN_CODE_REQUIRED);
     }
 
+    const code = name?.en?.toString().toUpperCase().replace(/\s+/g, '_');
     const existing = await PermissionRepository.findActiveByCode(code);
 
     if (existing) {
       throw new Error(Messages.PERMISSION.CODE_ALREADY_EXISTS);
     }
 
-    return PermissionRepository.create({ name, code });
+    const searchText = Object.values(name).join(' ').toLowerCase();
+
+    return PermissionRepository.create({ name, code, searchText });
   },
 
-  async listPermissions(query: PaginationQuery) {
-    const { offset, limit } = normalizePagination(query);
+  async listPermissions(
+    query: PaginationQuery & { searchKey?: string },
+    langCode: string,
+  ) {
+    const { offset, limit } = normalizePagination({
+      limit: query.limit,
+      offset: query.offset,
+    });
+    const { searchKey } = query;
 
-    const [totalCount, permissions] = await PermissionRepository.listActive(
-      limit,
-      offset,
-    );
+    const [totalCount, permissions = []] =
+      await PermissionRepository.listActive(limit, offset, {
+        filter: searchKey ? { searchKey } : undefined,
+      });
+
+    const normalizedPermissions = permissions.map((perm: any) => ({
+      ...perm,
+      name: perm.name[langCode] || perm.name.en || '',
+    }));
 
     return {
-      permissions,
+      permissions: normalizedPermissions,
       pagination: {
         totalCount,
         offset,
@@ -42,8 +58,30 @@ export const PermissionService = {
     };
   },
 
+  async getPermission(id: string, langCode: string | null) {
+    const permission: any = await PermissionRepository.findActiveById(id);
+    if (!permission) {
+      throw new Error(Messages.PERMISSION.NOT_FOUND);
+    }
+
+    if (langCode) {
+      permission.name = permission.name[langCode] || permission.name.en || '';
+    }
+
+    return permission;
+  },
+
   async updatePermission(id: string, data: UpdatePermissionData) {
-    const { name, code, status } = data;
+    const { name, status } = data;
+    let code = null;
+
+    if (name) {
+      const incomingLanguageCodes: string[] = Object.keys(name);
+      if (!incomingLanguageCodes.includes('en')) {
+        throw new Error(Messages.MODULE.NAME_EN_CODE_REQUIRED);
+      }
+      code = name?.en?.toString().toUpperCase().replace(/\s+/g, '_');
+    }
 
     const permission = await PermissionRepository.findActiveById(id);
 
@@ -59,9 +97,9 @@ export const PermissionService = {
     }
 
     return PermissionRepository.update(id, {
-      ...(name !== undefined && { name }),
-      ...(code !== undefined && { code }),
-      ...(status !== undefined && { status }),
+      ...(name && { name }),
+      ...(code && { code }),
+      ...(status && { status }),
     });
   },
 

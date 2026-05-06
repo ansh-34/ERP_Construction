@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
+import { refreshUserToken } from '../../refreshToken/auth.controller.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { UserService } from './auth.service.js';
 
@@ -9,7 +10,7 @@ const cookieOptions = {
 
 const refreshCookieOptions = {
   httpOnly: true,
-  path: '/api/user/auth',
+  path: '/api',
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
 };
 
@@ -71,9 +72,15 @@ export const loginUser = async (req: Request, res: Response) => {
       .json({
         success: true,
         message: Messages.AUTH.LOGIN_SUCCESS,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
         data: {
-          user: result.user,
-          domain: result.domain,
+          id: result.user.id,
+          name: result.user.name,
+          email: result.user.email,
+          domainId: result.domain.id,
+          industry: result.user.industry,
+          role: (result.user.role || 'user').toUpperCase(),
         },
       });
   } catch (error) {
@@ -84,30 +91,7 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
-  try {
-    const token = req.body.refreshToken || req.cookies?.refreshToken;
-
-    const result = await UserService.refreshToken({
-      refreshToken: token,
-    });
-
-    return res
-      .status(HttpStatus.OK)
-      .cookie('accessToken', result.accessToken, cookieOptions)
-      .cookie('refreshToken', result.refreshToken, refreshCookieOptions)
-      .json({
-        success: true,
-        message: Messages.AUTH.REFRESH_TOKEN_SUCCESS,
-        data: result,
-      });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : Messages.AUTH.LOGIN_FAILED;
-    const statusCode = resolveHttpStatus(message);
-    return res.status(statusCode).json({ success: false, message });
-  }
-};
+export const refreshToken = refreshUserToken;
 
 export const logout = async (req: Request, res: Response) => {
   try {
@@ -118,6 +102,7 @@ export const logout = async (req: Request, res: Response) => {
     return res
       .status(HttpStatus.OK)
       .clearCookie('accessToken')
+      .clearCookie('refreshToken', { path: '/api' })
       .clearCookie('refreshToken', { path: '/api/user/auth' })
       .json({
         success: true,
@@ -175,6 +160,7 @@ export const changePassword = async (req: Request, res: Response) => {
     return res
       .status(HttpStatus.OK)
       .clearCookie('accessToken')
+      .clearCookie('refreshToken', { path: '/api' })
       .clearCookie('refreshToken', { path: '/api/user/auth' })
       .json({
         success: true,

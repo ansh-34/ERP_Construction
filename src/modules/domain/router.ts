@@ -13,12 +13,12 @@ import authRouter from './auth/auth.router.js';
 import dispatchRouter from './dispatch/dispatch.router.js';
 import inventoryRouter from './inventory/inventory.router.js';
 import journeyScheduleRouter from './journeySchedule/journeySchedule.router.js';
-import languageRouter from './language/language.router.js';
 import roleRouter from './role/role.router.js';
 import userRouter from './user/user.router.js';
 import vehicleRouter from './vehicle/vehicle.router.js';
 import productRouter from './product/product.router.js';
 import { uomRouter } from './uom/uom.router.js';
+import profileRouter from './profile/profile.router.js';
 
 const domainRouter = Router();
 
@@ -32,11 +32,11 @@ domainRouter.use('/project-stages', projectStageRouter);
 domainRouter.use('/project-tasks', projectTaskRouter);
 domainRouter.use('/project-task-delays', projectTaskDelayRouter);
 domainRouter.use('/auth', authRouter);
+domainRouter.use('/profile', profileRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);
 domainRouter.use('/inventory', inventoryRouter);
 domainRouter.use('/app-errors', appErrorRouter);
-domainRouter.use('/language', languageRouter);
 domainRouter.use('/vehicles', vehicleRouter);
 domainRouter.use('/journey-schedules', journeyScheduleRouter);
 domainRouter.use('/dispatch', dispatchRouter);

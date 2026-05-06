@@ -4,6 +4,7 @@ import type { IndustryEnum } from '../../../infra/database/prisma/generated/pris
 import { Messages } from '../../../constants/index';
 import { DomainRepository, TokenRepository } from '../../../repositories/index';
 import { sendMail } from '../../../services/mail.services';
+import { domainActivationEmail } from '../../../templates/index.js';
 
 const SALT_ROUNDS = 12;
 
@@ -56,8 +57,12 @@ export const DomainService = {
     const verificationLink = `${baseUrl}/api/superAdmin/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
     await sendMail(
       email,
-      'Your Construction ERP Domain Account',
-      `<p>Hello,</p><p>Your domain account for Construction ERP has been created.</p><p>Click the link below to verify your account:</p><p><a href="${verificationLink}">${verificationLink}</a></p><p>This link expires in 24 hours.</p>`,
+      'Activate Your Domain — Construction ERP',
+      domainActivationEmail({
+        domainName:
+          typeof domainName === 'string' ? domainName : String(domainName),
+        verificationLink,
+      }),
     );
 
     return {

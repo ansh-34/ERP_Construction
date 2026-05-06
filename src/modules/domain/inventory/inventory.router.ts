@@ -2,26 +2,48 @@ import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
 import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
-import { getInventory, addItemToInventory } from './inventory.controller.js';
 import {
-  addInventoryItemBodySchema,
+  getInventoryStats,
+  listInventory,
+  createInventoryEntry,
+  updateReorderLevel,
+} from './inventory.controller.js';
+import {
+  createInventoryBodySchema,
+  updateReorderLevelBodySchema,
   inventoryListQuerySchema,
+  inventoryIdParamsSchema,
 } from './inventory.validator.js';
 
 const router = Router();
 
 router.use(authMiddleware);
+
+//aggregate statistics
+router.get('/stats', authorize('inventory', 'read'), getInventoryStats);
+
 router.get(
-  '/records',
+  '/',
   authorize('inventory', 'read'),
   validate(inventoryListQuerySchema, 'query'),
-  getInventory,
+  listInventory,
 );
+
+//  create new entry
 router.post(
-  '/records',
-  authorize('inventory', 'write'),
-  validate(addInventoryItemBodySchema, 'body'),
-  addItemToInventory,
+  '/',
+  authorize('inventory', 'create'),
+  validate(createInventoryBodySchema, 'body'),
+  createInventoryEntry,
+);
+
+//  update reorder level
+router.put(
+  '/:id/reorder',
+  authorize('inventory', 'update'),
+  validate(inventoryIdParamsSchema, 'params'),
+  validate(updateReorderLevelBodySchema, 'body'),
+  updateReorderLevel,
 );
 
 export default router;

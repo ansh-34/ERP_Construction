@@ -4,6 +4,25 @@ import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { JourneyScheduleService } from './journeySchedule.service.js';
 
+export const getJourneyScheduleStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await JourneyScheduleService.getStats(req.user!.domainId);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.JOURNEY_SCHEDULE.STATS_RETRIEVED,
+      data: stats,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.JOURNEY_SCHEDULE.STATS_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const createJourneySchedule = async (req: Request, res: Response) => {
   try {
     const schedule = await JourneyScheduleService.createJourneySchedule(

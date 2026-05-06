@@ -28,6 +28,15 @@ export const SuperAdminAuthService = {
       process.env.JWT_SECRET!,
       { expiresIn: '1d' },
     );
-    return token;
+    return {
+      accessToken: token,
+      refreshToken: token,
+      user: {
+        id: superAdmin.id,
+        name: 'Superadmin',
+        email: superAdmin.email,
+        role: 'SUPERADMIN',
+      },
+    };
   },
 };

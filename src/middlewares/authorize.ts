@@ -21,11 +21,16 @@ const authorize = (moduleName: string, action: string) => {
         return;
       }
       const moduleId = mod.id;
+      const actionUpper = action.toUpperCase();
+
       // 1. Check direct permission on this module
       const directPermission = await prisma.roleModulePermission.findFirst({
         where: { roleId, moduleId, domainId },
       });
-      if (directPermission && directPermission.permissions.includes(action)) {
+      if (
+        directPermission &&
+        directPermission.permissions.includes(actionUpper)
+      ) {
         next();
         return;
       }
@@ -34,7 +39,7 @@ const authorize = (moduleName: string, action: string) => {
       const dependencies = await prisma.moduleDependency.findMany({
         where: {
           dependentModuleId: moduleId,
-          permissions: { has: action },
+          permissions: { has: actionUpper },
         },
       });
 
@@ -47,7 +52,7 @@ const authorize = (moduleName: string, action: string) => {
             roleId,
             moduleId: { in: parentModuleIds },
             domainId,
-            permissions: { has: action },
+            permissions: { has: actionUpper },
           },
         });
 

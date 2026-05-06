@@ -32,7 +32,7 @@ export const productGradeStdRateRouter = (): Router => {
     validate(productGradeStdRateIdParamSchema, 'params'),
     getProductGradeStdRateById,
   );
-  router.patch(
+  router.put(
     '/:id',
     validate(updateProductGradeStdRateBodySchema, 'body'),
     updateProductGradeStdRate,

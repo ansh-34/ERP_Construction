@@ -4,6 +4,18 @@ import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
 export const VehicleService = {
+  async getStats(domainId: string) {
+    return VehicleRepository.getStats(domainId);
+  },
+
+  async getVehicleById(domainId: string, id: string) {
+    const vehicle = await VehicleRepository.findByIdWithDetails(id, domainId);
+    if (!vehicle) {
+      throw new Error(Messages.VEHICLE.NOT_FOUND);
+    }
+    return vehicle;
+  },
+
   async createVehicle(
     domainId: string,
     data: {
@@ -46,10 +58,19 @@ export const VehicleService = {
   async listVehicles(domainId: string, query: PaginationQuery) {
     const { offset, limit } = normalizePagination(query);
 
-    const [totalCount, vehicles] = await VehicleRepository.listByDomain(
+    const [totalCount, rawVehicles] = await VehicleRepository.listByDomain(
       domainId,
       limit,
       offset,
+    );
+
+    // Flatten arrays into single objects for frontend convenience
+    const vehicles = rawVehicles.map(
+      ({ journeySchedules, dispatches, ...vehicle }) => ({
+        ...vehicle,
+        latestSchedule: journeySchedules[0] ?? null,
+        latestDispatch: dispatches[0] ?? null,
+      }),
     );
 
     return {

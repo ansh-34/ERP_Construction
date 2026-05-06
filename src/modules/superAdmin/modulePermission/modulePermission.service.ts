@@ -9,34 +9,31 @@ import { normalizePagination } from '../../../utils/pagination.js';
 import { SetModulePermissionsData } from './modulePermission.validator.js';
 
 export const ModulePermissionService = {
-  async setModulePermissions(data: SetModulePermissionsData) {
-    const { moduleId, permissions } = data;
+  async createModulePermissions(data: SetModulePermissionsData) {
+    const { moduleId, permissionIds } = data;
 
-    if (!moduleId || !permissions || !Array.isArray(permissions)) {
+    if (!moduleId || !permissionIds || !Array.isArray(permissionIds)) {
       throw new Error(Messages.MODULE_PERMISSION.REQUIRED);
     }
 
-    const mod = await ModuleRepository.findActiveById(moduleId);
+    const [mod, validPermissions] = await Promise.all([
+      ModuleRepository.findActiveById(moduleId),
+      PermissionRepository.validatePermissionIds(permissionIds),
+    ]);
 
     if (!mod) {
       throw new Error(Messages.MODULE.NOT_FOUND);
     }
-
-    const validPermissions = await PermissionRepository.listActiveCodes();
-    const validCodes = validPermissions.map((p) => p.code);
-    const invalid = (permissions as string[]).filter(
-      (p) => !validCodes.includes(p),
-    );
-
-    if (invalid.length) {
-      throw new Error(
-        `${Messages.MODULE_PERMISSION.INVALID_CODES_PREFIX}: ${invalid.join(
-          ', ',
-        )}`,
-      );
+    if (!validPermissions) {
+      throw new Error(Messages.MODULE_PERMISSION.INVALID_PERMISSIONS);
     }
 
-    return ModulePermissionRepository.set(moduleId, permissions);
+    return ModulePermissionRepository.bulkCreate(
+      permissionIds.map((permissionId) => ({
+        moduleId,
+        permissionId,
+      })),
+    );
   },
 
   async listModulePermissions(query: PaginationQuery) {

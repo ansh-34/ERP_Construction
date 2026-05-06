@@ -2,7 +2,7 @@ import { Router } from 'express';
 import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
-  setModulePermissions,
+  createModulePermissions,
   listModulePermissions,
   deleteModulePermissions,
 } from './modulePermission.controller.js';
@@ -17,9 +17,9 @@ const router = Router();
 router.use(validateSuperAdmin);
 
 router.post(
-  '/set',
+  '/',
   validate(setModulePermissionsBodySchema, 'body'),
-  setModulePermissions,
+  createModulePermissions,
 );
 router.get(
   '/',

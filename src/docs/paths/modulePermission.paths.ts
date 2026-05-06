@@ -1,18 +1,7 @@
-import { ok, errors } from './responses.js';
+import { errors } from './responses.js';
 
 export const ModulePermissionPaths = {
-  '/api/module-permissions/{id}': {
-    delete: {
-      tags: ['Module Permissions'],
-      summary: 'Delete module permissions record',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
-      ],
-      responses: { ...ok, ...errors },
-    },
-  },
-  '/api/module-permissions': {
+  '/api/superAdmin/module-permissions/set': {
     post: {
       tags: ['Module Permissions'],
       summary: 'Set module permissions',
@@ -25,8 +14,30 @@ export const ModulePermissionPaths = {
           },
         },
       },
-      responses: { ...ok, ...errors },
+      responses: {
+        200: {
+          description: 'Module permissions set',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions set',
+                  },
+                  data: { type: 'object' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
     },
+  },
+  '/api/superAdmin/module-permissions': {
     get: {
       tags: ['Module Permissions'],
       summary: 'List module permissions',
@@ -43,7 +54,66 @@ export const ModulePermissionPaths = {
           schema: { type: 'integer', minimum: 1, maximum: 100 },
         },
       ],
-      responses: { ...ok, ...errors },
+      responses: {
+        200: {
+          description: 'Module permissions retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions retrieved',
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: { type: 'array', items: { type: 'object' } },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  '/api/superAdmin/module-permissions/{id}': {
+    delete: {
+      tags: ['Module Permissions'],
+      summary: 'Delete module permissions record',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+      ],
+      responses: {
+        200: {
+          description: 'Module permissions deleted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Module permissions deleted',
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
     },
   },
 };

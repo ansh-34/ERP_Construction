@@ -7,7 +7,7 @@ import { AppErrorService } from './appError.service.js';
 export const createAppError = async (req: Request, res: Response) => {
   try {
     const appError = await AppErrorService.createAppError(
-      req.user!.domainId,
+      req.user!.domainId as string,
       req.body,
     );
 
@@ -27,7 +27,7 @@ export const createAppError = async (req: Request, res: Response) => {
 export const listAppErrors = async (req: Request, res: Response) => {
   try {
     const { appErrors, pagination } = await AppErrorService.listAppErrors(
-      req.user!.domainId,
+      req.user!.domainId as string,
       req.query as DatePaginationQuery,
     );
 

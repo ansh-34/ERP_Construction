@@ -23,4 +23,37 @@ export const SuperAdminSchemas = {
       organizationType: {},
     },
   },
+  SuperAdminLoginResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: { type: 'string', example: 'Superadmin verified' },
+      accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIs...' },
+      refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIs...' },
+    },
+  },
+  SeedDomainResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Domain seeded successfully. Verification link sent to email.',
+      },
+      data: {
+        type: 'object',
+        properties: {
+          domain: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'object', example: { en: 'My Company' } },
+              email: { type: 'string', format: 'email' },
+              industry: { type: 'string', example: 'CONSTRUCTION' },
+            },
+          },
+        },
+      },
+    },
+  },
 };

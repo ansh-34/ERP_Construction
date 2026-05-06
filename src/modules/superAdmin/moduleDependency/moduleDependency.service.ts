@@ -1,5 +1,7 @@
+import prisma from '@/infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
 import {
+  ModuleDependencyPermissionRepository,
   ModuleDependencyRepository,
   ModulePermissionRepository,
   ModuleRepository,
@@ -10,7 +12,7 @@ import { CreateModuleDependencyData } from './moduleDependency.validator.js';
 
 export const ModuleDependencyService = {
   async createModuleDependency(data: CreateModuleDependencyData) {
-    const { moduleId, dependentModuleId } = data;
+    const { moduleId, dependentModuleId, permissionIds } = data;
 
     if (!moduleId || !dependentModuleId) {
       throw new Error(Messages.MODULE_DEPENDENCY.REQUIRED);
@@ -20,10 +22,18 @@ export const ModuleDependencyService = {
       throw new Error(Messages.MODULE_DEPENDENCY.CANNOT_DEPEND_ON_SELF);
     }
 
-    const [parentModule, childModule] = await Promise.all([
-      ModuleRepository.findActiveById(moduleId),
-      ModuleRepository.findActiveById(dependentModuleId),
-    ]);
+    const [parentModule, childModule, existing, validDependencyPermissions] =
+      await Promise.all([
+        ModuleRepository.findActiveById(moduleId),
+        ModuleRepository.findActiveById(dependentModuleId),
+        ModuleDependencyRepository.findByPair(moduleId, dependentModuleId),
+        ModulePermissionRepository.validateModulesPermissions(
+          permissionIds.map((id) => ({
+            moduleId: dependentModuleId,
+            permissionId: id,
+          })),
+        ),
+      ]);
 
     if (!parentModule) {
       throw new Error(Messages.MODULE_DEPENDENCY.PARENT_NOT_FOUND);
@@ -33,29 +43,29 @@ export const ModuleDependencyService = {
       throw new Error(Messages.MODULE_DEPENDENCY.DEPENDENT_NOT_FOUND);
     }
 
-    const parentModulePermission =
-      await ModulePermissionRepository.findByModuleId(moduleId);
-
-    if (
-      !parentModulePermission ||
-      parentModulePermission.permissions.length === 0
-    ) {
-      throw new Error(Messages.MODULE_DEPENDENCY.PARENT_PERMISSIONS_REQUIRED);
-    }
-
-    const existing = await ModuleDependencyRepository.findByPair(
-      moduleId,
-      dependentModuleId,
-    );
-
     if (existing) {
       throw new Error(Messages.MODULE_DEPENDENCY.ALREADY_EXISTS);
     }
 
-    return ModuleDependencyRepository.create({
-      moduleId,
-      dependentModuleId,
-      permissions: parentModulePermission.permissions,
+    if (!validDependencyPermissions) {
+      throw new Error(Messages.MODULE_DEPENDENCY.INVALID_PERMISSIONS);
+    }
+
+    return await prisma.$transaction(async (tx: any) => {
+      const modDep = await ModuleDependencyRepository.create(
+        { moduleId, dependentModuleId },
+        { transaction: tx },
+      );
+
+      await ModuleDependencyPermissionRepository.bulkCreate(
+        permissionIds.map((permissionId) => ({
+          moduleDependencyId: modDep.id,
+          permissionId,
+        })),
+        { transaction: tx },
+      );
+
+      return modDep;
     });
   },
 
