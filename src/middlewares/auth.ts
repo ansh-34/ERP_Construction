@@ -13,8 +13,8 @@ const authMiddleware = (
     req.headers.authorization.startsWith('Bearer ')
   ) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies && req.cookies.token) {
-    token = req.cookies.token as string;
+  } else if (req.cookies && req.cookies.accesstoken) {
+    token = req.cookies.accesstoken as string;
   }
 
   if (!token) {
