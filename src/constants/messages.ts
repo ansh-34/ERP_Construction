@@ -152,6 +152,12 @@ export const Messages = Object.freeze({
     LIST_FAILED: 'Failed to list languages',
     NAME_CODE_REQUIRED: 'name and code are required',
     CODE_ALREADY_EXISTS: 'Language with this code already exists',
+    UPDATED: 'Language updated successfully',
+    DELETED: 'Language deleted successfully',
+    NOT_FOUND: 'Language not found',
+    UPDATE_FAILED: 'Failed to update language',
+    DELETE_FAILED: 'Failed to delete language',
+    NAME_ALREADY_EXISTS: 'Language with this name already exists',
   },
   PRODUCT: {
     CREATED: 'Product created successfully',
