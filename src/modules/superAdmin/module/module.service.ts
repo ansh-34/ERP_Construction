@@ -61,7 +61,13 @@ export const ModuleService = {
 
     return await prisma.$transaction(async (tx: any) => {
       const mod = await ModuleRepository.create(
-        { name, code, searchText },
+        {
+          name,
+          code,
+          searchText,
+          parentDependenciesCount: dependencyModules.length,
+          activeParentDependenciesCount: dependencyModules.length,
+        },
         { transaction: tx },
       );
 
@@ -148,6 +154,22 @@ export const ModuleService = {
         filter: {
           searchKey,
         },
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          parentDependenciesCount: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          modulePermissions: {
+            select: {
+              permission: {
+                select: { id: true, name: true, code: true },
+              },
+            },
+          },
+        },
       },
     );
 
@@ -156,6 +178,17 @@ export const ModuleService = {
       name: mod.name[langCode] || mod.name.en || '',
       code: mod.code,
       status: mod.status,
+      parentDependenciesCount: mod.parentDependenciesCount,
+      activeParentDependenciesCount: mod.activeParentDependenciesCount,
+      createdAt: mod.createdAt,
+      updatedAt: mod.updatedAt,
+      modulePermissions: mod.modulePermissions.map((mp: any) => ({
+        ...mp,
+        permission: {
+          ...mp.permission,
+          name: mp.permission.name[langCode] || mp.permission.name.en || '',
+        },
+      })),
     }));
 
     return {
@@ -168,29 +201,38 @@ export const ModuleService = {
     };
   },
 
-  async updateModule(
-    id: string,
-    data: { name?: any; code?: string; status?: string },
-  ) {
-    const { name, code, status } = data;
+  async updateModule(id: string, data: { name?: any; status?: string }) {
+    const { name, status } = data;
+    let code: string | null = null;
+    let searchText: string | null = null;
 
     const mod = await ModuleRepository.findActiveById(id);
-
     if (!mod) {
       throw new Error(Messages.MODULE.NOT_FOUND);
     }
 
-    if (code && code !== mod.code) {
-      const duplicate = await ModuleRepository.findDuplicateCode(code, id);
-      if (duplicate) {
-        throw new Error(Messages.MODULE.CODE_ALREADY_EXISTS);
+    if (name) {
+      const incomingLanguageCodes: string[] = Object.keys(name);
+      if (!incomingLanguageCodes.includes('en')) {
+        throw new Error(Messages.MODULE.NAME_EN_CODE_REQUIRED);
+      }
+
+      code = name?.en?.toString().toUpperCase().replace(/\s+/g, '_');
+      searchText = Object.values(name).join(' ').toLowerCase();
+
+      if (code && code !== mod.code) {
+        const duplicate = await ModuleRepository.findDuplicateCode(code, id);
+        if (duplicate) {
+          throw new Error(Messages.MODULE.CODE_ALREADY_EXISTS);
+        }
       }
     }
 
     return ModuleRepository.update(id, {
-      ...(name !== undefined && { name }),
-      ...(code !== undefined && { code }),
-      ...(status !== undefined && { status }),
+      ...(name && { name }),
+      ...(code && { code }),
+      ...(status && { status }),
+      ...(searchText && { searchText }),
     });
   },
 

@@ -27,7 +27,13 @@ export const ModuleRepository = {
   },
 
   create(
-    data: { name: any; code: string; searchText: string },
+    data: {
+      name: any;
+      code: string;
+      searchText: string;
+      parentDependenciesCount: number;
+      activeParentDependenciesCount: number;
+    },
     options: { transaction?: any } = {},
   ) {
     return options?.transaction
@@ -38,33 +44,30 @@ export const ModuleRepository = {
   listActive(
     limit: number,
     offset: number,
-    options: { filter?: { searchKey?: string; status?: string } } = {},
+    options: {
+      filter?: { searchKey?: string; status?: string };
+      select?: any;
+    } = {},
   ) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filter && {
+        ...(options.filter.searchKey && {
+          searchText: {
+            contains: options.filter.searchKey,
+            mode: 'insensitive',
+          },
+        }),
+        ...(options.filter.status && { status: options.filter.status }),
+      }),
+    };
     return prisma.$transaction([
       prisma.module.count({
-        where: {
-          isDeleted: false,
-          ...(options.filter && {
-            searchText: {
-              contains: options.filter.searchKey,
-              mode: 'insensitive',
-            },
-          }),
-          ...(options.filter?.status && {
-            status: options.filter.status,
-          }),
-        },
+        where: whereClause,
       }),
       prisma.module.findMany({
-        where: {
-          isDeleted: false,
-          ...(options.filter && {
-            searchText: {
-              contains: options.filter.searchKey,
-              mode: 'insensitive',
-            },
-          }),
-        },
+        where: whereClause,
+        ...(options.select ? { select: options.select } : {}),
         orderBy: { createdAt: 'desc' },
         skip: offset,
         take: limit,
@@ -72,7 +75,10 @@ export const ModuleRepository = {
     ]);
   },
 
-  update(id: string, data: { name?: any; code?: string; status?: string }) {
+  update(
+    id: string,
+    data: { name?: any; code?: string; status?: string; searchText?: string },
+  ) {
     return prisma.module.update({ where: { id }, data });
   },
 

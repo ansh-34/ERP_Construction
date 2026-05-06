@@ -83,6 +83,7 @@ export const updateModule = async (req: Request, res: Response) => {
     const message =
       error instanceof Error ? error.message : Messages.MODULE.UPDATE_FAILED;
     const statusCode = resolveHttpStatus(message);
+    console.error('Error updating module:', error);
     return res.status(statusCode).json({ success: false, message });
   }
 };

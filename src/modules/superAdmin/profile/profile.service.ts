@@ -1,41 +1,19 @@
-import jwt from 'jsonwebtoken';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 
-const superAdminSelect = {
-  id: true,
-  name: true,
-  email: true,
-  status: true,
-  isDeleted: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
 export const SuperAdminProfileService = {
-  async getProfile(token: string) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      email: string;
-    };
-
+  async getProfile(userInfo: { userId: string }) {
     const superAdmin = await prisma.superAdmin.findFirst({
-      where: {
-        id: decoded.id,
-        email: decoded.email,
-        isDeleted: false,
+      where: { id: userInfo.userId, isDeleted: false },
+      select: {
+        id: true,
+        email: true,
       },
-      select: superAdminSelect,
     });
-
-    if (!superAdmin) {
-      throw new Error('SuperAdmin profile not found');
-    }
-
     return {
       user: {
-        id: superAdmin.id,
+        id: superAdmin?.id,
         name: 'Superadmin',
-        email: superAdmin.email,
+        email: superAdmin?.email,
         role: 'SUPERADMIN',
       },
     };

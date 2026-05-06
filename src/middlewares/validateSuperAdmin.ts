@@ -41,6 +41,14 @@ const validateSuperAdmin = async (
       });
       return;
     }
+
+    req.user = {
+      userId: decodedToken.id,
+      domainId: '',
+      roleId: '',
+      industry: '',
+    };
+
     // Success - move to the controller
     next();
   } catch (err) {

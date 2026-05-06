@@ -4,6 +4,8 @@ import { getProfile } from './profile.controller.js';
 
 const router = Router();
 
-router.get('/', validateSuperAdmin, getProfile);
+router.use(validateSuperAdmin);
+
+router.get('/', getProfile);
 
 export default router;

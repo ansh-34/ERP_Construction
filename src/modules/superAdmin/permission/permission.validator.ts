@@ -32,7 +32,8 @@ export const updatePermissionBodySchema = z.object({
     .refine((data) => !!data.en, {
       message: 'English (en) translation is required',
       path: ['en'],
-    }),
+    })
+    .optional(),
   status: z.string().optional(),
 });
 

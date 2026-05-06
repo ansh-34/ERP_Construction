@@ -31,7 +31,15 @@ export const listModulesQuerySchema = z.object({
 });
 
 export const updateModuleBodySchema = z.object({
-  name: z.any().optional(),
-  code: z.string().min(1).optional(),
+  name: z
+    .record(
+      z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+      z.string().min(1, 'Translation cannot be empty'),
+    )
+    .refine((data) => !!data.en, {
+      message: 'English (en) translation is required',
+      path: ['en'],
+    })
+    .optional(),
   status: z.string().optional(),
 });
