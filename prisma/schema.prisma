@@ -12,6 +12,11 @@ enum StatusEnum {
   INACTIVE
 }
 
+enum LangDirEnum {
+  ltr
+  rtl
+}
+
 enum IndustryEnum {
   CONSTRUCTION
   MANUFACTURING
@@ -334,13 +339,15 @@ model Log {
 }
 
 model Language {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String      @id @default(uuid()) @db.Uuid
   name      String
   code      String
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  flag      String      
+  dir       LangDirEnum @default(ltr)
+  status    String      @default("active")
+  isDeleted Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@unique([code, isDeleted])
   @@index([createdAt, isDeleted])
@@ -628,10 +635,10 @@ model Project {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  projectStages ProjectStage[]
-  projectTasks  ProjectTask[]
+  projectStages     ProjectStage[]
+  projectTasks      ProjectTask[]
   projectTaskDelays ProjectTaskDelay[]
-  machineries Machinery[]
+  machineries       Machinery[]
 
   @@unique([code, isDeleted, domainId])
   @@index([projectCategoryId])
@@ -672,7 +679,7 @@ model ProjectStage {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  projectTasks ProjectTask[]
+  projectTasks      ProjectTask[]
   projectTaskDelays ProjectTaskDelay[]
 
   @@unique([code, isDeleted, domainId, projectId])
@@ -681,30 +688,30 @@ model ProjectStage {
 }
 
 model ProjectTask {
-  id                   String      @id @default(uuid()) @db.Uuid
-  name                 Json        @db.JsonB
+  id                   String       @id @default(uuid()) @db.Uuid
+  name                 Json         @db.JsonB
   code                 String
-  assignee             Json?       @db.JsonB
+  assignee             Json?        @db.JsonB
   plannedStartDate     DateTime?
   plannedEndDate       DateTime?
   actualStartDate      DateTime?
   actualEndDate        DateTime?
-  taskStatus           String      @default("PENDING")
-  taskProgress         Float       @default(0)
-  totalDelayInDays     Float       @default(0)
-  requiredApproval     Boolean     @default(false)
+  taskStatus           String       @default("PENDING")
+  taskProgress         Float        @default(0)
+  totalDelayInDays     Float        @default(0)
+  requiredApproval     Boolean      @default(false)
   lastApprovedDeadline DateTime?
   projectBatchCode     String?
-  stageId              String      @db.Uuid
+  stageId              String       @db.Uuid
   stage                ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  projectId            String      @db.Uuid
-  project              Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  domainId             String      @db.Uuid
-  domain               Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status               StatusEnum  @default(ACTIVE)
-  isDeleted            Boolean     @default(false)
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  projectId            String       @db.Uuid
+  project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId             String       @db.Uuid
+  domain               Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status               StatusEnum   @default(ACTIVE)
+  isDeleted            Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   projectTaskDelays ProjectTaskDelay[]
 

@@ -2,7 +2,19 @@ import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const LanguageRepository = {
   findById(id: string) {
-    return prisma.language.findFirst({ where: { id, isDeleted: false } });
+    return prisma.language.findFirst({
+      where: { id, isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        flag: true,
+        dir: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   },
 
   findByName(name: string) {
@@ -13,7 +25,12 @@ export const LanguageRepository = {
     return prisma.language.findFirst({ where: { code, isDeleted: false } });
   },
 
-  create(data: { name: string; code: string }) {
+  create(data: {
+    name: string;
+    code: string;
+    flag: string;
+    dir: 'ltr' | 'rtl';
+  }) {
     return prisma.language.create({ data });
   },
 
@@ -59,6 +76,8 @@ export const LanguageRepository = {
           name: true,
           code: true,
           status: true,
+          dir: true,
+          flag: true,
           createdAt: true,
           updatedAt: true,
         },
