@@ -6,7 +6,7 @@ import { LanguageService } from './language.service.js';
 export const createLanguage = async (req: Request, res: Response) => {
   try {
     const language = await LanguageService.createLanguage(
-      req.body as { name: any; code: string },
+      req.body as { name: any; code: string; dir: 'rtl' | 'ltr'; flag: string },
     );
 
     return res.status(HttpStatus.CREATED).json({
@@ -45,11 +45,33 @@ export const listLanguages = async (req: Request, res: Response) => {
   }
 };
 
+export const getLanguage = async (req: Request, res: Response) => {
+  try {
+    const language = await LanguageService.getLanguage(req.params.id);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.LANGUAGE.RETRIEVED,
+      data: language,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.LANGUAGE.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const updateLanguage = async (req: Request, res: Response) => {
   try {
     const language = await LanguageService.updateLanguage(
       req.params.id,
-      req.body as { name?: any; code?: string },
+      req.body as {
+        name?: any;
+        code?: string;
+        dir?: 'ltr' | 'rtl';
+        flag?: string;
+      },
     );
 
     return res.status(HttpStatus.OK).json({

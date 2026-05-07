@@ -4,8 +4,13 @@ import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
 export const LanguageService = {
-  async createLanguage(data: { name: any; code: string }) {
-    const { name, code } = data;
+  async createLanguage(data: {
+    name: any;
+    code: string;
+    dir: 'ltr' | 'rtl';
+    flag: string;
+  }) {
+    const { name, code, dir, flag } = data;
 
     if (!name || !code) {
       throw new Error(Messages.LANGUAGE.NAME_CODE_REQUIRED);
@@ -17,11 +22,15 @@ export const LanguageService = {
       throw new Error(Messages.LANGUAGE.CODE_ALREADY_EXISTS);
     }
 
-    return LanguageRepository.create({ name, code });
+    return LanguageRepository.create({ name, code, dir, flag });
   },
 
   async listLanguages(
-    query: PaginationQuery & { searchKey?: string; status?: string },
+    query: PaginationQuery & {
+      searchKey?: string;
+      status?: string;
+      dir?: 'ltr' | 'rtl';
+    },
   ) {
     const { offset, limit } = normalizePagination({
       limit: query.limit,
@@ -35,6 +44,7 @@ export const LanguageService = {
         filters: {
           searchKey: query.searchKey || '',
           ...(query.status && { status: query.status }),
+          ...(query.dir && { dir: query.dir }),
         },
       },
     );
@@ -49,7 +59,18 @@ export const LanguageService = {
     };
   },
 
-  async updateLanguage(id: string, data: { name?: any; code?: string }) {
+  async getLanguage(id: string) {
+    const language = await LanguageRepository.findById(id);
+    if (!language) {
+      throw new Error(Messages.LANGUAGE.NOT_FOUND);
+    }
+    return language;
+  },
+
+  async updateLanguage(
+    id: string,
+    data: { name?: any; code?: string; dir?: 'ltr' | 'rtl'; flag?: string },
+  ) {
     const language = await LanguageRepository.findById(id);
     if (!language) {
       throw new Error(Messages.LANGUAGE.NOT_FOUND);
