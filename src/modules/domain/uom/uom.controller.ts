@@ -21,9 +21,11 @@ export const createUom = async (req: Request, res: Response) => {
 
 export const listUoms = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const result = await UomService.findAll(
       req.user!.domainId,
       req.query as any,
+      language as string,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -40,7 +42,12 @@ export const listUoms = async (req: Request, res: Response) => {
 
 export const getUomById = async (req: Request, res: Response) => {
   try {
-    const record = await UomService.findOne(req.user!.domainId, req.params.id);
+    const { language } = req.headers;
+    const record = await UomService.findOne(
+      req.user!.domainId,
+      req.params.id,
+      language as string | null,
+    );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.UOM.RETRIEVED,

@@ -25,10 +25,12 @@ export const createProductUom = async (req: Request, res: Response) => {
 
 export const listProductUoms = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const result = await ProductUomService.findAll(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
+      language as string,
     );
     return res
       .status(HttpStatus.OK)
@@ -45,10 +47,12 @@ export const listProductUoms = async (req: Request, res: Response) => {
 
 export const getProductUomById = async (req: Request, res: Response) => {
   try {
+    const { language } = req.headers;
     const record = await ProductUomService.findOne(
       req.user!.domainId,
       req.params.productId,
       req.params.id,
+      language as string | null,
     );
     return res
       .status(HttpStatus.OK)

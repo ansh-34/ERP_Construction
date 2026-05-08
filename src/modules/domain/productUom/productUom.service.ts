@@ -1,45 +1,84 @@
 import prisma from '../../../infra/database/prisma/prisma.client.js';
-import {
-  CreateProductUomDto,
-  ListProductUomQuery,
-} from './productUom.validation.js';
+import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 
 export const ProductUomService = {
-  async create(domainId: string, productId: string, dto: CreateProductUomDto) {
-    const product = await prisma.product.findFirst({
-      where: { id: productId, domainId, isDeleted: false },
-    });
-    if (!product) throw new Error('Product not found');
+  localizeName(value: any, langCode: string) {
+    if (!value || typeof value !== 'object') return '';
+    return value[langCode] || value.en || '';
+  },
 
-    const uom = await prisma.uom.findFirst({
-      where: { id: dto.uomId, domainId, isDeleted: false },
-    });
-    if (!uom) throw new Error('UOM not found');
-
-    const existing = await prisma.productUom.findUnique({
-      where: { productId_uomId: { productId, uomId: dto.uomId } },
-    });
-    if (existing && !existing.isDeleted)
-      throw new Error('This UOM is already assigned to the product');
-
-    if (existing?.isDeleted) {
-      return prisma.productUom.update({
-        where: { id: existing.id },
-        data: { isDeleted: false, status: dto.status },
-        include: { uom: true },
+  async create(
+    domainId: string,
+    productId: string,
+    dto: { uomId: string; status?: string; [key: string]: any },
+  ) {
+    return prisma.$transaction(async (tx: any) => {
+      const product = await tx.product.findFirst({
+        where: { id: productId, domainId, isDeleted: false },
       });
-    }
+      if (!product) throw new Error('Product not found');
 
-    return prisma.productUom.create({
-      data: { productId, uomId: dto.uomId, domainId, status: dto.status },
-      include: { uom: true },
+      const uom = await tx.uom.findFirst({
+        where: { id: dto.uomId, domainId, isDeleted: false },
+      });
+      if (!uom) throw new Error('UOM not found');
+
+      const existing = await tx.productUom.findUnique({
+        where: { productId_uomId: { productId, uomId: dto.uomId } },
+      });
+      if (existing && !existing.isDeleted)
+        throw new Error('This UOM is already assigned to the product');
+
+      if (existing?.isDeleted) {
+        return tx.productUom.update({
+          where: { id: existing.id },
+          data: { isDeleted: false, status: dto.status },
+          include: { uom: true },
+        });
+      }
+
+      try {
+        return await tx.productUom.create({
+          data: { productId, uomId: dto.uomId, domainId, status: dto.status },
+          include: { uom: true },
+        });
+      } catch (error: any) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          const conflicted = await tx.productUom.findUnique({
+            where: { productId_uomId: { productId, uomId: dto.uomId } },
+          });
+
+          if (conflicted && !conflicted.isDeleted) {
+            throw new Error('This UOM is already assigned to the product');
+          }
+
+          if (conflicted?.isDeleted) {
+            return tx.productUom.update({
+              where: { id: conflicted.id },
+              data: { isDeleted: false, status: dto.status },
+              include: { uom: true },
+            });
+          }
+        }
+
+        throw error;
+      }
     });
   },
 
   async findAll(
     domainId: string,
     productId: string,
-    query: ListProductUomQuery,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: string;
+      [key: string]: any;
+    },
+    langCode: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -62,15 +101,45 @@ export const ProductUomService = {
       prisma.productUom.count({ where }),
     ]);
 
-    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    const normalizedData = data.map((productUom: any) => ({
+      ...productUom,
+      uom: {
+        ...productUom.uom,
+        displayName: ProductUomService.localizeName(
+          productUom.uom.displayName,
+          langCode,
+        ),
+      },
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   },
 
-  async findOne(domainId: string, productId: string, id: string) {
-    const record = await prisma.productUom.findFirst({
+  async findOne(
+    domainId: string,
+    productId: string,
+    id: string,
+    language: string | null = null,
+  ) {
+    const record: any = await prisma.productUom.findFirst({
       where: { id, productId, domainId, isDeleted: false },
       include: { uom: true },
     });
     if (!record) throw new Error('ProductUom not found');
+
+    if (language) {
+      record.uom.displayName = ProductUomService.localizeName(
+        record.uom.displayName,
+        language,
+      );
+    }
+
     return record;
   },
 

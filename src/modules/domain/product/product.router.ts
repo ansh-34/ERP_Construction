@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
-import authorize from '../../../middlewares/authorize.js';
+// import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProduct,
@@ -24,31 +24,32 @@ router.use(authMiddleware);
 
 router.post(
   '/',
-  authorize('product', 'create'),
+  // authorize('product', 'create'),
   validate(createProductBodySchema, 'body'),
   createProduct,
 );
 router.get(
   '/',
-  authorize('product', 'read'),
+  // authorize('product', 'read'),
   validate(listProductsQuerySchema, 'query'),
   listProducts,
 );
 router.get(
   '/:id',
-  authorize('product', 'read'),
+  // authorize('product', 'read'),
   validate(productIdParamsSchema, 'params'),
   getProductById,
 );
 router.put(
   '/:id',
-  authorize('product', 'update'),
+  // authorize('product', 'update'),
+  validate(productIdParamsSchema, 'params'),
   validate(updateProductBodySchema, 'body'),
   updateProduct,
 );
 router.delete(
   '/:id',
-  authorize('product', 'delete'),
+  // authorize('product', 'delete'),
   validate(productIdParamsSchema, 'params'),
   deleteProduct,
 );

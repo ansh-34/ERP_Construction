@@ -25,10 +25,12 @@ export const createProductGrade = async (req: Request, res: Response) => {
 
 export const listProductGrades = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const result = await ProductGradeService.findAll(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
+      language as string,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -47,10 +49,12 @@ export const listProductGrades = async (req: Request, res: Response) => {
 
 export const getProductGradeById = async (req: Request, res: Response) => {
   try {
+    const { language } = req.headers;
     const record = await ProductGradeService.findOne(
       req.user!.domainId,
       req.params.productId,
       req.params.id,
+      language as string | null,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

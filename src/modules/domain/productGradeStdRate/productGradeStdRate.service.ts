@@ -1,29 +1,49 @@
 import prisma from '../../../infra/database/prisma/prisma.client.js';
-import {
-  CreateProductGradeStdRateDto,
-  UpdateProductGradeStdRateDto,
-  ListProductGradeStdRateQuery,
-} from './productGradeStdRate.validation.js';
+import { Messages } from '../../../constants/index.js';
+import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 
 export const ProductGradeStdRateService = {
+  localizeName(value: any, langCode: string) {
+    if (!value || typeof value !== 'object') return '';
+    return value[langCode] || value.en || '';
+  },
+
   async create(
     domainId: string,
     productId: string,
     gradeId: string,
-    dto: CreateProductGradeStdRateDto,
+    dto: {
+      stdRateType: Record<string, string>;
+      status?: string;
+      [key: string]: any;
+    },
   ) {
+    const incomingLanguageCodes: string[] = Object.keys(dto.stdRateType || {});
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.PRODUCT.STD_RATE_TYPE_EN_REQUIRED);
+    }
+
+    const searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
+
     const grade = await prisma.productGrades.findFirst({
       where: { id: gradeId, productId, domainId, isDeleted: false },
     });
     if (!grade) throw new Error('ProductGrade not found');
+
     return prisma.productGradeStdRates.create({
       data: {
         ...dto,
+        searchText,
         productId,
         productGradeId: gradeId,
         domainId,
         isDeleted: false,
       } as any,
+      include: {
+        productGrade: {
+          select: { id: true, gradeDisplayName: true, gradeCode: true },
+        },
+      },
     });
   },
 
@@ -31,7 +51,14 @@ export const ProductGradeStdRateService = {
     domainId: string,
     productId: string,
     gradeId: string,
-    query: ListProductGradeStdRateQuery,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: string;
+      searchKey?: string;
+      [key: string]: any;
+    },
+    langCode: string,
   ) {
     const grade = await prisma.productGrades.findFirst({
       where: { id: gradeId, productId, domainId, isDeleted: false },
@@ -48,6 +75,12 @@ export const ProductGradeStdRateService = {
       productGradeId: gradeId,
       isDeleted: false,
       ...(query.status && { status: query.status }),
+      ...(query.searchKey && {
+        searchText: {
+          contains: query.searchKey.trim(),
+          mode: Prisma.QueryMode.insensitive,
+        },
+      }),
     };
     const [data, total] = await Promise.all([
       prisma.productGradeStdRates.findMany({
@@ -55,11 +88,39 @@ export const ProductGradeStdRateService = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          productGrade: {
+            select: { id: true, gradeDisplayName: true, gradeCode: true },
+          },
+        },
       }),
       prisma.productGradeStdRates.count({ where }),
     ]);
 
-    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+    const normalizedData = data.map((stdRate: any) => ({
+      ...stdRate,
+      stdRateType: ProductGradeStdRateService.localizeName(
+        stdRate.stdRateType,
+        langCode,
+      ),
+      productGrade: stdRate.productGrade
+        ? {
+            ...stdRate.productGrade,
+            gradeDisplayName: ProductGradeStdRateService.localizeName(
+              stdRate.productGrade.gradeDisplayName,
+              langCode,
+            ),
+          }
+        : stdRate.productGrade,
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   },
 
   async findOne(
@@ -67,8 +128,9 @@ export const ProductGradeStdRateService = {
     productId: string,
     gradeId: string,
     id: string,
+    language: string | null = null,
   ) {
-    const record = await prisma.productGradeStdRates.findFirst({
+    const record: any = await prisma.productGradeStdRates.findFirst({
       where: {
         id,
         productGradeId: gradeId,
@@ -76,8 +138,28 @@ export const ProductGradeStdRateService = {
         domainId,
         isDeleted: false,
       },
+      include: {
+        productGrade: {
+          select: { id: true, gradeDisplayName: true, gradeCode: true },
+        },
+      },
     });
     if (!record) throw new Error('ProductGradeStdRate not found');
+
+    if (language) {
+      record.stdRateType = ProductGradeStdRateService.localizeName(
+        record.stdRateType,
+        language,
+      );
+      if (record.productGrade) {
+        record.productGrade.gradeDisplayName =
+          ProductGradeStdRateService.localizeName(
+            record.productGrade.gradeDisplayName,
+            language,
+          );
+      }
+    }
+
     return record;
   },
 
@@ -86,12 +168,38 @@ export const ProductGradeStdRateService = {
     productId: string,
     gradeId: string,
     id: string,
-    dto: UpdateProductGradeStdRateDto,
+    dto: {
+      stdRateType?: Record<string, string>;
+      status?: string;
+      [key: string]: any;
+    },
   ) {
     await this.findOne(domainId, productId, gradeId, id);
+
+    if (dto.stdRateType) {
+      const incomingLanguageCodes: string[] = Object.keys(dto.stdRateType);
+      if (!incomingLanguageCodes.includes('en')) {
+        throw new Error(Messages.PRODUCT.STD_RATE_TYPE_EN_REQUIRED);
+      }
+    }
+
+    let searchText: string | null = null;
+    if (dto.stdRateType) {
+      searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
+    }
+
     return prisma.productGradeStdRates.update({
       where: { id },
-      data: { ...dto, updatedAt: new Date() } as any,
+      data: {
+        ...dto,
+        ...(searchText ? { searchText } : {}),
+        updatedAt: new Date(),
+      } as any,
+      include: {
+        productGrade: {
+          select: { id: true, gradeDisplayName: true, gradeCode: true },
+        },
+      },
     });
   },
 

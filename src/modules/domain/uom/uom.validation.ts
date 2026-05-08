@@ -6,15 +6,18 @@ import {
 } from '../../common/common.validator.js';
 
 const localizedName = z
-  .record(z.string(), z.string())
-  .refine((val) => Object.keys(val).length > 0, {
-    message: 'must have at least one language key',
+  .record(
+    z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+    z.string().min(1, 'Translation cannot be empty'),
+  )
+  .refine((data) => !!data.en, {
+    message: 'English (en) translation is required',
+    path: ['en'],
   });
 
 // ── Body schemas ──────────────────────────────────────────────
 export const createUomBodySchema = z.object({
   displayName: localizedName,
-  code: z.string().min(1, 'code is required'),
   baseUomId: z.string().uuid(),
   conversionRate: z.number().min(0, 'conversionRate must be >= 0'),
   status: z.enum(['active', 'inactive']).default('active'),

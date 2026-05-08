@@ -498,6 +498,7 @@ model Product {
   displayName Json
   code        String
   productType String
+  searchText  String @default("")
   domainId    String @db.Uuid
 
   domain               Domain                 @relation(fields: [domainId], references: [id])
@@ -510,6 +511,11 @@ model Product {
   updatedAt            DateTime               @updatedAt
 
   productUoms ProductUom[]
+
+  @@unique([code, domainId, isDeleted])
+  @@index([isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, status])
 }
 
 model ProductUom {
@@ -536,6 +542,7 @@ model ProductGrades {
   productId            String                 @db.Uuid
   gradeDisplayName     Json
   gradeCode            String
+  searchText           String                 @default("")
   domainId             String                 @db.Uuid
   domain               Domain                 @relation(fields: [domainId], references: [id])
   product              Product                @relation(fields: [productId], references: [id])
@@ -545,6 +552,11 @@ model ProductGrades {
   isDeleted            Boolean
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
+
+  @@unique([gradeCode, productId, domainId, isDeleted])
+  @@index([isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, status])
 }
 
 model ProductGradeStdRates {
@@ -552,6 +564,7 @@ model ProductGradeStdRates {
   productGradeId String        @db.Uuid
   productId      String        @db.Uuid
   stdRateType    Json
+  searchText     String        @default("")
   stdRateValue   Float
   alertThresold  Float
   domainId       String        @db.Uuid
@@ -562,6 +575,10 @@ model ProductGradeStdRates {
   isDeleted      Boolean
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+
+  @@index([isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, status])
 }
 
 model ApiKey {

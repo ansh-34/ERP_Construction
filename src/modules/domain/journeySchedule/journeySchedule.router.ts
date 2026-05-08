@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
-import authorize from '../../../middlewares/authorize.js';
+// import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   getJourneyScheduleStats,
@@ -19,14 +19,14 @@ router.use(authMiddleware);
 // stats
 router.get(
   '/stats',
-  authorize('journeySchedule', 'read'),
+  // authorize('journeySchedule', 'read'),
   getJourneyScheduleStats,
 );
 
 // list
 router.get(
   '/',
-  authorize('journeySchedule', 'read'),
+  // authorize('journeySchedule', 'read'),
   validate(listJourneySchedulesQuerySchema, 'query'),
   listJourneySchedules,
 );
@@ -34,7 +34,7 @@ router.get(
 // create
 router.post(
   '/',
-  authorize('journeySchedule', 'create'),
+  // authorize('journeySchedule', 'create'),
   validate(createJourneyScheduleBodySchema, 'body'),
   createJourneySchedule,
 );

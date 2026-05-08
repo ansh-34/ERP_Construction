@@ -169,6 +169,11 @@ export const Messages = Object.freeze({
     NOT_FOUND: 'Product not found',
     UPDATE_FAILED: 'Failed to update product',
     DELETE_FAILED: 'Failed to delete product',
+    CODE_ALREADY_EXISTS: 'Product with this code already exists',
+    DISPLAY_NAME_EN_REQUIRED: 'displayName in english is required',
+    GRADE_DISPLAY_NAME_EN_REQUIRED: 'gradeDisplayName in english is required',
+    STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
+    GRADE_CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
   },
   INVENTORY: {
     RETRIEVED: 'Inventory retrieved',

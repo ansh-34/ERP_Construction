@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authMiddleware from '../../../middlewares/auth.js';
-import authorize from '../../../middlewares/authorize.js';
+// import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   getVehicleStats,
@@ -19,12 +19,12 @@ const router = Router();
 router.use(authMiddleware);
 
 // stats
-router.get('/stats', authorize('vehicle', 'read'), getVehicleStats);
+router.get('/stats', /* authorize('vehicle', 'read'), */ getVehicleStats);
 
 // list
 router.get(
   '/',
-  authorize('vehicle', 'read'),
+  // authorize('vehicle', 'read'),
   validate(listVehiclesQuerySchema, 'query'),
   listVehicles,
 );
@@ -32,7 +32,7 @@ router.get(
 // detail by id
 router.get(
   '/:id',
-  authorize('vehicle', 'read'),
+  // authorize('vehicle', 'read'),
   validate(idParamSchema, 'params'),
   getVehicleById,
 );
@@ -40,7 +40,7 @@ router.get(
 // create
 router.post(
   '/',
-  authorize('vehicle', 'create'),
+  // authorize('vehicle', 'create'),
   validate(createVehicleBodySchema, 'body'),
   createVehicle,
 );

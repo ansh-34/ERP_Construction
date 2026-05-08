@@ -26,9 +26,11 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const listProducts = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const { products, pagination } = await ProductService.listProducts(
       req.user!.domainId,
       req.query as PaginationQuery,
+      language as string,
     );
 
     return res.status(HttpStatus.OK).json({
@@ -50,9 +52,11 @@ export const listProducts = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
   try {
+    const { language } = req.headers;
     const product = await ProductService.getProductById(
       req.user!.domainId,
       req.params.id,
+      language as string | null,
     );
 
     return res.status(HttpStatus.OK).json({
