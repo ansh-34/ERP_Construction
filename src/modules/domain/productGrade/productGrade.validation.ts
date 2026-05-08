@@ -15,7 +15,6 @@ const localizedName = z
     path: ['en'],
   });
 
-
 export const createProductGradeBodySchema = z.object({
   gradeDisplayName: localizedName,
   status: z.enum(['active', 'inactive']).default('active'),
@@ -27,13 +26,14 @@ export const updateProductGradeBodySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-//  Query schemas 
-export const listProductGradeQuerySchema =
-  pageBasedPaginationQuerySchema.merge(statusFilterSchema).extend({
+//  Query schemas
+export const listProductGradeQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
     searchKey: z.string().optional(),
   });
 
-//  Param schemas 
+//  Param schemas
 export const productGradeProductIdParamSchema = z.object({
   productId: z.string().uuid(),
 });
@@ -42,7 +42,7 @@ export const productGradeIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
 });
 
-//  DTO types 
+//  DTO types
 export type CreateProductGradeDto = z.infer<
   typeof createProductGradeBodySchema
 >;

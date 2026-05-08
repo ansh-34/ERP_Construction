@@ -1,7 +1,6 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
 
-
 const productWithDetails = {
   productGrades: {
     where: { isDeleted: false },
@@ -125,7 +124,7 @@ export const ProductRepository = {
             },
           }),
         },
-        include: productWithDetails,   // ← full nested details now
+        include: productWithDetails, // ← full nested details now
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },
@@ -136,7 +135,7 @@ export const ProductRepository = {
   findByIdAndDomain(id: string, domainId: string) {
     return prisma.product.findFirst({
       where: { id, domainId, isDeleted: false },
-      include: productWithDetails,     // ← full nested details now
+      include: productWithDetails, // ← full nested details now
     });
   },
 

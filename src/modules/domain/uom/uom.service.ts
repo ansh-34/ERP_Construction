@@ -20,7 +20,10 @@ export const UomService = {
       throw new Error('displayName in english is required');
     }
 
-    const code = dto?.displayName?.en?.toString().toUpperCase().replace(/\s+/g, '_');
+    const code = dto?.displayName?.en
+      ?.toString()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
     const existing = await prisma.uom.findFirst({
       where: { code: code, domainId, isDeleted: false },
     });

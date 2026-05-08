@@ -28,27 +28,27 @@ export const productGradeStdRateRouter = (): Router => {
   );
   router.get(
     '/',
-  //  authorize('product', 'read'),
+    //  authorize('product', 'read'),
     validate(productGradeStdRateParentParamSchema, 'params'),
     validate(listProductGradeStdRateQuerySchema, 'query'),
     listProductGradeStdRates,
   );
   router.get(
     '/:id',
-  //  authorize('product', 'read'),
+    //  authorize('product', 'read'),
     validate(productGradeStdRateIdParamSchema, 'params'),
     getProductGradeStdRateById,
   );
   router.put(
     '/:id',
-  //  authorize('product', 'update'),
+    //  authorize('product', 'update'),
     validate(productGradeStdRateIdParamSchema, 'params'),
     validate(updateProductGradeStdRateBodySchema, 'body'),
     updateProductGradeStdRate,
   );
   router.delete(
     '/:id',
- //   authorize('product', 'delete'),
+    //   authorize('product', 'delete'),
     validate(productGradeStdRateIdParamSchema, 'params'),
     deleteProductGradeStdRate,
   );

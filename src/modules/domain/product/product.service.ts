@@ -26,7 +26,10 @@ export const ProductService = {
     }
 
     const searchText = Object.values(data.displayName).join(' ').toLowerCase();
-    const code = data?.displayName?.en?.toString().toUpperCase().replace(/\s+/g, '_');
+    const code = data?.displayName?.en
+      ?.toString()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
 
     const existing = await ProductRepository.findActiveByCode(domainId, code);
     if (existing) {
@@ -145,7 +148,11 @@ export const ProductService = {
     };
   },
 
-  async getProductById(domainId: string, id: string, language: string | null = null) {
+  async getProductById(
+    domainId: string,
+    id: string,
+    language: string | null = null,
+  ) {
     const product: any = await ProductRepository.findByIdWithDetails(
       id,
       domainId,

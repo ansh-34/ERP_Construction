@@ -29,8 +29,13 @@ export const ProductGradeService = {
       throw new Error(Messages.PRODUCT.GRADE_DISPLAY_NAME_EN_REQUIRED);
     }
 
-    const gradeCode = dto?.gradeDisplayName?.en?.toString().toUpperCase().replace(/\s+/g, '_');
-    const searchText = Object.values(dto.gradeDisplayName).join(' ').toLowerCase();
+    const gradeCode = dto?.gradeDisplayName?.en
+      ?.toString()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
+    const searchText = Object.values(dto.gradeDisplayName)
+      .join(' ')
+      .toLowerCase();
 
     const product = await prisma.product.findFirst({
       where: { id: productId, domainId, isDeleted: false },
@@ -45,8 +50,7 @@ export const ProductGradeService = {
         isDeleted: false,
       },
     });
-    if (existing)
-      throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
+    if (existing) throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
 
     return prisma.productGrades.create({
       data: {
@@ -186,8 +190,7 @@ export const ProductGradeService = {
           NOT: { id },
         },
       });
-      if (conflict)
-        throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
+      if (conflict) throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
     }
 
     const searchText = dto?.gradeDisplayName

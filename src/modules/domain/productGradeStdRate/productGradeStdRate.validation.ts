@@ -31,8 +31,9 @@ export const updateProductGradeStdRateBodySchema = z.object({
 });
 
 // ── Query schemas ─────────────────────────────────────────────
-export const listProductGradeStdRateQuerySchema =
-  pageBasedPaginationQuerySchema.merge(statusFilterSchema).extend({
+export const listProductGradeStdRateQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
     searchKey: z.string().optional(),
   });
 
