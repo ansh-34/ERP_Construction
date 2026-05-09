@@ -282,6 +282,7 @@ export const ModuleService = {
             },
           },
           select: {
+            id: true,
             dependentModule: {
               select: {
                 id: true,
