@@ -164,6 +164,7 @@ export const ModuleService = {
           updatedAt: true,
           modulePermissions: {
             select: {
+              id: true,
               permission: {
                 select: { id: true, name: true, code: true },
               },
@@ -245,6 +246,7 @@ export const ModuleService = {
         status: true,
         modulePermissions: {
           select: {
+            id: true,
             permission: {
               select: { id: true, name: true, code: true },
             },
