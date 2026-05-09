@@ -27,6 +27,16 @@ export const TokenRepository = {
     });
   },
 
+  findActiveByTokenAndPurpose(token: string, tokenPurpose: string) {
+    return prisma.token.findFirst({
+      where: {
+        token,
+        tokenPurpose,
+        isDeleted: false,
+      },
+    });
+  },
+
   markDeleted(id: string) {
     return prisma.token.update({
       where: { id },

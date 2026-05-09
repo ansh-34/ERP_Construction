@@ -20,7 +20,9 @@ export const ProductGradeStdRateService = {
   ) {
     const incomingLanguageCodes: string[] = Object.keys(dto.stdRateType || {});
     if (!incomingLanguageCodes.includes('en')) {
-      throw new Error(Messages.PRODUCT.STD_RATE_TYPE_EN_REQUIRED);
+      throw new Error(
+        Messages.PRODUCT_GRADE_STD_RATE.STD_RATE_TYPE_EN_REQUIRED,
+      );
     }
 
     const searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
@@ -28,7 +30,7 @@ export const ProductGradeStdRateService = {
     const grade = await prisma.productGrades.findFirst({
       where: { id: gradeId, productId, domainId, isDeleted: false },
     });
-    if (!grade) throw new Error('ProductGrade not found');
+    if (!grade) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
 
     return prisma.productGradeStdRates.create({
       data: {
@@ -63,7 +65,7 @@ export const ProductGradeStdRateService = {
     const grade = await prisma.productGrades.findFirst({
       where: { id: gradeId, productId, domainId, isDeleted: false },
     });
-    if (!grade) throw new Error('ProductGrade not found');
+    if (!grade) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
 
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -144,7 +146,7 @@ export const ProductGradeStdRateService = {
         },
       },
     });
-    if (!record) throw new Error('ProductGradeStdRate not found');
+    if (!record) throw new Error(Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND);
 
     if (language) {
       record.stdRateType = ProductGradeStdRateService.localizeName(
@@ -179,7 +181,9 @@ export const ProductGradeStdRateService = {
     if (dto.stdRateType) {
       const incomingLanguageCodes: string[] = Object.keys(dto.stdRateType);
       if (!incomingLanguageCodes.includes('en')) {
-        throw new Error(Messages.PRODUCT.STD_RATE_TYPE_EN_REQUIRED);
+        throw new Error(
+          Messages.PRODUCT_GRADE_STD_RATE.STD_RATE_TYPE_EN_REQUIRED,
+        );
       }
     }
 

@@ -24,6 +24,3 @@ export const productUomIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
 });
 
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateProductUomDto = z.infer<typeof createProductUomBodySchema>;
-export type ListProductUomQuery = z.infer<typeof listProductUomQuerySchema>;

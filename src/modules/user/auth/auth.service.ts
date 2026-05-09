@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import type { IndustryEnum } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { Messages } from '../../../constants/index.js';
 import {
@@ -322,7 +323,7 @@ export const UserService = {
 
     const hashedPassword = await bcrypt.hash(
       newPassword,
-      parseInt(process.env.SALT_ROUNDS || '12', 10),
+      parseInt(process.env.SALT_ROUNDS),
     );
 
     await UserRepository.updatePassword(user.id, hashedPassword);
@@ -360,12 +361,8 @@ export const UserService = {
     );
   },
 
-  async resetPassword(data: {
-    email: string;
-    otp: string;
-    newPassword: string;
-  }) {
-    const { email, otp, newPassword } = data;
+  async verifyOtp(data: { email: string; otp: string }) {
+    const { email, otp } = data;
 
     const otpRecord = await OtpRepository.findLatestActive(email);
 
@@ -384,18 +381,48 @@ export const UserService = {
       throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
     }
 
-    const user = await UserRepository.findActiveByEmail(email);
+    await OtpRepository.markUsed(otpRecord.id);
+
+    const resetTokenStr = crypto.randomBytes(32).toString('hex');
+    const tokenExpirationTime = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await TokenRepository.create({
+      token: resetTokenStr,
+      email,
+      tokenPurpose: 'PASSWORD_RESET',
+      tokenExpirationTime,
+    });
+
+    return { resetToken: resetTokenStr };
+  },
+
+  async resetPassword(data: {
+    resetToken: string;
+    newPassword: string;
+  }) {
+    const { resetToken, newPassword } = data;
+
+    const tokenRecord = await TokenRepository.findActiveByTokenAndPurpose(
+      resetToken,
+      'PASSWORD_RESET'
+    );
+
+    if (!tokenRecord || new Date() > tokenRecord.tokenExpirationTime) {
+      throw new Error(Messages.PASSWORD_RESET.TOKEN_INVALID_OR_EXPIRED);
+    }
+
+    const user = await UserRepository.findActiveByEmail(tokenRecord.email);
     if (!user) {
-      throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
+      throw new Error(Messages.PASSWORD_RESET.TOKEN_INVALID_OR_EXPIRED);
     }
 
     const hashedPassword = await bcrypt.hash(
       newPassword,
-      parseInt(process.env.SALT_ROUNDS || '12', 10),
+      parseInt(process.env.SALT_ROUNDS),
     );
 
     await UserRepository.updatePassword(user.id, hashedPassword);
-    await OtpRepository.markUsed(otpRecord.id);
+    await TokenRepository.markDeleted(tokenRecord.id);
     await RefreshTokenRepository.revokeAllForUser(user.id, 'USER');
   },
 };

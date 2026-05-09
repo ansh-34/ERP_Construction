@@ -47,14 +47,3 @@ export const productGradeStdRateIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
   gradeId: z.string().uuid(),
 });
-
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateProductGradeStdRateDto = z.infer<
-  typeof createProductGradeStdRateBodySchema
->;
-export type UpdateProductGradeStdRateDto = z.infer<
-  typeof updateProductGradeStdRateBodySchema
->;
-export type ListProductGradeStdRateQuery = z.infer<
-  typeof listProductGradeStdRateQuerySchema
->;

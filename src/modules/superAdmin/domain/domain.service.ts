@@ -12,7 +12,7 @@ const normalizeIndustryInput = (industry: string): IndustryEnum =>
   industry.trim().toUpperCase() as IndustryEnum;
 
 export const DomainService = {
-  async seedDomain(data: any, baseUrl: string) {
+  async seedDomain(data: any, baseUrl: string, langCode: string = 'en') {
     const {
       domainName,
       email,
@@ -60,7 +60,7 @@ export const DomainService = {
       'Activate Your Domain — Construction ERP',
       domainActivationEmail({
         domainName:
-          typeof domainName === 'string' ? domainName : String(domainName),
+          domainName[langCode] || domainName.en || String(domainName),
         verificationLink,
       }),
     );
@@ -68,14 +68,14 @@ export const DomainService = {
     return {
       domain: {
         id: result.domain.id,
-        name: result.domain.name,
+        name: (result.domain.name as any)[langCode] || (result.domain.name as any)?.en || '',
         email: result.domain.email,
         industry: result.domain.industry,
       },
     };
   },
 
-  async verifyDomainToken(data: { email: string; token: string }) {
+  async verifyDomainToken(data: { email: string; token: string }, langCode: string = 'en') {
     const { email, token: rawToken } = data;
 
     if (!email || !rawToken) {
@@ -108,7 +108,7 @@ export const DomainService = {
     return {
       domain: {
         id: domain.id,
-        name: domain.name,
+        name: (domain.name as any)[langCode] || (domain.name as any)?.en || '',
         email: domain.email,
         industry: domain.industry,
       },

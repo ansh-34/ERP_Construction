@@ -11,7 +11,7 @@ export const DomainRepository = {
   },
 
   seedWithDomainRole(data: {
-    domainName: string;
+    domainName: Record<string, string>;
     email: string;
     industry: IndustryEnum;
     password: string;
@@ -26,7 +26,7 @@ export const DomainRepository = {
     return prisma.$transaction(async (tx) => {
       const domain = await tx.domain.create({
         data: {
-          name: { en: data.domainName },
+          name: data.domainName,
           email: data.email,
           phone: data.phone || null,
           phoneCode: data.phoneCode || null,

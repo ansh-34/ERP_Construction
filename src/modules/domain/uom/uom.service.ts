@@ -14,6 +14,7 @@ export const UomService = {
       status?: string;
       [key: string]: any;
     },
+    langCode: string = 'en'
   ) {
     const incomingLanguageCodes: string[] = Object.keys(dto.displayName || {});
     if (!incomingLanguageCodes.includes('en')) {
@@ -31,9 +32,11 @@ export const UomService = {
       throw new Error(`UOM with code '${code}' already exists`);
     }
 
-    return prisma.uom.create({
+    const record = await prisma.uom.create({
       data: { ...dto, domainId, isDeleted: false, code } as any,
     });
+    
+    return { ...record, displayName: UomService.localizeName(record.displayName, langCode) };
   },
 
   async findAll(
@@ -105,6 +108,7 @@ export const UomService = {
       status?: string;
       [key: string]: any;
     },
+    langCode: string = 'en'
   ) {
     await this.findOne(domainId, id);
 
@@ -124,10 +128,12 @@ export const UomService = {
       }
     }
 
-    return prisma.uom.update({
+    const record = await prisma.uom.update({
       where: { id },
       data: { ...dto, updatedAt: new Date() } as any,
     });
+
+    return { ...record, displayName: UomService.localizeName(record.displayName, langCode) };
   },
 
   async softDelete(domainId: string, id: string) {

@@ -39,7 +39,14 @@ const authorize = (moduleName: string, action: string) => {
       const dependencies = await prisma.moduleDependency.findMany({
         where: {
           dependentModuleId: moduleId,
-          permissions: { has: actionUpper },
+          moduleDependencyPermissions: {
+            some: {
+              permission: {
+                code: actionUpper,
+                isDeleted: false,
+              },
+            },
+          },
         },
       });
 

@@ -49,7 +49,11 @@ export const InventorySchemas = {
           id: { type: 'string', format: 'uuid' },
           displayName: { type: 'object', example: { en: 'Sand' } },
           code: { type: 'string', example: 'SAND' },
-          productType: { type: 'string', example: 'RAW_MATERIAL' },
+          productType: {
+            type: 'string',
+            enum: ['RAW_MATERIAL', 'FINISHED_PRODUCT'],
+            example: 'RAW_MATERIAL',
+          },
           _count: {
             type: 'object',
             properties: {

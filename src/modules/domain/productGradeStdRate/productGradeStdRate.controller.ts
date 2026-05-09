@@ -16,12 +16,14 @@ export const createProductGradeStdRate = async (
     );
     return res.status(HttpStatus.CREATED).json({
       success: true,
-      message: 'Std rate created successfully',
+      message: Messages.PRODUCT_GRADE_STD_RATE.CREATED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to create Std rate';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.CREATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -39,10 +41,16 @@ export const listProductGradeStdRates = async (req: Request, res: Response) => {
     );
     return res
       .status(HttpStatus.OK)
-      .json({ success: true, message: 'Std rates retrieved', data: result });
+      .json({
+        success: true,
+        message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+        data: result,
+      });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve Std rates';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.LIST_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -63,10 +71,16 @@ export const getProductGradeStdRateById = async (
     );
     return res
       .status(HttpStatus.OK)
-      .json({ success: true, message: 'Std rate retrieved', data: record });
+      .json({
+        success: true,
+        message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+        data: record,
+      });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve Std rate';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -86,12 +100,14 @@ export const updateProductGradeStdRate = async (
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Std rate updated successfully',
+      message: Messages.PRODUCT_GRADE_STD_RATE.UPDATED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to update Std rate';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.UPDATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -110,12 +126,14 @@ export const deleteProductGradeStdRate = async (
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Std rate deleted successfully',
+      message: Messages.PRODUCT_GRADE_STD_RATE.DELETED,
       data: null,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to delete Std rate';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.DELETE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

@@ -5,7 +5,8 @@ import { UomService } from './uom.service.js';
 
 export const createUom = async (req: Request, res: Response) => {
   try {
-    const record = await UomService.create(req.user!.domainId, req.body as any);
+    const { language = 'en' } = req.headers;
+    const record = await UomService.create(req.user!.domainId, req.body as any, language as string);
     return res.status(HttpStatus.CREATED).json({
       success: true,
       message: Messages.UOM.CREATED,
@@ -63,10 +64,12 @@ export const getUomById = async (req: Request, res: Response) => {
 
 export const updateUom = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const record = await UomService.update(
       req.user!.domainId,
       req.params.id,
       req.body as any,
+      language as string,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

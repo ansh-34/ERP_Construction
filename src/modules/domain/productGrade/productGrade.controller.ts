@@ -12,12 +12,14 @@ export const createProductGrade = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.CREATED).json({
       success: true,
-      message: 'Product grade created successfully',
+      message: Messages.PRODUCT_GRADE.CREATED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to create Product grade';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE.CREATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -34,14 +36,14 @@ export const listProductGrades = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Product grades retrieved',
+      message: Messages.PRODUCT_GRADE.RETRIEVED,
       data: result,
     });
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
-        : 'Failed to retrieve Product grades';
+        : Messages.PRODUCT_GRADE.LIST_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -58,14 +60,12 @@ export const getProductGradeById = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Product grade retrieved',
+      message: Messages.PRODUCT_GRADE.RETRIEVED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : 'Failed to retrieve Product grade';
+      error instanceof Error ? error.message : Messages.PRODUCT_GRADE.NOT_FOUND;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -81,12 +81,14 @@ export const updateProductGrade = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Product grade updated successfully',
+      message: Messages.PRODUCT_GRADE.UPDATED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to update Product grade';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE.UPDATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -101,12 +103,14 @@ export const deleteProductGrade = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Product grade deleted successfully',
+      message: Messages.PRODUCT_GRADE.DELETED,
       data: null,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to delete Product grade';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE.DELETE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

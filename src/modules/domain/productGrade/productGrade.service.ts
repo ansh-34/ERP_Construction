@@ -26,7 +26,7 @@ export const ProductGradeService = {
       dto.gradeDisplayName || {},
     );
     if (!incomingLanguageCodes.includes('en')) {
-      throw new Error(Messages.PRODUCT.GRADE_DISPLAY_NAME_EN_REQUIRED);
+      throw new Error(Messages.PRODUCT_GRADE.GRADE_DISPLAY_NAME_EN_REQUIRED);
     }
 
     const gradeCode = dto?.gradeDisplayName?.en
@@ -40,7 +40,7 @@ export const ProductGradeService = {
     const product = await prisma.product.findFirst({
       where: { id: productId, domainId, isDeleted: false },
     });
-    if (!product) throw new Error('Product not found');
+    if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
 
     const existing = await prisma.productGrades.findFirst({
       where: {
@@ -50,7 +50,7 @@ export const ProductGradeService = {
         isDeleted: false,
       },
     });
-    if (existing) throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
+    if (existing) throw new Error(Messages.PRODUCT_GRADE.CODE_ALREADY_EXISTS);
 
     return prisma.productGrades.create({
       data: {
@@ -139,7 +139,7 @@ export const ProductGradeService = {
       where: { id, productId, domainId, isDeleted: false },
       include: { productGradeStdRates: { where: { isDeleted: false } } },
     });
-    if (!record) throw new Error('ProductGrade not found');
+    if (!record) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
 
     if (language) {
       record.gradeDisplayName = ProductGradeService.localizeName(
@@ -175,7 +175,7 @@ export const ProductGradeService = {
     if (dto.gradeDisplayName) {
       const incomingLanguageCodes: string[] = Object.keys(dto.gradeDisplayName);
       if (!incomingLanguageCodes.includes('en')) {
-        throw new Error(Messages.PRODUCT.GRADE_DISPLAY_NAME_EN_REQUIRED);
+        throw new Error(Messages.PRODUCT_GRADE.GRADE_DISPLAY_NAME_EN_REQUIRED);
       }
     }
     let gradeCode: string | null = null;
@@ -190,7 +190,7 @@ export const ProductGradeService = {
           NOT: { id },
         },
       });
-      if (conflict) throw new Error(Messages.PRODUCT.GRADE_CODE_ALREADY_EXISTS);
+      if (conflict) throw new Error(Messages.PRODUCT_GRADE.CODE_ALREADY_EXISTS);
     }
 
     const searchText = dto?.gradeDisplayName

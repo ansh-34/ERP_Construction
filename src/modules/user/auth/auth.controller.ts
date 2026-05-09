@@ -179,13 +179,30 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const result = await UserService.verifyOtp(req.body);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PASSWORD_RESET.OTP_VERIFIED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.PASSWORD_RESET.OTP_INVALID;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     await UserService.resetPassword(req.body);
 
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.PASSWORD_RESET.OTP_VERIFIED,
+      message: Messages.PASSWORD_RESET.SUCCESS,
     });
   } catch (error) {
     const message =

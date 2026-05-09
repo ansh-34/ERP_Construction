@@ -1,3 +1,4 @@
+import { Messages } from '../../../constants/index.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 
@@ -16,18 +17,18 @@ export const ProductUomService = {
       const product = await tx.product.findFirst({
         where: { id: productId, domainId, isDeleted: false },
       });
-      if (!product) throw new Error('Product not found');
+      if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
 
       const uom = await tx.uom.findFirst({
         where: { id: dto.uomId, domainId, isDeleted: false },
       });
-      if (!uom) throw new Error('UOM not found');
+      if (!uom) throw new Error(Messages.UOM.NOT_FOUND);
 
       const existing = await tx.productUom.findUnique({
         where: { productId_uomId: { productId, uomId: dto.uomId } },
       });
       if (existing && !existing.isDeleted)
-        throw new Error('This UOM is already assigned to the product');
+        throw new Error(Messages.PRODUCT_UOM.ALEADY_ASSIGNED);
 
       if (existing?.isDeleted) {
         return tx.productUom.update({
@@ -52,7 +53,7 @@ export const ProductUomService = {
           });
 
           if (conflicted && !conflicted.isDeleted) {
-            throw new Error('This UOM is already assigned to the product');
+            throw new Error(Messages.PRODUCT_UOM.ALEADY_ASSIGNED);
           }
 
           if (conflicted?.isDeleted) {
@@ -131,7 +132,7 @@ export const ProductUomService = {
       where: { id, productId, domainId, isDeleted: false },
       include: { uom: true },
     });
-    if (!record) throw new Error('ProductUom not found');
+    if (!record) throw new Error(Messages.PRODUCT_UOM.NOT_FOUND);
 
     if (language) {
       record.uom.displayName = ProductUomService.localizeName(

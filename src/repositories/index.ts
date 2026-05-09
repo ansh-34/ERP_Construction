@@ -27,3 +27,4 @@ export * from './projectStage.repository.js';
 export * from './projectTask.repository.js';
 export * from './projectTaskDelay.repository.js';
 export * from './moduleDependencyPermission.repository.js';
+export * from './rawMaterialPurchaseRequest.repository.js';

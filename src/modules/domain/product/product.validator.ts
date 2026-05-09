@@ -15,7 +15,7 @@ export const createProductBodySchema = z.object({
       message: 'English (en) translation is required',
       path: ['en'],
     }),
-  productType: z.string().min(1),
+  productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']),
   status: z.enum(['active', 'inactive']).default('active'),
 });
 
@@ -31,7 +31,7 @@ export const updateProductBodySchema = z.object({
     })
     .optional(),
   code: z.string().min(1).optional(),
-  productType: z.string().min(1).optional(),
+  productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']).optional(),
   status: z.enum(['active', 'inactive']).optional(),
 });
 
@@ -42,7 +42,3 @@ export const listProductsQuerySchema = paginationQuerySchema
   });
 
 export const productIdParamsSchema = idParamSchema;
-
-export type CreateProductDto = z.infer<typeof createProductBodySchema>;
-export type UpdateProductDto = z.infer<typeof updateProductBodySchema>;
-export type ListProductsQuery = z.infer<typeof listProductsQuerySchema>;

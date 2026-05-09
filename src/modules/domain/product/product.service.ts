@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import { ProductRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { ProductTypeEnum } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 
 export const ProductService = {
   localizeName(value: any, langCode: string) {
@@ -16,7 +17,7 @@ export const ProductService = {
     domainId: string,
     data: {
       displayName: Record<string, string>;
-      productType: string;
+      productType: ProductTypeEnum;
       status: string;
     },
   ) {
