@@ -163,6 +163,22 @@ model RefreshToken {
   @@index([createdAt])
 }
 
+model Currency {
+  id                            String   @id @default(uuid()) @db.Uuid
+  name                          Json
+  code                          String
+  searchText                    String   @default("")
+  symbol                        String
+  flag                          String
+  status                        String   @default("active")
+  isDeleted                     Boolean  @default(false)
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  @@map("currency")
+}
+
+
 model Role {
   id       String  @id @default(uuid()) @db.Uuid
   name     String
