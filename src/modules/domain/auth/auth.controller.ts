@@ -131,12 +131,12 @@ export const logout = async (req: Request, res: Response) => {
 
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    await AuthService.forgotPassword(req.body);
+    const data = await AuthService.forgotPassword(req.body);
 
-    // Always return the same response to prevent email enumeration
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PASSWORD_RESET.OTP_SENT,
+      data,
     });
   } catch (error) {
     // Swallow errors to avoid leaking info — log internally

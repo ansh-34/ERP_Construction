@@ -72,6 +72,7 @@ export const Messages = Object.freeze({
     NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED:
       'domainName, email, password, industry are required',
     USER_REGISTRATION_REQUIRED: 'name, email, password, domainId are required',
+    NAME_EN_CODE_REQUIRED: 'domainName in english is required',
   },
   ROLE: {
     CREATED: 'Role created successfully',
@@ -291,6 +292,12 @@ export const Messages = Object.freeze({
     UPDATED: 'UOM updated successfully',
     DELETED: 'UOM deleted successfully',
     NOT_FOUND: 'UOM not found',
+    DISPLAY_NAME_EN_REQUIRED: 'displayName in english is required',
+    CREATION_FAILED: 'Failed to create UOM',
+    RETRIEVAL_FAILED: 'Failed to retrieve UOM',
+    UPDATE_FAILED: 'Failed to update UOM',
+    DELETION_FAILED: 'Failed to delete UOM',
+    CODE_ALREADY_EXISTS: 'UOM with this code already exists',
   },
   PASSWORD_RESET: {
     OTP_SENT: 'If an account with this email exists, an OTP has been sent',

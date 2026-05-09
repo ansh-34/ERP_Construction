@@ -27,6 +27,11 @@ export const DomainService = {
       throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED);
     }
 
+    const incomingLanguageCodes: string[] = Object.keys(domainName || {});
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.DOMAIN.NAME_EN_CODE_REQUIRED);
+    }
+
     const normalizedIndustry = normalizeIndustryInput(industry);
 
     const existingDomain = await DomainRepository.findActiveByEmail(email);
@@ -74,6 +79,7 @@ export const DomainService = {
         email: result.domain.email,
         industry: result.domain.industry,
       },
+      token: rawToken,
     };
   },
 

@@ -15,7 +15,7 @@ const localizedName = z
     path: ['en'],
   });
 
-// ── Body schemas ──────────────────────────────────────────────
+// Body schemas
 export const createUomBodySchema = z.object({
   displayName: localizedName,
   baseUomId: z.string().uuid(),
@@ -31,14 +31,9 @@ export const updateUomBodySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-// ── Query schemas ─────────────────────────────────────────────
+// Query schemas
 export const listUomsQuerySchema =
   pageBasedPaginationQuerySchema.merge(statusFilterSchema);
 
-// ── Param schemas ─────────────────────────────────────────────
+// Param schemas =
 export const uomIdParamSchema = idParamSchema;
-
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateUomDto = z.infer<typeof createUomBodySchema>;
-export type UpdateUomDto = z.infer<typeof updateUomBodySchema>;
-export type ListUomsQuery = z.infer<typeof listUomsQuerySchema>;

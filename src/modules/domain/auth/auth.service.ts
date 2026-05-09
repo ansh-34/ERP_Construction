@@ -253,6 +253,8 @@ export const AuthService = {
         expiryMinutes: OTP_EXPIRY_MINUTES,
       }),
     );
+
+    return { otp: raw };
   },
 
   async resetPassword(data: {

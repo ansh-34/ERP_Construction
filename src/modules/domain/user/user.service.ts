@@ -80,6 +80,8 @@ export const UserService = {
         verificationLink,
       }),
     );
+
+    return { token: rawToken };
   },
 
   async listUsers(domainId: string, query: PaginationQuery) {

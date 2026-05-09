@@ -359,6 +359,8 @@ export const UserService = {
         expiryMinutes: OTP_EXPIRY_MINUTES,
       }),
     );
+
+    return { otp: raw };
   },
 
   async verifyOtp(data: { email: string; otp: string }) {

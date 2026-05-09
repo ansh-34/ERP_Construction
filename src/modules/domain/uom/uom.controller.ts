@@ -2,13 +2,14 @@ import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { UomService } from './uom.service.js';
+import { PaginationQuery } from '@/utils/pagination.js';
 
 export const createUom = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
     const record = await UomService.create(
       req.user!.domainId,
-      req.body as any,
+      req.body,
       language as string,
     );
     return res.status(HttpStatus.CREATED).json({
@@ -18,7 +19,7 @@ export const createUom = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to create UOM';
+      error instanceof Error ? error.message : Messages.UOM.CREATION_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -27,19 +28,20 @@ export const createUom = async (req: Request, res: Response) => {
 export const listUoms = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
-    const result = await UomService.findAll(
+    const { data: uoms, pagination } = await UomService.findAll(
       req.user!.domainId,
-      req.query as any,
+      req.query,
       language as string,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.UOM.RETRIEVED,
-      data: result,
+      pagination: { ...pagination },
+      data: uoms,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve UOMs';
+      error instanceof Error ? error.message : Messages.UOM.RETRIEVAL_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -60,7 +62,7 @@ export const getUomById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve UOM';
+      error instanceof Error ? error.message : Messages.UOM.RETRIEVAL_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -72,7 +74,7 @@ export const updateUom = async (req: Request, res: Response) => {
     const record = await UomService.update(
       req.user!.domainId,
       req.params.id,
-      req.body as any,
+      req.body,
       language as string,
     );
     return res.status(HttpStatus.OK).json({
@@ -82,7 +84,7 @@ export const updateUom = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to update UOM';
+      error instanceof Error ? error.message : Messages.UOM.UPDATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -98,7 +100,7 @@ export const deleteUom = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to delete UOM';
+      error instanceof Error ? error.message : Messages.UOM.DELETION_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

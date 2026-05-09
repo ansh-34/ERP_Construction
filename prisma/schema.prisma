@@ -39,6 +39,7 @@ enum ProductTypeEnum {
 model Domain {
   id               String       @id @default(uuid()) @db.Uuid
   name             Json
+  searchText       String       @default("")
   email            String
   organizationType Json?
   phoneCode        String?
@@ -381,6 +382,7 @@ model Uom {
   id          String @id @default(uuid()) @db.Uuid
   displayName Json
   code        String
+  searchText  String @default("")
   baseUomId   String? @db.Uuid
 
   conversionRate Float
