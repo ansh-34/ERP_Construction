@@ -158,6 +158,8 @@ export const Messages = Object.freeze({
     UPDATE_FAILED: 'Failed to update language',
     DELETE_FAILED: 'Failed to delete language',
     NAME_ALREADY_EXISTS: 'Language with this name already exists',
+    CANNOT_DELETE_ENGLISH_LANGUAGE: 'English language cannot be deleted',
+    CANNOT_UPDATE_ENGLISH_LANGUAGE: 'English language cannot be updated',
   },
   CURRENCY: {
     CREATED: 'Currency created',

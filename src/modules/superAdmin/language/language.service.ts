@@ -30,6 +30,7 @@ export const LanguageService = {
       searchKey?: string;
       status?: string;
       dir?: 'ltr' | 'rtl';
+      code?: string;
     },
   ) {
     const { offset, limit } = normalizePagination({
@@ -44,6 +45,7 @@ export const LanguageService = {
         filters: {
           searchKey: query.searchKey || '',
           ...(query.status && { status: query.status }),
+          ...(query.code && { code: query.code }),
           ...(query.dir && { dir: query.dir }),
         },
       },
@@ -76,6 +78,10 @@ export const LanguageService = {
       throw new Error(Messages.LANGUAGE.NOT_FOUND);
     }
 
+    if (language.code === 'en') {
+      throw new Error(Messages.LANGUAGE.CANNOT_UPDATE_ENGLISH_LANGUAGE);
+    }
+
     if (data.code && data.code !== language.code) {
       const existing = await LanguageRepository.findActiveByCode(data.code);
       if (existing) {
@@ -97,6 +103,10 @@ export const LanguageService = {
 
     if (!language) {
       throw new Error(Messages.LANGUAGE.NOT_FOUND);
+    }
+
+    if (language.code === 'en') {
+      throw new Error(Messages.LANGUAGE.CANNOT_DELETE_ENGLISH_LANGUAGE);
     }
 
     return LanguageRepository.softDelete(id);
