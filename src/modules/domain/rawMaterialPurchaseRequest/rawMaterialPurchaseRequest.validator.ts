@@ -6,8 +6,6 @@ import {
 } from '../../common/common.validator.js';
 import { StatusEnum } from '@/constants/statusEnum.js';
 
-
-
 export const createRawMaterialPurchaseRequestBodySchema = z.object({
   // date: z.string().datetime({ message: 'Invalid date format' }),
   type: z.enum(['IMPORT', 'LOCAL']),

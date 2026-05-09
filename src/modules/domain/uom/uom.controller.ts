@@ -6,7 +6,11 @@ import { UomService } from './uom.service.js';
 export const createUom = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
-    const record = await UomService.create(req.user!.domainId, req.body as any, language as string);
+    const record = await UomService.create(
+      req.user!.domainId,
+      req.body as any,
+      language as string,
+    );
     return res.status(HttpStatus.CREATED).json({
       success: true,
       message: Messages.UOM.CREATED,

@@ -59,8 +59,7 @@ export const DomainService = {
       email,
       'Activate Your Domain — Construction ERP',
       domainActivationEmail({
-        domainName:
-          domainName[langCode] || domainName.en || String(domainName),
+        domainName: domainName[langCode] || domainName.en || String(domainName),
         verificationLink,
       }),
     );
@@ -68,14 +67,20 @@ export const DomainService = {
     return {
       domain: {
         id: result.domain.id,
-        name: (result.domain.name as any)[langCode] || (result.domain.name as any)?.en || '',
+        name:
+          (result.domain.name as any)[langCode] ||
+          (result.domain.name as any)?.en ||
+          '',
         email: result.domain.email,
         industry: result.domain.industry,
       },
     };
   },
 
-  async verifyDomainToken(data: { email: string; token: string }, langCode: string = 'en') {
+  async verifyDomainToken(
+    data: { email: string; token: string },
+    langCode: string = 'en',
+  ) {
     const { email, token: rawToken } = data;
 
     if (!email || !rawToken) {

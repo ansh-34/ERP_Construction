@@ -10,12 +10,11 @@ export const createRawMaterialPurchaseRequest = async (
   res: Response,
 ) => {
   try {
-    const request =
-      await RawMaterialPurchaseRequestService.createRequest(
-        req.user!.domainId,
-        req.user!.userId,
-        req.body,
-      );
+    const request = await RawMaterialPurchaseRequestService.createRequest(
+      req.user!.domainId,
+      req.user!.userId,
+      req.body,
+    );
     return res.status(HttpStatus.CREATED).json({
       success: true,
       message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.CREATED,
@@ -65,11 +64,10 @@ export const getRawMaterialPurchaseRequestById = async (
   res: Response,
 ) => {
   try {
-    const request =
-      await RawMaterialPurchaseRequestService.getRequestById(
-        req.user!.domainId,
-        req.params.id,
-      );
+    const request = await RawMaterialPurchaseRequestService.getRequestById(
+      req.user!.domainId,
+      req.params.id,
+    );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.RETRIEVED,
@@ -90,12 +88,11 @@ export const updateRawMaterialPurchaseRequest = async (
   res: Response,
 ) => {
   try {
-    const request =
-      await RawMaterialPurchaseRequestService.updateRequest(
-        req.user!.domainId,
-        req.params.id,
-        req.body,
-      );
+    const request = await RawMaterialPurchaseRequestService.updateRequest(
+      req.user!.domainId,
+      req.params.id,
+      req.body,
+    );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.UPDATED,

@@ -60,11 +60,7 @@ router.post(
   forgotPassword,
 );
 
-router.post(
-  '/verify-otp',
-  validate(verifyOtpSchema, 'body'),
-  verifyOtp,
-);
+router.post('/verify-otp', validate(verifyOtpSchema, 'body'), verifyOtp);
 
 router.post(
   '/reset-password',

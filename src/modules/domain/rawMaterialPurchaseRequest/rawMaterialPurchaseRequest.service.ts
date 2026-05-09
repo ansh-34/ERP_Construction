@@ -27,7 +27,7 @@ export const RawMaterialPurchaseRequestService = {
       brand?: string;
       requisitionRequestDocumentUrl?: string;
       requiredBy?: string;
-      reason : string;
+      reason: string;
       projectId: string;
     },
   ) {
@@ -152,9 +152,7 @@ export const RawMaterialPurchaseRequestService = {
     }
 
     if (request.approvalStatus !== ApprovalStatus.PENDING) {
-      throw new Error(
-        Messages.RAW_MATERIAL_PURCHASE_REQUEST.ALREADY_ACTIONED,
-      );
+      throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.ALREADY_ACTIONED);
     }
 
     return RawMaterialPurchaseRequestRepository.update(id, {

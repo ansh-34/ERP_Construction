@@ -41,4 +41,3 @@ export const productGradeProductIdParamSchema = z.object({
 export const productGradeIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
 });
-

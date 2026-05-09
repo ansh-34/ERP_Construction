@@ -323,7 +323,7 @@ export const UserService = {
 
     const hashedPassword = await bcrypt.hash(
       newPassword,
-      parseInt(process.env.SALT_ROUNDS),
+      parseInt(process.env.SALT_ROUNDS || '12', 10),
     );
 
     await UserRepository.updatePassword(user.id, hashedPassword);
@@ -396,15 +396,12 @@ export const UserService = {
     return { resetToken: resetTokenStr };
   },
 
-  async resetPassword(data: {
-    resetToken: string;
-    newPassword: string;
-  }) {
+  async resetPassword(data: { resetToken: string; newPassword: string }) {
     const { resetToken, newPassword } = data;
 
     const tokenRecord = await TokenRepository.findActiveByTokenAndPurpose(
       resetToken,
-      'PASSWORD_RESET'
+      'PASSWORD_RESET',
     );
 
     if (!tokenRecord || new Date() > tokenRecord.tokenExpirationTime) {
@@ -418,7 +415,7 @@ export const UserService = {
 
     const hashedPassword = await bcrypt.hash(
       newPassword,
-      parseInt(process.env.SALT_ROUNDS),
+      parseInt(process.env.SALT_ROUNDS || '12', 10),
     );
 
     await UserRepository.updatePassword(user.id, hashedPassword);

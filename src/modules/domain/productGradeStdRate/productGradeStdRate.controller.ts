@@ -39,13 +39,11 @@ export const listProductGradeStdRates = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
-        data: result,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+      data: result,
+    });
   } catch (error) {
     const message =
       error instanceof Error
@@ -69,13 +67,11 @@ export const getProductGradeStdRateById = async (
       req.params.id,
       language as string | null,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
-        data: record,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error

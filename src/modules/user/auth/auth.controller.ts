@@ -190,7 +190,9 @@ export const verifyOtp = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : Messages.PASSWORD_RESET.OTP_INVALID;
+      error instanceof Error
+        ? error.message
+        : Messages.PASSWORD_RESET.OTP_INVALID;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

@@ -34,13 +34,11 @@ export const listProductUoms = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: Messages.PRODUCT_UOM.RETRIEVED,
-        data: result,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_UOM.RETRIEVED,
+      data: result,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.PRODUCT_UOM.LIST_FAILED;
@@ -58,13 +56,11 @@ export const getProductUomById = async (req: Request, res: Response) => {
       req.params.id,
       language as string | null,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({
-        success: true,
-        message: Messages.PRODUCT_UOM.RETRIEVED,
-        data: record,
-      });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_UOM.RETRIEVED,
+      data: record,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.PRODUCT_UOM.NOT_FOUND;
