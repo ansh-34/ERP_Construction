@@ -163,10 +163,20 @@ export const ModuleService = {
           createdAt: true,
           updatedAt: true,
           modulePermissions: {
+            where: {
+              isDeleted: false,
+              permission: {
+                isDeleted: false,
+              },
+            },
             select: {
               id: true,
               permission: {
-                select: { id: true, name: true, code: true },
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                },
               },
             },
           },
@@ -244,15 +254,33 @@ export const ModuleService = {
         name: true,
         code: true,
         status: true,
+
         modulePermissions: {
+          where: {
+            isDeleted: false,
+            permission: {
+              isDeleted: false,
+            },
+          },
           select: {
             id: true,
             permission: {
-              select: { id: true, name: true, code: true },
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
             },
           },
         },
+
         parentDependencies: {
+          where: {
+            isDeleted: false,
+            dependentModule: {
+              isDeleted: false,
+            },
+          },
           select: {
             dependentModule: {
               select: {
@@ -261,10 +289,22 @@ export const ModuleService = {
                 code: true,
               },
             },
+
             moduleDependencyPermissions: {
-              select: {
+              where: {
+                isDeleted: false,
                 permission: {
-                  select: { id: true, name: true, code: true },
+                  isDeleted: false,
+                },
+              },
+              select: {
+                id: true,
+                permission: {
+                  select: {
+                    id: true,
+                    name: true,
+                    code: true,
+                  },
                 },
               },
             },

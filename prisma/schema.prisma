@@ -164,20 +164,19 @@ model RefreshToken {
 }
 
 model Currency {
-  id                            String   @id @default(uuid()) @db.Uuid
-  name                          Json
-  code                          String
-  searchText                    String   @default("")
-  symbol                        String
-  flag                          String
-  status                        String   @default("active")
-  isDeleted                     Boolean  @default(false)
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  id         String   @id @default(uuid()) @db.Uuid
+  name       Json
+  code       String
+  searchText String   @default("")
+  symbol     String
+  flag       String
+  status     String   @default("active")
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("currency")
 }
-
 
 model Role {
   id       String  @id @default(uuid()) @db.Uuid
@@ -270,6 +269,7 @@ model ModulePermission {
 
   module     Module     @relation(fields: [moduleId], references: [id])
   permission Permission @relation(fields: [permissionId], references: [id])
+  isDeleted  Boolean    @default(false)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
@@ -285,6 +285,7 @@ model ModuleDependency {
   module            Module @relation("ParentModule", fields: [moduleId], references: [id])
   dependentModuleId String @db.Uuid
 
+  isDeleted                   Boolean                      @default(false)
   dependentModule             Module                       @relation("DependentModule", fields: [dependentModuleId], references: [id])
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
@@ -301,6 +302,8 @@ model ModuleDependencyPermission {
 
   moduleDependency ModuleDependency @relation(fields: [moduleDependencyId], references: [id])
   permissionId     String           @db.Uuid
+
+  isDeleted Boolean @default(false)
 
   permission Permission @relation(fields: [permissionId], references: [id])
   createdAt  DateTime   @default(now())

@@ -299,6 +299,18 @@ export const Messages = Object.freeze({
     NOT_FOUND: 'Module dependency not found',
     INVALID_PERMISSIONS: 'One or more permissions are invalid',
   },
+  MODULE_DEPENDENCY_PERMISSION: {
+    CREATED: 'Module dependency permissions set',
+    RETRIEVED: 'Module dependency permissions retrieved',
+    DELETED: 'Module dependency permissions deleted',
+    SET_FAILED: 'Failed to set module dependency permissions',
+    LIST_FAILED: 'Failed to list module dependency permissions',
+    DELETE_FAILED: 'Failed to delete module dependency permissions',
+    REQUIRED: 'moduleId and permissions (array) are required',
+    INVALID_CODES_PREFIX: 'Invalid permission codes',
+    RECORD_NOT_FOUND: 'Module dependency permission record not found',
+    INVALID_PERMISSIONS: 'One or more permissions are invalid',
+  },
   UOM: {
     CREATED: 'UOM created successfully',
     RETRIEVED: 'UOMs retrieved',
