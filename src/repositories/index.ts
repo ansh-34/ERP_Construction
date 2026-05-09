@@ -28,4 +28,5 @@ export * from './projectTask.repository.js';
 export * from './projectTaskDelay.repository.js';
 export * from './moduleDependencyPermission.repository.js';
 export * from './rawMaterialPurchaseRequest.repository.js';
+export * from './currency.repository.js';
 export * from './uom.repository.js';

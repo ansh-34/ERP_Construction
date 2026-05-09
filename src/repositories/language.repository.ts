@@ -63,6 +63,9 @@ export const LanguageRepository = {
         ...(options.filters.status && {
           status: options.filters.status,
         }),
+        ...(options.filters.code && {
+          code: options.filters.code,
+        }),
       }),
     };
 
@@ -71,7 +74,7 @@ export const LanguageRepository = {
       prisma.language.findMany({
         where: whereClause,
         orderBy: { createdAt: 'desc' },
-        select: {
+        select: options?.select || {
           id: true,
           name: true,
           code: true,

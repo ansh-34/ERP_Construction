@@ -94,6 +94,6 @@ export const ModuleDependencyService = {
       throw new Error(Messages.MODULE_DEPENDENCY.NOT_FOUND);
     }
 
-    await ModuleDependencyRepository.delete(id);
+    await ModuleDependencyRepository.softDelete(id);
   },
 };

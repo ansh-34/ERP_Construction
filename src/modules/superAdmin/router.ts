@@ -8,6 +8,8 @@ import modulePermissionRouter from './modulePermission/modulePermission.router.j
 import permissionRouter from './permission/permission.router.js';
 import profileRouter from './profile/profile.router.js';
 import languageRouter from './language/language.router.js';
+import currencyRouter from './currency/currency.router.js';
+import moduleDependencyPermissionRouter from './moduleDependencyPermission/moduleDependencyPermission.router.js';
 
 const superAdminRouter = Router();
 
@@ -16,8 +18,13 @@ superAdminRouter.use('/profile', profileRouter);
 superAdminRouter.use('/auth', authRouter);
 superAdminRouter.use('/modules', moduleRouter);
 superAdminRouter.use('/module-dependencies', moduleDependencyRouter);
+superAdminRouter.use(
+  '/module-dependency-permissions',
+  moduleDependencyPermissionRouter,
+);
 superAdminRouter.use('/module-permissions', modulePermissionRouter);
 superAdminRouter.use('/permissions', permissionRouter);
 superAdminRouter.use('/language', languageRouter);
+superAdminRouter.use('/currency', currencyRouter);
 
 export default superAdminRouter;
