@@ -5,6 +5,7 @@ import { Messages } from '../../../constants/index';
 import { DomainRepository, TokenRepository } from '../../../repositories/index';
 import { sendMail } from '../../../services/mail.services';
 import { domainActivationEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
 
 const SALT_ROUNDS = 12;
 
@@ -79,7 +80,7 @@ export const DomainService = {
         email: result.domain.email,
         industry: result.domain.industry,
       },
-      token: rawToken,
+      ...(variables.NODE_ENV === 'development' ? { token: rawToken } : {}),
     };
   },
 

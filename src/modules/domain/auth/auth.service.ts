@@ -17,6 +17,7 @@ import {
   // MAX_OTP_ATTEMPTS,
 } from '../../../services/otp.service.js';
 import { forgotPasswordEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
 
 const isReusableDomainAccessToken = (
   accessToken: string | undefined,
@@ -254,7 +255,7 @@ export const AuthService = {
       }),
     );
 
-    return { otp: raw };
+return variables.NODE_ENV === 'development' ? { otp: raw } : { message: 'OTP sent successfully' };
   },
 
   async resetPassword(data: {

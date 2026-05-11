@@ -18,6 +18,7 @@ import {
   verifyOtp,
 } from '../../../services/otp.service.js';
 import { forgotPasswordEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
 
 const isReusableUserAccessToken = (
   accessToken: string | undefined,
@@ -360,7 +361,7 @@ export const UserService = {
       }),
     );
 
-    return { otp: raw };
+    return variables.NODE_ENV === 'development' ? { otp: raw } : { message: 'OTP sent successfully' };
   },
 
   async verifyOtp(data: { email: string; otp: string }) {
@@ -395,7 +396,7 @@ export const UserService = {
       tokenExpirationTime,
     });
 
-    return { resetToken: resetTokenStr };
+       return { resetToken: resetTokenStr };
   },
 
   async resetPassword(data: { resetToken: string; newPassword: string }) {
