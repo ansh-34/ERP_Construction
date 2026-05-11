@@ -2,9 +2,7 @@ import { z } from 'zod';
 import {
   idParamSchema,
   paginationQuerySchema,
-  statusFilterSchema,
 } from '../../common/common.validator.js';
-import { StatusEnum } from '@/constants/statusEnum.js';
 
 export const createRawMaterialPurchaseRequestBodySchema = z.object({
   // date: z.string().datetime({ message: 'Invalid date format' }),
@@ -34,16 +32,12 @@ export const updateRawMaterialPurchaseRequestBodySchema = z.object({
   requiredBy: z.string().datetime().optional(),
   reason: z.string().min(1).optional(),
   projectId: z.string().uuid().optional(),
-  status: z.enum([StatusEnum.ACTIVE, StatusEnum.INACTIVE]).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
-export const approveRejectBodySchema = z.object({
-  approvalStatus: z.enum(['APPROVED', 'REJECTED']),
-});
-
-export const listRawMaterialPurchaseRequestsQuerySchema = paginationQuerySchema
-  .merge(statusFilterSchema)
-  .extend({
+export const listRawMaterialPurchaseRequestsQuerySchema =
+  paginationQuerySchema.extend({
+    status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
     searchKey: z.string().optional(),
     type: z.enum(['IMPORT', 'LOCAL']).optional(),
     approvalStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
@@ -52,3 +46,8 @@ export const listRawMaterialPurchaseRequestsQuerySchema = paginationQuerySchema
   });
 
 export const rawMaterialPurchaseRequestIdParamsSchema = idParamSchema;
+
+export const approveRejectBodySchema = z.object({
+  ids: z.union([z.string().uuid(), z.array(z.string().uuid()).min(1)]),
+  approvalStatus: z.enum(['APPROVED', 'REJECTED']),
+});
