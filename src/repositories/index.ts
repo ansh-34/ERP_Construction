@@ -30,3 +30,4 @@ export * from './moduleDependencyPermission.repository.js';
 export * from './rawMaterialPurchaseRequest.repository.js';
 export * from './currency.repository.js';
 export * from './uom.repository.js';
+export * from './projectUserRole.repository.js';

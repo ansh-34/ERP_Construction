@@ -91,4 +91,15 @@ export const RawMaterialPurchaseRequestRepository = {
       data: { isDeleted: true },
     });
   },
+
+  async bulkUpdateApproval(
+    ids: string[],
+    approvalStatus: string,
+    domainId: string,
+  ) {
+    return prisma.rawMaterialPurchaseRequest.updateMany({
+      where: { id: { in: ids }, domainId, isDeleted: false },
+      data: { approvalStatus: approvalStatus as any, approvedAt: new Date() },
+    });
+  },
 };
