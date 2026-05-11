@@ -255,7 +255,9 @@ export const AuthService = {
       }),
     );
 
-return variables.NODE_ENV === 'development' ? { otp: raw } : { message: 'OTP sent successfully' };
+    return variables.NODE_ENV === 'development'
+      ? { otp: raw }
+      : { message: 'OTP sent successfully' };
   },
 
   async resetPassword(data: {

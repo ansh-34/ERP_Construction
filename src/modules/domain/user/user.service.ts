@@ -82,7 +82,9 @@ export const UserService = {
       }),
     );
 
-    return variables.NODE_ENV === 'development' ? { token: rawToken } : { message: 'Invite sent successfully' };
+    return variables.NODE_ENV === 'development'
+      ? { token: rawToken }
+      : { message: 'Invite sent successfully' };
   },
 
   async listUsers(domainId: string, query: PaginationQuery) {

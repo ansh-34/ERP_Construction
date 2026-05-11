@@ -361,7 +361,9 @@ export const UserService = {
       }),
     );
 
-    return variables.NODE_ENV === 'development' ? { otp: raw } : { message: 'OTP sent successfully' };
+    return variables.NODE_ENV === 'development'
+      ? { otp: raw }
+      : { message: 'OTP sent successfully' };
   },
 
   async verifyOtp(data: { email: string; otp: string }) {
@@ -396,7 +398,7 @@ export const UserService = {
       tokenExpirationTime,
     });
 
-       return { resetToken: resetTokenStr };
+    return { resetToken: resetTokenStr };
   },
 
   async resetPassword(data: { resetToken: string; newPassword: string }) {
