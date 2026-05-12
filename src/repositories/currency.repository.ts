@@ -140,7 +140,7 @@ export const CurrencyRepository = {
     });
   },
 
-  validateModuleIds(ids: string[]) {
+  validateCurrencies(ids: string[]) {
     if (ids.length === 0) {
       return true;
     }

@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { UomService } from './uom.service.js';
-import { PaginationQuery } from '@/utils/pagination.js';
 
 export const createUom = async (req: Request, res: Response) => {
   try {

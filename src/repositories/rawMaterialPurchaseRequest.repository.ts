@@ -1,4 +1,3 @@
-import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 
 export const RawMaterialPurchaseRequestRepository = {

@@ -16,6 +16,7 @@ export interface UpdateMediaInput {
 
 function isValidUrl(value: string): boolean {
   try {
+    // eslint-disable-next-line no-new
     new URL(value);
     return true;
   } catch {

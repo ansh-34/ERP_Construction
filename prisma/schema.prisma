@@ -36,6 +36,73 @@ enum ProductTypeEnum {
   FINISHED_PRODUCT
 }
 
+enum OnboardingStatusEnum {
+  PENDING
+  INPROGRESS
+  COMPLETED
+}
+
+model Admin {
+  id String @id @default(uuid()) @db.Uuid
+
+  name      String
+  email     String
+  phoneCode String?
+  phone     String?
+
+  mediaId String? @db.Uuid
+  media   Media?  @relation(fields: [mediaId], references: [id])
+
+  password String
+
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+
+  onboardingStatus OnboardingStatusEnum @default(PENDING)
+  onboardingStep   String?
+
+  status String @default("active")
+
+  isDeleted Boolean @default(false)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  adminLanguages  AdminLanguages[]
+  adminCurrencies AdminCurrencies[]
+  domains         Domain[]
+
+  @@unique([email, isDeleted])
+  @@unique([phone, isDeleted])
+}
+
+model AdminLanguages {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String   @db.Uuid
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  languageId String   @db.Uuid
+  language   Language @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  isEnabled  Boolean  @default(false)
+  isDefault  Boolean  @default(false)
+  status     String   @default("active")
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AdminCurrencies {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String   @db.Uuid
+  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  currencyId String   @db.Uuid
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  isEnabled  Boolean  @default(false)
+  isDefault  Boolean  @default(false)
+  status     String   @default("active")
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model Domain {
   id               String       @id @default(uuid()) @db.Uuid
   name             Json
@@ -78,6 +145,8 @@ model Domain {
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+  admin                       Admin?                       @relation(fields: [adminId], references: [id])
+  adminId                     String?                      @db.Uuid
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -165,16 +234,17 @@ model RefreshToken {
 }
 
 model Currency {
-  id         String   @id @default(uuid()) @db.Uuid
-  name       Json
-  code       String
-  searchText String   @default("")
-  symbol     String
-  flag       String
-  status     String   @default("active")
-  isDeleted  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String            @id @default(uuid()) @db.Uuid
+  name            Json
+  code            String
+  searchText      String            @default("")
+  symbol          String
+  flag            String
+  status          String            @default("active")
+  isDeleted       Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  adminCurrencies AdminCurrencies[]
 
   @@map("currency")
 }
@@ -367,15 +437,16 @@ model Log {
 }
 
 model Language {
-  id        String      @id @default(uuid()) @db.Uuid
-  name      String
-  code      String
-  flag      String
-  dir       LangDirEnum @default(ltr)
-  status    String      @default("active")
-  isDeleted Boolean     @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id             String           @id @default(uuid()) @db.Uuid
+  name           String
+  code           String
+  flag           String
+  dir            LangDirEnum      @default(ltr)
+  status         String           @default("active")
+  isDeleted      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  adminLanguages AdminLanguages[]
 
   @@unique([code, isDeleted])
   @@index([createdAt, isDeleted])
@@ -398,10 +469,10 @@ model SuperAdmin {
 }
 
 model Uom {
-  id          String @id @default(uuid()) @db.Uuid
+  id          String  @id @default(uuid()) @db.Uuid
   displayName Json
   code        String
-  searchText  String @default("")
+  searchText  String  @default("")
   baseUomId   String? @db.Uuid
 
   conversionRate Float
@@ -713,6 +784,7 @@ model Media {
   isDeleted Boolean    @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  admins    Admin[]
 
   @@index([domainId])
   @@map("media")

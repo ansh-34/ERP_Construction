@@ -19,6 +19,8 @@ import vehicleRouter from './vehicle/vehicle.router.js';
 import productRouter from './product/product.router.js';
 import { uomRouter } from './uom/uom.router.js';
 import profileRouter from './profile/profile.router.js';
+import languageRouter from './language/language.router.js';
+import currencyRouter from './currency/currency.router.js';
 
 const domainRouter = Router();
 
@@ -42,5 +44,7 @@ domainRouter.use('/journey-schedules', journeyScheduleRouter);
 domainRouter.use('/dispatch', dispatchRouter);
 domainRouter.use('/products', productRouter);
 domainRouter.use('/uoms', uomRouter());
+domainRouter.use('/language', languageRouter);
+domainRouter.use('/currency', currencyRouter);
 
 export default domainRouter;

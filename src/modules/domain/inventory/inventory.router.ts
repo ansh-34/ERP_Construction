@@ -19,7 +19,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
-//aggregate statistics
+// aggregate statistics
 router.get('/stats', /* authorize('inventory', 'read'), */ getInventoryStats);
 
 router.get(

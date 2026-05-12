@@ -103,4 +103,18 @@ export const LanguageRepository = {
       data: { isDeleted: true },
     });
   },
+
+  async validateLanguages(ids: string[]) {
+    if (ids.length === 0) {
+      return true;
+    }
+    return prisma.language
+      .findMany({
+        where: {
+          id: { in: ids },
+          isDeleted: false,
+        },
+      })
+      .then((result) => result.length === ids.length);
+  },
 };

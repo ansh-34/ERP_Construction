@@ -1,7 +1,5 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
 import { uomRepository } from '../../../repositories/index.js';
-import { normalizePagination } from '@/utils/pagination.js';
 
 export const UomService = {
   localizeName(value: any, langCode: string) {
