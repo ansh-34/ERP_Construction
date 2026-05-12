@@ -70,7 +70,12 @@ export const RolePaths = {
               example: {
                 success: true,
                 message: 'Roles retrieved',
-                pagination: { currentCount: 2, totalCount: 4, offset: 0, limit: 10 },
+                pagination: {
+                  currentCount: 2,
+                  totalCount: 4,
+                  offset: 0,
+                  limit: 10,
+                },
                 data: [
                   {
                     id: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f',
@@ -142,7 +147,10 @@ export const RolePaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Role created successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Role created successfully',
+                  },
                   data: { $ref: '#/components/schemas/RoleObject' },
                 },
               },
@@ -259,7 +267,10 @@ export const RolePaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Role updated successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Role updated successfully',
+                  },
                   data: { $ref: '#/components/schemas/RoleObject' },
                 },
               },
@@ -288,7 +299,8 @@ export const RolePaths = {
     delete: {
       tags: ['Roles'],
       summary: 'Delete role',
-      description: 'Soft-delete a role by setting isDeleted=true and status=INACTIVE.',
+      description:
+        'Soft-delete a role by setting isDeleted=true and status=INACTIVE.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -308,7 +320,10 @@ export const RolePaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Role deleted successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Role deleted successfully',
+                  },
                   data: { type: 'object', nullable: true, example: null },
                 },
               },

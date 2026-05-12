@@ -8,8 +8,18 @@ const languageHeader = {
 };
 
 const paginationParams = [
-  { in: 'query' as const, name: 'offset', schema: { type: 'integer', minimum: 0, default: 0 }, description: 'Records to skip' },
-  { in: 'query' as const, name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 }, description: 'Max records' },
+  {
+    in: 'query' as const,
+    name: 'offset',
+    schema: { type: 'integer', minimum: 0, default: 0 },
+    description: 'Records to skip',
+  },
+  {
+    in: 'query' as const,
+    name: 'limit',
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+    description: 'Max records',
+  },
 ];
 
 const listResponse = {
@@ -20,7 +30,10 @@ const listResponse = {
         type: 'object',
         properties: {
           success: { type: 'boolean', example: true },
-          message: { type: 'string', example: 'Raw material purchase requests retrieved' },
+          message: {
+            type: 'string',
+            example: 'Raw material purchase requests retrieved',
+          },
           pagination: {
             type: 'object',
             properties: {
@@ -32,7 +45,9 @@ const listResponse = {
           },
           data: {
             type: 'array',
-            items: { $ref: '#/components/schemas/RawMaterialPurchaseRequestObject' },
+            items: {
+              $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+            },
           },
         },
       },
@@ -52,7 +67,9 @@ export const RawMaterialPurchaseRequestPaths = {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/CreateRawMaterialPurchaseRequestBody' },
+            schema: {
+              $ref: '#/components/schemas/CreateRawMaterialPurchaseRequestBody',
+            },
           },
         },
       },
@@ -65,8 +82,14 @@ export const RawMaterialPurchaseRequestPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Raw material purchase request created successfully' },
-                  data: { $ref: '#/components/schemas/RawMaterialPurchaseRequestObject' },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Raw material purchase request created successfully',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+                  },
                 },
               },
             },
@@ -78,17 +101,43 @@ export const RawMaterialPurchaseRequestPaths = {
     get: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'List purchase requests',
-      description: 'Retrieve a paginated list of raw material purchase requests with filtering by status, type, approval status, product, and project.',
+      description:
+        'Retrieve a paginated list of raw material purchase requests with filtering by status, type, approval status, product, and project.',
       security: [{ bearerAuth: [] }],
       parameters: [
         languageHeader,
         ...paginationParams,
-        { in: 'query', name: 'status', schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] } },
-        { in: 'query', name: 'searchKey', schema: { type: 'string' }, description: 'Search across codes and text' },
-        { in: 'query', name: 'type', schema: { type: 'string', enum: ['IMPORT', 'LOCAL'] } },
-        { in: 'query', name: 'approvalStatus', schema: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] } },
-        { in: 'query', name: 'productId', schema: { type: 'string', format: 'uuid' } },
-        { in: 'query', name: 'projectId', schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'query',
+          name: 'status',
+          schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+        },
+        {
+          in: 'query',
+          name: 'searchKey',
+          schema: { type: 'string' },
+          description: 'Search across codes and text',
+        },
+        {
+          in: 'query',
+          name: 'type',
+          schema: { type: 'string', enum: ['IMPORT', 'LOCAL'] },
+        },
+        {
+          in: 'query',
+          name: 'approvalStatus',
+          schema: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+        },
+        {
+          in: 'query',
+          name: 'productId',
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'projectId',
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: { 200: listResponse, ...errors },
     },
@@ -98,7 +147,8 @@ export const RawMaterialPurchaseRequestPaths = {
     get: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'List approved requests',
-      description: 'Retrieve a paginated list of approved raw material purchase requests.',
+      description:
+        'Retrieve a paginated list of approved raw material purchase requests.',
       security: [{ bearerAuth: [] }],
       parameters: [languageHeader, ...paginationParams],
       responses: { 200: listResponse, ...errors },
@@ -109,11 +159,18 @@ export const RawMaterialPurchaseRequestPaths = {
     get: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'List approved requests by product',
-      description: 'Retrieve approved raw material purchase requests filtered by a specific product.',
+      description:
+        'Retrieve approved raw material purchase requests filtered by a specific product.',
       security: [{ bearerAuth: [] }],
       parameters: [
         languageHeader,
-        { in: 'path', name: 'productId', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Product ID' },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Product ID',
+        },
         ...paginationParams,
       ],
       responses: { 200: listResponse, ...errors },
@@ -124,7 +181,8 @@ export const RawMaterialPurchaseRequestPaths = {
     put: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'Approve or reject requests',
-      description: 'Approve or reject one or more raw material purchase requests. Supports both single ID and bulk array of IDs.',
+      description:
+        'Approve or reject one or more raw material purchase requests. Supports both single ID and bulk array of IDs.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -134,12 +192,18 @@ export const RawMaterialPurchaseRequestPaths = {
             examples: {
               single: {
                 summary: 'Single approval',
-                value: { ids: '5c6d7e8f-9012-3456-7890-abcdef123456', approvalStatus: 'APPROVED' },
+                value: {
+                  ids: '5c6d7e8f-9012-3456-7890-abcdef123456',
+                  approvalStatus: 'APPROVED',
+                },
               },
               bulk: {
                 summary: 'Bulk approval',
                 value: {
-                  ids: ['5c6d7e8f-9012-3456-7890-abcdef123456', '6d7e8f90-1234-5678-90ab-cdef12345678'],
+                  ids: [
+                    '5c6d7e8f-9012-3456-7890-abcdef123456',
+                    '6d7e8f90-1234-5678-90ab-cdef12345678',
+                  ],
                   approvalStatus: 'APPROVED',
                 },
               },
@@ -156,7 +220,10 @@ export const RawMaterialPurchaseRequestPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Approval status updated' },
+                  message: {
+                    type: 'string',
+                    example: 'Approval status updated',
+                  },
                   data: { type: 'object' },
                 },
               },
@@ -176,7 +243,12 @@ export const RawMaterialPurchaseRequestPaths = {
       security: [{ bearerAuth: [] }],
       parameters: [
         languageHeader,
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: {
         200: {
@@ -187,8 +259,13 @@ export const RawMaterialPurchaseRequestPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Raw material purchase request retrieved' },
-                  data: { $ref: '#/components/schemas/RawMaterialPurchaseRequestObject' },
+                  message: {
+                    type: 'string',
+                    example: 'Raw material purchase request retrieved',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+                  },
                 },
               },
             },
@@ -203,13 +280,20 @@ export const RawMaterialPurchaseRequestPaths = {
       description: 'Update a raw material purchase request.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/UpdateRawMaterialPurchaseRequestBody' },
+            schema: {
+              $ref: '#/components/schemas/UpdateRawMaterialPurchaseRequestBody',
+            },
           },
         },
       },
@@ -222,8 +306,14 @@ export const RawMaterialPurchaseRequestPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Raw material purchase request updated successfully' },
-                  data: { $ref: '#/components/schemas/RawMaterialPurchaseRequestObject' },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Raw material purchase request updated successfully',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+                  },
                 },
               },
             },
@@ -238,7 +328,12 @@ export const RawMaterialPurchaseRequestPaths = {
       description: 'Soft-delete a raw material purchase request.',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } },
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
       ],
       responses: {
         200: {
@@ -249,7 +344,11 @@ export const RawMaterialPurchaseRequestPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Raw material purchase request deleted successfully' },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Raw material purchase request deleted successfully',
+                  },
                   data: { type: 'object', nullable: true, example: null },
                 },
               },

@@ -38,15 +38,43 @@ export const ProjectUserRoleSchemas = {
   ProjectUserRoleObject: {
     type: 'object',
     properties: {
-      id: { type: 'string', format: 'uuid', example: 'f1e2d3c4-b5a6-9807-6543-210fedcba987' },
-      projectId: { type: 'string', format: 'uuid', example: 'b2c3d4e5-f6a7-8901-bcde-f12345678902' },
-      userId: { type: 'string', format: 'uuid', example: 'e1f2a3b4-c5d6-7890-ef01-234567890abc' },
-      roleId: { type: 'string', format: 'uuid', example: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f' },
-      domainId: { type: 'string', format: 'uuid', example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0' },
+      id: {
+        type: 'string',
+        format: 'uuid',
+        example: 'f1e2d3c4-b5a6-9807-6543-210fedcba987',
+      },
+      projectId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'b2c3d4e5-f6a7-8901-bcde-f12345678902',
+      },
+      userId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'e1f2a3b4-c5d6-7890-ef01-234567890abc',
+      },
+      roleId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f',
+      },
+      domainId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0',
+      },
       status: { type: 'string', example: 'ACTIVE' },
       isDeleted: { type: 'boolean', example: false },
-      createdAt: { type: 'string', format: 'date-time', example: '2026-05-12T10:30:00.000Z' },
-      updatedAt: { type: 'string', format: 'date-time', example: '2026-05-12T10:30:00.000Z' },
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2026-05-12T10:30:00.000Z',
+      },
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2026-05-12T10:30:00.000Z',
+      },
       project: {
         type: 'object',
         properties: {

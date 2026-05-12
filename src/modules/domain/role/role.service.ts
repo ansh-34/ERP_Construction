@@ -30,10 +30,7 @@ export const RoleService = {
     }
 
     const searchText = Object.values(data.name).join(' ').toLowerCase();
-    const code = data.name.en
-      .toString()
-      .trim()
-      .toLowerCase();
+    const code = data.name.en.toString().trim().toLowerCase();
 
     const existing = await RoleRepository.findActiveByCodeAndDomain(
       code,
@@ -148,7 +145,10 @@ export const RoleService = {
     id: string,
     language: string | null = null,
   ) {
-    const role: any = await RoleRepository.findActiveByIdAndDomain(id, domainId);
+    const role: any = await RoleRepository.findActiveByIdAndDomain(
+      id,
+      domainId,
+    );
     if (!role) {
       throw new Error(Messages.ROLE.NOT_FOUND);
     }

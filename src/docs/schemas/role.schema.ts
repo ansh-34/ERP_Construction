@@ -17,13 +17,18 @@ export const RoleSchemas = {
     properties: {
       name: {
         type: 'object',
-        description: 'Localized role name. English (en) key is required when provided.',
+        description:
+          'Localized role name. English (en) key is required when provided.',
         example: { en: 'Senior Site Engineer', hi: 'वरिष्ठ साइट इंजीनियर' },
         additionalProperties: { type: 'string' },
       },
       code: { type: 'string', example: 'SENIOR_SITE_ENGINEER' },
       level: { type: 'integer', example: 4 },
-      status: { type: 'string', enum: ['active', 'inactive'], example: 'active' },
+      status: {
+        type: 'string',
+        enum: ['active', 'inactive'],
+        example: 'active',
+      },
     },
   },
   AssignPermissionsBody: {
@@ -56,16 +61,32 @@ export const RoleSchemas = {
   RoleObject: {
     type: 'object',
     properties: {
-      id: { type: 'string', format: 'uuid', example: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f' },
+      id: {
+        type: 'string',
+        format: 'uuid',
+        example: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f',
+      },
       name: { type: 'string', example: 'Site Engineer' },
       code: { type: 'string', example: 'site_engineer' },
       searchText: { type: 'string', example: 'site engineer साइट इंजीनियर' },
       level: { type: 'integer', example: 3 },
-      domainId: { type: 'string', format: 'uuid', example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0' },
+      domainId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0',
+      },
       status: { type: 'string', example: 'active' },
       isDeleted: { type: 'boolean', example: false },
-      createdAt: { type: 'string', format: 'date-time', example: '2026-05-12T10:30:00.000Z' },
-      updatedAt: { type: 'string', format: 'date-time', example: '2026-05-12T10:30:00.000Z' },
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2026-05-12T10:30:00.000Z',
+      },
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2026-05-12T10:30:00.000Z',
+      },
       roleModulePermissions: {
         type: 'array',
         items: {
@@ -74,7 +95,11 @@ export const RoleSchemas = {
             id: { type: 'string', format: 'uuid' },
             roleId: { type: 'string', format: 'uuid' },
             moduleId: { type: 'string', format: 'uuid' },
-            permissions: { type: 'array', items: { type: 'string' }, example: ['read', 'write'] },
+            permissions: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['read', 'write'],
+            },
             module: {
               type: 'object',
               properties: {

@@ -135,7 +135,10 @@ export const UomPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'UOM created successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'UOM created successfully',
+                  },
                   data: { $ref: '#/components/schemas/UomObject' },
                 },
               },
@@ -253,7 +256,10 @@ export const UomPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'UOM updated successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'UOM updated successfully',
+                  },
                   data: { $ref: '#/components/schemas/UomObject' },
                 },
               },
@@ -283,7 +289,8 @@ export const UomPaths = {
     delete: {
       tags: ['UOMs'],
       summary: 'Delete UOM',
-      description: 'Soft-delete a UOM by setting isDeleted=true and status=INACTIVE.',
+      description:
+        'Soft-delete a UOM by setting isDeleted=true and status=INACTIVE.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -303,7 +310,10 @@ export const UomPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'UOM deleted successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'UOM deleted successfully',
+                  },
                   data: { type: 'object', nullable: true, example: null },
                 },
               },
