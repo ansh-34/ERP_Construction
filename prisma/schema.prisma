@@ -182,11 +182,12 @@ model Currency {
 }
 
 model Role {
-  id       String  @id @default(uuid()) @db.Uuid
-  name     String
-  code     String?
-  level    Int     @default(0)
-  domainId String  @db.Uuid
+  id         String  @id @default(uuid()) @db.Uuid
+  name       String
+  code       String?
+  searchText String  @default("")
+  level      Int     @default(0)
+  domainId   String  @db.Uuid
 
   domain    Domain   @relation(fields: [domainId], references: [id])
   status    String   @default("active")
@@ -401,10 +402,10 @@ model SuperAdmin {
 }
 
 model Uom {
-  id          String @id @default(uuid()) @db.Uuid
+  id          String  @id @default(uuid()) @db.Uuid
   displayName Json
   code        String
-  searchText  String @default("")
+  searchText  String  @default("")
   baseUomId   String? @db.Uuid
 
   conversionRate Float

@@ -5,6 +5,9 @@ import {
   createRole,
   assignPermissions,
   listRoles,
+  getRoleById,
+  updateRole,
+  deleteRole,
   assignRole,
 } from './role.controller.js';
 import isDomain from '../../../middlewares/isDomain.js';
@@ -14,7 +17,9 @@ import {
   assignRoleBodySchema,
   assignRoleParamsSchema,
   createRoleBodySchema,
+  updateRoleBodySchema,
   listRolesQuerySchema,
+  roleIdParamsSchema,
 } from './role.validator.js';
 
 const router = Router();
@@ -22,6 +27,26 @@ const router = Router();
 router.use(authMiddleware);
 
 router.post('/', isDomain, validate(createRoleBodySchema, 'body'), createRole);
+router.get('/', isDomain, validate(listRolesQuerySchema, 'query'), listRoles);
+router.get(
+  '/:id',
+  isDomain,
+  validate(roleIdParamsSchema, 'params'),
+  getRoleById,
+);
+router.put(
+  '/:id',
+  isDomain,
+  validate(roleIdParamsSchema, 'params'),
+  validate(updateRoleBodySchema, 'body'),
+  updateRole,
+);
+router.delete(
+  '/:id',
+  isDomain,
+  validate(roleIdParamsSchema, 'params'),
+  deleteRole,
+);
 router.post(
   '/:roleId/permissions',
   isDomain,
@@ -29,7 +54,6 @@ router.post(
   validate(assignPermissionsBodySchema, 'body'),
   assignPermissions,
 );
-router.get('/', isDomain, validate(listRolesQuerySchema, 'query'), listRoles);
 router.post(
   '/:id/role',
   isDomain,

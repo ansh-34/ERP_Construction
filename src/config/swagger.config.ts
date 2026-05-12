@@ -37,6 +37,8 @@ export const swaggerSpec = {
     { name: 'Product Grade Std Rates' },
     { name: 'Product UOMs' },
     { name: 'UOMs' },
+    { name: 'Project User Roles' },
+    { name: 'Raw Material Purchase Requests' },
   ],
   paths: {
     ...ApiPaths,

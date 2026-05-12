@@ -47,11 +47,11 @@ const getStringName = (name: unknown): string => {
   return '';
 };
 
-const formatRole = <T extends { name: string; code: string | null }>(
+const formatRole = <T extends { name: unknown; code: string | null }>(
   role: T,
 ) => ({
   ...role,
-  name: role.name.toUpperCase(),
+  name: getStringName(role.name).toUpperCase(),
   code: role.code?.toLowerCase() || null,
 });
 

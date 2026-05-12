@@ -87,10 +87,13 @@ export const Messages = Object.freeze({
     DELETED: 'Role deleted successfully',
     NOT_FOUND: 'Role not found',
     NAME_CODE_REQUIRED: 'name and code are required',
+    NAME_EN_REQUIRED: 'name in english is required',
     CODE_ALREADY_EXISTS: 'Role with this code already exists',
     MODULE_ID_PERMISSIONS_REQUIRED: 'moduleId and permissions are required',
     ROLE_ID_REQUIRED: 'roleId is required',
     INVALID_PERMISSIONS_PREFIX: 'Invalid permissions',
+    UPDATE_FAILED: 'Failed to update role',
+    DELETE_FAILED: 'Failed to delete role',
   },
   MODULE: {
     CREATED: 'Module created successfully',

@@ -15,6 +15,8 @@ import { ModuleDependencyPaths } from './moduleDependency.paths.js';
 import { ModulePermissionPaths } from './modulePermission.paths.js';
 import { ProductPaths } from './product.paths.js';
 import { UomPaths } from './uom.paths.js';
+import { ProjectUserRolePaths } from './projectUserRole.paths.js';
+import { RawMaterialPurchaseRequestPaths } from './rawMaterialPurchaseRequest.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -34,4 +36,6 @@ export const ApiPaths = {
   ...ModulePermissionPaths,
   ...ProductPaths,
   ...UomPaths,
+  ...ProjectUserRolePaths,
+  ...RawMaterialPurchaseRequestPaths,
 };

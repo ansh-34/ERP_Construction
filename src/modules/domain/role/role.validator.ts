@@ -3,12 +3,29 @@ import {
   idParamSchema,
   paginationQuerySchema,
   roleIdParamSchema,
+  statusFilterSchema,
 } from '../../common/common.validator.js';
 
+const localizedName = z
+  .record(
+    z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+    z.string().min(1, 'Translation cannot be empty'),
+  )
+  .refine((data) => !!data.en, {
+    message: 'English (en) translation is required',
+    path: ['en'],
+  });
+
 export const createRoleBodySchema = z.object({
-  name: z.string().min(1),
-  code: z.string().min(1),
+  name: localizedName,
   level: z.number().optional(),
+});
+
+export const updateRoleBodySchema = z.object({
+  name: localizedName.optional(),
+  code: z.string().min(1).optional(),
+  level: z.number().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
 });
 
 export const assignPermissionsParamsSchema = roleIdParamSchema;
@@ -18,7 +35,13 @@ export const assignPermissionsBodySchema = z.object({
   permissions: z.array(z.string().min(1)).min(1),
 });
 
-export const listRolesQuerySchema = paginationQuerySchema;
+export const listRolesQuerySchema = paginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+  });
+
+export const roleIdParamsSchema = idParamSchema;
 
 export const assignRoleParamsSchema = idParamSchema;
 
@@ -27,6 +50,7 @@ export const assignRoleBodySchema = z.object({
 });
 
 export type CreateRoleData = z.infer<typeof createRoleBodySchema>;
+export type UpdateRoleData = z.infer<typeof updateRoleBodySchema>;
 export type AssignPermissionsData = z.infer<
   typeof assignPermissionsParamsSchema
 >;

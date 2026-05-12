@@ -50,7 +50,7 @@ export const DomainRepository = {
       const domainRole = await tx.role.create({
         data: {
           id: data.domainRoleId,
-          name: 'domain',
+          name: { en: 'domain' },
           code: 'domain',
           level: 1,
           domainId: domain.id,

@@ -6,9 +6,11 @@ import { RoleService } from './role.service.js';
 
 export const createRole = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const role = await RoleService.createRole(
       req.user!.domainId,
-      req.body as { name: string; code: string; level?: number },
+      req.body,
+      language as string,
     );
 
     return res
@@ -47,9 +49,11 @@ export const assignPermissions = async (req: Request, res: Response) => {
 
 export const listRoles = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const { roles, pagination } = await RoleService.listRoles(
       req.user!.domainId,
-      req.query as PaginationQuery,
+      req.query as PaginationQuery & { status?: string; searchKey?: string },
+      language as string,
     );
 
     return res.status(HttpStatus.OK).json({
@@ -64,6 +68,68 @@ export const listRoles = async (req: Request, res: Response) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.ROLE.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const getRoleById = async (req: Request, res: Response) => {
+  try {
+    const { language } = req.headers;
+    const role = await RoleService.getRoleById(
+      req.user!.domainId,
+      req.params.id,
+      language as string | null,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.ROLE.RETRIEVED,
+      data: role,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.ROLE.NOT_FOUND;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const updateRole = async (req: Request, res: Response) => {
+  try {
+    const { language = 'en' } = req.headers;
+    const role = await RoleService.updateRole(
+      req.user!.domainId,
+      req.params.id,
+      req.body,
+      language as string,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.ROLE.UPDATED,
+      data: role,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.ROLE.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const deleteRole = async (req: Request, res: Response) => {
+  try {
+    await RoleService.deleteRole(req.user!.domainId, req.params.id);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.ROLE.DELETED,
+      data: null,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.ROLE.DELETE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

@@ -13,6 +13,8 @@ import { DispatchSchemas } from './dispatch.schema.js';
 import { AppErrorSchemas } from './appError.schema.js';
 import { ProductSchemas } from './product.schema.js';
 import { UomSchemas } from './uom.schema.js';
+import { ProjectUserRoleSchemas } from './projectUserRole.schema.js';
+import { RawMaterialPurchaseRequestSchemas } from './rawMaterialPurchaseRequest.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -30,4 +32,6 @@ export const ApiSchemas = {
   ...AppErrorSchemas,
   ...ProductSchemas,
   ...UomSchemas,
+  ...ProjectUserRoleSchemas,
+  ...RawMaterialPurchaseRequestSchemas,
 };
