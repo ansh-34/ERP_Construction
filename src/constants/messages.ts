@@ -375,4 +375,18 @@ export const Messages = Object.freeze({
     USER_NOT_FOUND: 'User not found in this domain',
     ROLE_NOT_FOUND: 'Role not found in this domain',
   },
+  USER_PROJECT: {
+    CREATED: 'Project created successfully',
+    RETRIEVED: 'Projects retrieved successfully',
+    UPDATED: 'Project updated successfully',
+    DELETED: 'Project deleted successfully',
+    NOT_FOUND: 'Project not found',
+    CREATE_FAILED: 'Failed to create project',
+    LIST_FAILED: 'Failed to list projects',
+    UPDATE_FAILED: 'Failed to update project',
+    DELETE_FAILED: 'Failed to delete project',
+    CATEGORY_NOT_FOUND: 'Project category not found',
+    NAME_EN_REQUIRED: 'name in english is required',
+    CODE_ALREADY_EXISTS: 'Project with this code already exists',
+  },
 });
