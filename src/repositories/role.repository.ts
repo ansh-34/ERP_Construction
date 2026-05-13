@@ -1,3 +1,4 @@
+import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const RoleRepository = {
@@ -19,20 +20,36 @@ export const RoleRepository = {
     });
   },
 
-  create(data: {
-    name: string;
-    code: string;
-    level: number;
-    domainId: string;
-  }) {
+  findDuplicateCode(domainId: string, code: string, excludeId: string) {
+    return prisma.role.findFirst({
+      where: { domainId, code, isDeleted: false, NOT: { id: excludeId } },
+    });
+  },
+
+  create(data: Prisma.RoleUncheckedCreateInput) {
     return prisma.role.create({ data });
   },
 
-  listByDomain(domainId: string, limit: number, offset: number) {
+  listByDomain(
+    domainId: string,
+    limit: number,
+    offset: number,
+    filter?: { status?: string; searchKey?: string },
+  ) {
+    const searchKey = filter?.searchKey?.trim() || '';
+    const where: Prisma.RoleWhereInput = {
+      domainId,
+      isDeleted: false,
+      ...(filter?.status && { status: filter.status }),
+      ...(searchKey && {
+        searchText: { contains: searchKey, mode: 'insensitive' as const },
+      }),
+    };
+
     return prisma.$transaction([
-      prisma.role.count({ where: { domainId, isDeleted: false } }),
+      prisma.role.count({ where }),
       prisma.role.findMany({
-        where: { domainId, isDeleted: false },
+        where,
         include: {
           roleModulePermissions: {
             include: { module: { select: { name: true, code: true } } },
@@ -43,5 +60,16 @@ export const RoleRepository = {
         take: limit,
       }),
     ]);
+  },
+
+  update(id: string, data: Prisma.RoleUncheckedUpdateInput) {
+    return prisma.role.update({ where: { id }, data });
+  },
+
+  softDelete(id: string) {
+    return prisma.role.update({
+      where: { id },
+      data: { isDeleted: true, status: 'INACTIVE' },
+    });
   },
 };

@@ -25,7 +25,7 @@ export const roleData = async (domainId: string) => {
 
     if (rolesData.length > 0) {
       await prisma.role.createMany({
-        data: rolesData,
+        data: rolesData as any,
       });
     }
   } catch (error) {

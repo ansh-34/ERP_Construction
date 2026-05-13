@@ -132,21 +132,80 @@ export const deleteRawMaterialPurchaseRequest = async (
   }
 };
 
-export const approveOrRejectRawMaterialPurchaseRequest = async (
+export const listApprovedRawMaterialPurchaseRequests = async (
   req: Request,
   res: Response,
 ) => {
   try {
-    const request =
-      await RawMaterialPurchaseRequestService.approveOrRejectRequest(
+    const { requests, pagination } =
+      await RawMaterialPurchaseRequestService.listApprovedRequests(
         req.user!.domainId,
-        req.params.id,
+        req.query,
+      );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.RETRIEVED,
+      pagination: {
+        currentCount: requests.length,
+        ...pagination,
+      },
+      data: requests,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.RAW_MATERIAL_PURCHASE_REQUEST.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const listApprovedRawMaterialPurchaseRequestsByProduct = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { requests, pagination } =
+      await RawMaterialPurchaseRequestService.listApprovedRequestsByProduct(
+        req.user!.domainId,
+        req.params.productId,
+        req.query,
+      );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.RETRIEVED,
+      pagination: {
+        currentCount: requests.length,
+        ...pagination,
+      },
+      data: requests,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.RAW_MATERIAL_PURCHASE_REQUEST.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const approveOrRejectRawMaterialPurchaseRequests = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const result =
+      await RawMaterialPurchaseRequestService.approveOrRejectRequests(
+        req.user!.domainId,
+        req.body.ids,
         req.body.approvalStatus as ApprovalStatus,
       );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.APPROVAL_UPDATED,
-      data: request,
+      data: result,
     });
   } catch (error) {
     const message =

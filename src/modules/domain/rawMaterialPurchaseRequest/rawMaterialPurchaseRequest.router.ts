@@ -4,10 +4,12 @@ import { validate } from '../../../middlewares/validate.js';
 import {
   createRawMaterialPurchaseRequest,
   listRawMaterialPurchaseRequests,
+  listApprovedRawMaterialPurchaseRequests,
+  listApprovedRawMaterialPurchaseRequestsByProduct,
   getRawMaterialPurchaseRequestById,
   updateRawMaterialPurchaseRequest,
   deleteRawMaterialPurchaseRequest,
-  approveOrRejectRawMaterialPurchaseRequest,
+  approveOrRejectRawMaterialPurchaseRequests,
 } from './rawMaterialPurchaseRequest.controller.js';
 import {
   createRawMaterialPurchaseRequestBodySchema,
@@ -36,6 +38,26 @@ router.get(
 );
 
 router.get(
+  '/approved',
+  validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
+  listApprovedRawMaterialPurchaseRequests,
+);
+
+router.get(
+  '/approved/product/:productId',
+  validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
+  listApprovedRawMaterialPurchaseRequestsByProduct,
+);
+
+// Single endpoint for both single and bulk approve/reject
+router.put(
+  '/approval',
+  // authorize('rawMaterialPurchaseRequest', 'approve'),
+  validate(approveRejectBodySchema, 'body'),
+  approveOrRejectRawMaterialPurchaseRequests,
+);
+
+router.get(
   '/:id',
   // authorize('rawMaterialPurchaseRequest', 'read'),
   validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
@@ -55,14 +77,6 @@ router.delete(
   // authorize('rawMaterialPurchaseRequest', 'delete'),
   validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
   deleteRawMaterialPurchaseRequest,
-);
-
-router.put(
-  '/:id/approval',
-  // authorize('rawMaterialPurchaseRequest', 'approve'),
-  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
-  validate(approveRejectBodySchema, 'body'),
-  approveOrRejectRawMaterialPurchaseRequest,
 );
 
 export default router;

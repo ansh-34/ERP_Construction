@@ -5,6 +5,7 @@ import {
   ApprovalStatus,
   PurchaseRequestType,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const RawMaterialPurchaseRequestService = {
   generateCode(domainId: string): string {
@@ -31,12 +32,46 @@ export const RawMaterialPurchaseRequestService = {
       projectId: string;
     },
   ) {
+    const product = await prisma.product.findFirst({
+      where: { id: data.productId, domainId, isDeleted: false },
+    });
+    if (!product) {
+      throw new Error(Messages.INVENTORY.PRODUCT_NOT_FOUND);
+    }
+
+    const grade = await prisma.productGrades.findFirst({
+      where: {
+        id: data.productGradeId,
+        productId: data.productId,
+        domainId,
+        isDeleted: false,
+      },
+    });
+    if (!grade) {
+      throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    }
+
+    const uom = await prisma.uom.findFirst({
+      where: { id: data.uomId, domainId, isDeleted: false },
+    });
+    if (!uom) {
+      throw new Error(Messages.INVENTORY.UOM_NOT_FOUND);
+    }
+
+    const project = await prisma.project.findFirst({
+      where: { id: data.projectId, domainId, isDeleted: false },
+    });
+    if (!project) {
+      throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND);
+    }
+
     const code = RawMaterialPurchaseRequestService.generateCode(domainId);
 
     return RawMaterialPurchaseRequestRepository.create({
       ...data,
       code,
       // date: new Date(data.date),
+      ...(data.requiredBy ? { requiredBy: new Date(data.requiredBy) } : {}),
       requestedBy,
       domainId,
     });
@@ -137,27 +172,54 @@ export const RawMaterialPurchaseRequestService = {
     return RawMaterialPurchaseRequestRepository.softDelete(id);
   },
 
-  async approveOrRejectRequest(
+  async listApprovedRequests(domainId: string, query: any) {
+    return this.listRequests(domainId, {
+      ...query,
+      approvalStatus: ApprovalStatus.APPROVED,
+    });
+  },
+
+  async listApprovedRequestsByProduct(
     domainId: string,
-    id: string,
+    productId: string,
+    query: any,
+  ) {
+    return this.listRequests(domainId, {
+      ...query,
+      approvalStatus: ApprovalStatus.APPROVED,
+      productId,
+    });
+  },
+
+  async approveOrRejectRequests(
+    domainId: string,
+    ids: string | string[],
     approvalStatus: ApprovalStatus,
   ) {
-    const request =
-      await RawMaterialPurchaseRequestRepository.findByIdAndDomain(
-        id,
-        domainId,
-      );
-    if (!request) {
-      throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND);
+    // Normalize single id to array
+    const idArray = Array.isArray(ids) ? ids : [ids];
+
+    // Validate each request exists, belongs to domain, and is still PENDING
+    for (const id of idArray) {
+      const request =
+        await RawMaterialPurchaseRequestRepository.findByIdAndDomain(
+          id,
+          domainId,
+        );
+      if (!request) {
+        throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND);
+      }
+      if (request.approvalStatus !== ApprovalStatus.PENDING) {
+        throw new Error(
+          Messages.RAW_MATERIAL_PURCHASE_REQUEST.ALREADY_ACTIONED,
+        );
+      }
     }
 
-    if (request.approvalStatus !== ApprovalStatus.PENDING) {
-      throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.ALREADY_ACTIONED);
-    }
-
-    return RawMaterialPurchaseRequestRepository.update(id, {
+    return RawMaterialPurchaseRequestRepository.bulkUpdateApproval(
+      idArray,
       approvalStatus,
-      approvedAt: new Date(),
-    });
+      domainId,
+    );
   },
 };

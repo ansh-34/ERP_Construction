@@ -10,38 +10,48 @@ import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
 export const RoleService = {
+  localizeName(value: any, langCode: string) {
+    if (!value || typeof value !== 'object') return '';
+    return value[langCode] || value.en || '';
+  },
+
+  normalizeCode(value: string) {
+    return value.toString().trim().toUpperCase().replace(/\s+/g, '_');
+  },
+
   async createRole(
     domainId: string,
-    data: { name: string; code: string; level?: number },
+    data: { name: Record<string, string>; level?: number },
+    langCode: string = 'en',
   ) {
-    const { name: rawName, code: rawCode, level } = data;
-
-    if (!rawName || !rawCode) {
-      throw new Error(Messages.ROLE.NAME_CODE_REQUIRED);
+    const incomingLanguageCodes: string[] = Object.keys(data.name || {});
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.ROLE.NAME_EN_REQUIRED);
     }
 
-    const name = rawName.trim().toLowerCase();
-    const code = rawCode.trim().toLowerCase();
-
-    if (!name || !code) {
-      throw new Error(Messages.ROLE.NAME_CODE_REQUIRED);
-    }
+    const searchText = Object.values(data.name).join(' ').toLowerCase();
+    const code = data.name.en.toString().trim().toLowerCase();
 
     const existing = await RoleRepository.findActiveByCodeAndDomain(
       code,
       domainId,
     );
-
     if (existing) {
       throw new Error(Messages.ROLE.CODE_ALREADY_EXISTS);
     }
 
-    return RoleRepository.create({
-      name,
+    const record = await RoleRepository.create({
+      name: data.name,
       code,
-      level: level ?? 0,
+      searchText,
+      level: data.level ?? 0,
       domainId,
     });
+
+    return {
+      ...record,
+      name: RoleService.localizeName(record.name, langCode),
+    };
   },
 
   async assignPermissions(
@@ -87,23 +97,129 @@ export const RoleService = {
     });
   },
 
-  async listRoles(domainId: string, query: PaginationQuery) {
+  async listRoles(
+    domainId: string,
+    query: PaginationQuery & { status?: string; searchKey?: string },
+    langCode: string,
+  ) {
     const { offset, limit } = normalizePagination(query);
 
     const [totalCount, roles] = await RoleRepository.listByDomain(
       domainId,
       limit,
       offset,
+      {
+        status: query.status,
+        searchKey: query.searchKey,
+      },
     );
 
+    const localizedRoles = roles.map((role: any) => ({
+      ...role,
+      name: RoleService.localizeName(role.name, langCode),
+      roleModulePermissions: (role.roleModulePermissions || []).map(
+        (rmp: any) => ({
+          ...rmp,
+          module: rmp.module
+            ? {
+                ...rmp.module,
+                name: RoleService.localizeName(rmp.module.name, langCode),
+              }
+            : rmp.module,
+        }),
+      ),
+    }));
+
     return {
-      roles,
+      roles: localizedRoles,
       pagination: {
         totalCount,
         offset,
         limit,
       },
     };
+  },
+
+  async getRoleById(
+    domainId: string,
+    id: string,
+    language: string | null = null,
+  ) {
+    const role: any = await RoleRepository.findActiveByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!role) {
+      throw new Error(Messages.ROLE.NOT_FOUND);
+    }
+
+    if (language) {
+      role.name = RoleService.localizeName(role.name, language);
+    }
+
+    return role;
+  },
+
+  async updateRole(
+    domainId: string,
+    id: string,
+    data: {
+      name?: Record<string, string>;
+      code?: string;
+      level?: number;
+      status?: string;
+    },
+    langCode: string = 'en',
+  ) {
+    const existing = await RoleRepository.findActiveByIdAndDomain(id, domainId);
+    if (!existing) {
+      throw new Error(Messages.ROLE.NOT_FOUND);
+    }
+
+    if (data.name) {
+      const incomingLanguageCodes: string[] = Object.keys(data.name);
+      if (!incomingLanguageCodes.includes('en')) {
+        throw new Error(Messages.ROLE.NAME_EN_REQUIRED);
+      }
+    }
+
+    let code: string | null = null;
+    if (data.code) {
+      code = RoleService.normalizeCode(data.code);
+      if (code !== (existing as any).code) {
+        const duplicate = await RoleRepository.findDuplicateCode(
+          domainId,
+          code,
+          id,
+        );
+        if (duplicate) {
+          throw new Error(Messages.ROLE.CODE_ALREADY_EXISTS);
+        }
+      }
+    }
+
+    const searchText = data.name
+      ? Object.values(data.name).join(' ').toLowerCase()
+      : null;
+
+    const record = await RoleRepository.update(id, {
+      ...data,
+      ...(code ? { code } : {}),
+      ...(searchText ? { searchText } : {}),
+    });
+
+    return {
+      ...record,
+      name: RoleService.localizeName(record.name, langCode),
+    };
+  },
+
+  async deleteRole(domainId: string, id: string) {
+    const existing = await RoleRepository.findActiveByIdAndDomain(id, domainId);
+    if (!existing) {
+      throw new Error(Messages.ROLE.NOT_FOUND);
+    }
+    return RoleRepository.softDelete(id);
   },
 
   async assignRole(
