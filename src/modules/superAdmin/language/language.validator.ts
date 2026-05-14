@@ -7,6 +7,8 @@ import {
 export const createLanguageBodySchema = z.object({
   name: z.string().min(2).max(100),
   code: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+  dir: z.enum(['ltr', 'rtl']),
+  flag: z.string(),
 });
 
 export const updateLanguageBodySchema = z.object({
@@ -16,12 +18,16 @@ export const updateLanguageBodySchema = z.object({
     .regex(/^[a-z]{2}$/, 'Invalid language code')
     .optional(),
   status: z.enum(['active', 'inactive']).optional(),
+  dir: z.enum(['ltr', 'rtl']).optional(),
+  flag: z.string().optional(),
 });
 
 export const listLanguagesQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
   status: z.enum(['active', 'inactive']).optional(),
+  code: z.string().optional(),
+  dir: z.enum(['ltr', 'rtl']).optional(),
 });
 
 export const languageIdParamsSchema = idParamSchema;

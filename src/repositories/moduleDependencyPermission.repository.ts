@@ -22,8 +22,11 @@ export const ModuleDependencyPermissionRepository = {
     return prisma.moduleDependencyPermission.findUnique({ where: { id } });
   },
 
-  delete(id: string) {
-    return prisma.moduleDependencyPermission.delete({ where: { id } });
+  softDelete(id: string) {
+    return prisma.moduleDependencyPermission.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   },
 
   bulkCreate(

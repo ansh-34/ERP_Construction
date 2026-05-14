@@ -29,6 +29,8 @@ const variables = {
   SMTP_FROM: process.env.SMTP_FROM,
 
   LOGS_ENABLE: process.env.LOGS_ENABLE || 'false',
+
+  CLIENT_BASE_URL: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
 };
 
 export default variables;

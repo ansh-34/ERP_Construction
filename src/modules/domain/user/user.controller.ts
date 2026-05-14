@@ -8,11 +8,16 @@ const getBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
 
 export const inviteUser = async (req: Request, res: Response) => {
   try {
-    await UserService.inviteUser(req.user!.domainId, req.body, getBaseUrl(req));
+    const data = await UserService.inviteUser(
+      req.user!.domainId,
+      req.body,
+      getBaseUrl(req),
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.USER.INVITED,
+      data,
     });
   } catch (error) {
     const message =

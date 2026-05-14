@@ -7,7 +7,12 @@ const getBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
 
 export const seedDomain = async (req: Request, res: Response) => {
   try {
-    const result = await DomainService.seedDomain(req.body, getBaseUrl(req));
+    const { language = 'en' } = req.headers;
+    const result = await DomainService.seedDomain(
+      req.body,
+      getBaseUrl(req),
+      language as string,
+    );
 
     return res.status(HttpStatus.CREATED).json({
       success: true,
@@ -24,10 +29,14 @@ export const seedDomain = async (req: Request, res: Response) => {
 
 export const verifyDomainToken = async (req: Request, res: Response) => {
   try {
-    const result = await DomainService.verifyDomainToken({
-      email: req.query.email as string,
-      token: req.query.token as string,
-    });
+    const { language = 'en' } = req.headers;
+    const result = await DomainService.verifyDomainToken(
+      {
+        email: req.query.email as string,
+        token: req.query.token as string,
+      },
+      language as string,
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,

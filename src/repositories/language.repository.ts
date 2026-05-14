@@ -2,7 +2,19 @@ import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const LanguageRepository = {
   findById(id: string) {
-    return prisma.language.findFirst({ where: { id, isDeleted: false } });
+    return prisma.language.findFirst({
+      where: { id, isDeleted: false },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        flag: true,
+        dir: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   },
 
   findByName(name: string) {
@@ -13,7 +25,12 @@ export const LanguageRepository = {
     return prisma.language.findFirst({ where: { code, isDeleted: false } });
   },
 
-  create(data: { name: string; code: string }) {
+  create(data: {
+    name: string;
+    code: string;
+    flag: string;
+    dir: 'ltr' | 'rtl';
+  }) {
     return prisma.language.create({ data });
   },
 
@@ -46,6 +63,9 @@ export const LanguageRepository = {
         ...(options.filters.status && {
           status: options.filters.status,
         }),
+        ...(options.filters.code && {
+          code: options.filters.code,
+        }),
       }),
     };
 
@@ -54,11 +74,13 @@ export const LanguageRepository = {
       prisma.language.findMany({
         where: whereClause,
         orderBy: { createdAt: 'desc' },
-        select: {
+        select: options?.select || {
           id: true,
           name: true,
           code: true,
           status: true,
+          dir: true,
+          flag: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -80,5 +102,19 @@ export const LanguageRepository = {
       where: { id },
       data: { isDeleted: true },
     });
+  },
+
+  async validateLanguages(ids: string[]) {
+    if (ids.length === 0) {
+      return true;
+    }
+    return prisma.language
+      .findMany({
+        where: {
+          id: { in: ids },
+          isDeleted: false,
+        },
+      })
+      .then((result) => result.length === ids.length);
   },
 };

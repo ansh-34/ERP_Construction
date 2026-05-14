@@ -6,15 +6,18 @@ import {
 } from '../../common/common.validator.js';
 
 const localizedName = z
-  .record(z.string(), z.string())
-  .refine((val) => Object.keys(val).length > 0, {
-    message: 'must have at least one language key',
+  .record(
+    z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+    z.string().min(1, 'Translation cannot be empty'),
+  )
+  .refine((data) => !!data.en, {
+    message: 'English (en) translation is required',
+    path: ['en'],
   });
 
-// ── Body schemas ──────────────────────────────────────────────
+// Body schemas
 export const createUomBodySchema = z.object({
   displayName: localizedName,
-  code: z.string().min(1, 'code is required'),
   baseUomId: z.string().uuid(),
   conversionRate: z.number().min(0, 'conversionRate must be >= 0'),
   status: z.enum(['active', 'inactive']).default('active'),
@@ -28,14 +31,9 @@ export const updateUomBodySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-// ── Query schemas ─────────────────────────────────────────────
+// Query schemas
 export const listUomsQuerySchema =
   pageBasedPaginationQuerySchema.merge(statusFilterSchema);
 
-// ── Param schemas ─────────────────────────────────────────────
+// Param schemas =
 export const uomIdParamSchema = idParamSchema;
-
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateUomDto = z.infer<typeof createUomBodySchema>;
-export type UpdateUomDto = z.infer<typeof updateUomBodySchema>;
-export type ListUomsQuery = z.infer<typeof listUomsQuerySchema>;

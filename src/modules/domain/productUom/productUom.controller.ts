@@ -12,12 +12,14 @@ export const createProductUom = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.CREATED).json({
       success: true,
-      message: 'Product UOM assigned successfully',
+      message: Messages.PRODUCT_UOM.CREATED,
       data: record,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to assign Product UOM';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_UOM.CREATE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -25,19 +27,21 @@ export const createProductUom = async (req: Request, res: Response) => {
 
 export const listProductUoms = async (req: Request, res: Response) => {
   try {
+    const { language = 'en' } = req.headers;
     const result = await ProductUomService.findAll(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
+      language as string,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({ success: true, message: 'Product UOMs retrieved', data: result });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_UOM.RETRIEVED,
+      data: result,
+    });
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : 'Failed to retrieve Product UOMs';
+      error instanceof Error ? error.message : Messages.PRODUCT_UOM.LIST_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -45,17 +49,21 @@ export const listProductUoms = async (req: Request, res: Response) => {
 
 export const getProductUomById = async (req: Request, res: Response) => {
   try {
+    const { language } = req.headers;
     const record = await ProductUomService.findOne(
       req.user!.domainId,
       req.params.productId,
       req.params.id,
+      language as string | null,
     );
-    return res
-      .status(HttpStatus.OK)
-      .json({ success: true, message: 'Product UOM retrieved', data: record });
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_UOM.RETRIEVED,
+      data: record,
+    });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve Product UOM';
+      error instanceof Error ? error.message : Messages.PRODUCT_UOM.NOT_FOUND;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -70,12 +78,14 @@ export const deleteProductUom = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: 'Product UOM removed successfully',
+      message: Messages.PRODUCT_UOM.DELETED,
       data: null,
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to remove Product UOM';
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_UOM.DELETE_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

@@ -9,6 +9,7 @@ import {
   logout,
   changePassword,
   forgotPassword,
+  verifyOtp,
   resetPassword,
 } from './auth.controller.js';
 import {
@@ -18,6 +19,7 @@ import {
   refreshTokenSchema,
   changePasswordSchema,
   forgotPasswordSchema,
+  verifyOtpSchema,
   resetPasswordSchema,
 } from './auth.validator.js';
 
@@ -57,6 +59,8 @@ router.post(
   validate(forgotPasswordSchema, 'body'),
   forgotPassword,
 );
+
+router.post('/verify-otp', validate(verifyOtpSchema, 'body'), verifyOtp);
 
 router.post(
   '/reset-password',

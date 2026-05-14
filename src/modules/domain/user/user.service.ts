@@ -8,6 +8,7 @@ import {
 } from '../../../repositories/index.js';
 import { sendMail } from '../../../services/mail.services.js';
 import { userInviteEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -80,6 +81,10 @@ export const UserService = {
         verificationLink,
       }),
     );
+
+    return variables.NODE_ENV === 'development'
+      ? { token: rawToken }
+      : { message: 'Invite sent successfully' };
   },
 
   async listUsers(domainId: string, query: PaginationQuery) {

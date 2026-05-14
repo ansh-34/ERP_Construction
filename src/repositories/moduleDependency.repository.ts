@@ -2,9 +2,10 @@ import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const ModuleDependencyRepository = {
   findByPair(moduleId: string, dependentModuleId: string) {
-    return prisma.moduleDependency.findUnique({
+    return prisma.moduleDependency.findFirst({
       where: {
-        moduleId_dependentModuleId: { moduleId, dependentModuleId },
+        moduleId,
+        dependentModuleId,
         isDeleted: false,
       },
     });
@@ -33,8 +34,14 @@ export const ModuleDependencyRepository = {
       prisma.moduleDependency.count(),
       prisma.moduleDependency.findMany({
         include: {
-          module: { select: { id: true, name: true, code: true } },
-          dependentModule: { select: { id: true, name: true, code: true } },
+          module: {
+            select: { id: true, name: true, code: true },
+            where: { isDeleted: false },
+          },
+          dependentModule: {
+            select: { id: true, name: true, code: true },
+            where: { isDeleted: false },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: offset,
@@ -47,8 +54,11 @@ export const ModuleDependencyRepository = {
     return prisma.moduleDependency.findUnique({ where: { id } });
   },
 
-  delete(id: string) {
-    return prisma.moduleDependency.delete({ where: { id } });
+  softDelete(id: string) {
+    return prisma.moduleDependency.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
   },
 
   bulkCreate(

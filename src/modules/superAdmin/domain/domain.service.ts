@@ -5,6 +5,7 @@ import { Messages } from '../../../constants/index';
 import { DomainRepository, TokenRepository } from '../../../repositories/index';
 import { sendMail } from '../../../services/mail.services';
 import { domainActivationEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
 
 const SALT_ROUNDS = 12;
 
@@ -12,7 +13,7 @@ const normalizeIndustryInput = (industry: string): IndustryEnum =>
   industry.trim().toUpperCase() as IndustryEnum;
 
 export const DomainService = {
-  async seedDomain(data: any, baseUrl: string) {
+  async seedDomain(data: any, baseUrl: string, langCode: string = 'en') {
     const {
       domainName,
       email,
@@ -25,6 +26,11 @@ export const DomainService = {
 
     if (!domainName || !email || !password || !industry) {
       throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED);
+    }
+
+    const incomingLanguageCodes: string[] = Object.keys(domainName || {});
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.DOMAIN.NAME_EN_CODE_REQUIRED);
     }
 
     const normalizedIndustry = normalizeIndustryInput(industry);
@@ -59,8 +65,7 @@ export const DomainService = {
       email,
       'Activate Your Domain — Construction ERP',
       domainActivationEmail({
-        domainName:
-          typeof domainName === 'string' ? domainName : String(domainName),
+        domainName: domainName[langCode] || domainName.en || String(domainName),
         verificationLink,
       }),
     );
@@ -68,14 +73,21 @@ export const DomainService = {
     return {
       domain: {
         id: result.domain.id,
-        name: result.domain.name,
+        name:
+          (result.domain.name as any)[langCode] ||
+          (result.domain.name as any)?.en ||
+          '',
         email: result.domain.email,
         industry: result.domain.industry,
       },
+      ...(variables.NODE_ENV === 'development' ? { token: rawToken } : {}),
     };
   },
 
-  async verifyDomainToken(data: { email: string; token: string }) {
+  async verifyDomainToken(
+    data: { email: string; token: string },
+    langCode: string = 'en',
+  ) {
     const { email, token: rawToken } = data;
 
     if (!email || !rawToken) {
@@ -108,7 +120,7 @@ export const DomainService = {
     return {
       domain: {
         id: domain.id,
-        name: domain.name,
+        name: (domain.name as any)[langCode] || (domain.name as any)?.en || '',
         email: domain.email,
         industry: domain.industry,
       },

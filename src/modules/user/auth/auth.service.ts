@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import type { IndustryEnum } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { Messages } from '../../../constants/index.js';
 import {
@@ -8,16 +9,30 @@ import {
   RefreshTokenRepository,
   UserRepository,
 } from '../../../repositories/index.js';
-import { signToken } from '../../../services/jwt.services.js';
+import { signToken, verifyToken } from '../../../services/jwt.services.js';
 import { sendMail } from '../../../services/mail.services.js';
 import {
   generateOtp,
   getOtpExpiry,
   OTP_EXPIRY_MINUTES,
   verifyOtp,
-  MAX_OTP_ATTEMPTS,
 } from '../../../services/otp.service.js';
 import { forgotPasswordEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
+
+const isReusableUserAccessToken = (
+  accessToken: string | undefined,
+  userId: string,
+) => {
+  if (!accessToken) return false;
+
+  try {
+    const decoded = verifyToken(accessToken);
+    return decoded.userId === userId;
+  } catch {
+    return false;
+  }
+};
 
 export const UserService = {
   async verifyAndActivateUser(data: { email: string; token: string }) {
@@ -192,8 +207,8 @@ export const UserService = {
     };
   },
 
-  async refreshToken(data: { refreshToken: string }) {
-    const { refreshToken } = data;
+  async refreshToken(data: { refreshToken: string; accessToken?: string }) {
+    const { accessToken: currentAccessToken, refreshToken } = data;
 
     if (!refreshToken) {
       throw new Error(Messages.AUTH.REFRESH_TOKEN_REQUIRED);
@@ -222,6 +237,25 @@ export const UserService = {
     if (!user) {
       await RefreshTokenRepository.revoke(existing.id);
       throw new Error(Messages.AUTH.REFRESH_TOKEN_INVALID);
+    }
+
+    if (isReusableUserAccessToken(currentAccessToken, user.id)) {
+      return {
+        accessToken: currentAccessToken as string,
+        refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          industry: user.industry,
+          role: user.role?.code || null,
+        },
+        domain: {
+          id: user.domain.id,
+          name: user.domain.name,
+          industry: user.domain.industry,
+        },
+      };
     }
 
     const accessToken = signToken({
@@ -326,14 +360,14 @@ export const UserService = {
         expiryMinutes: OTP_EXPIRY_MINUTES,
       }),
     );
+
+    return variables.NODE_ENV === 'development'
+      ? { otp: raw }
+      : { message: 'OTP sent successfully' };
   },
 
-  async resetPassword(data: {
-    email: string;
-    otp: string;
-    newPassword: string;
-  }) {
-    const { email, otp, newPassword } = data;
+  async verifyOtp(data: { email: string; otp: string }) {
+    const { email, otp } = data;
 
     const otpRecord = await OtpRepository.findLatestActive(email);
 
@@ -352,9 +386,36 @@ export const UserService = {
       throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
     }
 
-    const user = await UserRepository.findActiveByEmail(email);
+    await OtpRepository.markUsed(otpRecord.id);
+
+    const resetTokenStr = crypto.randomBytes(32).toString('hex');
+    const tokenExpirationTime = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await TokenRepository.create({
+      token: resetTokenStr,
+      email,
+      tokenPurpose: 'PASSWORD_RESET',
+      tokenExpirationTime,
+    });
+
+    return { resetToken: resetTokenStr };
+  },
+
+  async resetPassword(data: { resetToken: string; newPassword: string }) {
+    const { resetToken, newPassword } = data;
+
+    const tokenRecord = await TokenRepository.findActiveByTokenAndPurpose(
+      resetToken,
+      'PASSWORD_RESET',
+    );
+
+    if (!tokenRecord || new Date() > tokenRecord.tokenExpirationTime) {
+      throw new Error(Messages.PASSWORD_RESET.TOKEN_INVALID_OR_EXPIRED);
+    }
+
+    const user = await UserRepository.findActiveByEmail(tokenRecord.email);
     if (!user) {
-      throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
+      throw new Error(Messages.PASSWORD_RESET.TOKEN_INVALID_OR_EXPIRED);
     }
 
     const hashedPassword = await bcrypt.hash(
@@ -363,7 +424,7 @@ export const UserService = {
     );
 
     await UserRepository.updatePassword(user.id, hashedPassword);
-    await OtpRepository.markUsed(otpRecord.id);
+    await TokenRepository.markDeleted(tokenRecord.id);
     await RefreshTokenRepository.revokeAllForUser(user.id, 'USER');
   },
 };

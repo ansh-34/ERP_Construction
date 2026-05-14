@@ -13,7 +13,15 @@ const normalizeIndustry = (value: unknown) =>
 const industrySchema = z.preprocess(normalizeIndustry, z.enum(industryValues));
 
 export const seedDomainBodySchema = z.object({
-  domainName: z.string().min(1),
+  domainName: z
+    .record(
+      z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+      z.string().min(1, 'Translation cannot be empty'),
+    )
+    .refine((data) => !!data.en, {
+      message: 'English (en) translation is required',
+      path: ['en'],
+    }),
   email: z.string().email(),
   password: z.string().min(1),
   industry: industrySchema,

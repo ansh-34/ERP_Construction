@@ -1,85 +1,168 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
-import type {
-  CreateUomDto,
-  UpdateUomDto,
-  ListUomsQuery,
-} from './uom.validation.js';
+import { Messages } from '../../../constants/index.js';
+import { uomRepository } from '../../../repositories/index.js';
 
 export const UomService = {
-  async create(domainId: string, dto: CreateUomDto) {
-    const existing = await prisma.uom.findFirst({
-      where: { code: dto.code, domainId, isDeleted: false },
-    });
-    if (existing) {
-      throw new Error(`UOM with code '${dto.code}' already exists`);
-    }
-
-    return prisma.uom.create({
-      data: { ...dto, domainId, isDeleted: false } as any,
-    });
+  localizeName(value: any, langCode: string) {
+    if (!value || typeof value !== 'object') return '';
+    return value[langCode] || value.en || '';
   },
 
-  async findAll(domainId: string, query: ListUomsQuery) {
+  normalizeCode(value: string) {
+    return value.toString().trim().toUpperCase().replace(/\s+/g, '_');
+  },
+
+  async create(
+    domainId: string,
+    dto: {
+      displayName: Record<string, string>;
+      baseUomId?: string;
+      conversionRate: number;
+      status?: string;
+    },
+    langCode: string = 'en',
+  ) {
+    const incomingLanguageCodes: string[] = Object.keys(dto.displayName || {});
+    if (!incomingLanguageCodes.includes('en')) {
+      throw new Error(Messages.UOM.DISPLAY_NAME_EN_REQUIRED);
+    }
+
+    const code = dto?.displayName?.en
+      ?.toString()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
+    const existing = await uomRepository.findActiveByCode(domainId, code);
+    if (existing) {
+      throw new Error(Messages.UOM.CODE_ALREADY_EXISTS);
+    }
+
+    const record = await uomRepository.create({
+      ...dto,
+      code,
+      domainId,
+      isDeleted: false,
+    } as any);
+
+    return {
+      ...record,
+      displayName: UomService.localizeName(record.displayName, langCode),
+    };
+  },
+
+  async findAll(
+    domainId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: string;
+      searchKey?: string;
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
     const skip = (page - 1) * limit;
 
-    const where = {
+    const [totalCount, uoms] = await uomRepository.listByDomain(
       domainId,
-      isDeleted: false,
-      ...(query.status && { status: query.status }),
-    };
+      limit,
+      skip,
+      {
+        status: query.status,
+        searchKey: query.searchKey,
+      },
+    );
 
-    const [data, total] = await Promise.all([
-      prisma.uom.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.uom.count({ where }),
-    ]);
+    const localizedUoms = uoms.map((uom: any) => ({
+      ...uom,
+      displayName: UomService.localizeName(uom.displayName, langCode),
+    }));
 
     return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      data: localizedUoms,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+      },
     };
   },
 
-  async findOne(domainId: string, id: string) {
-    const record = await prisma.uom.findFirst({
-      where: { id, domainId, isDeleted: false },
-    });
-    if (!record) throw new Error('UOM not found');
+  async findOne(domainId: string, id: string, language: string | null = null) {
+    const record: any = await uomRepository.findByIdAndDomain(id, domainId);
+
+    if (!record) throw new Error(Messages.UOM.NOT_FOUND);
+
+    if (language) {
+      record.displayName = UomService.localizeName(
+        record.displayName,
+        language,
+      );
+    }
+
     return record;
   },
 
-  async update(domainId: string, id: string, dto: UpdateUomDto) {
-    await this.findOne(domainId, id);
+  async update(
+    domainId: string,
+    id: string,
+    dto: {
+      displayName?: Record<string, string>;
+      code?: string;
+      baseUomId?: string;
+      conversionRate?: number;
+      status?: string;
+    },
+    langCode: string = 'en',
+  ) {
+    const existing = await uomRepository.findByIdAndDomain(id, domainId);
+    if (!existing) {
+      throw new Error(Messages.UOM.NOT_FOUND);
+    }
 
-    if (dto.code) {
-      const conflict = await prisma.uom.findFirst({
-        where: { code: dto.code, domainId, isDeleted: false, NOT: { id } },
-      });
-      if (conflict) {
-        throw new Error(`UOM with code '${dto.code}' already exists`);
+    if (dto.displayName) {
+      const incomingLanguageCodes: string[] = Object.keys(dto.displayName);
+      if (!incomingLanguageCodes.includes('en')) {
+        throw new Error(Messages.UOM.DISPLAY_NAME_EN_REQUIRED);
       }
     }
 
-    return prisma.uom.update({
-      where: { id },
-      data: { ...dto, updatedAt: new Date() } as any,
-    });
+    let code: string | null = null;
+    if (dto.code) {
+      code = UomService.normalizeCode(dto.code);
+      if (code !== (existing as any).code) {
+        const duplicate = await uomRepository.findDuplicateCode(
+          domainId,
+          code,
+          id,
+        );
+        if (duplicate) {
+          throw new Error(Messages.UOM.CODE_ALREADY_EXISTS);
+        }
+      }
+    }
+
+    const searchText = dto.displayName
+      ? Object.values(dto.displayName).join(' ').toLowerCase()
+      : null;
+
+    const record = await uomRepository.update(id, {
+      ...dto,
+      ...(code ? { code } : {}),
+      ...(searchText ? { searchText } : {}),
+    } as any);
+
+    return {
+      ...record,
+      displayName: UomService.localizeName(record.displayName, langCode),
+    };
   },
 
   async softDelete(domainId: string, id: string) {
-    await this.findOne(domainId, id);
-    return prisma.uom.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
+    const existing = await uomRepository.findByIdAndDomain(id, domainId);
+    if (!existing) {
+      throw new Error(Messages.UOM.NOT_FOUND);
+    }
+    return uomRepository.softDelete(id);
   },
 };

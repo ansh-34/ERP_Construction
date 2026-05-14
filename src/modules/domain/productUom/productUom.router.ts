@@ -1,4 +1,5 @@
 import { Router } from 'express';
+// import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProductUom,
@@ -10,6 +11,7 @@ import {
   createProductUomBodySchema,
   listProductUomQuerySchema,
   productUomIdParamSchema,
+  productUomProductIdParamSchema,
 } from './productUom.validation.js';
 
 export const productUomRouter = (): Router => {
@@ -17,21 +19,27 @@ export const productUomRouter = (): Router => {
 
   router.post(
     '/',
+    // authorize('product', 'create'),
+    validate(productUomProductIdParamSchema, 'params'),
     validate(createProductUomBodySchema, 'body'),
     createProductUom,
   );
   router.get(
     '/',
+    // authorize('product', 'read'),
+    validate(productUomProductIdParamSchema, 'params'),
     validate(listProductUomQuerySchema, 'query'),
     listProductUoms,
   );
   router.get(
     '/:id',
+    // authorize('product', 'read'),
     validate(productUomIdParamSchema, 'params'),
     getProductUomById,
   );
   router.delete(
     '/:id',
+    // authorize('product', 'delete'),
     validate(productUomIdParamSchema, 'params'),
     deleteProductUom,
   );

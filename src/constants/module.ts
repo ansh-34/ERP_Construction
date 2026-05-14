@@ -23,4 +23,8 @@ export const modules = [
     name: 'App_Error',
     code: 'APP_ERROR',
   },
+  {
+    name: 'Project',
+    code: 'PROJECT',
+  },
 ];

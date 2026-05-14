@@ -6,15 +6,17 @@ import {
 } from '../../common/common.validator.js';
 
 const localizedName = z
-  .record(z.string(), z.string())
-  .refine((val) => Object.keys(val).length > 0, {
-    message: 'must have at least one language key',
+  .record(
+    z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+    z.string().min(1, 'Translation cannot be empty'),
+  )
+  .refine((data) => !!data.en, {
+    message: 'English (en) translation is required',
+    path: ['en'],
   });
 
-// ── Body schemas ──────────────────────────────────────────────
 export const createProductGradeBodySchema = z.object({
   gradeDisplayName: localizedName,
-  gradeCode: z.string().min(1, 'gradeCode is required'),
   status: z.enum(['active', 'inactive']).default('active'),
 });
 
@@ -24,11 +26,14 @@ export const updateProductGradeBodySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),
 });
 
-// ── Query schemas ─────────────────────────────────────────────
-export const listProductGradeQuerySchema =
-  pageBasedPaginationQuerySchema.merge(statusFilterSchema);
+//  Query schemas
+export const listProductGradeQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+  });
 
-// ── Param schemas ─────────────────────────────────────────────
+//  Param schemas
 export const productGradeProductIdParamSchema = z.object({
   productId: z.string().uuid(),
 });
@@ -36,12 +41,3 @@ export const productGradeProductIdParamSchema = z.object({
 export const productGradeIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
 });
-
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateProductGradeDto = z.infer<
-  typeof createProductGradeBodySchema
->;
-export type UpdateProductGradeDto = z.infer<
-  typeof updateProductGradeBodySchema
->;
-export type ListProductGradeQuery = z.infer<typeof listProductGradeQuerySchema>;

@@ -18,6 +18,7 @@ export const AuthService = {
     }
 
     const token = encode(superAdmin.id);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeSuperAdmin } = superAdmin;
 
     return { ...safeSuperAdmin, token };

@@ -1,6 +1,6 @@
 export const roles = [
-  { name: 'superadmin', code: 'superadmin', level: 0 },
-  { name: 'admin', code: 'admin', level: 1 },
-  { name: 'domain', code: 'domain', level: 2 },
-  { name: 'user', code: 'user', level: 3 },
+  { name: { en: 'superadmin' }, code: 'superadmin', level: 0 },
+  { name: { en: 'admin' }, code: 'admin', level: 1 },
+  { name: { en: 'domain' }, code: 'domain', level: 2 },
+  { name: { en: 'user' }, code: 'user', level: 3 },
 ];

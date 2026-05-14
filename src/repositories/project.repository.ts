@@ -119,6 +119,22 @@ export const projectRepository = {
     `);
   },
 
+  findManyByIds: async (
+    ids: string[],
+    domainId: string,
+  ): Promise<ProjectRecord[]> => {
+    if (ids.length === 0) return [];
+
+    return prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
+      SELECT ${projectSelect}
+      FROM "Project"
+      WHERE "id" = ANY(${ids}::text[])
+        AND "domainId" = ${domainId}
+        AND "isDeleted" = false
+      ORDER BY "createdAt" DESC
+    `);
+  },
+
   findById: async (
     id: string,
     domainId: string,

@@ -7,7 +7,7 @@ import {
   OtpRepository,
   RefreshTokenRepository,
 } from '../../../repositories/index.js';
-import { signToken } from '../../../services/jwt.services.js';
+import { signToken, verifyToken } from '../../../services/jwt.services.js';
 import { sendMail } from '../../../services/mail.services.js';
 import {
   generateOtp,
@@ -17,6 +17,21 @@ import {
   // MAX_OTP_ATTEMPTS,
 } from '../../../services/otp.service.js';
 import { forgotPasswordEmail } from '../../../templates/index.js';
+import variables from '../../../config/variables.config.js';
+
+const isReusableDomainAccessToken = (
+  accessToken: string | undefined,
+  domainId: string,
+) => {
+  if (!accessToken) return false;
+
+  try {
+    const decoded = verifyToken(accessToken);
+    return decoded.userId === domainId && decoded.domainId === domainId;
+  } catch {
+    return false;
+  }
+};
 
 export const AuthService = {
   async login(data: {
@@ -81,8 +96,8 @@ export const AuthService = {
     };
   },
 
-  async refreshToken(data: { refreshToken: string }) {
-    const { refreshToken } = data;
+  async refreshToken(data: { refreshToken: string; accessToken?: string }) {
+    const { accessToken: currentAccessToken, refreshToken } = data;
 
     if (!refreshToken) {
       throw new Error(Messages.AUTH.REFRESH_TOKEN_REQUIRED);
@@ -113,6 +128,24 @@ export const AuthService = {
     const domainRole = await RoleRepository.findDomainRoleByDomain(
       domainOwner.id,
     );
+
+    if (isReusableDomainAccessToken(currentAccessToken, domainOwner.id)) {
+      return {
+        accessToken: currentAccessToken as string,
+        refreshToken,
+        user: {
+          id: domainOwner.id,
+          name: domainOwner.name,
+          email: domainOwner.email,
+          role: domainRole?.code || 'domain',
+        },
+        domain: {
+          id: domainOwner.id,
+          name: domainOwner.name,
+          industry: domainOwner.industry,
+        },
+      };
+    }
 
     const accessToken = signToken({
       userId: domainOwner.id,
@@ -221,6 +254,10 @@ export const AuthService = {
         expiryMinutes: OTP_EXPIRY_MINUTES,
       }),
     );
+
+    return variables.NODE_ENV === 'development'
+      ? { otp: raw }
+      : { message: 'OTP sent successfully' };
   },
 
   async resetPassword(data: {

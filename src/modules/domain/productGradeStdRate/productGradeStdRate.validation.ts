@@ -6,9 +6,13 @@ import {
 } from '../../common/common.validator.js';
 
 const localizedValue = z
-  .record(z.string(), z.string())
-  .refine((val) => Object.keys(val).length > 0, {
-    message: 'must have at least one language key',
+  .record(
+    z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+    z.string().min(1, 'Translation cannot be empty'),
+  )
+  .refine((data) => !!data.en, {
+    message: 'English (en) translation is required',
+    path: ['en'],
   });
 
 // ── Body schemas ──────────────────────────────────────────────
@@ -27,8 +31,11 @@ export const updateProductGradeStdRateBodySchema = z.object({
 });
 
 // ── Query schemas ─────────────────────────────────────────────
-export const listProductGradeStdRateQuerySchema =
-  pageBasedPaginationQuerySchema.merge(statusFilterSchema);
+export const listProductGradeStdRateQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+  });
 
 // ── Param schemas ─────────────────────────────────────────────
 export const productGradeStdRateParentParamSchema = z.object({
@@ -40,14 +47,3 @@ export const productGradeStdRateIdParamSchema = idParamSchema.extend({
   productId: z.string().uuid(),
   gradeId: z.string().uuid(),
 });
-
-// ── DTO types ─────────────────────────────────────────────────
-export type CreateProductGradeStdRateDto = z.infer<
-  typeof createProductGradeStdRateBodySchema
->;
-export type UpdateProductGradeStdRateDto = z.infer<
-  typeof updateProductGradeStdRateBodySchema
->;
-export type ListProductGradeStdRateQuery = z.infer<
-  typeof listProductGradeStdRateQuerySchema
->;

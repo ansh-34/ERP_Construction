@@ -12,7 +12,7 @@ const validateSuperAdmin = async (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer ')
         ? req.headers.authorization.split(' ')[1]
-        : req.cookies.token;
+        : req.cookies.accesstoken;
     if (!token) {
       res.status(401).json({
         success: false,

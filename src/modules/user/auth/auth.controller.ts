@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
-import { refreshUserToken } from '../../refreshToken/auth.controller.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { UserService } from './auth.service.js';
 
@@ -8,10 +7,26 @@ const cookieOptions = {
   httpOnly: true,
 };
 
+const refreshCookieName = 'refreshToken';
+
 const refreshCookieOptions = {
   httpOnly: true,
-  path: '/api',
+  path: '/api/user/auth',
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+};
+
+const getAccessTokenFromRequest = (req: Request): string | undefined => {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer ')
+  ) {
+    return req.headers.authorization.split(' ')[1];
+  }
+
+  return (
+    (req.body.accessToken as string | undefined) ||
+    (req.cookies?.accessToken as string | undefined)
+  );
 };
 
 export const verifyAndActivateUser = async (req: Request, res: Response) => {
@@ -41,8 +56,9 @@ export const registerUser = async (req: Request, res: Response) => {
 
     return res
       .status(HttpStatus.CREATED)
+      .clearCookie('refreshToken', { path: '/api' })
       .cookie('accessToken', result.accessToken, cookieOptions)
-      .cookie('refreshToken', result.refreshToken, refreshCookieOptions)
+      .cookie(refreshCookieName, result.refreshToken, refreshCookieOptions)
       .json({
         success: true,
         message: Messages.USER.REGISTERED,
@@ -67,8 +83,9 @@ export const loginUser = async (req: Request, res: Response) => {
 
     return res
       .status(HttpStatus.OK)
+      .clearCookie('refreshToken', { path: '/api' })
       .cookie('accessToken', result.accessToken, cookieOptions)
-      .cookie('refreshToken', result.refreshToken, refreshCookieOptions)
+      .cookie(refreshCookieName, result.refreshToken, refreshCookieOptions)
       .json({
         success: true,
         message: Messages.AUTH.LOGIN_SUCCESS,
@@ -91,11 +108,37 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = refreshUserToken;
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const token = req.body.refreshToken || req.cookies?.[refreshCookieName];
+    const accessToken = getAccessTokenFromRequest(req);
+
+    const result = await UserService.refreshToken({
+      refreshToken: token,
+      accessToken,
+    });
+
+    return res
+      .status(HttpStatus.OK)
+      .clearCookie('refreshToken', { path: '/api' })
+      .cookie('accessToken', result.accessToken, cookieOptions)
+      .cookie(refreshCookieName, result.refreshToken, refreshCookieOptions)
+      .json({
+        success: true,
+        message: Messages.AUTH.REFRESH_TOKEN_SUCCESS,
+        data: result,
+      });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.AUTH.LOGIN_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    const token = req.body.refreshToken || req.cookies?.refreshToken;
+    const token = req.body.refreshToken || req.cookies?.[refreshCookieName];
 
     await UserService.logout({ refreshToken: token });
 
@@ -104,6 +147,7 @@ export const logout = async (req: Request, res: Response) => {
       .clearCookie('accessToken')
       .clearCookie('refreshToken', { path: '/api' })
       .clearCookie('refreshToken', { path: '/api/user/auth' })
+      .clearCookie(refreshCookieName, { path: '/api/user/auth' })
       .json({
         success: true,
         message: Messages.AUTH.LOGOUT_SUCCESS,
@@ -118,12 +162,12 @@ export const logout = async (req: Request, res: Response) => {
 
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
-    await UserService.forgotPassword(req.body);
+    const data = await UserService.forgotPassword(req.body);
 
-    // Always return the same response to prevent email enumeration
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PASSWORD_RESET.OTP_SENT,
+      data,
     });
   } catch (error) {
     // Swallow errors to avoid leaking info — log internally
@@ -135,13 +179,32 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const result = await UserService.verifyOtp(req.body);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PASSWORD_RESET.OTP_VERIFIED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PASSWORD_RESET.OTP_INVALID;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     await UserService.resetPassword(req.body);
 
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.PASSWORD_RESET.OTP_VERIFIED,
+      message: Messages.PASSWORD_RESET.SUCCESS,
     });
   } catch (error) {
     const message =
@@ -162,6 +225,7 @@ export const changePassword = async (req: Request, res: Response) => {
       .clearCookie('accessToken')
       .clearCookie('refreshToken', { path: '/api' })
       .clearCookie('refreshToken', { path: '/api/user/auth' })
+      .clearCookie(refreshCookieName, { path: '/api/user/auth' })
       .json({
         success: true,
         message: Messages.AUTH.CHANGE_PASSWORD_SUCCESS,

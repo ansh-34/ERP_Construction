@@ -5,6 +5,7 @@ import {
   listLanguages,
   updateLanguage,
   deleteLanguage,
+  getLanguage,
 } from './language.controller.js';
 import {
   createLanguageBodySchema,
@@ -21,6 +22,8 @@ router.use(validateSuperAdmin);
 router.post('/', validate(createLanguageBodySchema, 'body'), createLanguage);
 
 router.get('/', validate(listLanguagesQuerySchema, 'query'), listLanguages);
+
+router.get('/:id', validate(languageIdParamsSchema, 'params'), getLanguage);
 
 router.put(
   '/:id',
