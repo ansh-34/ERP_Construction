@@ -22,13 +22,12 @@ export const createMachineReadingBody = z.object({
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
-export const updateMachineReadingBody = z
-  .object({
-    closingFuelStock: nonNegativeNumber,
-    fuelRefillQuantity: nonNegativeNumber.optional(),
-    machineEndTime: timeString,
-    status: z.nativeEnum(StatusEnum).optional(),
-  });
+export const updateMachineReadingBody = z.object({
+  closingFuelStock: nonNegativeNumber,
+  fuelRefillQuantity: nonNegativeNumber.optional(),
+  machineEndTime: timeString,
+  status: z.nativeEnum(StatusEnum).optional(),
+});
 
 export const listMachineReadingQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),

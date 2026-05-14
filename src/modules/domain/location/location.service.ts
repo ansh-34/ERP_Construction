@@ -246,7 +246,11 @@ export const locationService = {
         }
       }
 
-      const location = await locationRepository.update(id, domainId, updateData);
+      const location = await locationRepository.update(
+        id,
+        domainId,
+        updateData,
+      );
       return location ? normalizeLocation(location, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);

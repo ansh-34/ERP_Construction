@@ -119,10 +119,15 @@ export const mediaController = {
         type?: string;
       };
 
-      const updatedMedia = await mediaService.update(id ?? '', domainId ?? '', {
-        ...(name !== undefined && { name }),
-        ...(type !== undefined && { type }),
-      }, language);
+      const updatedMedia = await mediaService.update(
+        id ?? '',
+        domainId ?? '',
+        {
+          ...(name !== undefined && { name }),
+          ...(type !== undefined && { type }),
+        },
+        language,
+      );
 
       if (!updatedMedia) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });

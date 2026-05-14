@@ -207,8 +207,10 @@ export const projectCategoryService = {
     }
 
     try {
-      const projectCategories =
-        await projectCategoryRepository.findMany(domainId, searchKey);
+      const projectCategories = await projectCategoryRepository.findMany(
+        domainId,
+        searchKey,
+      );
       return projectCategories.map((category) =>
         normalizeProjectCategory(category, language),
       );

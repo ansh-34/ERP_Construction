@@ -7,7 +7,10 @@ import { machineReadingService } from './machineReading.service';
 export const machineReadingController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const language = (req.body as { language?: string }).language || (req.headers.language as string) || 'en';
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const {
         date,
         openingFuelStock,
@@ -51,7 +54,10 @@ export const machineReadingController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const language = (req.body as { language?: string }).language || (req.headers.language as string) || 'en';
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { domainId, projectId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;
@@ -79,7 +85,10 @@ export const machineReadingController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const language = (req.body as { language?: string }).language || (req.headers.language as string) || 'en';
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const machineReading = await machineReadingService.getById(
@@ -108,17 +117,13 @@ export const machineReadingController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const {
-        closingFuelStock,
-        fuelRefillQuantity,
-        machineEndTime,
-        status,
-      } = req.body as {
-        closingFuelStock?: number;
-        fuelRefillQuantity?: number;
-        machineEndTime?: string;
-        status?: StatusEnum;
-      };
+      const { closingFuelStock, fuelRefillQuantity, machineEndTime, status } =
+        req.body as {
+          closingFuelStock?: number;
+          fuelRefillQuantity?: number;
+          machineEndTime?: string;
+          status?: StatusEnum;
+        };
 
       const updatedMachineReading = await machineReadingService.update(
         id ?? '',

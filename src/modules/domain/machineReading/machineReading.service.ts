@@ -7,7 +7,10 @@ import {
 import { StatusEnum } from '@constants/index';
 import { generateCode } from '@/utils/code';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { isNonEmptyString, isNonNegativeFiniteNumber } from '@/utils/validation';
+import {
+  isNonEmptyString,
+  isNonNegativeFiniteNumber,
+} from '@/utils/validation';
 
 export interface CreateMachineReadingInput {
   date: string;
@@ -56,7 +59,9 @@ function parseTime(value: string, field: string): Date {
   const hours = Number(match.groups.hours);
   const minutes = Number(match.groups.minutes);
   const seconds = Number(match.groups.seconds ?? '0');
-  const milliseconds = Number((match.groups.milliseconds ?? '0').padEnd(3, '0'));
+  const milliseconds = Number(
+    (match.groups.milliseconds ?? '0').padEnd(3, '0'),
+  );
 
   if (hours > 23) {
     throw new Error(`invalid ${field}`);
@@ -163,7 +168,10 @@ function buildUpdatePayload(
       fuelRefillQuantity: data.fuelRefillQuantity,
     }),
     machineEndTime,
-    hoursRun: calculateHoursRun(existingMachineReading.machineStartTime, machineEndTime),
+    hoursRun: calculateHoursRun(
+      existingMachineReading.machineStartTime,
+      machineEndTime,
+    ),
     ...(data.status !== undefined && { status: data.status }),
   };
 }

@@ -48,7 +48,10 @@ export interface UpdateProjectTaskInput {
   status?: StatusEnum;
 }
 
-type LocalizedProjectTaskRecord = Omit<ProjectTaskRecord, 'name' | 'assignee'> & {
+type LocalizedProjectTaskRecord = Omit<
+  ProjectTaskRecord,
+  'name' | 'assignee'
+> & {
   name: string;
   assignee: unknown;
 };
@@ -246,7 +249,9 @@ function buildUpdatePayload(
   existingTask: ProjectTaskRecord,
 ): RepositoryUpdateProjectTaskInput {
   const code =
-    data.name !== undefined ? buildProjectTaskCode(data.name) : existingTask.code;
+    data.name !== undefined
+      ? buildProjectTaskCode(data.name)
+      : existingTask.code;
 
   return {
     ...(data.name !== undefined && { name: data.name }),

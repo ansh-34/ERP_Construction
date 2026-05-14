@@ -160,7 +160,10 @@ export const apiKeyService = {
     try {
       const apiKey = await apiKeyRepository.findById(id, domainId);
       return apiKey
-        ? (normalizeApiKeyRecord(apiKey, language) as LocalizedApiKeyPublicRecord)
+        ? (normalizeApiKeyRecord(
+            apiKey,
+            language,
+          ) as LocalizedApiKeyPublicRecord)
         : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -197,7 +200,10 @@ export const apiKeyService = {
 
       const apiKey = await apiKeyRepository.update(id, domainId, updateData);
       return apiKey
-        ? (normalizeApiKeyRecord(apiKey, language) as LocalizedApiKeyPublicRecord)
+        ? (normalizeApiKeyRecord(
+            apiKey,
+            language,
+          ) as LocalizedApiKeyPublicRecord)
         : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
