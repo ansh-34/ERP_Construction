@@ -41,6 +41,7 @@ export const updateProjectBody = z
 
 export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  searchKey: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

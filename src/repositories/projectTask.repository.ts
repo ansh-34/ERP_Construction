@@ -32,6 +32,7 @@ export interface ProjectTaskRecord {
 export interface CreateProjectTaskInput {
   name: JsonObject;
   code: string;
+  searchText: string;
   assignee?: JsonObject | null;
   plannedStartDate?: Date | null;
   plannedEndDate?: Date | null;
@@ -51,6 +52,8 @@ export interface CreateProjectTaskInput {
 
 export interface UpdateProjectTaskInput {
   name?: JsonObject;
+  code?: string;
+  searchText?: string;
   assignee?: JsonObject | null;
   plannedStartDate?: Date | null;
   plannedEndDate?: Date | null;
@@ -110,6 +113,7 @@ export const projectTaskRepository = {
         "id",
         "name",
         "code",
+        "searchText",
         "assignee",
         "plannedStartDate",
         "plannedEndDate",
@@ -133,6 +137,7 @@ export const projectTaskRepository = {
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
+        ${data.searchText},
         ${toJsonbSql(data.assignee)},
         ${toDateSql(data.plannedStartDate)},
         ${toDateSql(data.plannedEndDate)},
@@ -162,6 +167,7 @@ export const projectTaskRepository = {
     domainId: string,
     projectId?: string,
     stageId?: string,
+    searchKey?: string,
   ): Promise<ProjectTaskRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -174,6 +180,12 @@ export const projectTaskRepository = {
 
     if (stageId) {
       filters.push(Prisma.sql`"stageId" = ${stageId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
     }
 
     return prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
@@ -231,10 +243,18 @@ export const projectTaskRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.assignee !== undefined) {
       assignments.unshift(
         Prisma.sql`"assignee" = ${toJsonbSql(data.assignee)}`,
       );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.plannedStartDate !== undefined) {
@@ -321,5 +341,40 @@ export const projectTaskRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectTaskInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.projectTask.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        searchText: item.searchText,
+        assignee: item.assignee || null,
+        plannedStartDate: item.plannedStartDate || null,
+        plannedEndDate: item.plannedEndDate || null,
+        actualStartDate: item.actualStartDate || null,
+        actualEndDate: item.actualEndDate || null,
+        taskStatus: item.taskStatus || 'pending',
+        taskProgress: item.taskProgress || 0,
+        totalDelayInDays: item.totalDelayInDays || 0,
+        requiredApproval: item.requiredApproval || false,
+        lastApprovedDeadline: item.lastApprovedDeadline || null,
+        projectBatchCode: item.projectBatchCode || null,
+        stageId: item.stageId,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

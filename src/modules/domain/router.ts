@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import apiKeyRouter from './apiKey/apiKey.routes';
+import machineReadingRouter from './machineReading/machineReading.routes';
 import locationRouter from './location/location.routes';
 import machineryRouter from './machinery/machinery.routes';
 import mediaRouter from './media/media.routes';
@@ -25,6 +26,7 @@ const domainRouter = Router();
 domainRouter.use('/api-keys', apiKeyRouter);
 domainRouter.use('/media', mediaRouter);
 domainRouter.use('/machineries', machineryRouter);
+domainRouter.use('/machine-reading', machineReadingRouter);
 domainRouter.use('/locations', locationRouter);
 domainRouter.use('/project-categories', projectCategoryRouter);
 domainRouter.use('/projects', projectRouter);

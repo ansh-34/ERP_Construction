@@ -6,7 +6,6 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { generateCode } from '@/utils/code';
 import {
   isNonEmptyString,
   isPlainObject,
@@ -24,9 +23,53 @@ export interface CreateProjectInput {
   status: StatusEnum;
 }
 
+type LocalizedProjectRecord = Omit<ProjectRecord, 'name' | 'description'> & {
+  name: string;
+  description: string | null;
+};
+
+function buildProjectCode(name: Record<string, unknown>): string {
+  return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
+}
+
+function buildProjectSearchText(name: Record<string, unknown>): string {
+  return Object.values(name).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown> | null,
+  language: string | null,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function normalizeProject(
+  project: ProjectRecord,
+  language: string | null,
+): LocalizedProjectRecord {
+  return {
+    ...project,
+    name: getLocalizedText(project.name, language) || '',
+    description: getLocalizedText(project.description, language),
+  };
+}
+
 function assertCreateInput(data: CreateProjectInput): void {
   if (!isPlainObject(data.name)) {
     throw new Error('invalid json name');
+  }
+
+  if (!isNonEmptyString(data.name.en)) {
+    throw new Error('name.en is required');
   }
 
   if (!isNonEmptyString(data.projectCategoryId)) {
@@ -39,6 +82,14 @@ function assertCreateInput(data: CreateProjectInput): void {
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    data.description !== undefined &&
+    data.description !== null &&
+    !isNonEmptyString(data.description.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (!isNonNegativeFiniteNumber(data.budget)) {
@@ -69,12 +120,24 @@ function assertUpdateInput(data: UpdateProjectInput): void {
     throw new Error('invalid json name');
   }
 
+  if (hasName && !isNonEmptyString(data.name?.en)) {
+    throw new Error('name.en is required');
+  }
+
   if (
     hasDescription &&
     data.description !== null &&
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    hasDescription &&
+    data.description !== null &&
+    !isNonEmptyString(data.description?.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (hasBudget && !isNonNegativeFiniteNumber(data.budget as number)) {
@@ -87,14 +150,17 @@ function assertUpdateInput(data: UpdateProjectInput): void {
 }
 
 export const projectService = {
-  create: async (data: CreateProjectInput): Promise<ProjectRecord> => {
+  create: async (
+    data: CreateProjectInput,
+    language: string | null = null,
+  ): Promise<LocalizedProjectRecord> => {
     assertCreateInput(data);
 
     try {
-      let code = generateCode('PROJECT');
+      const code = buildProjectCode(data.name);
 
-      while (await projectRepository.findByCode(code, data.domainId)) {
-        code = generateCode('PROJECT');
+      if (await projectRepository.findByCode(code, data.domainId)) {
+        throw new Error('duplicate code');
       }
 
       const existingCategory = await projectCategoryRepository.findById(
@@ -106,22 +172,30 @@ export const projectService = {
         throw new Error('not found');
       }
 
-      return await projectRepository.create({
+      const project = await projectRepository.create({
         ...data,
         code,
+        searchText: buildProjectSearchText(data.name),
       });
+
+      return normalizeProject(project, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
   },
 
-  getAll: async (domainId: string): Promise<ProjectRecord[]> => {
+  getAll: async (
+    domainId: string,
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
 
     try {
-      return await projectRepository.findMany(domainId);
+      const projects = await projectRepository.findMany(domainId, searchKey);
+      return projects.map((project) => normalizeProject(project, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -130,13 +204,15 @@ export const projectService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<ProjectRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectRepository.findById(id, domainId);
+      const project = await projectRepository.findById(id, domainId);
+      return project ? normalizeProject(project, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -146,7 +222,8 @@ export const projectService = {
     id: string,
     domainId: string,
     data: UpdateProjectInput,
-  ): Promise<ProjectRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
@@ -160,7 +237,31 @@ export const projectService = {
         throw new Error('not found');
       }
 
-      return await projectRepository.update(id, domainId, data);
+      const updateData = {
+        ...data,
+        ...(data.name !== undefined
+          ? {
+              ...(data.name !== undefined && {
+                code: buildProjectCode(data.name),
+              }),
+              searchText: buildProjectSearchText(data.name),
+            }
+          : {}),
+      };
+
+      if (updateData.code && updateData.code !== existingProject.code) {
+        const duplicateProject = await projectRepository.findByCode(
+          updateData.code,
+          domainId,
+        );
+
+        if (duplicateProject && duplicateProject.id !== id) {
+          throw new Error('duplicate code');
+        }
+      }
+
+      const project = await projectRepository.update(id, domainId, updateData);
+      return project ? normalizeProject(project, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

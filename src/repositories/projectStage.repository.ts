@@ -22,6 +22,7 @@ export interface ProjectStageRecord {
 export interface CreateProjectStageInput {
   name: JsonObject;
   code: string;
+  searchText: string;
   description?: JsonObject | null;
   progress?: number | null;
   projectId: string;
@@ -31,7 +32,9 @@ export interface CreateProjectStageInput {
 
 export interface UpdateProjectStageInput {
   name?: JsonObject;
+  code?: string;
   description?: JsonObject | null;
+  searchText?: string;
   progress?: number | null;
   status?: StatusEnum;
 }
@@ -64,11 +67,12 @@ export const projectStageRepository = {
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectStage" ("id", "name", "code", "description", "progress", "projectId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "ProjectStage" ("id", "name", "code", "searchText", "description", "progress", "projectId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
+        ${data.searchText},
         ${descriptionSql},
         ${data.progress ?? null},
         ${data.projectId},
@@ -87,11 +91,24 @@ export const projectStageRepository = {
   findMany: async (
     domainId: string,
     projectId: string,
+    searchKey?: string,
   ): Promise<ProjectStageRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"projectId" = ${projectId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       SELECT ${projectStageSelect}
       FROM "ProjectStage"
-      WHERE "domainId" = ${domainId} AND "projectId" = ${projectId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -138,10 +155,18 @@ export const projectStageRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.description !== undefined) {
       assignments.unshift(
         Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
       );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.progress !== undefined) {
@@ -174,5 +199,30 @@ export const projectStageRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectStageInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.projectStage.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        searchText: item.searchText,
+        description: item.description || null,
+        progress: item.progress || null,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

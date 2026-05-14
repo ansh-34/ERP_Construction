@@ -7,6 +7,10 @@ import { projectTaskService } from './projectTask.service';
 export const projectTaskController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const {
         name,
         assignee,
@@ -22,7 +26,6 @@ export const projectTaskController = {
         projectBatchCode,
         stageId,
         projectId,
-        domainId,
         status,
       } = req.body as {
         name?: Record<string, unknown>;
@@ -39,28 +42,32 @@ export const projectTaskController = {
         projectBatchCode?: string | null;
         stageId?: string;
         projectId?: string;
-        domainId?: string;
         status?: StatusEnum;
       };
 
-      const projectTask = await projectTaskService.create({
-        name: name ?? {},
-        ...(assignee !== undefined && { assignee }),
-        ...(plannedStartDate !== undefined && { plannedStartDate }),
-        ...(plannedEndDate !== undefined && { plannedEndDate }),
-        ...(actualStartDate !== undefined && { actualStartDate }),
-        ...(actualEndDate !== undefined && { actualEndDate }),
-        ...(taskStatus !== undefined && { taskStatus }),
-        ...(taskProgress !== undefined && { taskProgress }),
-        ...(totalDelayInDays !== undefined && { totalDelayInDays }),
-        ...(requiredApproval !== undefined && { requiredApproval }),
-        ...(lastApprovedDeadline !== undefined && { lastApprovedDeadline }),
-        ...(projectBatchCode !== undefined && { projectBatchCode }),
-        stageId: stageId ?? '',
-        projectId: projectId ?? '',
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const domainId = req.user!.domainId;
+
+      const projectTask = await projectTaskService.create(
+        {
+          name: name ?? {},
+          ...(assignee !== undefined && { assignee }),
+          ...(plannedStartDate !== undefined && { plannedStartDate }),
+          ...(plannedEndDate !== undefined && { plannedEndDate }),
+          ...(actualStartDate !== undefined && { actualStartDate }),
+          ...(actualEndDate !== undefined && { actualEndDate }),
+          ...(taskStatus !== undefined && { taskStatus }),
+          ...(taskProgress !== undefined && { taskProgress }),
+          ...(totalDelayInDays !== undefined && { totalDelayInDays }),
+          ...(requiredApproval !== undefined && { requiredApproval }),
+          ...(lastApprovedDeadline !== undefined && { lastApprovedDeadline }),
+          ...(projectBatchCode !== undefined && { projectBatchCode }),
+          stageId: stageId ?? '',
+          projectId: projectId ?? '',
+          domainId,
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Project task created successfully',
@@ -77,16 +84,23 @@ export const projectTaskController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId, projectId, stageId } = req.query as {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, projectId, stageId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;
         stageId?: string;
+        searchKey?: string;
       };
 
       const projectTasks = await projectTaskService.getAll(
         domainId ?? '',
         projectId,
         stageId,
+        searchKey,
+        language,
       );
 
       return res.status(HttpStatus.OK).json({
@@ -104,11 +118,16 @@ export const projectTaskController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const projectTask = await projectTaskService.getById(
         id ?? '',
         domainId ?? '',
+        language,
       );
 
       if (!projectTask) {
@@ -130,6 +149,10 @@ export const projectTaskController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const {
         name,
         assignee,
@@ -178,6 +201,7 @@ export const projectTaskController = {
           ...(projectBatchCode !== undefined && { projectBatchCode }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedProjectTask) {

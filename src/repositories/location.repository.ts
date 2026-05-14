@@ -22,6 +22,7 @@ export interface CreateLocationInput {
   name: JsonObject;
   code: string;
   type: string;
+  searchText: string;
   parentLocationId?: string | null;
   domainId: string;
   status: StatusEnum;
@@ -29,7 +30,9 @@ export interface CreateLocationInput {
 
 export interface UpdateLocationInput {
   name?: JsonObject;
+  code?: string;
   type?: string;
+  searchText?: string;
   parentLocationId?: string | null;
   status?: StatusEnum;
 }
@@ -52,19 +55,33 @@ export const locationRepository = {
     const id = randomUUID();
 
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
-      INSERT INTO "Location" ("id", "name", "code", "type", "parentLocationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      INSERT INTO "Location" ("id", "name", "code", "type", "searchText", "parentLocationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.searchText}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 
     return result[0] as LocationRecord;
   },
 
-  findMany: async (domainId: string): Promise<LocationRecord[]> => {
+  findMany: async (
+    domainId: string,
+    searchKey?: string,
+  ): Promise<LocationRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       SELECT ${locationSelect}
       FROM "Location"
-      WHERE "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -110,8 +127,16 @@ export const locationRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.type !== undefined) {
       assignments.unshift(Prisma.sql`"type" = ${data.type}`);
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.parentLocationId !== undefined) {
@@ -146,5 +171,29 @@ export const locationRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateLocationInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.location.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        type: item.type,
+        searchText: item.searchText,
+        parentLocationId: item.parentLocationId || null,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

@@ -27,13 +27,56 @@ export interface UpdateProjectStageInput {
   status?: StatusEnum;
 }
 
-function generateStageCode(projectId: string): string {
-  return `STG-${projectId.slice(0, 4)}-${Date.now()}`;
+type LocalizedProjectStageRecord = Omit<
+  ProjectStageRecord,
+  'name' | 'description'
+> & {
+  name: string;
+  description: string | null;
+};
+
+function buildProjectStageCode(name: Record<string, unknown>): string {
+  return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
+}
+
+function buildProjectStageSearchText(name: Record<string, unknown>): string {
+  return Object.values(name).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown> | null,
+  language: string | null,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function normalizeProjectStage(
+  stage: ProjectStageRecord,
+  language: string | null,
+): LocalizedProjectStageRecord {
+  return {
+    ...stage,
+    name: getLocalizedText(stage.name, language) || '',
+    description: getLocalizedText(stage.description, language),
+  };
 }
 
 function assertCreateInput(data: CreateProjectStageInput): void {
   if (!isPlainObject(data.name) || Object.keys(data.name).length === 0) {
     throw new Error('invalid json name');
+  }
+
+  if (!isNonEmptyString(data.name.en)) {
+    throw new Error('name.en is required');
   }
 
   if (
@@ -42,6 +85,14 @@ function assertCreateInput(data: CreateProjectStageInput): void {
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    data.description !== undefined &&
+    data.description !== null &&
+    !isNonEmptyString(data.description.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (
@@ -82,12 +133,24 @@ function assertUpdateInput(data: UpdateProjectStageInput): void {
     throw new Error('invalid json name');
   }
 
+  if (hasName && !isNonEmptyString(data.name?.en)) {
+    throw new Error('name.en is required');
+  }
+
   if (
     hasDescription &&
     data.description !== null &&
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    hasDescription &&
+    data.description !== null &&
+    !isNonEmptyString(data.description?.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (
@@ -110,7 +173,8 @@ function assertUpdateInput(data: UpdateProjectStageInput): void {
 export const projectStageService = {
   create: async (
     data: CreateProjectStageInput,
-  ): Promise<ProjectStageRecord> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectStageRecord> => {
     assertCreateInput(data);
 
     try {
@@ -123,22 +187,25 @@ export const projectStageService = {
         throw new Error('not found');
       }
 
-      let code = generateStageCode(data.projectId);
+      const code = buildProjectStageCode(data.name);
 
-      while (
+      if (
         await projectStageRepository.findByCode(
           code,
           data.domainId,
           data.projectId,
         )
       ) {
-        code = generateStageCode(data.projectId);
+        throw new Error('duplicate code');
       }
 
-      return await projectStageRepository.create({
+      const stage = await projectStageRepository.create({
         ...data,
         code,
+        searchText: buildProjectStageSearchText(data.name),
       });
+
+      return normalizeProjectStage(stage, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -147,13 +214,20 @@ export const projectStageService = {
   getAll: async (
     domainId: string,
     projectId: string,
-  ): Promise<ProjectStageRecord[]> => {
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectStageRecord[]> => {
     if (!isNonEmptyString(domainId) || !isNonEmptyString(projectId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectStageRepository.findMany(domainId, projectId);
+      const stages = await projectStageRepository.findMany(
+        domainId,
+        projectId,
+        searchKey,
+      );
+      return stages.map((stage) => normalizeProjectStage(stage, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -162,13 +236,15 @@ export const projectStageService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<ProjectStageRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectStageRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectStageRepository.findById(id, domainId);
+      const stage = await projectStageRepository.findById(id, domainId);
+      return stage ? normalizeProjectStage(stage, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -178,7 +254,8 @@ export const projectStageService = {
     id: string,
     domainId: string,
     data: UpdateProjectStageInput,
-  ): Promise<ProjectStageRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectStageRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
@@ -192,7 +269,36 @@ export const projectStageService = {
         throw new Error('not found');
       }
 
-      return await projectStageRepository.update(id, domainId, data);
+      const updateData = {
+        ...data,
+        ...(data.name !== undefined
+          ? {
+              ...(data.name !== undefined && {
+                code: buildProjectStageCode(data.name),
+              }),
+              searchText: buildProjectStageSearchText(data.name),
+            }
+          : {}),
+      };
+
+      if (updateData.code && updateData.code !== existingStage.code) {
+        const duplicateStage = await projectStageRepository.findByCode(
+          updateData.code,
+          domainId,
+          existingStage.projectId,
+        );
+
+        if (duplicateStage && duplicateStage.id !== id) {
+          throw new Error('duplicate code');
+        }
+      }
+
+      const stage = await projectStageRepository.update(
+        id,
+        domainId,
+        updateData,
+      );
+      return stage ? normalizeProjectStage(stage, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

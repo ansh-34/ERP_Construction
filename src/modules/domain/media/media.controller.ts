@@ -7,10 +7,15 @@ import { deleteFromS3, uploadToS3 } from '@/utils/s3.utils';
 export const mediaController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.body as {
-        domainId?: string;
-      };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const domainId = req.user!.domainId;
       const { file } = req;
+      const { name } = req.body as {
+        name?: Record<string, unknown>;
+      };
 
       if (!file) {
         throw new Error('invalid file');
@@ -20,12 +25,15 @@ export const mediaController = {
       let media;
 
       try {
-        media = await mediaService.create({
-          name: file.originalname,
-          type: file.mimetype,
-          url,
-          domainId: domainId ?? '',
-        });
+        media = await mediaService.create(
+          {
+            name: name ?? { en: file.originalname },
+            type: file.mimetype,
+            url,
+            domainId,
+          },
+          language,
+        );
       } catch (error: unknown) {
         await deleteFromS3(url);
         throw error;
@@ -44,8 +52,19 @@ export const mediaController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
-      const media = await mediaService.getAll(domainId ?? '');
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, searchKey } = req.query as {
+        domainId?: string;
+        searchKey?: string;
+      };
+      const media = await mediaService.getAll(
+        domainId ?? '',
+        searchKey,
+        language,
+      );
 
       return res.status(HttpStatus.OK).json({
         message: 'Media fetched successfully',
@@ -60,9 +79,17 @@ export const mediaController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const media = await mediaService.getById(id ?? '', domainId ?? '');
+      const media = await mediaService.getById(
+        id ?? '',
+        domainId ?? '',
+        language,
+      );
 
       if (!media) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -83,15 +110,19 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, type } = req.body as {
-        name?: string;
+        name?: Record<string, unknown>;
         type?: string;
       };
 
       const updatedMedia = await mediaService.update(id ?? '', domainId ?? '', {
         ...(name !== undefined && { name }),
         ...(type !== undefined && { type }),
-      });
+      }, language);
 
       if (!updatedMedia) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });

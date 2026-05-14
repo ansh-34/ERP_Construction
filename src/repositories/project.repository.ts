@@ -9,6 +9,7 @@ export interface ProjectRecord {
   id: string;
   name: JsonObject;
   code: string;
+  searchText: string;
   projectCategoryId: string;
   description: JsonObject | null;
   budget: number;
@@ -24,6 +25,7 @@ export interface ProjectRecord {
 export interface CreateProjectInput {
   name: JsonObject;
   code: string;
+  searchText: string;
   projectCategoryId: string;
   description?: JsonObject | null;
   budget: number;
@@ -35,7 +37,9 @@ export interface CreateProjectInput {
 
 export interface UpdateProjectInput {
   name?: JsonObject;
+  code?: string;
   description?: JsonObject | null;
+  searchText?: string;
   budget?: number;
   spent?: number;
   status?: StatusEnum;
@@ -69,11 +73,12 @@ export const projectRepository = {
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
-      INSERT INTO "Project" ("id", "name", "code", "projectCategoryId", "description", "budget", "spent", "locationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "Project" ("id", "name", "code", "searchText", "projectCategoryId", "description", "budget", "spent", "locationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
+        ${data.searchText},
         ${data.projectCategoryId},
         ${descriptionSql},
         ${data.budget},
@@ -91,11 +96,25 @@ export const projectRepository = {
     return result[0] as ProjectRecord;
   },
 
-  findMany: async (domainId: string): Promise<ProjectRecord[]> => {
+  findMany: async (
+    domainId: string,
+    searchKey?: string,
+  ): Promise<ProjectRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       SELECT ${projectSelect}
       FROM "Project"
-      WHERE "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -141,10 +160,18 @@ export const projectRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.description !== undefined) {
       assignments.unshift(
         Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
       );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.budget !== undefined) {
@@ -181,5 +208,32 @@ export const projectRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.project.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        searchText: item.searchText,
+        projectCategoryId: item.projectCategoryId,
+        description: item.description || null,
+        budget: item.budget,
+        spent: item.spent || 0,
+        locationId: item.locationId,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

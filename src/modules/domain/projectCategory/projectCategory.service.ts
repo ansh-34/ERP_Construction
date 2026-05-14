@@ -4,7 +4,6 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { generateCode } from '@/utils/code';
 import { isNonEmptyString, isPlainObject } from '@/utils/validation';
 
 export interface CreateProjectCategoryInput {
@@ -22,9 +21,56 @@ export interface UpdateProjectCategoryInput {
   status?: StatusEnum;
 }
 
+type LocalizedProjectCategoryRecord = Omit<
+  ProjectCategoryRecord,
+  'name' | 'description'
+> & {
+  name: string;
+  description: string | null;
+};
+
+function buildProjectCategoryCode(name: Record<string, unknown>): string {
+  return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
+}
+
+function buildProjectCategorySearchText(name: Record<string, unknown>): string {
+  return Object.values(name).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown> | null,
+  language: string | null,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function normalizeProjectCategory(
+  category: ProjectCategoryRecord,
+  language: string | null,
+): LocalizedProjectCategoryRecord {
+  return {
+    ...category,
+    name: getLocalizedText(category.name, language) || '',
+    description: getLocalizedText(category.description, language),
+  };
+}
+
 function assertCreateInput(data: CreateProjectCategoryInput): void {
   if (!isPlainObject(data.name)) {
     throw new Error('invalid json name');
+  }
+
+  if (!isNonEmptyString(data.name.en)) {
+    throw new Error('name.en is required');
   }
 
   if (
@@ -33,6 +79,14 @@ function assertCreateInput(data: CreateProjectCategoryInput): void {
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    data.description !== undefined &&
+    data.description !== null &&
+    !isNonEmptyString(data.description.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (!isNonEmptyString(data.domainId)) {
@@ -69,12 +123,24 @@ function assertUpdateInput(data: UpdateProjectCategoryInput): void {
     throw new Error('invalid json name');
   }
 
+  if (hasName && !isNonEmptyString(data.name?.en)) {
+    throw new Error('name.en is required');
+  }
+
   if (
     hasDescription &&
     data.description !== null &&
     !isPlainObject(data.description)
   ) {
     throw new Error('invalid json description');
+  }
+
+  if (
+    hasDescription &&
+    data.description !== null &&
+    !isNonEmptyString(data.description?.en)
+  ) {
+    throw new Error('description.en is required');
   }
 
   if (
@@ -97,14 +163,15 @@ function assertUpdateInput(data: UpdateProjectCategoryInput): void {
 export const projectCategoryService = {
   create: async (
     data: CreateProjectCategoryInput,
-  ): Promise<ProjectCategoryRecord> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectCategoryRecord> => {
     assertCreateInput(data);
 
     try {
-      let code = generateCode('PROJECT_CATEGORY');
+      const code = buildProjectCategoryCode(data.name);
 
-      while (await projectCategoryRepository.findByCode(code, data.domainId)) {
-        code = generateCode('PROJECT_CATEGORY');
+      if (await projectCategoryRepository.findByCode(code, data.domainId)) {
+        throw new Error('duplicate code');
       }
 
       if (data.parentCategoryId) {
@@ -118,22 +185,33 @@ export const projectCategoryService = {
         }
       }
 
-      return await projectCategoryRepository.create({
+      const projectCategory = await projectCategoryRepository.create({
         ...data,
         code,
+        searchText: buildProjectCategorySearchText(data.name),
       });
+
+      return normalizeProjectCategory(projectCategory, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
   },
 
-  getAll: async (domainId: string): Promise<ProjectCategoryRecord[]> => {
+  getAll: async (
+    domainId: string,
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectCategoryRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
 
     try {
-      return await projectCategoryRepository.findMany(domainId);
+      const projectCategories =
+        await projectCategoryRepository.findMany(domainId, searchKey);
+      return projectCategories.map((category) =>
+        normalizeProjectCategory(category, language),
+      );
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -142,13 +220,20 @@ export const projectCategoryService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<ProjectCategoryRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectCategoryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectCategoryRepository.findById(id, domainId);
+      const projectCategory = await projectCategoryRepository.findById(
+        id,
+        domainId,
+      );
+      return projectCategory
+        ? normalizeProjectCategory(projectCategory, language)
+        : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -158,7 +243,8 @@ export const projectCategoryService = {
     id: string,
     domainId: string,
     data: UpdateProjectCategoryInput,
-  ): Promise<ProjectCategoryRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectCategoryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
@@ -186,7 +272,33 @@ export const projectCategoryService = {
         }
       }
 
-      return await projectCategoryRepository.update(id, domainId, data);
+      const updateData = {
+        ...data,
+        ...(data.name !== undefined && {
+          code: buildProjectCategoryCode(data.name),
+          searchText: buildProjectCategorySearchText(data.name),
+        }),
+      };
+
+      if (updateData.code && updateData.code !== existingCategory.code) {
+        const duplicateCategory = await projectCategoryRepository.findByCode(
+          updateData.code,
+          domainId,
+        );
+
+        if (duplicateCategory && duplicateCategory.id !== id) {
+          throw new Error('duplicate code');
+        }
+      }
+
+      const projectCategory = await projectCategoryRepository.update(
+        id,
+        domainId,
+        updateData,
+      );
+      return projectCategory
+        ? normalizeProjectCategory(projectCategory, language)
+        : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

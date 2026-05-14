@@ -7,6 +7,10 @@ import { resolveHttpStatus } from '@/utils/httpError';
 export const projectStageController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description, progress, projectId, domainId, status } =
         req.body as {
           name?: Record<string, unknown>;
@@ -17,14 +21,17 @@ export const projectStageController = {
           status?: StatusEnum;
         };
 
-      const projectStage = await projectStageService.create({
-        name: name ?? {},
-        ...(description !== undefined && { description }),
-        ...(progress !== undefined && { progress }),
-        projectId: projectId ?? '',
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const projectStage = await projectStageService.create(
+        {
+          name: name ?? {},
+          ...(description !== undefined && { description }),
+          ...(progress !== undefined && { progress }),
+          projectId: projectId ?? '',
+          domainId: domainId ?? '',
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Project stage created successfully',
@@ -41,13 +48,20 @@ export const projectStageController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId, projectId } = req.query as {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, projectId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;
+        searchKey?: string;
       };
       const projectStages = await projectStageService.getAll(
         domainId ?? '',
         projectId ?? '',
+        searchKey,
+        language,
       );
 
       return res.status(HttpStatus.OK).json({
@@ -65,11 +79,16 @@ export const projectStageController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const projectStage = await projectStageService.getById(
         id ?? '',
         domainId ?? '',
+        language,
       );
 
       if (!projectStage) {
@@ -93,6 +112,10 @@ export const projectStageController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description, progress, status } = req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown> | null;
@@ -109,6 +132,7 @@ export const projectStageController = {
           ...(progress !== undefined && { progress }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedProjectStage) {

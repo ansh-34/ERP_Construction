@@ -3,10 +3,13 @@ import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
+type JsonObject = Record<string, unknown>;
+
 export interface MachineryRecord {
   id: string;
   code: string;
-  type: string;
+  type: JsonObject;
+  searchText: string;
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
@@ -18,7 +21,8 @@ export interface MachineryRecord {
 
 export interface CreateMachineryInput {
   code: string;
-  type: string;
+  type: JsonObject;
+  searchText: string;
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
@@ -27,7 +31,8 @@ export interface CreateMachineryInput {
 
 export interface UpdateMachineryInput {
   code?: string;
-  type?: string;
+  type?: JsonObject;
+  searchText?: string;
   expectedLitrePerHour?: number;
   status?: StatusEnum;
 }
@@ -45,6 +50,10 @@ const machinerySelect = Prisma.sql`
   "updatedAt"
 `;
 
+function toJsonbSql(value: JsonObject): Prisma.Sql {
+  return Prisma.sql`${JSON.stringify(value)}::jsonb`;
+}
+
 export const machineryRepository = {
   create: async (data: CreateMachineryInput): Promise<MachineryRecord> => {
     const id = randomUUID();
@@ -54,6 +63,7 @@ export const machineryRepository = {
         "id",
         "code",
         "type",
+        "searchText",
         "expectedLitrePerHour",
         "projectId",
         "domainId",
@@ -65,7 +75,8 @@ export const machineryRepository = {
       VALUES (
         ${id},
         ${data.code},
-        ${data.type},
+        ${toJsonbSql(data.type)},
+        ${data.searchText},
         ${data.expectedLitrePerHour},
         ${data.projectId},
         ${data.domainId},
@@ -83,6 +94,7 @@ export const machineryRepository = {
   findMany: async (
     domainId: string,
     projectId?: string,
+    searchKey?: string,
   ): Promise<MachineryRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -91,6 +103,12 @@ export const machineryRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
     }
 
     return prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
@@ -127,7 +145,11 @@ export const machineryRepository = {
     }
 
     if (data.type !== undefined) {
-      assignments.unshift(Prisma.sql`"type" = ${data.type}`);
+      assignments.unshift(Prisma.sql`"type" = ${toJsonbSql(data.type)}`);
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.expectedLitrePerHour !== undefined) {
@@ -162,5 +184,29 @@ export const machineryRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateMachineryInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.machinery.createMany({
+      data: data.map((item) => ({
+        code: item.code,
+        type: item.type,
+        searchText: item.searchText,
+        expectedLitrePerHour: item.expectedLitrePerHour,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

@@ -21,6 +21,7 @@ export * from './apiKey.repository.js';
 export * from './location.repository.js';
 export * from './media.repository.js';
 export * from './machinery.repository.js';
+export * from './machineReading.repository.js';
 export * from './project.repository.js';
 export * from './projectCategory.repository.js';
 export * from './projectStage.repository.js';

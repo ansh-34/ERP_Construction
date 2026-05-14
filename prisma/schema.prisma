@@ -66,6 +66,7 @@ model Domain {
   projectTasks            ProjectTask[]
   projectTaskDelays       ProjectTaskDelay[]
   machineries             Machinery[]
+  machineReadings         MachineReading[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -559,9 +560,10 @@ model ProductGradeStdRates {
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
-  name        String
-  description String?
+  name        Json       @db.JsonB
+  description Json?      @db.JsonB
   secret      String
+  searchText  String     @default("")
   domainId    String     @db.Uuid
   domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   status      StatusEnum @default(ACTIVE)
@@ -577,6 +579,7 @@ model Location {
   name             Json       @db.JsonB
   code             String
   type             String
+  searchText       String     @default("")
   parentLocationId String?    @db.Uuid
   parent           Location?  @relation("LocationHierarchy", fields: [parentLocationId], references: [id])
   children         Location[] @relation("LocationHierarchy")
@@ -596,9 +599,10 @@ model Location {
 
 model Media {
   id        String     @id @default(uuid()) @db.Uuid
-  name      String
+  name      Json       @db.JsonB
   type      String
   url       String     @unique
+  searchText String    @default("")
   domainId  String     @db.Uuid
   domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   status    StatusEnum @default(ACTIVE)
@@ -614,6 +618,7 @@ model Project {
   id                String          @id @default(uuid()) @db.Uuid
   name              Json            @db.JsonB
   code              String
+  searchText        String          @default("")
   projectCategoryId String          @db.Uuid
   projectCategory   ProjectCategory @relation(fields: [projectCategoryId], references: [id], onDelete: Restrict)
   description       Json?           @db.JsonB
@@ -632,6 +637,7 @@ model Project {
   projectTasks  ProjectTask[]
   projectTaskDelays ProjectTaskDelay[]
   machineries Machinery[]
+  machineReadings MachineReading[]
 
   @@unique([code, isDeleted, domainId])
   @@index([projectCategoryId])
@@ -661,7 +667,9 @@ model ProjectStage {
   id          String     @id @default(uuid()) @db.Uuid
   name        Json       @db.JsonB
   code        String
+  searchText  String     @default("")
   description Json?      @db.JsonB
+  searchText  String     @default("")
   progress    Float?
   projectId   String     @db.Uuid
   project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -684,6 +692,7 @@ model ProjectTask {
   id                   String      @id @default(uuid()) @db.Uuid
   name                 Json        @db.JsonB
   code                 String
+  searchText           String      @default("")
   assignee             Json?       @db.JsonB
   plannedStartDate     DateTime?
   plannedEndDate       DateTime?
@@ -720,7 +729,8 @@ model ProjectTaskDelay {
   taskId               String       @db.Uuid
   task                 ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   requestedDelayInDays Float        @default(0)
-  delayReason          String
+  delayReason          Json         @db.JsonB
+  searchText           String       @default("")
   requestApproved      Boolean      @default(false)
   requestApprovalTime  DateTime?
   stageId              String       @db.Uuid
@@ -744,7 +754,8 @@ model ProjectTaskDelay {
 model Machinery {
   id                   String     @id @default(uuid()) @db.Uuid
   code                 String
-  type                 String
+  type                 Json       @db.JsonB
+  searchText           String     @default("")
   expectedLitrePerHour Float      @default(0)
   projectId            String     @db.Uuid
   project              Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -754,6 +765,31 @@ model Machinery {
   isDeleted            Boolean    @default(false)
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
+
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
+}
+
+model MachineReading {
+  id                String     @id @default(uuid()) @db.Uuid
+  code              String
+  searchText        String     @default("")
+  date              DateTime   @db.Date
+  openingFuelStock   Float
+  closingFuelStock   Float?
+  fuelRefillQuantity Float?
+  hoursRun          Float      @default(0)
+  machineStartTime   DateTime   @db.Time(0)
+  machineEndTime     DateTime?  @db.Time(0)
+  projectId          String     @db.Uuid
+  project            Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId           String     @db.Uuid
+  domain             Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status             StatusEnum @default(ACTIVE)
+  isDeleted          Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])

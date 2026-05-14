@@ -9,6 +9,7 @@ export interface ProjectCategoryRecord {
   id: string;
   name: JsonObject;
   code: string;
+  searchText: string;
   description: JsonObject | null;
   domainId: string;
   status: StatusEnum;
@@ -20,6 +21,7 @@ export interface ProjectCategoryRecord {
 export interface CreateProjectCategoryInput {
   name: JsonObject;
   code: string;
+  searchText: string;
   description?: JsonObject | null;
   domainId: string;
   status: StatusEnum;
@@ -27,6 +29,8 @@ export interface CreateProjectCategoryInput {
 
 export interface UpdateProjectCategoryInput {
   name?: JsonObject;
+  code?: string;
+  searchText?: string;
   description?: JsonObject | null;
   status?: StatusEnum;
 }
@@ -35,6 +39,7 @@ const projectCategorySelect = Prisma.sql`
   "id",
   "name",
   "code",
+  "searchText",
   "description",
   "domainId",
   "status",
@@ -57,19 +62,33 @@ export const projectCategoryRepository = {
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectCategoryRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectCategory" ("id", "name", "code", "description", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${descriptionSql}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      INSERT INTO "ProjectCategory" ("id", "name", "code", "searchText", "description", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.searchText}, ${descriptionSql}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 
     return result[0] as ProjectCategoryRecord;
   },
 
-  findMany: async (domainId: string): Promise<ProjectCategoryRecord[]> => {
+  findMany: async (
+    domainId: string,
+    searchKey?: string,
+  ): Promise<ProjectCategoryRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<ProjectCategoryRecord[]>(Prisma.sql`
       SELECT ${projectCategorySelect}
       FROM "ProjectCategory"
-      WHERE "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -115,6 +134,14 @@ export const projectCategoryRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
+    }
+
     if (data.description !== undefined) {
       assignments.unshift(
         Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
@@ -147,5 +174,29 @@ export const projectCategoryRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectCategoryInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    return prismaClient.projectCategory.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        searchText: item.searchText,
+        description: item.description || null,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

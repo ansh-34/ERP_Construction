@@ -1,33 +1,36 @@
 import { StatusEnum } from '@constants/index';
 import { z } from 'zod';
 
-const jsonObject = z.record(z.string(), z.unknown());
 const nonNegativeNumber = z
   .number()
   .finite()
   .nonnegative({ message: 'Value must be non-negative' });
 
-export const createMachineryBody = z.object({
-  code: z.string().trim().min(1, { message: 'Code is required' }),
-  type: jsonObject,
-  expectedLitrePerHour: nonNegativeNumber,
+const timeString = z
+  .string()
+  .trim()
+  .regex(/^(?:[01]\d|2[0-3]):[0-5]\d(?:[:][0-5]\d(?:\.\d{1,3})?)?$/, {
+    message: 'Invalid time format',
+  });
+
+export const createMachineReadingBody = z.object({
+  date: z.string().trim().min(1, { message: 'Date is required' }),
+  openingFuelStock: nonNegativeNumber,
+  fuelRefillQuantity: nonNegativeNumber.optional(),
+  machineStartTime: timeString,
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
-  domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
-export const updateMachineryBody = z
+export const updateMachineReadingBody = z
   .object({
-    code: z.string().trim().min(1).optional(),
-    type: jsonObject.optional(),
-    expectedLitrePerHour: nonNegativeNumber.optional(),
+    closingFuelStock: nonNegativeNumber,
+    fuelRefillQuantity: nonNegativeNumber.optional(),
+    machineEndTime: timeString,
     status: z.nativeEnum(StatusEnum).optional(),
-  })
-  .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: 'At least one field is required',
   });
 
-export const listMachineryQuery = z.object({
+export const listMachineReadingQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   projectId: z.string().trim().min(1).optional(),
   searchKey: z.string().trim().optional(),

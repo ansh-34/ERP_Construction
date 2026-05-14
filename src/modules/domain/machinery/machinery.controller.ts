@@ -7,24 +7,32 @@ import { machineryService } from './machinery.service';
 export const machineryController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { code, type, expectedLitrePerHour, projectId, domainId, status } =
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { code, type, expectedLitrePerHour, projectId, status } =
         req.body as {
           code?: string;
-          type?: string;
+          type?: Record<string, unknown>;
           expectedLitrePerHour?: number;
           projectId?: string;
-          domainId?: string;
           status?: StatusEnum;
         };
 
-      const machinery = await machineryService.create({
-        code: code ?? '',
-        type: type ?? '',
-        expectedLitrePerHour: expectedLitrePerHour ?? 0,
-        projectId: projectId ?? '',
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const domainId = req.user!.domainId;
+
+      const machinery = await machineryService.create(
+        {
+          code: code ?? '',
+          type: type ?? {},
+          expectedLitrePerHour: expectedLitrePerHour ?? 0,
+          projectId: projectId ?? '',
+          domainId,
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Machinery created successfully',
@@ -39,14 +47,21 @@ export const machineryController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId, projectId } = req.query as {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, projectId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;
+        searchKey?: string;
       };
 
       const machineries = await machineryService.getAll(
         domainId ?? '',
         projectId,
+        searchKey,
+        language,
       );
 
       return res.status(HttpStatus.OK).json({
@@ -62,11 +77,16 @@ export const machineryController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const machinery = await machineryService.getById(
         id ?? '',
         domainId ?? '',
+        language,
       );
 
       if (!machinery) {
@@ -88,9 +108,13 @@ export const machineryController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { code, type, expectedLitrePerHour, status } = req.body as {
         code?: string;
-        type?: string;
+        type?: Record<string, unknown>;
         expectedLitrePerHour?: number;
         status?: StatusEnum;
       };
@@ -106,6 +130,7 @@ export const machineryController = {
           }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedMachinery) {

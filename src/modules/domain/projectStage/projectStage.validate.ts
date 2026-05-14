@@ -35,10 +35,12 @@ export const updateProjectStageBody = z
 export const listProjectStageQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
+  searchKey: z.string().trim().optional(),
 });
 
 export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  searchKey: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

@@ -9,12 +9,13 @@ import { normalizePrismaError } from '@/utils/prismaError';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
+  isPlainObject,
 } from '@/utils/validation';
 
 export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: string;
+  delayReason: Record<string, unknown>;
   requestApproved?: boolean;
   requestApprovalTime?: string | null;
   stageId: string;
@@ -25,10 +26,45 @@ export interface CreateProjectTaskDelayInput {
 
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
-  delayReason?: string;
+  delayReason?: Record<string, unknown>;
   requestApproved?: boolean;
   requestApprovalTime?: string | null;
   status?: StatusEnum;
+}
+
+type LocalizedProjectTaskDelayRecord = Omit<
+  ProjectTaskDelayRecord,
+  'delayReason'
+> & {
+  delayReason: string;
+};
+
+function buildProjectTaskDelaySearchText(
+  delayReason: Record<string, unknown>,
+): string {
+  return Object.values(delayReason).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown>,
+  language: string | null,
+): string {
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function normalizeProjectTaskDelay(
+  delay: ProjectTaskDelayRecord,
+  language: string | null,
+): LocalizedProjectTaskDelayRecord {
+  return {
+    ...delay,
+    delayReason: getLocalizedText(delay.delayReason, language),
+  };
 }
 
 function parseOptionalDate(value: string | null | undefined): Date | null {
@@ -64,8 +100,12 @@ function assertCreateInput(data: CreateProjectTaskDelayInput): void {
     throw new Error('invalid requestedDelayInDays');
   }
 
-  if (!isNonEmptyString(data.delayReason)) {
+  if (!isPlainObject(data.delayReason)) {
     throw new Error('invalid delayReason');
+  }
+
+  if (!isNonEmptyString(data.delayReason.en)) {
+    throw new Error('delayReason.en is required');
   }
 
   if (!isNonEmptyString(data.stageId)) {
@@ -97,8 +137,15 @@ function assertUpdateInput(data: UpdateProjectTaskDelayInput): void {
     throw new Error('invalid requestedDelayInDays');
   }
 
-  if (data.delayReason !== undefined && !isNonEmptyString(data.delayReason)) {
+  if (data.delayReason !== undefined && !isPlainObject(data.delayReason)) {
     throw new Error('invalid delayReason');
+  }
+
+  if (
+    data.delayReason !== undefined &&
+    !isNonEmptyString(data.delayReason.en)
+  ) {
+    throw new Error('delayReason.en is required');
   }
 
   assertStatus(data.status);
@@ -107,6 +154,7 @@ function assertUpdateInput(data: UpdateProjectTaskDelayInput): void {
 function buildCreatePayload(data: CreateProjectTaskDelayInput) {
   return {
     ...data,
+    searchText: buildProjectTaskDelaySearchText(data.delayReason),
     requestApprovalTime: parseOptionalDate(data.requestApprovalTime),
   };
 }
@@ -115,6 +163,9 @@ function buildUpdatePayload(
   data: UpdateProjectTaskDelayInput,
 ): RepositoryUpdateProjectTaskDelayInput {
   return {
+    ...(data.delayReason !== undefined && {
+      searchText: buildProjectTaskDelaySearchText(data.delayReason),
+    }),
     ...(data.requestedDelayInDays !== undefined && {
       requestedDelayInDays: data.requestedDelayInDays,
     }),
@@ -132,7 +183,8 @@ function buildUpdatePayload(
 export const projectTaskDelayService = {
   create: async (
     data: CreateProjectTaskDelayInput,
-  ): Promise<ProjectTaskDelayRecord> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskDelayRecord> => {
     assertCreateInput(data);
 
     try {
@@ -149,7 +201,11 @@ export const projectTaskDelayService = {
         throw new Error('not found');
       }
 
-      return await projectTaskDelayRepository.create(buildCreatePayload(data));
+      const delay = await projectTaskDelayRepository.create(
+        buildCreatePayload(data),
+      );
+
+      return normalizeProjectTaskDelay(delay, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -160,7 +216,9 @@ export const projectTaskDelayService = {
     projectId?: string,
     stageId?: string,
     taskId?: string,
-  ): Promise<ProjectTaskDelayRecord[]> => {
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskDelayRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -178,12 +236,14 @@ export const projectTaskDelayService = {
     }
 
     try {
-      return await projectTaskDelayRepository.findMany(
+      const delays = await projectTaskDelayRepository.findMany(
         domainId,
         projectId,
         stageId,
         taskId,
+        searchKey,
       );
+      return delays.map((delay) => normalizeProjectTaskDelay(delay, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -192,13 +252,15 @@ export const projectTaskDelayService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<ProjectTaskDelayRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskDelayRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectTaskDelayRepository.findById(id, domainId);
+      const delay = await projectTaskDelayRepository.findById(id, domainId);
+      return delay ? normalizeProjectTaskDelay(delay, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -208,7 +270,8 @@ export const projectTaskDelayService = {
     id: string,
     domainId: string,
     data: UpdateProjectTaskDelayInput,
-  ): Promise<ProjectTaskDelayRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskDelayRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
@@ -225,11 +288,13 @@ export const projectTaskDelayService = {
         throw new Error('not found');
       }
 
-      return await projectTaskDelayRepository.update(
+      const delay = await projectTaskDelayRepository.update(
         id,
         domainId,
         buildUpdatePayload(data),
       );
+
+      return delay ? normalizeProjectTaskDelay(delay, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

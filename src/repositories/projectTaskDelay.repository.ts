@@ -3,11 +3,13 @@ import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
+type JsonObject = Record<string, unknown>;
+
 export interface ProjectTaskDelayRecord {
   id: string;
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: string;
+  delayReason: JsonObject;
   requestApproved: boolean;
   requestApprovalTime: Date | null;
   stageId: string;
@@ -22,7 +24,8 @@ export interface ProjectTaskDelayRecord {
 export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: string;
+  delayReason: JsonObject;
+  searchText: string;
   requestApproved?: boolean;
   requestApprovalTime?: Date | null;
   stageId: string;
@@ -33,7 +36,8 @@ export interface CreateProjectTaskDelayInput {
 
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
-  delayReason?: string;
+  delayReason?: JsonObject;
+  searchText?: string;
   requestApproved?: boolean;
   requestApprovalTime?: Date | null;
   status?: StatusEnum;
@@ -61,6 +65,10 @@ function toDateSql(value: Date | null | undefined): Prisma.Sql {
     : Prisma.sql`${value}`;
 }
 
+function toJsonbSql(value: JsonObject): Prisma.Sql {
+  return Prisma.sql`${JSON.stringify(value)}::jsonb`;
+}
+
 export const projectTaskDelayRepository = {
   create: async (
     data: CreateProjectTaskDelayInput,
@@ -73,6 +81,7 @@ export const projectTaskDelayRepository = {
         "taskId",
         "requestedDelayInDays",
         "delayReason",
+        "searchText",
         "requestApproved",
         "requestApprovalTime",
         "stageId",
@@ -87,7 +96,8 @@ export const projectTaskDelayRepository = {
         ${id},
         ${data.taskId},
         ${data.requestedDelayInDays},
-        ${data.delayReason},
+        ${toJsonbSql(data.delayReason)},
+        ${data.searchText},
         ${data.requestApproved ?? false},
         ${toDateSql(data.requestApprovalTime)},
         ${data.stageId},
@@ -109,6 +119,7 @@ export const projectTaskDelayRepository = {
     projectId?: string,
     stageId?: string,
     taskId?: string,
+    searchKey?: string,
   ): Promise<ProjectTaskDelayRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -125,6 +136,12 @@ export const projectTaskDelayRepository = {
 
     if (taskId) {
       filters.push(Prisma.sql`"taskId" = ${taskId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
     }
 
     return prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
@@ -163,7 +180,13 @@ export const projectTaskDelayRepository = {
     }
 
     if (data.delayReason !== undefined) {
-      assignments.unshift(Prisma.sql`"delayReason" = ${data.delayReason}`);
+      assignments.unshift(
+        Prisma.sql`"delayReason" = ${toJsonbSql(data.delayReason)}`,
+      );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.requestApproved !== undefined) {
@@ -206,5 +229,33 @@ export const projectTaskDelayRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectTaskDelayInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    return prismaClient.projectTaskDelay.createMany({
+      data: data.map((item) => ({
+        taskId: item.taskId,
+        requestedDelayInDays: item.requestedDelayInDays,
+        delayReason: item.delayReason,
+        searchText: item.searchText,
+        requestApproved: item.requestApproved || false,
+        requestApprovalTime: item.requestApprovalTime || null,
+        stageId: item.stageId,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };
