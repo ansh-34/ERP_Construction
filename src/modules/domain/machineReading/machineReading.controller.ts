@@ -28,6 +28,7 @@ export const machineReadingController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const machineReading = await machineReadingService.create({
         date: date ?? '',
@@ -36,6 +37,7 @@ export const machineReadingController = {
         machineStartTime: machineStartTime ?? '',
         projectId: projectId ?? '',
         domainId,
+        adminId,
         status: status ?? StatusEnum.ACTIVE,
       });
 
@@ -66,6 +68,7 @@ export const machineReadingController = {
 
       const machineReadings = await machineReadingService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId,
         searchKey,
       );
@@ -94,6 +97,7 @@ export const machineReadingController = {
       const machineReading = await machineReadingService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!machineReading) {
@@ -128,6 +132,7 @@ export const machineReadingController = {
       const updatedMachineReading = await machineReadingService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           closingFuelStock: closingFuelStock ?? 0,
           ...(fuelRefillQuantity !== undefined && { fuelRefillQuantity }),

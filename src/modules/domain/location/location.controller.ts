@@ -19,6 +19,7 @@ export const locationController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const location = await locationService.create(
         {
@@ -26,6 +27,7 @@ export const locationController = {
           type: type ?? '',
           ...(parentLocationId !== undefined && { parentLocationId }),
           domainId,
+          adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -54,6 +56,7 @@ export const locationController = {
       };
       const locations = await locationService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         searchKey,
         language,
       );
@@ -80,6 +83,7 @@ export const locationController = {
       const location = await locationService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -116,6 +120,7 @@ export const locationController = {
       const updatedLocation = await locationService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(type !== undefined && { type }),
@@ -147,6 +152,7 @@ export const locationController = {
       const deletedLocation = await locationService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedLocation) {

@@ -21,6 +21,7 @@ export interface CreateProjectTaskDelayInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -191,6 +192,7 @@ export const projectTaskDelayService = {
       const task = await projectTaskRepository.findById(
         data.taskId,
         data.domainId,
+        data.adminId,
       );
 
       if (
@@ -213,6 +215,7 @@ export const projectTaskDelayService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
     stageId?: string,
     taskId?: string,
@@ -238,6 +241,7 @@ export const projectTaskDelayService = {
     try {
       const delays = await projectTaskDelayRepository.findMany(
         domainId,
+        adminId,
         projectId,
         stageId,
         taskId,
@@ -252,6 +256,7 @@ export const projectTaskDelayService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedProjectTaskDelayRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
@@ -259,7 +264,11 @@ export const projectTaskDelayService = {
     }
 
     try {
-      const delay = await projectTaskDelayRepository.findById(id, domainId);
+      const delay = await projectTaskDelayRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
       return delay ? normalizeProjectTaskDelay(delay, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -269,6 +278,7 @@ export const projectTaskDelayService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateProjectTaskDelayInput,
     language: string | null = null,
   ): Promise<LocalizedProjectTaskDelayRecord | null> => {
@@ -282,6 +292,7 @@ export const projectTaskDelayService = {
       const existingDelay = await projectTaskDelayRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingDelay) {
@@ -292,6 +303,7 @@ export const projectTaskDelayService = {
         id,
         domainId,
         buildUpdatePayload(data),
+        adminId,
       );
 
       return delay ? normalizeProjectTaskDelay(delay, language) : null;
@@ -303,6 +315,7 @@ export const projectTaskDelayService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
@@ -312,13 +325,18 @@ export const projectTaskDelayService = {
       const existingDelay = await projectTaskDelayRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingDelay) {
         throw new Error('not found');
       }
 
-      return await projectTaskDelayRepository.softDelete(id, domainId);
+      return await projectTaskDelayRepository.softDelete(
+        id,
+        domainId,
+        adminId,
+      );
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

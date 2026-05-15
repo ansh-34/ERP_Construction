@@ -13,6 +13,7 @@ export interface ProjectStageRecord {
   progress: number | null;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -27,6 +28,7 @@ export interface CreateProjectStageInput {
   progress?: number | null;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -47,6 +49,7 @@ const projectStageSelect = Prisma.sql`
   "progress",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -67,7 +70,7 @@ export const projectStageRepository = {
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectStage" ("id", "name", "code", "searchText", "description", "progress", "projectId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "ProjectStage" ("id", "name", "code", "searchText", "description", "progress", "projectId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
@@ -77,6 +80,7 @@ export const projectStageRepository = {
         ${data.progress ?? null},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -91,6 +95,7 @@ export const projectStageRepository = {
   findMany: async (
     domainId: string,
     projectId: string,
+    adminId?: string,
     searchKey?: string,
   ): Promise<ProjectStageRecord[]> => {
     const filters = [
@@ -98,6 +103,10 @@ export const projectStageRepository = {
       Prisma.sql`"projectId" = ${projectId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (searchKey) {
       filters.push(
@@ -116,11 +125,22 @@ export const projectStageRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       SELECT ${projectStageSelect}
       FROM "ProjectStage"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -131,11 +151,23 @@ export const projectStageRepository = {
     code: string,
     domainId: string,
     projectId: string,
+    adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"projectId" = ${projectId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       SELECT ${projectStageSelect}
       FROM "ProjectStage"
-      WHERE "code" = ${code} AND "domainId" = ${domainId} AND "projectId" = ${projectId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -146,6 +178,7 @@ export const projectStageRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectStageInput,
+    adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -177,10 +210,20 @@ export const projectStageRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       UPDATE "ProjectStage"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectStageSelect}
     `);
 
@@ -190,11 +233,22 @@ export const projectStageRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       UPDATE "ProjectStage"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectStageSelect}
     `);
 
@@ -215,6 +269,7 @@ export const projectStageRepository = {
         progress: item.progress || null,
         projectId: item.projectId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

@@ -17,6 +17,7 @@ export interface CreateProjectStageInput {
   progress?: number | null;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -181,6 +182,7 @@ export const projectStageService = {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
@@ -194,6 +196,7 @@ export const projectStageService = {
           code,
           data.domainId,
           data.projectId,
+          data.adminId,
         )
       ) {
         throw new Error('duplicate code');
@@ -213,6 +216,7 @@ export const projectStageService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId: string,
     searchKey?: string,
     language: string | null = null,
@@ -225,6 +229,7 @@ export const projectStageService = {
       const stages = await projectStageRepository.findMany(
         domainId,
         projectId,
+        adminId,
         searchKey,
       );
       return stages.map((stage) => normalizeProjectStage(stage, language));
@@ -236,6 +241,7 @@ export const projectStageService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedProjectStageRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
@@ -243,7 +249,11 @@ export const projectStageService = {
     }
 
     try {
-      const stage = await projectStageRepository.findById(id, domainId);
+      const stage = await projectStageRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
       return stage ? normalizeProjectStage(stage, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -253,6 +263,7 @@ export const projectStageService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateProjectStageInput,
     language: string | null = null,
   ): Promise<LocalizedProjectStageRecord | null> => {
@@ -263,7 +274,11 @@ export const projectStageService = {
     assertUpdateInput(data);
 
     try {
-      const existingStage = await projectStageRepository.findById(id, domainId);
+      const existingStage = await projectStageRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingStage) {
         throw new Error('not found');
@@ -286,6 +301,7 @@ export const projectStageService = {
           updateData.code,
           domainId,
           existingStage.projectId,
+          adminId,
         );
 
         if (duplicateStage && duplicateStage.id !== id) {
@@ -297,6 +313,7 @@ export const projectStageService = {
         id,
         domainId,
         updateData,
+        adminId,
       );
       return stage ? normalizeProjectStage(stage, language) : null;
     } catch (error: unknown) {
@@ -307,19 +324,24 @@ export const projectStageService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ProjectStageRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      const existingStage = await projectStageRepository.findById(id, domainId);
+      const existingStage = await projectStageRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingStage) {
         throw new Error('not found');
       }
 
-      return await projectStageRepository.softDelete(id, domainId);
+      return await projectStageRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

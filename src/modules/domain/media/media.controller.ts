@@ -12,6 +12,7 @@ export const mediaController = {
         (req.headers.language as string) ||
         'en';
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
       const { file } = req;
       const { name } = req.body as {
         name?: Record<string, unknown>;
@@ -31,6 +32,7 @@ export const mediaController = {
             type: file.mimetype,
             url,
             domainId,
+            adminId,
           },
           language,
         );
@@ -60,8 +62,10 @@ export const mediaController = {
         domainId?: string;
         searchKey?: string;
       };
+      const adminId = req.user!.adminId;
       const media = await mediaService.getAll(
         domainId ?? '',
+        adminId,
         searchKey,
         language,
       );
@@ -85,9 +89,11 @@ export const mediaController = {
         'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const adminId = req.user!.adminId;
       const media = await mediaService.getById(
         id ?? '',
         domainId ?? '',
+        adminId,
         language,
       );
 
@@ -110,6 +116,7 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const adminId = req.user!.adminId;
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
@@ -122,6 +129,7 @@ export const mediaController = {
       const updatedMedia = await mediaService.update(
         id ?? '',
         domainId ?? '',
+        adminId,
         {
           ...(name !== undefined && { name }),
           ...(type !== undefined && { type }),
@@ -148,9 +156,11 @@ export const mediaController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const adminId = req.user!.adminId;
       const deletedMedia = await mediaService.softDelete(
         id ?? '',
         domainId ?? '',
+        adminId,
       );
 
       if (!deletedMedia) {

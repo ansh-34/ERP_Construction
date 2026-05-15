@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import { projectTaskController } from './projectTask.controller';
 import {
@@ -10,6 +11,8 @@ import {
 } from './projectTask.validate';
 
 const projectTaskRouter = Router();
+
+projectTaskRouter.use(authMiddleware);
 
 projectTaskRouter.post(
   '/',

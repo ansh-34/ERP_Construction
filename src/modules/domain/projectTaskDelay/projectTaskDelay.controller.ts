@@ -32,6 +32,7 @@ export const projectTaskDelayController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const projectTaskDelay = await projectTaskDelayService.create(
         {
@@ -43,6 +44,7 @@ export const projectTaskDelayController = {
           stageId: stageId ?? '',
           projectId: projectId ?? '',
           domainId,
+          adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -77,6 +79,7 @@ export const projectTaskDelayController = {
 
       const projectTaskDelays = await projectTaskDelayService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId,
         stageId,
         taskId,
@@ -108,6 +111,7 @@ export const projectTaskDelayController = {
       const projectTaskDelay = await projectTaskDelayService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -153,6 +157,7 @@ export const projectTaskDelayController = {
       const updatedProjectTaskDelay = await projectTaskDelayService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(requestedDelayInDays !== undefined && { requestedDelayInDays }),
           ...(delayReason !== undefined && { delayReason }),
@@ -187,6 +192,7 @@ export const projectTaskDelayController = {
       const deletedProjectTaskDelay = await projectTaskDelayService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProjectTaskDelay) {

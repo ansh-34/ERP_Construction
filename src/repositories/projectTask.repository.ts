@@ -23,6 +23,7 @@ export interface ProjectTaskRecord {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -47,6 +48,7 @@ export interface CreateProjectTaskInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -86,6 +88,7 @@ const projectTaskSelect = Prisma.sql`
   "stageId",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -128,6 +131,7 @@ export const projectTaskRepository = {
         "stageId",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -152,6 +156,7 @@ export const projectTaskRepository = {
         ${data.stageId},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -165,6 +170,7 @@ export const projectTaskRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     stageId?: string,
     searchKey?: string,
@@ -173,6 +179,10 @@ export const projectTaskRepository = {
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -199,11 +209,22 @@ export const projectTaskRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       SELECT ${projectTaskSelect}
       FROM "ProjectTask"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -215,15 +236,24 @@ export const projectTaskRepository = {
     domainId: string,
     projectId: string,
     stageId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"projectId" = ${projectId}`,
+      Prisma.sql`"stageId" = ${stageId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       SELECT ${projectTaskSelect}
       FROM "ProjectTask"
-      WHERE "code" = ${code}
-        AND "domainId" = ${domainId}
-        AND "projectId" = ${projectId}
-        AND "stageId" = ${stageId}
-        AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -234,6 +264,7 @@ export const projectTaskRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectTaskInput,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -319,10 +350,20 @@ export const projectTaskRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskSelect}
     `);
 
@@ -332,11 +373,22 @@ export const projectTaskRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskSelect}
     `);
 
@@ -367,6 +419,7 @@ export const projectTaskRepository = {
         stageId: item.stageId,
         projectId: item.projectId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

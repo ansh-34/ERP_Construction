@@ -8,6 +8,7 @@ export const createProject = async (req: Request, res: Response) => {
   try {
     const project = await UserProjectService.createProject(
       req.user!.domainId,
+      req.user!.adminId,
       req.body,
     );
 
@@ -32,6 +33,7 @@ export const listDomainProjects = async (req: Request, res: Response) => {
     const { projects, pagination } =
       await UserProjectService.listDomainProjects(
         req.user!.domainId,
+        req.user!.adminId,
         req.query as PaginationQuery,
         language as string,
       );
@@ -60,6 +62,7 @@ export const getMyProjects = async (req: Request, res: Response) => {
     const { language = 'en' } = req.headers;
     const { projects, pagination } = await UserProjectService.getMyProjects(
       req.user!.domainId,
+      req.user!.adminId,
       req.user!.userId,
       req.query as PaginationQuery,
       language as string,
@@ -89,6 +92,7 @@ export const getProjectById = async (req: Request, res: Response) => {
     const { language } = req.headers;
     const project = await UserProjectService.getProjectById(
       req.user!.domainId,
+      req.user!.adminId,
       req.params.id,
       language as string | null,
     );
@@ -110,6 +114,7 @@ export const updateProject = async (req: Request, res: Response) => {
   try {
     const project = await UserProjectService.updateProject(
       req.user!.domainId,
+      req.user!.adminId,
       req.params.id,
       req.body,
     );
@@ -131,7 +136,11 @@ export const updateProject = async (req: Request, res: Response) => {
 
 export const deleteProject = async (req: Request, res: Response) => {
   try {
-    await UserProjectService.deleteProject(req.user!.domainId, req.params.id);
+    await UserProjectService.deleteProject(
+      req.user!.domainId,
+      req.user!.adminId,
+      req.params.id,
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,

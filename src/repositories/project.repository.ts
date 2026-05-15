@@ -10,12 +10,12 @@ export interface ProjectRecord {
   name: JsonObject;
   code: string;
   searchText: string;
-  projectCategoryId: string;
   description: JsonObject | null;
   budget: number;
   spent: number;
   locationId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -26,12 +26,12 @@ export interface CreateProjectInput {
   name: JsonObject;
   code: string;
   searchText: string;
-  projectCategoryId: string;
   description?: JsonObject | null;
   budget: number;
   spent?: number;
   locationId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -49,12 +49,12 @@ const projectSelect = Prisma.sql`
   "id",
   "name",
   "code",
-  "projectCategoryId",
   "description",
   "budget",
   "spent",
   "locationId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -73,18 +73,18 @@ export const projectRepository = {
     const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
-      INSERT INTO "Project" ("id", "name", "code", "searchText", "projectCategoryId", "description", "budget", "spent", "locationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "Project" ("id", "name", "code", "searchText", "description", "budget", "spent", "locationId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
         ${data.searchText},
-        ${data.projectCategoryId},
         ${descriptionSql},
         ${data.budget},
         ${data.spent ?? 0},
         ${data.locationId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -99,11 +99,16 @@ export const projectRepository = {
   findMany: async (
     domainId: string,
     searchKey?: string,
+    adminId?: string,
   ): Promise<ProjectRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (searchKey) {
       filters.push(
@@ -122,15 +127,24 @@ export const projectRepository = {
   findManyByIds: async (
     ids: string[],
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectRecord[]> => {
     if (ids.length === 0) return [];
+
+    const filters = [
+      Prisma.sql`"id" = ANY(${ids}::text[])`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     return prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       SELECT ${projectSelect}
       FROM "Project"
-      WHERE "id" = ANY(${ids}::text[])
-        AND "domainId" = ${domainId}
-        AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -138,11 +152,22 @@ export const projectRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       SELECT ${projectSelect}
       FROM "Project"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -152,11 +177,22 @@ export const projectRepository = {
   findByCode: async (
     code: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       SELECT ${projectSelect}
       FROM "Project"
-      WHERE "code" = ${code} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -167,6 +203,7 @@ export const projectRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectInput,
+    adminId?: string,
   ): Promise<ProjectRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -202,10 +239,20 @@ export const projectRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       UPDATE "Project"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectSelect}
     `);
 
@@ -215,11 +262,22 @@ export const projectRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
       UPDATE "Project"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectSelect}
     `);
 
@@ -236,12 +294,12 @@ export const projectRepository = {
         name: item.name,
         code: item.code,
         searchText: item.searchText,
-        projectCategoryId: item.projectCategoryId,
         description: item.description || null,
         budget: item.budget,
         spent: item.spent || 0,
         locationId: item.locationId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

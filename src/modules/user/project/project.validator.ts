@@ -29,10 +29,6 @@ const nonNegativeNumber = z
 
 export const createProjectBodySchema = z.object({
   name: localizedStringSchema,
-  projectCategoryId: z
-    .string()
-    .trim()
-    .min(1, { message: 'Project category id is required' }),
   description: optionalLocalizedStringSchema,
   budget: nonNegativeNumber,
   spent: nonNegativeNumber.optional(),

@@ -13,6 +13,7 @@ export interface MachineryRecord {
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -26,6 +27,7 @@ export interface CreateMachineryInput {
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -44,6 +46,7 @@ const machinerySelect = Prisma.sql`
   "expectedLitrePerHour",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -67,6 +70,7 @@ export const machineryRepository = {
         "expectedLitrePerHour",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -80,6 +84,7 @@ export const machineryRepository = {
         ${data.expectedLitrePerHour},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -93,6 +98,7 @@ export const machineryRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     searchKey?: string,
   ): Promise<MachineryRecord[]> => {
@@ -100,6 +106,10 @@ export const machineryRepository = {
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -122,11 +132,22 @@ export const machineryRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<MachineryRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
       SELECT ${machinerySelect}
       FROM "Machinery"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -137,6 +158,7 @@ export const machineryRepository = {
     id: string,
     domainId: string,
     data: UpdateMachineryInput,
+    adminId?: string,
   ): Promise<MachineryRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -162,10 +184,20 @@ export const machineryRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
       UPDATE "Machinery"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${machinerySelect}
     `);
 
@@ -175,11 +207,22 @@ export const machineryRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<MachineryRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
       UPDATE "Machinery"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${machinerySelect}
     `);
 
@@ -199,6 +242,7 @@ export const machineryRepository = {
         expectedLitrePerHour: item.expectedLitrePerHour,
         projectId: item.projectId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

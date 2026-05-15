@@ -46,6 +46,7 @@ export const projectTaskController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const projectTask = await projectTaskService.create(
         {
@@ -64,6 +65,7 @@ export const projectTaskController = {
           stageId: stageId ?? '',
           projectId: projectId ?? '',
           domainId,
+          adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -97,6 +99,7 @@ export const projectTaskController = {
 
       const projectTasks = await projectTaskService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId,
         stageId,
         searchKey,
@@ -127,6 +130,7 @@ export const projectTaskController = {
       const projectTask = await projectTaskService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -186,6 +190,7 @@ export const projectTaskController = {
       const updatedProjectTask = await projectTaskService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(assignee !== undefined && { assignee }),
@@ -228,6 +233,7 @@ export const projectTaskController = {
       const deletedProjectTask = await projectTaskService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProjectTask) {

@@ -19,6 +19,7 @@ export interface CreateMachineReadingInput {
   machineStartTime: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -118,6 +119,10 @@ function assertCreateInput(data: CreateMachineReadingInput): void {
     throw new Error('invalid domainId');
   }
 
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
+  }
+
   assertStatus(data.status);
 }
 
@@ -152,6 +157,7 @@ function buildCreatePayload(data: CreateMachineReadingInput) {
     machineEndTime: null,
     projectId: data.projectId,
     domainId: data.domainId,
+    adminId: data.adminId,
     status: data.status,
   };
 }
@@ -186,6 +192,7 @@ export const machineReadingService = {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
@@ -199,6 +206,7 @@ export const machineReadingService = {
           code,
           data.domainId,
           data.projectId,
+          data.adminId,
         )
       ) {
         code = generateCode('MACHINE_READING');
@@ -216,11 +224,16 @@ export const machineReadingService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
     searchKey?: string,
   ): Promise<MachineReadingRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     if (projectId !== undefined && !isNonEmptyString(projectId)) {
@@ -230,6 +243,7 @@ export const machineReadingService = {
     try {
       return await machineReadingRepository.findMany(
         domainId,
+        adminId,
         projectId,
         searchKey,
       );
@@ -241,13 +255,18 @@ export const machineReadingService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<MachineReadingRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      return await machineReadingRepository.findById(id, domainId);
+      return await machineReadingRepository.findById(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -256,10 +275,15 @@ export const machineReadingService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateMachineReadingInput,
   ): Promise<MachineReadingRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     assertUpdateInput(data);
@@ -268,6 +292,7 @@ export const machineReadingService = {
       const existingMachineReading = await machineReadingRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingMachineReading) {
@@ -278,6 +303,7 @@ export const machineReadingService = {
         id,
         domainId,
         buildUpdatePayload(existingMachineReading, data),
+        adminId,
       );
     } catch (error: unknown) {
       throw normalizePrismaError(error);

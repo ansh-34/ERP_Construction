@@ -8,6 +8,7 @@ export interface CreateLocationInput {
   type: string;
   parentLocationId?: string | null;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -67,6 +68,10 @@ function assertCreateInput(data: CreateLocationInput): void {
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
+  }
+
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
   }
 
   if (
@@ -134,7 +139,9 @@ export const locationService = {
     try {
       const code = buildLocationCode(data.name);
 
-      if (await locationRepository.findByCode(code, data.domainId)) {
+      if (
+        await locationRepository.findByCode(code, data.domainId, data.adminId)
+      ) {
         throw new Error('duplicate code');
       }
 
@@ -142,6 +149,7 @@ export const locationService = {
         const parentLocation = await locationRepository.findById(
           data.parentLocationId,
           data.domainId,
+          data.adminId,
         );
 
         if (!parentLocation) {
@@ -163,6 +171,7 @@ export const locationService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     searchKey?: string,
     language: string | null = null,
   ): Promise<LocalizedLocationRecord[]> => {
@@ -170,8 +179,16 @@ export const locationService = {
       throw new Error('invalid domainId');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const locations = await locationRepository.findMany(domainId, searchKey);
+      const locations = await locationRepository.findMany(
+        domainId,
+        adminId,
+        searchKey,
+      );
       return locations.map((location) => normalizeLocation(location, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -181,14 +198,19 @@ export const locationService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedLocationRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const location = await locationRepository.findById(id, domainId);
+      const location = await locationRepository.findById(id, domainId, adminId);
       return location ? normalizeLocation(location, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -198,6 +220,7 @@ export const locationService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateLocationInput,
     language: string | null = null,
   ): Promise<LocalizedLocationRecord | null> => {
@@ -205,10 +228,18 @@ export const locationService = {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     assertUpdateInput(data);
 
     try {
-      const existingLocation = await locationRepository.findById(id, domainId);
+      const existingLocation = await locationRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingLocation) {
         throw new Error('not found');
@@ -218,6 +249,7 @@ export const locationService = {
         const parentLocation = await locationRepository.findById(
           data.parentLocationId,
           domainId,
+          adminId,
         );
 
         if (!parentLocation) {
@@ -239,6 +271,7 @@ export const locationService = {
         const duplicateLocation = await locationRepository.findByCode(
           updateData.code,
           domainId,
+          adminId,
         );
 
         if (duplicateLocation && duplicateLocation.id !== id) {
@@ -250,6 +283,7 @@ export const locationService = {
         id,
         domainId,
         updateData,
+        adminId,
       );
       return location ? normalizeLocation(location, language) : null;
     } catch (error: unknown) {
@@ -260,19 +294,28 @@ export const locationService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<LocationRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const existingLocation = await locationRepository.findById(id, domainId);
+      const existingLocation = await locationRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingLocation) {
         throw new Error('not found');
       }
 
-      return await locationRepository.softDelete(id, domainId);
+      return await locationRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

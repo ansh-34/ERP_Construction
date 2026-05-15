@@ -18,6 +18,7 @@ export interface CreateMachineryInput {
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -86,6 +87,10 @@ function assertCreateInput(data: CreateMachineryInput): void {
     throw new Error('invalid domainId');
   }
 
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
+  }
+
   assertStatus(data.status);
 }
 
@@ -129,6 +134,7 @@ export const machineryService = {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
@@ -148,12 +154,17 @@ export const machineryService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
     searchKey?: string,
     language: string | null = null,
   ): Promise<LocalizedMachineryRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     if (projectId !== undefined && !isNonEmptyString(projectId)) {
@@ -163,6 +174,7 @@ export const machineryService = {
     try {
       const machineries = await machineryRepository.findMany(
         domainId,
+        adminId,
         projectId,
         searchKey,
       );
@@ -177,14 +189,23 @@ export const machineryService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedMachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const machinery = await machineryRepository.findById(id, domainId);
+      const machinery = await machineryRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
       return machinery ? normalizeMachinery(machinery, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -194,11 +215,16 @@ export const machineryService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateMachineryInput,
     language: string | null = null,
   ): Promise<LocalizedMachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     assertUpdateInput(data);
@@ -207,6 +233,7 @@ export const machineryService = {
       const existingMachinery = await machineryRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingMachinery) {
@@ -226,6 +253,7 @@ export const machineryService = {
         id,
         domainId,
         updateData,
+        adminId,
       );
       return machinery ? normalizeMachinery(machinery, language) : null;
     } catch (error: unknown) {
@@ -236,22 +264,28 @@ export const machineryService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<MachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     try {
       const existingMachinery = await machineryRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingMachinery) {
         throw new Error('not found');
       }
 
-      return await machineryRepository.softDelete(id, domainId);
+      return await machineryRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

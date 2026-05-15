@@ -16,12 +16,14 @@ export const apiKeyController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const apiKey = await apiKeyService.create(
         {
           name: name ?? {},
           description: description ?? {},
           domainId,
+          adminId,
         },
         language,
       );
@@ -49,6 +51,7 @@ export const apiKeyController = {
       };
       const apiKeys = await apiKeyService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         searchKey,
         language,
       );
@@ -75,6 +78,7 @@ export const apiKeyController = {
       const apiKey = await apiKeyService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -109,6 +113,7 @@ export const apiKeyController = {
       const updatedApiKey = await apiKeyService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
@@ -138,6 +143,7 @@ export const apiKeyController = {
       const deletedApiKey = await apiKeyService.delete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedApiKey) {

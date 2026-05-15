@@ -28,6 +28,7 @@ export const projectStageController = {
           ...(progress !== undefined && { progress }),
           projectId: projectId ?? '',
           domainId: domainId ?? '',
+          adminId: req.user!.adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -59,6 +60,7 @@ export const projectStageController = {
       };
       const projectStages = await projectStageService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId ?? '',
         searchKey,
         language,
@@ -88,6 +90,7 @@ export const projectStageController = {
       const projectStage = await projectStageService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -126,6 +129,7 @@ export const projectStageController = {
       const updatedProjectStage = await projectStageService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
@@ -159,6 +163,7 @@ export const projectStageController = {
       const deletedProjectStage = await projectStageService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProjectStage) {

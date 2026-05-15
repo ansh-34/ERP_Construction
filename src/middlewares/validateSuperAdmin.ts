@@ -45,6 +45,7 @@ const validateSuperAdmin = async (
     req.user = {
       userId: decodedToken.id,
       domainId: '',
+      adminId: '',
       roleId: '',
       industry: '',
     };

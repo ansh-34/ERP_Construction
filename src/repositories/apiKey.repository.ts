@@ -11,6 +11,7 @@ export interface ApiKeyRecord {
   description: JsonObject | null;
   secret: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -23,6 +24,7 @@ export interface CreateApiKeyInput {
   name: JsonObject;
   description: JsonObject;
   domainId: string;
+  adminId: string;
   secret: string;
   searchText: string;
 }
@@ -38,6 +40,7 @@ const apiKeySelect = Prisma.sql`
   "name",
   "description",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -53,8 +56,8 @@ export const apiKeyRepository = {
     const id = randomUUID();
 
     const result = await prisma.$queryRaw<ApiKeyRecord[]>(Prisma.sql`
-      INSERT INTO "ApiKey" ("id", "name", "description", "secret", "searchText", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${toJsonbSql(data.name)}, ${toJsonbSql(data.description)}, ${data.secret}, ${data.searchText}, ${data.domainId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
+      INSERT INTO "ApiKey" ("id", "name", "description", "secret", "searchText", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${toJsonbSql(data.name)}, ${toJsonbSql(data.description)}, ${data.secret}, ${data.searchText}, ${data.domainId}, ${data.adminId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
       RETURNING *
     `);
 
@@ -63,12 +66,17 @@ export const apiKeyRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     searchKey?: string,
   ): Promise<ApiKeyPublicRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (searchKey) {
       filters.push(
@@ -87,11 +95,22 @@ export const apiKeyRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ApiKeyPublicRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ApiKeyPublicRecord[]>(Prisma.sql`
       SELECT ${apiKeySelect}
       FROM "ApiKey"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -102,6 +121,7 @@ export const apiKeyRepository = {
     id: string,
     domainId: string,
     data: UpdateApiKeyInput,
+    adminId?: string,
   ): Promise<ApiKeyPublicRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -119,10 +139,20 @@ export const apiKeyRepository = {
       assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ApiKeyPublicRecord[]>(Prisma.sql`
       UPDATE "ApiKey"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${apiKeySelect}
     `);
 
@@ -132,11 +162,22 @@ export const apiKeyRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ApiKeyPublicRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ApiKeyPublicRecord[]>(Prisma.sql`
       UPDATE "ApiKey"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${apiKeySelect}
     `);
 
@@ -155,6 +196,7 @@ export const apiKeyRepository = {
         secret: item.secret,
         searchText: item.searchText,
         domainId: item.domainId,
+        adminId: item.adminId,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(
         options,

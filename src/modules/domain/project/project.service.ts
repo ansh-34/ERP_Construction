@@ -1,6 +1,6 @@
 import {
   projectRepository,
-  projectCategoryRepository,
+  DomainRepository,
   type ProjectRecord,
   type UpdateProjectInput,
 } from '@repositories/index';
@@ -14,12 +14,12 @@ import {
 
 export interface CreateProjectInput {
   name: Record<string, unknown>;
-  projectCategoryId: string;
   description?: Record<string, unknown> | null;
   budget: number;
   spent?: number;
   locationId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -70,10 +70,6 @@ function assertCreateInput(data: CreateProjectInput): void {
 
   if (!isNonEmptyString(data.name.en)) {
     throw new Error('name.en is required');
-  }
-
-  if (!isNonEmptyString(data.projectCategoryId)) {
-    throw new Error('invalid projectCategoryId');
   }
 
   if (
@@ -149,6 +145,17 @@ function assertUpdateInput(data: UpdateProjectInput): void {
   }
 }
 
+async function resolveAdminId(domainId: string, adminId: string) {
+  if (adminId) return adminId;
+
+  const domain = await DomainRepository.findActiveById(domainId);
+  if (!domain?.adminId) {
+    throw new Error('invalid adminId');
+  }
+
+  return domain.adminId;
+}
+
 export const projectService = {
   create: async (
     data: CreateProjectInput,
@@ -158,22 +165,15 @@ export const projectService = {
 
     try {
       const code = buildProjectCode(data.name);
+      const adminId = await resolveAdminId(data.domainId, data.adminId);
 
-      if (await projectRepository.findByCode(code, data.domainId)) {
+      if (await projectRepository.findByCode(code, data.domainId, adminId)) {
         throw new Error('duplicate code');
-      }
-
-      const existingCategory = await projectCategoryRepository.findById(
-        data.projectCategoryId,
-        data.domainId,
-      );
-
-      if (!existingCategory) {
-        throw new Error('not found');
       }
 
       const project = await projectRepository.create({
         ...data,
+        adminId,
         code,
         searchText: buildProjectSearchText(data.name),
       });
@@ -186,6 +186,7 @@ export const projectService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     searchKey?: string,
     language: string | null = null,
   ): Promise<LocalizedProjectRecord[]> => {
@@ -194,7 +195,12 @@ export const projectService = {
     }
 
     try {
-      const projects = await projectRepository.findMany(domainId, searchKey);
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const projects = await projectRepository.findMany(
+        domainId,
+        searchKey,
+        resolvedAdminId,
+      );
       return projects.map((project) => normalizeProject(project, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -204,6 +210,7 @@ export const projectService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedProjectRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
@@ -211,7 +218,12 @@ export const projectService = {
     }
 
     try {
-      const project = await projectRepository.findById(id, domainId);
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const project = await projectRepository.findById(
+        id,
+        domainId,
+        resolvedAdminId,
+      );
       return project ? normalizeProject(project, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -221,6 +233,7 @@ export const projectService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateProjectInput,
     language: string | null = null,
   ): Promise<LocalizedProjectRecord | null> => {
@@ -231,7 +244,12 @@ export const projectService = {
     assertUpdateInput(data);
 
     try {
-      const existingProject = await projectRepository.findById(id, domainId);
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const existingProject = await projectRepository.findById(
+        id,
+        domainId,
+        resolvedAdminId,
+      );
 
       if (!existingProject) {
         throw new Error('not found');
@@ -253,6 +271,7 @@ export const projectService = {
         const duplicateProject = await projectRepository.findByCode(
           updateData.code,
           domainId,
+          resolvedAdminId,
         );
 
         if (duplicateProject && duplicateProject.id !== id) {
@@ -260,7 +279,12 @@ export const projectService = {
         }
       }
 
-      const project = await projectRepository.update(id, domainId, updateData);
+      const project = await projectRepository.update(
+        id,
+        domainId,
+        updateData,
+        resolvedAdminId,
+      );
       return project ? normalizeProject(project, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -270,19 +294,25 @@ export const projectService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ProjectRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      const existingProject = await projectRepository.findById(id, domainId);
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const existingProject = await projectRepository.findById(
+        id,
+        domainId,
+        resolvedAdminId,
+      );
 
       if (!existingProject) {
         throw new Error('not found');
       }
 
-      return await projectRepository.softDelete(id, domainId);
+      return await projectRepository.softDelete(id, domainId, resolvedAdminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

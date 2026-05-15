@@ -13,7 +13,6 @@ export const projectController = {
         'en';
       const {
         name,
-        projectCategoryId,
         description,
         budget,
         spent,
@@ -21,7 +20,6 @@ export const projectController = {
         status,
       } = req.body as {
         name?: Record<string, unknown>;
-        projectCategoryId?: string;
         description?: Record<string, unknown>;
         budget?: number;
         spent?: number;
@@ -30,16 +28,17 @@ export const projectController = {
       };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const project = await projectService.create(
         {
           name: name ?? {},
-          projectCategoryId: projectCategoryId ?? '',
           ...(description !== undefined && { description }),
           budget: budget ?? 0,
           ...(spent !== undefined && { spent }),
           locationId: locationId ?? '',
           domainId,
+          adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -68,6 +67,7 @@ export const projectController = {
       };
       const projects = await projectService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         searchKey,
         language,
       );
@@ -94,6 +94,7 @@ export const projectController = {
       const project = await projectService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -131,6 +132,7 @@ export const projectController = {
       const updatedProject = await projectService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
@@ -163,6 +165,7 @@ export const projectController = {
       const deletedProject = await projectService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProject) {

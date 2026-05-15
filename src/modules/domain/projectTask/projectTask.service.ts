@@ -29,6 +29,7 @@ export interface CreateProjectTaskInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -303,6 +304,7 @@ export const projectTaskService = {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
@@ -312,6 +314,7 @@ export const projectTaskService = {
       const stage = await projectStageRepository.findById(
         data.stageId,
         data.domainId,
+        data.adminId,
       );
 
       if (!stage || stage.projectId !== data.projectId) {
@@ -326,6 +329,7 @@ export const projectTaskService = {
           data.domainId,
           data.projectId,
           data.stageId,
+          data.adminId,
         )
       ) {
         throw new Error('duplicate code');
@@ -341,6 +345,7 @@ export const projectTaskService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
     stageId?: string,
     searchKey?: string,
@@ -361,6 +366,7 @@ export const projectTaskService = {
     try {
       const tasks = await projectTaskRepository.findMany(
         domainId,
+        adminId,
         projectId,
         stageId,
         searchKey,
@@ -374,6 +380,7 @@ export const projectTaskService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedProjectTaskRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
@@ -381,7 +388,7 @@ export const projectTaskService = {
     }
 
     try {
-      const task = await projectTaskRepository.findById(id, domainId);
+      const task = await projectTaskRepository.findById(id, domainId, adminId);
       return task ? normalizeProjectTask(task, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -391,6 +398,7 @@ export const projectTaskService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateProjectTaskInput,
     language: string | null = null,
   ): Promise<LocalizedProjectTaskRecord | null> => {
@@ -401,7 +409,11 @@ export const projectTaskService = {
     assertUpdateInput(data);
 
     try {
-      const existingTask = await projectTaskRepository.findById(id, domainId);
+      const existingTask = await projectTaskRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingTask) {
         throw new Error('not found');
@@ -415,6 +427,7 @@ export const projectTaskService = {
           domainId,
           existingTask.projectId,
           existingTask.stageId,
+          adminId,
         );
 
         if (duplicateTask && duplicateTask.id !== id) {
@@ -426,6 +439,7 @@ export const projectTaskService = {
         id,
         domainId,
         updatePayload,
+        adminId,
       );
 
       return task ? normalizeProjectTask(task, language) : null;
@@ -437,19 +451,24 @@ export const projectTaskService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ProjectTaskRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      const existingTask = await projectTaskRepository.findById(id, domainId);
+      const existingTask = await projectTaskRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingTask) {
         throw new Error('not found');
       }
 
-      return await projectTaskRepository.softDelete(id, domainId);
+      return await projectTaskRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

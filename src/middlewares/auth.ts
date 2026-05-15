@@ -29,6 +29,7 @@ const authMiddleware = (
     req.user = {
       userId: decoded.userId,
       domainId: decoded.domainId,
+      adminId: decoded.adminId,
       roleId: decoded.roleId,
       industry: decoded.industry,
     };

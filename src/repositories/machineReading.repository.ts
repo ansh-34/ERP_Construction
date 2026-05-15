@@ -16,6 +16,7 @@ export interface MachineReadingRecord {
   machineEndTime: Date | null;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -34,6 +35,7 @@ export interface CreateMachineReadingInput {
   machineEndTime?: Date | null;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -57,6 +59,7 @@ const machineReadingSelect = Prisma.sql`
   "machineEndTime",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -95,6 +98,7 @@ export const machineReadingRepository = {
         "machineEndTime",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -113,6 +117,7 @@ export const machineReadingRepository = {
         ${toDateSql(data.machineEndTime ?? null)},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -126,6 +131,7 @@ export const machineReadingRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     searchKey?: string,
   ): Promise<MachineReadingRecord[]> => {
@@ -133,6 +139,10 @@ export const machineReadingRepository = {
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -155,11 +165,22 @@ export const machineReadingRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<MachineReadingRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineReadingRecord[]>(Prisma.sql`
       SELECT ${machineReadingSelect}
       FROM "MachineReading"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -170,14 +191,23 @@ export const machineReadingRepository = {
     code: string,
     domainId: string,
     projectId: string,
+    adminId?: string,
   ): Promise<MachineReadingRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"projectId" = ${projectId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineReadingRecord[]>(Prisma.sql`
       SELECT ${machineReadingSelect}
       FROM "MachineReading"
-      WHERE "code" = ${code}
-        AND "domainId" = ${domainId}
-        AND "projectId" = ${projectId}
-        AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -188,6 +218,7 @@ export const machineReadingRepository = {
     id: string,
     domainId: string,
     data: UpdateMachineReadingInput,
+    adminId?: string,
   ): Promise<MachineReadingRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -219,10 +250,20 @@ export const machineReadingRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<MachineReadingRecord[]>(Prisma.sql`
       UPDATE "MachineReading"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${machineReadingSelect}
     `);
 
@@ -248,6 +289,7 @@ export const machineReadingRepository = {
         machineEndTime: item.machineEndTime || null,
         projectId: item.projectId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

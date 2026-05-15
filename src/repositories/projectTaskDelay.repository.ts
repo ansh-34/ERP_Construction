@@ -15,6 +15,7 @@ export interface ProjectTaskDelayRecord {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -31,6 +32,7 @@ export interface CreateProjectTaskDelayInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -53,6 +55,7 @@ const projectTaskDelaySelect = Prisma.sql`
   "stageId",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -87,6 +90,7 @@ export const projectTaskDelayRepository = {
         "stageId",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -103,6 +107,7 @@ export const projectTaskDelayRepository = {
         ${data.stageId},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -116,6 +121,7 @@ export const projectTaskDelayRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     stageId?: string,
     taskId?: string,
@@ -125,6 +131,10 @@ export const projectTaskDelayRepository = {
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -155,11 +165,22 @@ export const projectTaskDelayRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       SELECT ${projectTaskDelaySelect}
       FROM "ProjectTaskDelay"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -170,6 +191,7 @@ export const projectTaskDelayRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectTaskDelayInput,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -207,10 +229,20 @@ export const projectTaskDelayRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       UPDATE "ProjectTaskDelay"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskDelaySelect}
     `);
 
@@ -220,11 +252,22 @@ export const projectTaskDelayRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       UPDATE "ProjectTaskDelay"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskDelaySelect}
     `);
 
@@ -248,6 +291,7 @@ export const projectTaskDelayRepository = {
         stageId: item.stageId,
         projectId: item.projectId,
         domainId: item.domainId,
+        adminId: item.adminId,
         status: item.status,
       })),
       skipDuplicates: Object.prototype.hasOwnProperty.call(

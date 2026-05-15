@@ -11,6 +11,7 @@ export interface CreateApiKeyInput {
   name: Record<string, unknown>;
   description: Record<string, unknown>;
   domainId: string;
+  adminId: string;
 }
 
 export interface UpdateApiKeyInput {
@@ -82,6 +83,10 @@ function assertCreateInput(data: CreateApiKeyInput): void {
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
   }
+
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
+  }
 }
 
 function assertUpdateInput(data: UpdateApiKeyInput): void {
@@ -131,6 +136,7 @@ export const apiKeyService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     searchKey?: string,
     language: string | null = null,
   ): Promise<LocalizedApiKeyPublicRecord[]> => {
@@ -138,8 +144,16 @@ export const apiKeyService = {
       throw new Error('invalid domainId');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const apiKeys = await apiKeyRepository.findMany(domainId, searchKey);
+      const apiKeys = await apiKeyRepository.findMany(
+        domainId,
+        adminId,
+        searchKey,
+      );
       return apiKeys.map((apiKey) =>
         normalizeApiKeyRecord(apiKey, language),
       ) as LocalizedApiKeyPublicRecord[];
@@ -151,14 +165,19 @@ export const apiKeyService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedApiKeyPublicRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const apiKey = await apiKeyRepository.findById(id, domainId);
+      const apiKey = await apiKeyRepository.findById(id, domainId, adminId);
       return apiKey
         ? (normalizeApiKeyRecord(
             apiKey,
@@ -173,6 +192,7 @@ export const apiKeyService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateApiKeyInput,
     language: string | null = null,
   ): Promise<LocalizedApiKeyPublicRecord | null> => {
@@ -180,10 +200,18 @@ export const apiKeyService = {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     assertUpdateInput(data);
 
     try {
-      const existingApiKey = await apiKeyRepository.findById(id, domainId);
+      const existingApiKey = await apiKeyRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingApiKey) {
         throw new Error('not found');
@@ -198,7 +226,12 @@ export const apiKeyService = {
           : {}),
       };
 
-      const apiKey = await apiKeyRepository.update(id, domainId, updateData);
+      const apiKey = await apiKeyRepository.update(
+        id,
+        domainId,
+        updateData,
+        adminId,
+      );
       return apiKey
         ? (normalizeApiKeyRecord(
             apiKey,
@@ -213,19 +246,28 @@ export const apiKeyService = {
   delete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ApiKeyPublicRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      const existingApiKey = await apiKeyRepository.findById(id, domainId);
+      const existingApiKey = await apiKeyRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingApiKey) {
         throw new Error('not found');
       }
 
-      return await apiKeyRepository.softDelete(id, domainId);
+      return await apiKeyRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

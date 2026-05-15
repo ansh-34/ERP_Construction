@@ -21,6 +21,7 @@ export const machineryController = {
         };
 
       const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
 
       const machinery = await machineryService.create(
         {
@@ -29,6 +30,7 @@ export const machineryController = {
           expectedLitrePerHour: expectedLitrePerHour ?? 0,
           projectId: projectId ?? '',
           domainId,
+          adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -59,6 +61,7 @@ export const machineryController = {
 
       const machineries = await machineryService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId,
         searchKey,
         language,
@@ -86,6 +89,7 @@ export const machineryController = {
       const machinery = await machineryService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         language,
       );
 
@@ -122,6 +126,7 @@ export const machineryController = {
       const updatedMachinery = await machineryService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(code !== undefined && { code }),
           ...(type !== undefined && { type }),
@@ -155,6 +160,7 @@ export const machineryController = {
       const deletedMachinery = await machineryService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedMachinery) {

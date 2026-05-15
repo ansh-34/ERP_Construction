@@ -37,6 +37,23 @@ export const DomainRepository = {
         },
       });
 
+      const admin = await tx.admin.create({
+        data: {
+          name: data.domainName.en,
+          email: data.email,
+          phone: data.phone || null,
+          phoneCode: data.phoneCode || null,
+          password: data.password,
+          isEmailVerified: false,
+          onboardingStep: 'EMAIL_VERIFICATION',
+        },
+      });
+
+      await tx.domain.update({
+        where: { id: domain.id },
+        data: { adminId: admin.id },
+      });
+
       await tx.token.create({
         data: {
           token: data.token,
@@ -70,7 +87,7 @@ export const DomainRepository = {
         });
       }
 
-      return { domain, domainRole };
+      return { domain: { ...domain, adminId: admin.id }, domainRole, admin };
     });
   },
 

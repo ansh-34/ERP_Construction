@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { projectStageController } from './projectStage.controller';
+import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import {
   createProjectStageBody,
@@ -10,6 +11,8 @@ import {
 } from './projectStage.validate';
 
 const projectStageRouter = Router();
+
+projectStageRouter.use(authMiddleware);
 
 projectStageRouter.post(
   '/',

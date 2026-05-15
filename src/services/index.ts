@@ -5,5 +5,4 @@ export * from '../modules/domain/media/media.service';
 export * from './multer.service';
 export * from './passport.service';
 export * from '../modules/domain/project/project.service';
-export * from '../modules/domain/projectCategory/projectCategory.service';
 export * from '../modules/domain/projectStage/projectStage.service';

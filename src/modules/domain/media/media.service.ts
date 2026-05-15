@@ -7,6 +7,7 @@ export interface CreateMediaInput {
   type: string;
   url: string;
   domainId: string;
+  adminId: string;
 }
 
 export interface UpdateMediaInput {
@@ -71,6 +72,10 @@ function assertCreateInput(data: CreateMediaInput): void {
     throw new Error('invalid domainId');
   }
 
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
+  }
+
   if (!isNonEmptyString(data.url) || !isValidUrl(data.url)) {
     throw new Error('invalid url');
   }
@@ -124,15 +129,20 @@ export const mediaService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     searchKey?: string,
     language: string | null = null,
   ): Promise<LocalizedMediaRecord[]> => {
-    if (!isNonEmptyString(domainId)) {
-      throw new Error('invalid domainId');
+    if (!isNonEmptyString(domainId) || !isNonEmptyString(adminId)) {
+      throw new Error('invalid ids');
     }
 
     try {
-      const media = await mediaRepository.findMany(domainId, searchKey);
+      const media = await mediaRepository.findMany(
+        domainId,
+        adminId,
+        searchKey,
+      );
       return media.map((item) => normalizeMedia(item, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -142,14 +152,19 @@ export const mediaService = {
   getById: async (
     id: string,
     domainId: string,
+    adminId: string,
     language: string | null = null,
   ): Promise<LocalizedMediaRecord | null> => {
-    if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
+    if (
+      !isNonEmptyString(id) ||
+      !isNonEmptyString(domainId) ||
+      !isNonEmptyString(adminId)
+    ) {
       throw new Error('invalid ids');
     }
 
     try {
-      const media = await mediaRepository.findById(id, domainId);
+      const media = await mediaRepository.findById(id, domainId, adminId);
       return media ? normalizeMedia(media, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -159,17 +174,26 @@ export const mediaService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateMediaInput,
     language: string | null = null,
   ): Promise<LocalizedMediaRecord | null> => {
-    if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
+    if (
+      !isNonEmptyString(id) ||
+      !isNonEmptyString(domainId) ||
+      !isNonEmptyString(adminId)
+    ) {
       throw new Error('invalid ids');
     }
 
     assertUpdateInput(data);
 
     try {
-      const existingMedia = await mediaRepository.findById(id, domainId);
+      const existingMedia = await mediaRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingMedia) {
         throw new Error('not found');
@@ -184,7 +208,12 @@ export const mediaService = {
           : {}),
       };
 
-      const media = await mediaRepository.update(id, domainId, updateData);
+      const media = await mediaRepository.update(
+        id,
+        domainId,
+        adminId,
+        updateData,
+      );
       return media ? normalizeMedia(media, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -194,19 +223,28 @@ export const mediaService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<MediaRecord | null> => {
-    if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
+    if (
+      !isNonEmptyString(id) ||
+      !isNonEmptyString(domainId) ||
+      !isNonEmptyString(adminId)
+    ) {
       throw new Error('invalid ids');
     }
 
     try {
-      const existingMedia = await mediaRepository.findById(id, domainId);
+      const existingMedia = await mediaRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingMedia) {
         throw new Error('not found');
       }
 
-      return await mediaRepository.softDelete(id, domainId);
+      return await mediaRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

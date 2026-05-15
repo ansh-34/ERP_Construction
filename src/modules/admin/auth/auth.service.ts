@@ -52,6 +52,7 @@ export const AuthService = {
     const accessToken = signToken({
       userId: admin.id,
       domainId: '',
+      adminId: admin.id,
       roleId: 'ADMIN',
       industry: '',
     });
@@ -144,6 +145,7 @@ export const AuthService = {
     const accessToken = signToken({
       userId: admin.id,
       domainId: '',
+      adminId: admin.id,
       roleId: '',
       industry: '',
     });
