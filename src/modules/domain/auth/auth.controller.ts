@@ -61,12 +61,11 @@ export const login = async (req: Request, res: Response) => {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
         data: {
-          id: result.user.id,
-          name: getStringName(result.user.name),
-          email: result.user.email,
-          domainId: result.domain.id,
-          industry: result.domain.industry,
-          role: result.user.role.toUpperCase(),
+          user: {
+            ...result.user,
+            name: getStringName(result.user.name),
+          },
+          domain: result.domain,
         },
       });
   } catch (error) {

@@ -72,12 +72,43 @@ export const AuthService = {
       domainId: domainOwner.id,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
+      adminId: domainOwner.adminId ?? undefined,
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
       domainOwner.id,
       'DOMAIN',
     );
+
+    // if (
+    //   domainOwner.isEmailVerified === false ||
+    //   (domainOwner.onboardingStatus === 'PENDING' &&
+    //     domainOwner.onboardingStep === 'EMAIL_VERIFICATION')
+    // ) {
+    //   await OtpRepository.invalidateAllByEmail(domainOwner.email);
+    //   const { raw, hashed } = await generateOtp();
+    //
+    //   await Promise.all([
+    //     OtpRepository.create({
+    //       otp: hashed,
+    //       email: domainOwner.email,
+    //       expiresAt: getOtpExpiry(),
+    //       domainId: domainOwner.id,
+    //     }),
+    //     sendMail(
+    //       domainOwner.email,
+    //       'Your Verification Code — Construction ERP',
+    //       forgotPasswordEmail({
+    //         recipientName:
+    //           typeof domainOwner.name === 'object' && domainOwner.name !== null
+    //             ? (domainOwner.name as Record<string, string>).en || 'User'
+    //             : String(domainOwner.name || 'User'),
+    //         otp: raw,
+    //         expiryMinutes: OTP_EXPIRY_MINUTES,
+    //       }),
+    //     ),
+    //   ]);
+    // }
 
     return {
       accessToken,
@@ -152,6 +183,7 @@ export const AuthService = {
       domainId: domainOwner.id,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
+      adminId: domainOwner.adminId ?? undefined,
     });
 
     await RefreshTokenRepository.revoke(existing.id);

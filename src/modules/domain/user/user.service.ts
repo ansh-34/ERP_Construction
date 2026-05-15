@@ -54,6 +54,7 @@ export const UserService = {
       industry: domain.industry,
       roleId: roleId || null,
       domainId,
+      adminId: domain.adminId,
       isEmailVerified: false,
     });
 

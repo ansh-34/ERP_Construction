@@ -31,6 +31,7 @@ const authMiddleware = (
       domainId: decoded.domainId,
       roleId: decoded.roleId,
       industry: decoded.industry,
+      adminId: decoded.adminId,
     };
     next();
   } catch {

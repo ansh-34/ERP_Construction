@@ -3,4 +3,5 @@ export interface TokenPayload {
   domainId: string;
   roleId: string | null;
   industry: string;
+  adminId?: string;
 }

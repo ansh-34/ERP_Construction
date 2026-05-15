@@ -19,4 +19,20 @@ export const RoleModulePermissionRepository = {
       create: data,
     });
   },
+
+  findByRoleIdAndDomainId(roleId: string, domainId: string) {
+    return prisma.roleModulePermission.findMany({
+      where: { roleId, domainId },
+      include: {
+        module: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            status: true,
+          },
+        },
+      },
+    });
+  },
 };

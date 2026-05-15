@@ -70,6 +70,7 @@ model Admin {
   adminLanguages  AdminLanguages[]
   adminCurrencies AdminCurrencies[]
   domains         Domain[]
+  users           User[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -114,9 +115,13 @@ model Domain {
   mediaId          String?      @db.Uuid
   industry         IndustryEnum
   password         String
-  isEmailVerified  Boolean      @default(false)
-  status           String       @default("active")
-  isDeleted        Boolean      @default(false)
+  isEmailVerified  Boolean              @default(false)
+
+  onboardingStatus OnboardingStatusEnum @default(PENDING)
+  onboardingStep   String?
+
+  status           String               @default("active")
+  isDeleted        Boolean              @default(false)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
@@ -167,9 +172,15 @@ model User {
   mediaId String? @db.Uuid
 
   isEmailVerified Boolean @default(false)
+
+  onboardingStatus OnboardingStatusEnum @default(PENDING)
+  onboardingStep   String?
+
   domainId        String  @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
+  domain  Domain  @relation(fields: [domainId], references: [id])
+  adminId String? @db.Uuid
+  admin   Admin?  @relation(fields: [adminId], references: [id])
   status    String   @default("active")
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -253,7 +264,7 @@ model Currency {
 
 model Role {
   id         String  @id @default(uuid()) @db.Uuid
-  name       String
+  name       Json
   code       String?
   searchText String  @default("")
   level      Int     @default(0)

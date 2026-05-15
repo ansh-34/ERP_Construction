@@ -6,6 +6,7 @@ declare global {
         domainId: string;
         roleId: string | null;
         industry: string;
+        adminId?: string;
       };
     }
   }

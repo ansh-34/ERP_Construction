@@ -8,6 +8,8 @@ import {
   OtpRepository,
   RefreshTokenRepository,
   UserRepository,
+  RoleRepository,
+  RoleModulePermissionRepository,
 } from '../../../repositories/index.js';
 import { signToken, verifyToken } from '../../../services/jwt.services.js';
 import { sendMail } from '../../../services/mail.services.js';
@@ -119,6 +121,7 @@ export const UserService = {
       phone: phone || null,
       phoneCode: phoneCode || null,
       domainId: domain.id,
+      adminId: domain.adminId,
     });
 
     const accessToken = signToken({
@@ -126,6 +129,7 @@ export const UserService = {
       domainId: user.domainId,
       roleId: user.roleId,
       industry: user.industry,
+      adminId: domain.adminId ?? undefined,
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -141,7 +145,7 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: null,
+        role: 'USER',
       },
       domain: {
         id: domain.id,
@@ -182,12 +186,43 @@ export const UserService = {
       domainId: user.domainId,
       roleId: user.roleId,
       industry: user.industry,
+      adminId: user.domain.adminId ?? user.adminId ?? undefined,
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
       user.id,
       'USER',
     );
+
+    // -- User Onboarding Flow --
+    // Uncomment when user onboarding steps are implemented.
+    //
+    // if (
+    //   user.isEmailVerified === false ||
+    //   (user.onboardingStatus === 'PENDING' &&
+    //     user.onboardingStep === 'EMAIL_VERIFICATION')
+    // ) {
+    //   await OtpRepository.invalidateAllByEmail(user.email);
+    //   const { raw, hashed } = await generateOtp();
+    //
+    //   await Promise.all([
+    //     OtpRepository.create({
+    //       otp: hashed,
+    //       email: user.email,
+    //       expiresAt: getOtpExpiry(),
+    //       domainId: user.domainId,
+    //     }),
+    //     sendMail(
+    //       user.email,
+    //       'Your Verification Code — Construction ERP',
+    //       forgotPasswordEmail({
+    //         recipientName: user.name || 'User',
+    //         otp: raw,
+    //         expiryMinutes: OTP_EXPIRY_MINUTES,
+    //       }),
+    //     ),
+    //   ]);
+    // }
 
     return {
       accessToken,
@@ -197,7 +232,7 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: user.role?.code || null,
+        role: 'USER',
       },
       domain: {
         id: user.domain.id,
@@ -248,7 +283,7 @@ export const UserService = {
           name: user.name,
           email: user.email,
           industry: user.industry,
-          role: user.role?.code || null,
+          role: 'USER',
         },
         domain: {
           id: user.domain.id,
@@ -263,6 +298,7 @@ export const UserService = {
       domainId: user.domainId,
       roleId: user.roleId,
       industry: user.industry,
+      adminId: user.domain.adminId ?? user.adminId ?? undefined,
     });
 
     await RefreshTokenRepository.revoke(existing.id);
@@ -281,7 +317,7 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: user.role?.code || null,
+        role: 'USER',
       },
       domain: {
         id: user.domain.id,
@@ -426,5 +462,52 @@ export const UserService = {
     await UserRepository.updatePassword(user.id, hashedPassword);
     await TokenRepository.markDeleted(tokenRecord.id);
     await RefreshTokenRepository.revokeAllForUser(user.id, 'USER');
+  },
+
+  async getMyPermissions(
+    userId: string,
+    domainId: string,
+    roleId: string | null,
+  ) {
+    const user = await UserRepository.findActiveByIdWithRoleAndDomain(userId);
+    if (!user) {
+      throw new Error(Messages.USER.NOT_FOUND);
+    }
+
+    if (!roleId) {
+      return {
+        role: null,
+        modules: [],
+        permissions: [],
+      };
+    }
+
+    const role = await RoleRepository.findActiveByIdAndDomain(roleId, domainId);
+    if (!role) {
+      return {
+        role: null,
+        modules: [],
+        permissions: [],
+      };
+    }
+
+    const roleModulePermissions =
+      await RoleModulePermissionRepository.findByRoleIdAndDomainId(
+        roleId,
+        domainId,
+      );
+
+    const modules = roleModulePermissions.map((rmp) => rmp.module);
+    const permissions = roleModulePermissions.flatMap((rmp) => rmp.permissions);
+
+    return {
+      role: {
+        id: role.id,
+        name: role.name,
+        code: role.code,
+      },
+      modules,
+      permissions,
+    };
   },
 };

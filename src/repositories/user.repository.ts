@@ -43,6 +43,7 @@ export const UserRepository = {
     phoneCode?: string | null;
     roleId?: string | null;
     domainId: string;
+    adminId?: string | null;
     isEmailVerified?: boolean;
   }) {
     return prisma.user.create({ data });
