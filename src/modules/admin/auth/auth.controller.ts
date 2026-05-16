@@ -56,10 +56,10 @@ export const login = async (req: Request, res: Response) => {
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
       data: {
-        id: result.user.id,
-        name: getStringName(result.user.name),
-        email: result.user.email,
-        role: result.user.role.toUpperCase(),
+        user: {
+          ...result.user,
+          name: getStringName(result.user.name),
+        },
       },
     });
   } catch (error) {

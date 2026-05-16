@@ -2,7 +2,11 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import type { IndustryEnum } from '../../../infra/database/prisma/generated/prisma/client/enums';
 import { Messages } from '../../../constants/index';
-import { DomainRepository, TokenRepository } from '../../../repositories/index';
+import {
+  DomainRepository,
+  TokenRepository,
+  AdminRepository,
+} from '../../../repositories/index.js';
 import { sendMail } from '../../../services/mail.services';
 import { domainActivationEmail } from '../../../templates/index.js';
 import variables from '../../../config/variables.config.js';
@@ -13,7 +17,12 @@ const normalizeIndustryInput = (industry: string): IndustryEnum =>
   industry.trim().toUpperCase() as IndustryEnum;
 
 export const DomainService = {
-  async seedDomain(data: any, baseUrl: string, langCode: string = 'en') {
+  async seedDomain(
+    data: any,
+    adminId: string,
+    baseUrl: string,
+    langCode: string = 'en',
+  ) {
     const {
       domainName,
       email,
@@ -24,7 +33,7 @@ export const DomainService = {
       organizationType,
     } = data;
 
-    if (!domainName || !email || !password || !industry) {
+    if (!domainName || !email || !password || !industry || !adminId) {
       throw new Error(Messages.DOMAIN.NAME_EMAIL_PASSWORD_INDUSTRY_REQUIRED);
     }
 
@@ -39,6 +48,11 @@ export const DomainService = {
 
     if (existingDomain) {
       throw new Error(Messages.DOMAIN.OWNER_EMAIL_ALREADY_EXISTS);
+    }
+
+    const admin = await AdminRepository.findActiveById(adminId);
+    if (!admin) {
+      throw new Error('Assigned Admin not found');
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -58,9 +72,10 @@ export const DomainService = {
       tokenExpiresAt,
       domainRoleId,
       domainPermissions: ['read', 'write', 'update', 'delete'],
+      adminId,
     });
 
-    const verificationLink = `${baseUrl}/api/superAdmin/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `${baseUrl}/api/admin/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
     await sendMail(
       email,
       'Activate Your Domain — Construction ERP',

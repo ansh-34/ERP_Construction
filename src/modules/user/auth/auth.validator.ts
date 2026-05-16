@@ -36,7 +36,7 @@ export const registerUserBodySchema = z.object({
 });
 
 export const loginUserBodySchema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1),
   password: z.string().min(1),
   speciality: z.preprocess(normalizeIndustry, z.enum(industryValues)),
 });

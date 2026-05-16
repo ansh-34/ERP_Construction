@@ -10,6 +10,7 @@ export const seedDomain = async (req: Request, res: Response) => {
     const { language = 'en' } = req.headers;
     const result = await DomainService.seedDomain(
       req.body,
+      req.user!.userId,
       getBaseUrl(req),
       language as string,
     );

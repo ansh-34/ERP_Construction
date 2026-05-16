@@ -35,39 +35,39 @@ const authorize = (moduleName: string, action: string) => {
         return;
       }
 
-      // 2. Check permission through module dependencies
-      const dependencies = await prisma.moduleDependency.findMany({
-        where: {
-          dependentModuleId: moduleId,
-          moduleDependencyPermissions: {
-            some: {
-              permission: {
-                code: actionUpper,
-                isDeleted: false,
-              },
-            },
-          },
-        },
-      });
+      // // 2. Check permission through module dependencies
+      // const dependencies = await prisma.moduleDependency.findMany({
+      //   where: {
+      //     dependentModuleId: moduleId,
+      //     moduleDependencyPermissions: {
+      //       some: {
+      //         permission: {
+      //           code: actionUpper,
+      //           isDeleted: false,
+      //         },
+      //       },
+      //     },
+      //   },
+      // });
 
-      if (dependencies.length > 0) {
-        const parentModuleIds = dependencies.map((d) => d.moduleId);
+      // if (dependencies.length > 0) {
+      //   const parentModuleIds = dependencies.map((d) => d.moduleId);
 
-        // Check if the role has the action on any parent module
-        const parentPermission = await prisma.roleModulePermission.findFirst({
-          where: {
-            roleId,
-            moduleId: { in: parentModuleIds },
-            domainId,
-            permissions: { has: actionUpper },
-          },
-        });
+      //   // Check if the role has the action on any parent module
+      //   const parentPermission = await prisma.roleModulePermission.findFirst({
+      //     where: {
+      //       roleId,
+      //       moduleId: { in: parentModuleIds },
+      //       domainId,
+      //       permissions: { has: actionUpper },
+      //     },
+      //   });
 
-        if (parentPermission) {
-          next();
-          return;
-        }
-      }
+      //   if (parentPermission) {
+      //     next();
+      //     return;
+      //   }
+      // }
 
       res.status(403).json({ success: false, message: 'Forbidden' });
     } catch (err) {

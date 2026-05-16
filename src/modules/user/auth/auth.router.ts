@@ -11,6 +11,7 @@ import {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  getMyPermissions,
 } from './auth.controller.js';
 import {
   verifyAndActivateUserQuerySchema,
@@ -67,5 +68,7 @@ router.post(
   validate(resetPasswordSchema, 'body'),
   resetPassword,
 );
+
+router.get('/me/permissions', authMiddleware, getMyPermissions);
 
 export default router;

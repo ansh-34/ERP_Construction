@@ -22,6 +22,7 @@ export const DomainRepository = {
     tokenExpiresAt: Date;
     domainRoleId: string;
     domainPermissions: string[];
+    adminId: string;
   }) {
     return prisma.$transaction(async (tx) => {
       const domain = await tx.domain.create({
@@ -34,6 +35,7 @@ export const DomainRepository = {
           industry: data.industry,
           password: data.password,
           isEmailVerified: false,
+          adminId: data.adminId,
         },
       });
 

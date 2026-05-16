@@ -8,6 +8,8 @@ import {
   OtpRepository,
   RefreshTokenRepository,
   UserRepository,
+  RoleRepository,
+  RoleModulePermissionRepository,
 } from '../../../repositories/index.js';
 import { signToken, verifyToken } from '../../../services/jwt.services.js';
 import { sendMail } from '../../../services/mail.services.js';
@@ -123,7 +125,32 @@ export const UserService = {
       phone: phone || null,
       phoneCode: phoneCode || null,
       domainId: domain.id,
+      adminId: domain.adminId,
     });
+
+    // const verificationToken = crypto.randomBytes(32).toString('hex');
+    // const tokenExpirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // await TokenRepository.create({
+    //   token: verificationToken,
+    //   email,
+    //   tokenPurpose: 'USER_EMAIL_VERIFICATION',
+    //   tokenExpirationTime,
+    //   domainId: domain.id,
+    // });
+
+    // const { userInviteEmail } = await import('../../../templates/index.js');
+    // const verificationLink = `${variables.CLIENT_BASE_URL}/verify?email=${encodeURIComponent(email)}&token=${verificationToken}`;
+
+    // await sendMail(
+    //   email,
+    //   'Welcome to Construction ERP - Verify your account',
+    //   userInviteEmail({
+    //     recipientName: name.trim(),
+    //     domainName: typeof domain.name === 'object' && domain.name !== null ? (domain.name as Record<string, string>).en || 'Construction ERP' : String(domain.name || 'Construction ERP'),
+    //     verificationLink,
+    //   })
+    // );
 
     const accessToken = signToken({
       userId: user.id,
@@ -146,28 +173,30 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: null,
+        role: { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: domain.id,
         name: domain.name,
         industry: domain.industry,
+        adminId: domain.adminId,
       },
     };
   },
 
   async loginUser(data: {
-    email: string;
+    identifier: string;
     password: string;
     speciality: IndustryEnum;
   }) {
-    const { email, password, speciality } = data;
+    const { identifier, password, speciality } = data;
 
-    if (!email || !password || !speciality) {
+    if (!identifier || !password || !speciality) {
       throw new Error(Messages.USER.EMAIL_PASSWORD_SPECIALITY_REQUIRED);
     }
 
-    const user = await UserRepository.findActiveByEmailWithRoleAndDomain(email);
+    const user =
+      await UserRepository.findActiveByIdentifierWithRoleAndDomain(identifier);
 
     if (!user) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
@@ -199,6 +228,36 @@ export const UserService = {
       'USER',
     );
 
+    // -- User Onboarding Flow --
+    // Uncomment when user onboarding steps are implemented.
+    //
+    // if (
+    //   user.isEmailVerified === false ||
+    //   (user.onboardingStatus === 'PENDING' &&
+    //     user.onboardingStep === 'EMAIL_VERIFICATION')
+    // ) {
+    //   await OtpRepository.invalidateAllByEmail(user.email);
+    //   const { raw, hashed } = await generateOtp();
+    //
+    //   await Promise.all([
+    //     OtpRepository.create({
+    //       otp: hashed,
+    //       email: user.email,
+    //       expiresAt: getOtpExpiry(),
+    //       domainId: user.domainId,
+    //     }),
+    //     sendMail(
+    //       user.email,
+    //       'Your Verification Code — Construction ERP',
+    //       forgotPasswordEmail({
+    //         recipientName: user.name || 'User',
+    //         otp: raw,
+    //         expiryMinutes: OTP_EXPIRY_MINUTES,
+    //       }),
+    //     ),
+    //   ]);
+    // }
+
     return {
       accessToken,
       refreshToken,
@@ -207,12 +266,18 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: user.role?.code || null,
+        role: user.role
+          ? {
+              code: (user.role.code || 'USER').toUpperCase(),
+              name: user.role.name,
+            }
+          : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
         name: user.domain.name,
         industry: user.domain.industry,
+        adminId: user.domain.adminId,
       },
     };
   },
@@ -263,12 +328,18 @@ export const UserService = {
           name: user.name,
           email: user.email,
           industry: user.industry,
-          role: user.role?.code || null,
+          role: user.role
+            ? {
+                code: (user.role.code || 'USER').toUpperCase(),
+                name: user.role.name,
+              }
+            : { code: 'USER', name: { en: 'User' } },
         },
         domain: {
           id: user.domain.id,
           name: user.domain.name,
           industry: user.domain.industry,
+          adminId: user.domain.adminId,
         },
       };
     }
@@ -297,12 +368,18 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: user.role?.code || null,
+        role: user.role
+          ? {
+              code: (user.role.code || 'USER').toUpperCase(),
+              name: user.role.name,
+            }
+          : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
         name: user.domain.name,
         industry: user.domain.industry,
+        adminId: user.domain.adminId,
       },
     };
   },
@@ -442,5 +519,52 @@ export const UserService = {
     await UserRepository.updatePassword(user.id, hashedPassword);
     await TokenRepository.markDeleted(tokenRecord.id);
     await RefreshTokenRepository.revokeAllForUser(user.id, 'USER');
+  },
+
+  async getMyPermissions(
+    userId: string,
+    domainId: string,
+    roleId: string | null,
+  ) {
+    const user = await UserRepository.findActiveByIdWithRoleAndDomain(userId);
+    if (!user) {
+      throw new Error(Messages.USER.NOT_FOUND);
+    }
+
+    if (!roleId) {
+      return {
+        role: { code: 'USER', name: { en: 'User' } },
+        modules: [],
+        permissions: [],
+      };
+    }
+
+    const role = await RoleRepository.findActiveByIdAndDomain(roleId, domainId);
+    if (!role) {
+      return {
+        role: null,
+        modules: [],
+        permissions: [],
+      };
+    }
+
+    const roleModulePermissions =
+      await RoleModulePermissionRepository.findByRoleIdAndDomainId(
+        roleId,
+        domainId,
+      );
+
+    const modules = roleModulePermissions.map((rmp) => rmp.module);
+    const permissions = roleModulePermissions.flatMap((rmp) => rmp.permissions);
+
+    return {
+      role: {
+        id: role.id,
+        name: role.name,
+        code: (role.code || 'USER').toUpperCase(),
+      },
+      modules,
+      permissions,
+    };
   },
 };

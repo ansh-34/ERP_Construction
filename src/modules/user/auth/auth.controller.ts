@@ -92,12 +92,8 @@ export const loginUser = async (req: Request, res: Response) => {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
         data: {
-          id: result.user.id,
-          name: result.user.name,
-          email: result.user.email,
-          domainId: result.domain.id,
-          industry: result.user.industry,
-          role: (result.user.role || 'user').toUpperCase(),
+          user: result.user,
+          domain: result.domain,
         },
       });
   } catch (error) {
@@ -233,6 +229,27 @@ export const changePassword = async (req: Request, res: Response) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.AUTH.LOGIN_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const getMyPermissions = async (req: Request, res: Response) => {
+  try {
+    const result = await UserService.getMyPermissions(
+      req.user!.userId as string,
+      req.user!.domainId as string,
+      req.user!.roleId as string | null,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Permissions retrieved successfully',
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve permissions';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
