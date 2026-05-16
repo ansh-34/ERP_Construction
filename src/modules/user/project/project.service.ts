@@ -238,11 +238,7 @@ export const UserProjectService = {
     return projectRepository.update(id, domainId, data, resolvedAdminId);
   },
 
-  async deleteProject(
-    domainId: string,
-    adminId: string,
-    id: string,
-  ) {
+  async deleteProject(domainId: string, adminId: string, id: string) {
     const resolvedAdminId = await UserProjectService.resolveAdminId(
       domainId,
       adminId,

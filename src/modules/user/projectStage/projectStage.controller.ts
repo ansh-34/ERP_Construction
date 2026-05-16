@@ -1,50 +1,46 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
 import { StatusEnum } from '@constants/index';
-import { projectService } from './project.service';
+import { projectStageService } from './projectStage.service';
 import { resolveHttpStatus } from '@/utils/httpError';
 
-export const projectController = {
+export const projectStageController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, budget, spent, locationId, status } =
-        req.body as {
-          name?: Record<string, unknown>;
-          description?: Record<string, unknown>;
-          budget?: number;
-          spent?: number;
-          locationId?: string;
-          status?: StatusEnum;
-        };
+      const { name, description, progress, projectId, status } = req.body as {
+      name?: Record<string, unknown>;
+      description?: Record<string, unknown> | null;
+      progress?: number | null;
+      projectId?: string;
+      status?: StatusEnum;
+      };
 
-      const domainId = req.user!.domainId;
-      const adminId = req.user!.adminId;
-
-      const project = await projectService.create(
+      const projectStage = await projectStageService.create(
         {
           name: name ?? {},
           ...(description !== undefined && { description }),
-          budget: budget ?? 0,
-          ...(spent !== undefined && { spent }),
-          locationId: locationId ?? '',
-          domainId,
-          adminId,
+          ...(progress !== undefined && { progress }),
+          projectId: projectId ?? '',
+          domainId: req.user!.domainId,
+          adminId: req.user!.adminId,
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
       );
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Project created successfully',
-        data: project,
+        message: 'Project stage created successfully',
+        data: projectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to create project';
+        error instanceof Error
+          ? error.message
+          : 'Failed to create project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -55,24 +51,27 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, searchKey } = req.query as {
-        domainId?: string;
+      const {projectId, searchKey } = req.query as {
+        projectId?: string;
         searchKey?: string;
       };
-      const projects = await projectService.getAll(
-        domainId ?? '',
+      const projectStages = await projectStageService.getAll(
+        req.user!.domainId,
         req.user!.adminId,
+        projectId ?? '',
         searchKey,
         language,
       );
 
       return res.status(HttpStatus.OK).json({
-        message: 'Projects fetched successfully',
-        data: projects,
+        message: 'Project stages fetched successfully',
+        data: projectStages,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch projects';
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project stages';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -84,25 +83,26 @@ export const projectController = {
         (req.headers.language as string) ||
         'en';
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
-      const project = await projectService.getById(
+      const projectStage = await projectStageService.getById(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
         language,
       );
 
-      if (!project) {
+      if (!projectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project fetched successfully',
-        data: project,
+        message: 'Project stage fetched successfully',
+        data: projectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch project';
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -110,44 +110,43 @@ export const projectController = {
   update: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, budget, spent, status } = req.body as {
+      const { name, description, progress, status } = req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown> | null;
-        budget?: number;
-        spent?: number;
+        progress?: number | null;
         status?: StatusEnum;
       };
 
-      const updatedProject = await projectService.update(
+      const updatedProjectStage = await projectStageService.update(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
-          ...(budget !== undefined && { budget }),
-          ...(spent !== undefined && { spent }),
+          ...(progress !== undefined && { progress }),
           ...(status !== undefined && { status }),
         },
         language,
       );
 
-      if (!updatedProject) {
+      if (!updatedProjectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project updated successfully',
-        data: updatedProject,
+        message: 'Project stage updated successfully',
+        data: updatedProjectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update project';
+        error instanceof Error
+          ? error.message
+          : 'Failed to update project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -155,24 +154,25 @@ export const projectController = {
   delete: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
-      const deletedProject = await projectService.softDelete(
+      const deletedProjectStage = await projectStageService.softDelete(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
       );
 
-      if (!deletedProject) {
+      if (!deletedProjectStage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project deleted successfully',
-        data: deletedProject,
+        message: 'Project stage deleted successfully',
+        data: deletedProjectStage,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete project';
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete project stage';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
