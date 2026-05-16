@@ -134,7 +134,6 @@ export const UserService = {
       adminId: domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -196,7 +195,6 @@ export const UserService = {
       adminId: user.domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -314,7 +312,6 @@ export const UserService = {
       adminId: user.domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-
     });
 
     await RefreshTokenRepository.revoke(existing.id);

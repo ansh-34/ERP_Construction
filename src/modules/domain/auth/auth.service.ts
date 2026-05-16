@@ -77,7 +77,6 @@ export const AuthService = {
       adminId: domainOwner.adminId,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
-
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -194,7 +193,6 @@ export const AuthService = {
       adminId: domainOwner.adminId,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
-
     });
 
     await RefreshTokenRepository.revoke(existing.id);
