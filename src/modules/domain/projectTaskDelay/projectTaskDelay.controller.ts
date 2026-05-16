@@ -7,6 +7,10 @@ import { projectTaskDelayService } from './projectTaskDelay.service';
 export const projectTaskDelayController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const {
         taskId,
         requestedDelayInDays,
@@ -15,31 +19,36 @@ export const projectTaskDelayController = {
         requestApprovalTime,
         stageId,
         projectId,
-        domainId,
         status,
       } = req.body as {
         taskId?: string;
         requestedDelayInDays?: number;
-        delayReason?: string;
+        delayReason?: Record<string, unknown>;
         requestApproved?: boolean;
         requestApprovalTime?: string | null;
         stageId?: string;
         projectId?: string;
-        domainId?: string;
         status?: StatusEnum;
       };
 
-      const projectTaskDelay = await projectTaskDelayService.create({
-        taskId: taskId ?? '',
-        requestedDelayInDays: requestedDelayInDays ?? 0,
-        delayReason: delayReason ?? '',
-        ...(requestApproved !== undefined && { requestApproved }),
-        ...(requestApprovalTime !== undefined && { requestApprovalTime }),
-        stageId: stageId ?? '',
-        projectId: projectId ?? '',
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
+
+      const projectTaskDelay = await projectTaskDelayService.create(
+        {
+          taskId: taskId ?? '',
+          requestedDelayInDays: requestedDelayInDays ?? 0,
+          delayReason: delayReason ?? {},
+          ...(requestApproved !== undefined && { requestApproved }),
+          ...(requestApprovalTime !== undefined && { requestApprovalTime }),
+          stageId: stageId ?? '',
+          projectId: projectId ?? '',
+          domainId,
+          adminId,
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Project task delay created successfully',
@@ -56,18 +65,26 @@ export const projectTaskDelayController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId, projectId, stageId, taskId } = req.query as {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, projectId, stageId, taskId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;
         stageId?: string;
         taskId?: string;
+        searchKey?: string;
       };
 
       const projectTaskDelays = await projectTaskDelayService.getAll(
         domainId ?? '',
+        req.user!.adminId,
         projectId,
         stageId,
         taskId,
+        searchKey,
+        language,
       );
 
       return res.status(HttpStatus.OK).json({
@@ -85,11 +102,17 @@ export const projectTaskDelayController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const projectTaskDelay = await projectTaskDelayService.getById(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
+        language,
       );
 
       if (!projectTaskDelay) {
@@ -113,6 +136,10 @@ export const projectTaskDelayController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const {
         requestedDelayInDays,
         delayReason,
@@ -121,7 +148,7 @@ export const projectTaskDelayController = {
         status,
       } = req.body as {
         requestedDelayInDays?: number;
-        delayReason?: string;
+        delayReason?: Record<string, unknown>;
         requestApproved?: boolean;
         requestApprovalTime?: string | null;
         status?: StatusEnum;
@@ -130,6 +157,7 @@ export const projectTaskDelayController = {
       const updatedProjectTaskDelay = await projectTaskDelayService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(requestedDelayInDays !== undefined && { requestedDelayInDays }),
           ...(delayReason !== undefined && { delayReason }),
@@ -137,6 +165,7 @@ export const projectTaskDelayController = {
           ...(requestApprovalTime !== undefined && { requestApprovalTime }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedProjectTaskDelay) {
@@ -163,6 +192,7 @@ export const projectTaskDelayController = {
       const deletedProjectTaskDelay = await projectTaskDelayService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProjectTaskDelay) {

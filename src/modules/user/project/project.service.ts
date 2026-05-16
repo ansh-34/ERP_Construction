@@ -1,8 +1,8 @@
 import { Messages, StatusEnum } from '../../../constants/index.js';
 import {
   projectRepository,
-  projectCategoryRepository,
   ProjectUserRoleRepository,
+  DomainRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -23,11 +23,22 @@ export const UserProjectService = {
     };
   },
 
+  async resolveAdminId(domainId: string, adminId: string) {
+    if (adminId) return adminId;
+
+    const domain = await DomainRepository.findActiveById(domainId);
+    if (!domain?.adminId) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+
+    return domain.adminId;
+  },
+
   async createProject(
     domainId: string,
+    adminId: string,
     data: {
       name: Record<string, string>;
-      projectCategoryId: string;
       description?: Record<string, string>;
       budget: number;
       spent?: number;
@@ -40,18 +51,19 @@ export const UserProjectService = {
       throw new Error(Messages.USER_PROJECT.NAME_EN_REQUIRED);
     }
 
-    const existingCategory = await projectCategoryRepository.findById(
-      data.projectCategoryId,
+    const code = data.name.en.toString().toUpperCase().replace(/\s+/g, '_');
+    const searchText = data.name.en.toString().toLowerCase();
+
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
       domainId,
+      adminId,
     );
 
-    if (!existingCategory) {
-      throw new Error(Messages.USER_PROJECT.CATEGORY_NOT_FOUND);
-    }
-
-    const code = data.name.en.toString().toUpperCase().replace(/\s+/g, '_');
-
-    const existing = await projectRepository.findByCode(code, domainId);
+    const existing = await projectRepository.findByCode(
+      code,
+      domainId,
+      resolvedAdminId,
+    );
     if (existing) {
       throw new Error(Messages.USER_PROJECT.CODE_ALREADY_EXISTS);
     }
@@ -59,17 +71,28 @@ export const UserProjectService = {
     return projectRepository.create({
       ...data,
       code,
+      searchText,
       domainId,
+      adminId: resolvedAdminId,
       status: (data.status as StatusEnum) ?? StatusEnum.ACTIVE,
     });
   },
 
   async getProjectById(
     domainId: string,
+    adminId: string,
     id: string,
     language: string | null = null,
   ) {
-    const project: any = await projectRepository.findById(id, domainId);
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
+      domainId,
+      adminId,
+    );
+    const project: any = await projectRepository.findById(
+      id,
+      domainId,
+      resolvedAdminId,
+    );
     if (!project) {
       throw new Error(Messages.USER_PROJECT.NOT_FOUND);
     }
@@ -83,6 +106,7 @@ export const UserProjectService = {
 
   async getMyProjects(
     domainId: string,
+    adminId: string,
     userId: string,
     query: {
       offset?: number | string;
@@ -93,6 +117,10 @@ export const UserProjectService = {
     langCode: string,
   ) {
     const { offset, limit } = normalizePagination(query);
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
+      domainId,
+      adminId,
+    );
 
     const [, assignments] = await ProjectUserRoleRepository.listByDomain(
       domainId,
@@ -113,6 +141,7 @@ export const UserProjectService = {
     const allProjects = await projectRepository.findManyByIds(
       projectIds,
       domainId,
+      resolvedAdminId,
     );
 
     // Apply status filter if provided
@@ -138,6 +167,7 @@ export const UserProjectService = {
 
   async listDomainProjects(
     domainId: string,
+    adminId: string,
     query: {
       offset?: number | string;
       limit?: number | string;
@@ -147,8 +177,16 @@ export const UserProjectService = {
     langCode: string,
   ) {
     const { offset, limit } = normalizePagination(query);
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
+      domainId,
+      adminId,
+    );
 
-    const allProjects = await projectRepository.findMany(domainId);
+    const allProjects = await projectRepository.findMany(
+      domainId,
+      undefined,
+      resolvedAdminId,
+    );
 
     // Apply status filter if provided
     let filtered = allProjects;
@@ -171,8 +209,21 @@ export const UserProjectService = {
     };
   },
 
-  async updateProject(domainId: string, id: string, data: any) {
-    const project = await projectRepository.findById(id, domainId);
+  async updateProject(
+    domainId: string,
+    adminId: string,
+    id: string,
+    data: any,
+  ) {
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
+      domainId,
+      adminId,
+    );
+    const project = await projectRepository.findById(
+      id,
+      domainId,
+      resolvedAdminId,
+    );
     if (!project) {
       throw new Error(Messages.USER_PROJECT.NOT_FOUND);
     }
@@ -184,15 +235,23 @@ export const UserProjectService = {
       }
     }
 
-    return projectRepository.update(id, domainId, data);
+    return projectRepository.update(id, domainId, data, resolvedAdminId);
   },
 
-  async deleteProject(domainId: string, id: string) {
-    const project = await projectRepository.findById(id, domainId);
+  async deleteProject(domainId: string, adminId: string, id: string) {
+    const resolvedAdminId = await UserProjectService.resolveAdminId(
+      domainId,
+      adminId,
+    );
+    const project = await projectRepository.findById(
+      id,
+      domainId,
+      resolvedAdminId,
+    );
     if (!project) {
       throw new Error(Messages.USER_PROJECT.NOT_FOUND);
     }
 
-    return projectRepository.softDelete(id, domainId);
+    return projectRepository.softDelete(id, domainId, resolvedAdminId);
   },
 };

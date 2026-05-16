@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import { projectTaskDelayController } from './projectTaskDelay.controller';
 import {
@@ -10,6 +11,8 @@ import {
 } from './projectTaskDelay.validate';
 
 const projectTaskDelayRouter = Router();
+
+projectTaskDelayRouter.use(authMiddleware);
 
 projectTaskDelayRouter.post(
   '/',

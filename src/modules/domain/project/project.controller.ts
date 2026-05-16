@@ -7,36 +7,36 @@ import { resolveHttpStatus } from '@/utils/httpError';
 export const projectController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const {
-        name,
-        projectCategoryId,
-        description,
-        budget,
-        spent,
-        locationId,
-        domainId,
-        status,
-      } = req.body as {
-        name?: Record<string, unknown>;
-        projectCategoryId?: string;
-        description?: Record<string, unknown>;
-        budget?: number;
-        spent?: number;
-        locationId?: string;
-        domainId?: string;
-        status?: StatusEnum;
-      };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { name, description, budget, spent, locationId, status } =
+        req.body as {
+          name?: Record<string, unknown>;
+          description?: Record<string, unknown>;
+          budget?: number;
+          spent?: number;
+          locationId?: string;
+          status?: StatusEnum;
+        };
 
-      const project = await projectService.create({
-        name: name ?? {},
-        projectCategoryId: projectCategoryId ?? '',
-        ...(description !== undefined && { description }),
-        budget: budget ?? 0,
-        ...(spent !== undefined && { spent }),
-        locationId: locationId ?? '',
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
+
+      const project = await projectService.create(
+        {
+          name: name ?? {},
+          ...(description !== undefined && { description }),
+          budget: budget ?? 0,
+          ...(spent !== undefined && { spent }),
+          locationId: locationId ?? '',
+          domainId,
+          adminId,
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Project created successfully',
@@ -51,8 +51,20 @@ export const projectController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
-      const projects = await projectService.getAll(domainId ?? '');
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, searchKey } = req.query as {
+        domainId?: string;
+        searchKey?: string;
+      };
+      const projects = await projectService.getAll(
+        domainId ?? '',
+        req.user!.adminId,
+        searchKey,
+        language,
+      );
 
       return res.status(HttpStatus.OK).json({
         message: 'Projects fetched successfully',
@@ -67,9 +79,18 @@ export const projectController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const project = await projectService.getById(id ?? '', domainId ?? '');
+      const project = await projectService.getById(
+        id ?? '',
+        domainId ?? '',
+        req.user!.adminId,
+        language,
+      );
 
       if (!project) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -90,6 +111,10 @@ export const projectController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description, budget, spent, status } = req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown> | null;
@@ -101,6 +126,7 @@ export const projectController = {
       const updatedProject = await projectService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
@@ -108,6 +134,7 @@ export const projectController = {
           ...(spent !== undefined && { spent }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedProject) {
@@ -132,6 +159,7 @@ export const projectController = {
       const deletedProject = await projectService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedProject) {

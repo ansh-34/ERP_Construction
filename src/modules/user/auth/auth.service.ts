@@ -105,6 +105,10 @@ export const UserService = {
       throw new Error(Messages.DOMAIN.NOT_FOUND);
     }
 
+    if (!domain.adminId) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+
     const existingUser = await UserRepository.findActiveByEmail(email);
 
     if (existingUser) {
@@ -127,9 +131,10 @@ export const UserService = {
     const accessToken = signToken({
       userId: user.id,
       domainId: user.domainId,
+      adminId: domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-      adminId: domain.adminId ?? undefined,
+
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -176,6 +181,10 @@ export const UserService = {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
+    if (!user.domain.adminId) {
+      throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
@@ -184,9 +193,10 @@ export const UserService = {
     const accessToken = signToken({
       userId: user.id,
       domainId: user.domainId,
+      adminId: user.domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-      adminId: user.domain.adminId ?? user.adminId ?? undefined,
+
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -274,6 +284,11 @@ export const UserService = {
       throw new Error(Messages.AUTH.REFRESH_TOKEN_INVALID);
     }
 
+    if (!user.domain.adminId) {
+      await RefreshTokenRepository.revoke(existing.id);
+      throw new Error(Messages.AUTH.REFRESH_TOKEN_INVALID);
+    }
+
     if (isReusableUserAccessToken(currentAccessToken, user.id)) {
       return {
         accessToken: currentAccessToken as string,
@@ -296,9 +311,10 @@ export const UserService = {
     const accessToken = signToken({
       userId: user.id,
       domainId: user.domainId,
+      adminId: user.domain.adminId,
       roleId: user.roleId,
       industry: user.industry,
-      adminId: user.domain.adminId ?? user.adminId ?? undefined,
+
     });
 
     await RefreshTokenRepository.revoke(existing.id);

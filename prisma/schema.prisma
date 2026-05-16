@@ -70,6 +70,15 @@ model Admin {
   adminLanguages  AdminLanguages[]
   adminCurrencies AdminCurrencies[]
   domains         Domain[]
+  projects        Project[]
+  projectStages   ProjectStage[]
+  projectTasks    ProjectTask[]
+  projectTaskDelays ProjectTaskDelay[]
+  apiKeys         ApiKey[]
+  locations       Location[]
+  machineries     Machinery[]
+  machineReadings MachineReading[]
+  mediaFiles      Media[] @relation("AdminMediaFiles")
   users           User[]
 
   @@unique([email, isDeleted])
@@ -149,6 +158,7 @@ model Domain {
   projectTasks                ProjectTask[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
+  machineReadings         MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   admin                       Admin?                       @relation(fields: [adminId], references: [id])
@@ -753,17 +763,21 @@ model RawMaterialPurchaseRequest {
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
-  name        String
-  description String?
+  name        Json       @db.JsonB
+  description Json?      @db.JsonB
   secret      String
+  searchText  String     @default("")
   domainId    String     @db.Uuid
   domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String     @db.Uuid
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status      StatusEnum @default(ACTIVE)
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   @@index([domainId])
+  @@index([adminId])
 }
 
 model Location {
@@ -771,11 +785,14 @@ model Location {
   name             Json       @db.JsonB
   code             String
   type             String
+  searchText       String     @default("")
   parentLocationId String?    @db.Uuid
   parent           Location?  @relation("LocationHierarchy", fields: [parentLocationId], references: [id])
   children         Location[] @relation("LocationHierarchy")
   domainId         String     @db.Uuid
   domain           Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId          String     @db.Uuid
+  admin            Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status           StatusEnum @default(ACTIVE)
   isDeleted        Boolean    @default(false)
   createdAt        DateTime   @default(now())
@@ -785,16 +802,20 @@ model Location {
 
   @@unique([code, isDeleted, domainId])
   @@index([domainId])
+  @@index([adminId])
   @@index([parentLocationId])
 }
 
 model Media {
   id        String     @id @default(uuid()) @db.Uuid
-  name      String
+  name      Json       @db.JsonB
   type      String
   url       String     @unique
+  searchText String    @default("")
   domainId  String     @db.Uuid
   domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId   String     @db.Uuid
+  admin     Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
   status    StatusEnum @default(ACTIVE)
   isDeleted Boolean    @default(false)
   createdAt DateTime   @default(now())
@@ -802,6 +823,7 @@ model Media {
   admins    Admin[]
 
   @@index([domainId])
+  @@index([adminId])
   @@map("media")
 }
 
@@ -809,8 +831,7 @@ model Project {
   id                String          @id @default(uuid()) @db.Uuid
   name              Json            @db.JsonB
   code              String
-  projectCategoryId String          @db.Uuid
-  projectCategory   ProjectCategory @relation(fields: [projectCategoryId], references: [id], onDelete: Restrict)
+  searchText        String          @default("")
   description       Json?           @db.JsonB
   budget            Decimal         @db.Decimal(15, 2)
   spent             Decimal         @default(0) @db.Decimal(15, 2)
@@ -818,6 +839,8 @@ model Project {
   location          Location        @relation(fields: [locationId], references: [id], onDelete: Restrict)
   domainId          String          @db.Uuid
   domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String          @db.Uuid
+  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status            StatusEnum      @default(ACTIVE)
   isDeleted         Boolean         @default(false)
   createdAt         DateTime        @default(now())
@@ -827,13 +850,14 @@ model Project {
   projectTasks                ProjectTask[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
+  machineReadings MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
 
   @@unique([code, isDeleted, domainId])
-  @@index([projectCategoryId])
   @@index([locationId])
   @@index([domainId])
+  @@index([adminId])
 }
 
 model ProjectCategory {
@@ -848,8 +872,6 @@ model ProjectCategory {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  projects Project[]
-
   @@unique([code, isDeleted, domainId])
   @@index([domainId])
 }
@@ -858,12 +880,15 @@ model ProjectStage {
   id          String     @id @default(uuid()) @db.Uuid
   name        Json       @db.JsonB
   code        String
+  searchText  String     @default("")
   description Json?      @db.JsonB
   progress    Float?
   projectId   String     @db.Uuid
   project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId    String     @db.Uuid
   domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String     @db.Uuid
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status      StatusEnum @default(ACTIVE)
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
@@ -875,12 +900,14 @@ model ProjectStage {
   @@unique([code, isDeleted, domainId, projectId])
   @@index([projectId])
   @@index([domainId])
+  @@index([adminId])
 }
 
 model ProjectTask {
   id                   String       @id @default(uuid()) @db.Uuid
   name                 Json         @db.JsonB
   code                 String
+  searchText           String      @default("")
   assignee             Json?        @db.JsonB
   plannedStartDate     DateTime?
   plannedEndDate       DateTime?
@@ -898,6 +925,8 @@ model ProjectTask {
   project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId             String       @db.Uuid
   domain               Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId              String       @db.Uuid
+  admin                Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status               StatusEnum   @default(ACTIVE)
   isDeleted            Boolean      @default(false)
   createdAt            DateTime     @default(now())
@@ -910,6 +939,7 @@ model ProjectTask {
   @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, projectId])
   @@index([createdAt, isDeleted, domainId, projectId, stageId])
+  @@index([adminId])
 }
 
 model ProjectTaskDelay {
@@ -917,7 +947,8 @@ model ProjectTaskDelay {
   taskId               String       @db.Uuid
   task                 ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   requestedDelayInDays Float        @default(0)
-  delayReason          String
+  delayReason          Json         @db.JsonB
+  searchText           String       @default("")
   requestApproved      Boolean      @default(false)
   requestApprovalTime  DateTime?
   stageId              String       @db.Uuid
@@ -926,6 +957,8 @@ model ProjectTaskDelay {
   project              Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId             String       @db.Uuid
   domain               Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId              String       @db.Uuid
+  admin                Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status               StatusEnum   @default(ACTIVE)
   isDeleted            Boolean      @default(false)
   createdAt            DateTime     @default(now())
@@ -936,17 +969,21 @@ model ProjectTaskDelay {
   @@index([createdAt, isDeleted, domainId, projectId])
   @@index([createdAt, isDeleted, domainId, projectId, stageId])
   @@index([createdAt, isDeleted, domainId, projectId, taskId])
+  @@index([adminId])
 }
 
 model Machinery {
   id                   String     @id @default(uuid()) @db.Uuid
   code                 String
-  type                 String
+  type                 Json       @db.JsonB
+  searchText           String     @default("")
   expectedLitrePerHour Float      @default(0)
   projectId            String     @db.Uuid
   project              Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId             String     @db.Uuid
   domain               Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId              String     @db.Uuid
+  admin                Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
   status               StatusEnum @default(ACTIVE)
   isDeleted            Boolean    @default(false)
   createdAt            DateTime   @default(now())
@@ -955,6 +992,35 @@ model Machinery {
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([adminId])
+}
+
+model MachineReading {
+  id                String     @id @default(uuid()) @db.Uuid
+  code              String
+  searchText        String     @default("")
+  date              DateTime   @db.Date
+  openingFuelStock   Float
+  closingFuelStock   Float?
+  fuelRefillQuantity Float?
+  hoursRun          Float      @default(0)
+  machineStartTime   DateTime   @db.Time(0)
+  machineEndTime     DateTime?  @db.Time(0)
+  projectId          String     @db.Uuid
+  project            Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId           String     @db.Uuid
+  domain             Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId            String     @db.Uuid
+  admin              Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status             StatusEnum @default(ACTIVE)
+  isDeleted          Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([adminId])
 }
 
 model ProjectUserRole {

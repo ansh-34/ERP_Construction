@@ -3,16 +3,19 @@ import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
+type JsonObject = Record<string, unknown>;
+
 export interface ProjectTaskDelayRecord {
   id: string;
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: string;
+  delayReason: JsonObject;
   requestApproved: boolean;
   requestApprovalTime: Date | null;
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -22,18 +25,21 @@ export interface ProjectTaskDelayRecord {
 export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: string;
+  delayReason: JsonObject;
+  searchText: string;
   requestApproved?: boolean;
   requestApprovalTime?: Date | null;
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
-  delayReason?: string;
+  delayReason?: JsonObject;
+  searchText?: string;
   requestApproved?: boolean;
   requestApprovalTime?: Date | null;
   status?: StatusEnum;
@@ -49,6 +55,7 @@ const projectTaskDelaySelect = Prisma.sql`
   "stageId",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -59,6 +66,10 @@ function toDateSql(value: Date | null | undefined): Prisma.Sql {
   return value === null || value === undefined
     ? Prisma.sql`NULL`
     : Prisma.sql`${value}`;
+}
+
+function toJsonbSql(value: JsonObject): Prisma.Sql {
+  return Prisma.sql`${JSON.stringify(value)}::jsonb`;
 }
 
 export const projectTaskDelayRepository = {
@@ -73,11 +84,13 @@ export const projectTaskDelayRepository = {
         "taskId",
         "requestedDelayInDays",
         "delayReason",
+        "searchText",
         "requestApproved",
         "requestApprovalTime",
         "stageId",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -87,12 +100,14 @@ export const projectTaskDelayRepository = {
         ${id},
         ${data.taskId},
         ${data.requestedDelayInDays},
-        ${data.delayReason},
+        ${toJsonbSql(data.delayReason)},
+        ${data.searchText},
         ${data.requestApproved ?? false},
         ${toDateSql(data.requestApprovalTime)},
         ${data.stageId},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -106,14 +121,20 @@ export const projectTaskDelayRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     stageId?: string,
     taskId?: string,
+    searchKey?: string,
   ): Promise<ProjectTaskDelayRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -127,6 +148,12 @@ export const projectTaskDelayRepository = {
       filters.push(Prisma.sql`"taskId" = ${taskId}`);
     }
 
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       SELECT ${projectTaskDelaySelect}
       FROM "ProjectTaskDelay"
@@ -138,11 +165,22 @@ export const projectTaskDelayRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       SELECT ${projectTaskDelaySelect}
       FROM "ProjectTaskDelay"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -153,6 +191,7 @@ export const projectTaskDelayRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectTaskDelayInput,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -163,7 +202,13 @@ export const projectTaskDelayRepository = {
     }
 
     if (data.delayReason !== undefined) {
-      assignments.unshift(Prisma.sql`"delayReason" = ${data.delayReason}`);
+      assignments.unshift(
+        Prisma.sql`"delayReason" = ${toJsonbSql(data.delayReason)}`,
+      );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.requestApproved !== undefined) {
@@ -184,10 +229,20 @@ export const projectTaskDelayRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       UPDATE "ProjectTaskDelay"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskDelaySelect}
     `);
 
@@ -197,14 +252,54 @@ export const projectTaskDelayRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
       UPDATE "ProjectTaskDelay"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskDelaySelect}
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectTaskDelayInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+
+    return prismaClient.projectTaskDelay.createMany({
+      data: data.map((item) => ({
+        taskId: item.taskId,
+        requestedDelayInDays: item.requestedDelayInDays,
+        delayReason: item.delayReason,
+        searchText: item.searchText,
+        requestApproved: item.requestApproved || false,
+        requestApprovalTime: item.requestApprovalTime || null,
+        stageId: item.stageId,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        adminId: item.adminId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

@@ -4,6 +4,7 @@ declare global {
       user?: {
         userId: string;
         domainId: string;
+        adminId: string;
         roleId: string | null;
         industry: string;
         adminId?: string;

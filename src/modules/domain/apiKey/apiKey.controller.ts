@@ -6,17 +6,27 @@ import { resolveHttpStatus } from '../../../utils/httpError';
 export const apiKeyController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { name, description, domainId } = req.body as {
-        name?: string;
-        description?: string;
-        domainId?: string;
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { name, description } = req.body as {
+        name?: Record<string, unknown>;
+        description?: Record<string, unknown>;
       };
 
-      const apiKey = await apiKeyService.create({
-        name: name ?? '',
-        description: description ?? '',
-        domainId: domainId ?? '',
-      });
+      const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
+
+      const apiKey = await apiKeyService.create(
+        {
+          name: name ?? {},
+          description: description ?? {},
+          domainId,
+          adminId,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Api key created successfully',
@@ -31,8 +41,20 @@ export const apiKeyController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
-      const apiKeys = await apiKeyService.getAll(domainId ?? '');
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, searchKey } = req.query as {
+        domainId?: string;
+        searchKey?: string;
+      };
+      const apiKeys = await apiKeyService.getAll(
+        domainId ?? '',
+        req.user!.adminId,
+        searchKey,
+        language,
+      );
 
       return res.status(HttpStatus.OK).json({
         message: 'Api keys fetched successfully',
@@ -47,9 +69,18 @@ export const apiKeyController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const apiKey = await apiKeyService.getById(id ?? '', domainId ?? '');
+      const apiKey = await apiKeyService.getById(
+        id ?? '',
+        domainId ?? '',
+        req.user!.adminId,
+        language,
+      );
 
       if (!apiKey) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -70,18 +101,24 @@ export const apiKeyController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description } = req.body as {
-        name?: string;
-        description?: string;
+        name?: Record<string, unknown>;
+        description?: Record<string, unknown>;
       };
 
       const updatedApiKey = await apiKeyService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
         },
+        language,
       );
 
       if (!updatedApiKey) {
@@ -106,6 +143,7 @@ export const apiKeyController = {
       const deletedApiKey = await apiKeyService.delete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedApiKey) {

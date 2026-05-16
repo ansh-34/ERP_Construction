@@ -23,6 +23,7 @@ export interface ProjectTaskRecord {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -32,6 +33,7 @@ export interface ProjectTaskRecord {
 export interface CreateProjectTaskInput {
   name: JsonObject;
   code: string;
+  searchText: string;
   assignee?: JsonObject | null;
   plannedStartDate?: Date | null;
   plannedEndDate?: Date | null;
@@ -46,11 +48,14 @@ export interface CreateProjectTaskInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
 export interface UpdateProjectTaskInput {
   name?: JsonObject;
+  code?: string;
+  searchText?: string;
   assignee?: JsonObject | null;
   plannedStartDate?: Date | null;
   plannedEndDate?: Date | null;
@@ -83,6 +88,7 @@ const projectTaskSelect = Prisma.sql`
   "stageId",
   "projectId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -110,6 +116,7 @@ export const projectTaskRepository = {
         "id",
         "name",
         "code",
+        "searchText",
         "assignee",
         "plannedStartDate",
         "plannedEndDate",
@@ -124,6 +131,7 @@ export const projectTaskRepository = {
         "stageId",
         "projectId",
         "domainId",
+        "adminId",
         "status",
         "isDeleted",
         "createdAt",
@@ -133,6 +141,7 @@ export const projectTaskRepository = {
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
+        ${data.searchText},
         ${toJsonbSql(data.assignee)},
         ${toDateSql(data.plannedStartDate)},
         ${toDateSql(data.plannedEndDate)},
@@ -147,6 +156,7 @@ export const projectTaskRepository = {
         ${data.stageId},
         ${data.projectId},
         ${data.domainId},
+        ${data.adminId},
         ${data.status},
         false,
         NOW(),
@@ -160,13 +170,19 @@ export const projectTaskRepository = {
 
   findMany: async (
     domainId: string,
+    adminId?: string,
     projectId?: string,
     stageId?: string,
+    searchKey?: string,
   ): Promise<ProjectTaskRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
@@ -174,6 +190,12 @@ export const projectTaskRepository = {
 
     if (stageId) {
       filters.push(Prisma.sql`"stageId" = ${stageId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
     }
 
     return prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
@@ -187,11 +209,22 @@ export const projectTaskRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       SELECT ${projectTaskSelect}
       FROM "ProjectTask"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -203,15 +236,24 @@ export const projectTaskRepository = {
     domainId: string,
     projectId: string,
     stageId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"projectId" = ${projectId}`,
+      Prisma.sql`"stageId" = ${stageId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       SELECT ${projectTaskSelect}
       FROM "ProjectTask"
-      WHERE "code" = ${code}
-        AND "domainId" = ${domainId}
-        AND "projectId" = ${projectId}
-        AND "stageId" = ${stageId}
-        AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -222,6 +264,7 @@ export const projectTaskRepository = {
     id: string,
     domainId: string,
     data: UpdateProjectTaskInput,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -231,10 +274,18 @@ export const projectTaskRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.assignee !== undefined) {
       assignments.unshift(
         Prisma.sql`"assignee" = ${toJsonbSql(data.assignee)}`,
       );
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.plannedStartDate !== undefined) {
@@ -299,10 +350,20 @@ export const projectTaskRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskSelect}
     `);
 
@@ -312,14 +373,61 @@ export const projectTaskRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskSelect}
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateProjectTaskInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.projectTask.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        searchText: item.searchText,
+        assignee: item.assignee || null,
+        plannedStartDate: item.plannedStartDate || null,
+        plannedEndDate: item.plannedEndDate || null,
+        actualStartDate: item.actualStartDate || null,
+        actualEndDate: item.actualEndDate || null,
+        taskStatus: item.taskStatus || 'pending',
+        taskProgress: item.taskProgress || 0,
+        totalDelayInDays: item.totalDelayInDays || 0,
+        requiredApproval: item.requiredApproval || false,
+        lastApprovedDeadline: item.lastApprovedDeadline || null,
+        projectBatchCode: item.projectBatchCode || null,
+        stageId: item.stageId,
+        projectId: item.projectId,
+        domainId: item.domainId,
+        adminId: item.adminId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

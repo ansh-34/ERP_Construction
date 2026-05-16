@@ -9,15 +9,47 @@ import { normalizePrismaError } from '@/utils/prismaError';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
+  isPlainObject,
 } from '@/utils/validation';
 
 export interface CreateMachineryInput {
   code: string;
-  type: string;
+  type: Record<string, unknown>;
   expectedLitrePerHour: number;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
+}
+
+type LocalizedMachineryRecord = Omit<MachineryRecord, 'type'> & {
+  type: string;
+};
+
+function buildMachinerySearchText(type: Record<string, unknown>): string {
+  return Object.values(type).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown>,
+  language: string | null,
+): string {
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function normalizeMachinery(
+  machinery: MachineryRecord,
+  language: string | null,
+): LocalizedMachineryRecord {
+  return {
+    ...machinery,
+    type: getLocalizedText(machinery.type, language),
+  };
 }
 
 function assertStatus(status: StatusEnum | undefined): void {
@@ -35,8 +67,12 @@ function assertCreateInput(data: CreateMachineryInput): void {
     throw new Error('invalid code');
   }
 
-  if (!isNonEmptyString(data.type)) {
+  if (!isPlainObject(data.type)) {
     throw new Error('invalid type');
+  }
+
+  if (!isNonEmptyString(data.type.en)) {
+    throw new Error('type.en is required');
   }
 
   if (!isNonNegativeFiniteNumber(data.expectedLitrePerHour)) {
@@ -49,6 +85,10 @@ function assertCreateInput(data: CreateMachineryInput): void {
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
+  }
+
+  if (!isNonEmptyString(data.adminId)) {
+    throw new Error('invalid adminId');
   }
 
   assertStatus(data.status);
@@ -65,8 +105,12 @@ function assertUpdateInput(data: UpdateMachineryInput): void {
     throw new Error('invalid code');
   }
 
-  if (data.type !== undefined && !isNonEmptyString(data.type)) {
+  if (data.type !== undefined && !isPlainObject(data.type)) {
     throw new Error('invalid type');
+  }
+
+  if (data.type !== undefined && !isNonEmptyString(data.type.en)) {
+    throw new Error('type.en is required');
   }
 
   if (
@@ -80,20 +124,29 @@ function assertUpdateInput(data: UpdateMachineryInput): void {
 }
 
 export const machineryService = {
-  create: async (data: CreateMachineryInput): Promise<MachineryRecord> => {
+  create: async (
+    data: CreateMachineryInput,
+    language: string | null = null,
+  ): Promise<LocalizedMachineryRecord> => {
     assertCreateInput(data);
 
     try {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
         throw new Error('not found');
       }
 
-      return await machineryRepository.create(data);
+      const machinery = await machineryRepository.create({
+        ...data,
+        searchText: buildMachinerySearchText(data.type),
+      });
+
+      return normalizeMachinery(machinery, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -101,10 +154,17 @@ export const machineryService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
-  ): Promise<MachineryRecord[]> => {
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedMachineryRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     if (projectId !== undefined && !isNonEmptyString(projectId)) {
@@ -112,7 +172,15 @@ export const machineryService = {
     }
 
     try {
-      return await machineryRepository.findMany(domainId, projectId);
+      const machineries = await machineryRepository.findMany(
+        domainId,
+        adminId,
+        projectId,
+        searchKey,
+      );
+      return machineries.map((machinery) =>
+        normalizeMachinery(machinery, language),
+      );
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -121,13 +189,24 @@ export const machineryService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<MachineryRecord | null> => {
+    adminId: string,
+    language: string | null = null,
+  ): Promise<LocalizedMachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
     try {
-      return await machineryRepository.findById(id, domainId);
+      const machinery = await machineryRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
+      return machinery ? normalizeMachinery(machinery, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -136,10 +215,16 @@ export const machineryService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateMachineryInput,
-  ): Promise<MachineryRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedMachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     assertUpdateInput(data);
@@ -148,13 +233,29 @@ export const machineryService = {
       const existingMachinery = await machineryRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingMachinery) {
         throw new Error('not found');
       }
 
-      return await machineryRepository.update(id, domainId, data);
+      const updateData = {
+        ...data,
+        ...(data.type !== undefined
+          ? {
+              searchText: buildMachinerySearchText(data.type),
+            }
+          : {}),
+      };
+
+      const machinery = await machineryRepository.update(
+        id,
+        domainId,
+        updateData,
+        adminId,
+      );
+      return machinery ? normalizeMachinery(machinery, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -163,22 +264,28 @@ export const machineryService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<MachineryRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
     }
 
     try {
       const existingMachinery = await machineryRepository.findById(
         id,
         domainId,
+        adminId,
       );
 
       if (!existingMachinery) {
         throw new Error('not found');
       }
 
-      return await machineryRepository.softDelete(id, domainId);
+      return await machineryRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

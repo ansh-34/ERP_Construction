@@ -1,12 +1,15 @@
 import { z } from 'zod';
 
+const jsonObject = z.record(z.string(), z.unknown());
+
 export const createMediaBody = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  name: jsonObject.optional(),
 });
 
 export const updateMediaBody = z
   .object({
-    name: z.string().trim().min(1, { message: 'Name is required' }).optional(),
+    name: jsonObject.optional(),
     type: z.string().trim().min(1, { message: 'Type is required' }).optional(),
   })
   .refine((data) => data.name !== undefined || data.type !== undefined, {
@@ -15,6 +18,7 @@ export const updateMediaBody = z
 
 export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  searchKey: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

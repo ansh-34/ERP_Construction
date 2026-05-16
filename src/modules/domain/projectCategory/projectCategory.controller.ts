@@ -7,6 +7,10 @@ import { resolveHttpStatus } from '@/utils/httpError';
 export const projectCategoryController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description, domainId, status } = req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown>;
@@ -14,12 +18,15 @@ export const projectCategoryController = {
         status?: StatusEnum;
       };
 
-      const projectCategory = await projectCategoryService.create({
-        name: name ?? {},
-        ...(description !== undefined && { description }),
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const projectCategory = await projectCategoryService.create(
+        {
+          name: name ?? {},
+          ...(description !== undefined && { description }),
+          domainId: domainId ?? '',
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Project category created successfully',
@@ -36,9 +43,18 @@ export const projectCategoryController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, searchKey } = req.query as {
+        domainId?: string;
+        searchKey?: string;
+      };
       const projectCategories = await projectCategoryService.getAll(
         domainId ?? '',
+        searchKey,
+        language,
       );
 
       return res.status(HttpStatus.OK).json({
@@ -56,11 +72,16 @@ export const projectCategoryController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
       const projectCategory = await projectCategoryService.getById(
         id ?? '',
         domainId ?? '',
+        language,
       );
 
       if (!projectCategory) {
@@ -84,6 +105,10 @@ export const projectCategoryController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { name, description, status } = req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown> | null;
@@ -98,6 +123,7 @@ export const projectCategoryController = {
           ...(description !== undefined && { description }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedProjectCategory) {

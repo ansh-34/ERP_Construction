@@ -12,6 +12,7 @@ export interface LocationRecord {
   type: string;
   parentLocationId: string | null;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -22,14 +23,18 @@ export interface CreateLocationInput {
   name: JsonObject;
   code: string;
   type: string;
+  searchText: string;
   parentLocationId?: string | null;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
 export interface UpdateLocationInput {
   name?: JsonObject;
+  code?: string;
   type?: string;
+  searchText?: string;
   parentLocationId?: string | null;
   status?: StatusEnum;
 }
@@ -41,6 +46,7 @@ const locationSelect = Prisma.sql`
   "type",
   "parentLocationId",
   "domainId",
+  "adminId",
   "status",
   "isDeleted",
   "createdAt",
@@ -52,19 +58,38 @@ export const locationRepository = {
     const id = randomUUID();
 
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
-      INSERT INTO "Location" ("id", "name", "code", "type", "parentLocationId", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      INSERT INTO "Location" ("id", "name", "code", "type", "searchText", "parentLocationId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.type}, ${data.searchText}, ${data.parentLocationId ?? null}, ${data.domainId}, ${data.adminId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 
     return result[0] as LocationRecord;
   },
 
-  findMany: async (domainId: string): Promise<LocationRecord[]> => {
+  findMany: async (
+    domainId: string,
+    adminId?: string,
+    searchKey?: string,
+  ): Promise<LocationRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
     return prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       SELECT ${locationSelect}
       FROM "Location"
-      WHERE "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
     `);
   },
@@ -72,11 +97,22 @@ export const locationRepository = {
   findById: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<LocationRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       SELECT ${locationSelect}
       FROM "Location"
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -86,11 +122,22 @@ export const locationRepository = {
   findByCode: async (
     code: string,
     domainId: string,
+    adminId?: string,
   ): Promise<LocationRecord | null> => {
+    const filters = [
+      Prisma.sql`"code" = ${code}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       SELECT ${locationSelect}
       FROM "Location"
-      WHERE "code" = ${code} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
 
@@ -101,6 +148,7 @@ export const locationRepository = {
     id: string,
     domainId: string,
     data: UpdateLocationInput,
+    adminId?: string,
   ): Promise<LocationRecord | null> => {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
@@ -110,8 +158,16 @@ export const locationRepository = {
       );
     }
 
+    if (data.code !== undefined) {
+      assignments.unshift(Prisma.sql`"code" = ${data.code}`);
+    }
+
     if (data.type !== undefined) {
       assignments.unshift(Prisma.sql`"type" = ${data.type}`);
+    }
+
+    if (data.searchText !== undefined) {
+      assignments.unshift(Prisma.sql`"searchText" = ${data.searchText}`);
     }
 
     if (data.parentLocationId !== undefined) {
@@ -124,10 +180,20 @@ export const locationRepository = {
       assignments.unshift(Prisma.sql`"status" = ${data.status}`);
     }
 
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       UPDATE "Location"
       SET ${Prisma.join(assignments)}
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${locationSelect}
     `);
 
@@ -137,14 +203,50 @@ export const locationRepository = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId?: string,
   ): Promise<LocationRecord | null> => {
+    const filters = [
+      Prisma.sql`"id" = ${id}`,
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
     const result = await prisma.$queryRaw<LocationRecord[]>(Prisma.sql`
       UPDATE "Location"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
-      WHERE "id" = ${id} AND "domainId" = ${domainId} AND "isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${locationSelect}
     `);
 
     return result[0] ?? null;
+  },
+
+  bulkCreate(
+    data: CreateLocationInput[],
+    options: { skipDuplicates?: boolean; transaction?: any } = {},
+  ) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.location.createMany({
+      data: data.map((item) => ({
+        name: item.name,
+        code: item.code,
+        type: item.type,
+        searchText: item.searchText,
+        parentLocationId: item.parentLocationId || null,
+        domainId: item.domainId,
+        adminId: item.adminId,
+        status: item.status,
+      })),
+      skipDuplicates: Object.prototype.hasOwnProperty.call(
+        options,
+        'skipDuplicates',
+      )
+        ? options.skipDuplicates
+        : true,
+    });
   },
 };

@@ -6,7 +6,6 @@ import {
   type UpdateProjectTaskInput as RepositoryUpdateProjectTaskInput,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
-import { generateCode } from '@/utils/code';
 import { normalizePrismaError } from '@/utils/prismaError';
 import {
   isNonEmptyString,
@@ -30,6 +29,7 @@ export interface CreateProjectTaskInput {
   stageId: string;
   projectId: string;
   domainId: string;
+  adminId: string;
   status: StatusEnum;
 }
 
@@ -47,6 +47,62 @@ export interface UpdateProjectTaskInput {
   lastApprovedDeadline?: string | null;
   projectBatchCode?: string | null;
   status?: StatusEnum;
+}
+
+type LocalizedProjectTaskRecord = Omit<
+  ProjectTaskRecord,
+  'name' | 'assignee'
+> & {
+  name: string;
+  assignee: unknown;
+};
+
+function buildProjectTaskCode(name: Record<string, unknown>): string {
+  return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
+}
+
+function buildProjectTaskSearchText(name: Record<string, unknown>): string {
+  return Object.values(name).join(' ').toLowerCase();
+}
+
+function getLocalizedText(
+  value: Record<string, unknown>,
+  language: string | null,
+): string {
+  const langCode = language || 'en';
+  const localizedValue = value[langCode] ?? value.en ?? '';
+
+  return typeof localizedValue === 'string'
+    ? localizedValue
+    : String(localizedValue);
+}
+
+function getLocalizedJsonValue(
+  value: Record<string, unknown> | null,
+  language: string | null,
+): unknown {
+  if (!value) {
+    return null;
+  }
+
+  const langCode = language || 'en';
+
+  if (value[langCode] !== undefined || value.en !== undefined) {
+    return getLocalizedText(value, langCode);
+  }
+
+  return value;
+}
+
+function normalizeProjectTask(
+  task: ProjectTaskRecord,
+  language: string | null,
+): LocalizedProjectTaskRecord {
+  return {
+    ...task,
+    name: getLocalizedText(task.name, language),
+    assignee: getLocalizedJsonValue(task.assignee, language),
+  };
 }
 
 function parseOptionalDate(value: string | null | undefined): Date | null {
@@ -85,6 +141,10 @@ function assertTaskString(
 function assertCreateInput(data: CreateProjectTaskInput): void {
   if (!isPlainObject(data.name) || Object.keys(data.name).length === 0) {
     throw new Error('invalid json name');
+  }
+
+  if (!isNonEmptyString(data.name.en)) {
+    throw new Error('name.en is required');
   }
 
   if (
@@ -138,6 +198,10 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
     throw new Error('invalid json name');
   }
 
+  if (data.name !== undefined && !isNonEmptyString(data.name.en)) {
+    throw new Error('name.en is required');
+  }
+
   if (
     data.assignee !== undefined &&
     data.assignee !== null &&
@@ -167,8 +231,12 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
 }
 
 function buildCreatePayload(data: CreateProjectTaskInput) {
+  const code = buildProjectTaskCode(data.name);
+
   return {
     ...data,
+    code,
+    searchText: buildProjectTaskSearchText(data.name),
     plannedStartDate: parseOptionalDate(data.plannedStartDate),
     plannedEndDate: parseOptionalDate(data.plannedEndDate),
     actualStartDate: parseOptionalDate(data.actualStartDate),
@@ -179,9 +247,19 @@ function buildCreatePayload(data: CreateProjectTaskInput) {
 
 function buildUpdatePayload(
   data: UpdateProjectTaskInput,
+  existingTask: ProjectTaskRecord,
 ): RepositoryUpdateProjectTaskInput {
+  const code =
+    data.name !== undefined
+      ? buildProjectTaskCode(data.name)
+      : existingTask.code;
+
   return {
     ...(data.name !== undefined && { name: data.name }),
+    ...(data.name !== undefined && { code }),
+    ...(data.name !== undefined && {
+      searchText: buildProjectTaskSearchText(data.name),
+    }),
     ...(data.assignee !== undefined && { assignee: data.assignee }),
     ...(data.plannedStartDate !== undefined && {
       plannedStartDate: parseOptionalDate(data.plannedStartDate),
@@ -216,13 +294,17 @@ function buildUpdatePayload(
 }
 
 export const projectTaskService = {
-  create: async (data: CreateProjectTaskInput): Promise<ProjectTaskRecord> => {
+  create: async (
+    data: CreateProjectTaskInput,
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskRecord> => {
     assertCreateInput(data);
 
     try {
       const project = await projectRepository.findById(
         data.projectId,
         data.domainId,
+        data.adminId,
       );
 
       if (!project) {
@@ -232,29 +314,30 @@ export const projectTaskService = {
       const stage = await projectStageRepository.findById(
         data.stageId,
         data.domainId,
+        data.adminId,
       );
 
       if (!stage || stage.projectId !== data.projectId) {
         throw new Error('not found');
       }
 
-      let code = generateCode('PROJECT_TASK');
+      const createPayload = buildCreatePayload(data);
 
-      while (
+      if (
         await projectTaskRepository.findByCode(
-          code,
+          createPayload.code,
           data.domainId,
           data.projectId,
           data.stageId,
+          data.adminId,
         )
       ) {
-        code = generateCode('PROJECT_TASK');
+        throw new Error('duplicate code');
       }
 
-      return await projectTaskRepository.create({
-        ...buildCreatePayload(data),
-        code,
-      });
+      const task = await projectTaskRepository.create(createPayload);
+
+      return normalizeProjectTask(task, language);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -262,9 +345,12 @@ export const projectTaskService = {
 
   getAll: async (
     domainId: string,
+    adminId: string,
     projectId?: string,
     stageId?: string,
-  ): Promise<ProjectTaskRecord[]> => {
+    searchKey?: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskRecord[]> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -278,7 +364,14 @@ export const projectTaskService = {
     }
 
     try {
-      return await projectTaskRepository.findMany(domainId, projectId, stageId);
+      const tasks = await projectTaskRepository.findMany(
+        domainId,
+        adminId,
+        projectId,
+        stageId,
+        searchKey,
+      );
+      return tasks.map((task) => normalizeProjectTask(task, language));
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -287,13 +380,16 @@ export const projectTaskService = {
   getById: async (
     id: string,
     domainId: string,
-  ): Promise<ProjectTaskRecord | null> => {
+    adminId: string,
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      return await projectTaskRepository.findById(id, domainId);
+      const task = await projectTaskRepository.findById(id, domainId, adminId);
+      return task ? normalizeProjectTask(task, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -302,8 +398,10 @@ export const projectTaskService = {
   update: async (
     id: string,
     domainId: string,
+    adminId: string,
     data: UpdateProjectTaskInput,
-  ): Promise<ProjectTaskRecord | null> => {
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
@@ -311,17 +409,40 @@ export const projectTaskService = {
     assertUpdateInput(data);
 
     try {
-      const existingTask = await projectTaskRepository.findById(id, domainId);
+      const existingTask = await projectTaskRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingTask) {
         throw new Error('not found');
       }
 
-      return await projectTaskRepository.update(
+      const updatePayload = buildUpdatePayload(data, existingTask);
+
+      if (updatePayload.code && updatePayload.code !== existingTask.code) {
+        const duplicateTask = await projectTaskRepository.findByCode(
+          updatePayload.code,
+          domainId,
+          existingTask.projectId,
+          existingTask.stageId,
+          adminId,
+        );
+
+        if (duplicateTask && duplicateTask.id !== id) {
+          throw new Error('duplicate code');
+        }
+      }
+
+      const task = await projectTaskRepository.update(
         id,
         domainId,
-        buildUpdatePayload(data),
+        updatePayload,
+        adminId,
       );
+
+      return task ? normalizeProjectTask(task, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -330,19 +451,24 @@ export const projectTaskService = {
   softDelete: async (
     id: string,
     domainId: string,
+    adminId: string,
   ): Promise<ProjectTaskRecord | null> => {
     if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
     try {
-      const existingTask = await projectTaskRepository.findById(id, domainId);
+      const existingTask = await projectTaskRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
 
       if (!existingTask) {
         throw new Error('not found');
       }
 
-      return await projectTaskRepository.softDelete(id, domainId);
+      return await projectTaskRepository.softDelete(id, domainId, adminId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

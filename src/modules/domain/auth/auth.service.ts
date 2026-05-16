@@ -67,12 +67,17 @@ export const AuthService = {
       domainOwner.id,
     );
 
+    if (!domainOwner.adminId) {
+      throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
+    }
+
     const accessToken = signToken({
       userId: domainOwner.id,
       domainId: domainOwner.id,
+      adminId: domainOwner.adminId,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
-      adminId: domainOwner.adminId ?? undefined,
+
     });
 
     const { token: refreshToken } = await RefreshTokenRepository.createForUser(
@@ -160,6 +165,11 @@ export const AuthService = {
       domainOwner.id,
     );
 
+    if (!domainOwner.adminId) {
+      await RefreshTokenRepository.revoke(existing.id);
+      throw new Error(Messages.AUTH.REFRESH_TOKEN_INVALID);
+    }
+
     if (isReusableDomainAccessToken(currentAccessToken, domainOwner.id)) {
       return {
         accessToken: currentAccessToken as string,
@@ -181,9 +191,10 @@ export const AuthService = {
     const accessToken = signToken({
       userId: domainOwner.id,
       domainId: domainOwner.id,
+      adminId: domainOwner.adminId,
       roleId: domainRole?.id || '',
       industry: domainOwner.industry,
-      adminId: domainOwner.adminId ?? undefined,
+
     });
 
     await RefreshTokenRepository.revoke(existing.id);

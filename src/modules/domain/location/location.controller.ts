@@ -7,21 +7,31 @@ import { resolveHttpStatus } from '@/utils/httpError';
 export const locationController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { name, type, parentLocationId, domainId, status } = req.body as {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { name, type, parentLocationId, status } = req.body as {
         name?: Record<string, unknown>;
         type?: string;
         parentLocationId?: string | null;
-        domainId?: string;
         status?: StatusEnum;
       };
 
-      const location = await locationService.create({
-        name: name ?? {},
-        type: type ?? '',
-        ...(parentLocationId !== undefined && { parentLocationId }),
-        domainId: domainId ?? '',
-        status: status ?? StatusEnum.ACTIVE,
-      });
+      const domainId = req.user!.domainId;
+      const adminId = req.user!.adminId;
+
+      const location = await locationService.create(
+        {
+          name: name ?? {},
+          type: type ?? '',
+          ...(parentLocationId !== undefined && { parentLocationId }),
+          domainId,
+          adminId,
+          status: status ?? StatusEnum.ACTIVE,
+        },
+        language,
+      );
 
       return res.status(HttpStatus.CREATED).json({
         message: 'Location created successfully',
@@ -36,8 +46,20 @@ export const locationController = {
 
   getAll: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { domainId } = req.query as { domainId?: string };
-      const locations = await locationService.getAll(domainId ?? '');
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { domainId, searchKey } = req.query as {
+        domainId?: string;
+        searchKey?: string;
+      };
+      const locations = await locationService.getAll(
+        domainId ?? '',
+        req.user!.adminId,
+        searchKey,
+        language,
+      );
 
       return res.status(HttpStatus.OK).json({
         message: 'Locations fetched successfully',
@@ -52,9 +74,18 @@ export const locationController = {
 
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const location = await locationService.getById(id ?? '', domainId ?? '');
+      const location = await locationService.getById(
+        id ?? '',
+        domainId ?? '',
+        req.user!.adminId,
+        language,
+      );
 
       if (!location) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
@@ -82,15 +113,21 @@ export const locationController = {
         status?: StatusEnum;
       };
 
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
       const updatedLocation = await locationService.update(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
         {
           ...(name !== undefined && { name }),
           ...(type !== undefined && { type }),
           ...(parentLocationId !== undefined && { parentLocationId }),
           ...(status !== undefined && { status }),
         },
+        language,
       );
 
       if (!updatedLocation) {
@@ -115,6 +152,7 @@ export const locationController = {
       const deletedLocation = await locationService.softDelete(
         id ?? '',
         domainId ?? '',
+        req.user!.adminId,
       );
 
       if (!deletedLocation) {
