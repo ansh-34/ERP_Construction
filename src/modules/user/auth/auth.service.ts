@@ -267,7 +267,10 @@ export const UserService = {
         email: user.email,
         industry: user.industry,
         role: user.role
-          ? { code: user.role.code.toUpperCase(), name: user.role.name }
+          ? {
+              code: (user.role.code || 'USER').toUpperCase(),
+              name: user.role.name,
+            }
           : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
@@ -326,7 +329,10 @@ export const UserService = {
           email: user.email,
           industry: user.industry,
           role: user.role
-            ? { code: user.role.code.toUpperCase(), name: user.role.name }
+            ? {
+                code: (user.role.code || 'USER').toUpperCase(),
+                name: user.role.name,
+              }
             : { code: 'USER', name: { en: 'User' } },
         },
         domain: {
@@ -363,7 +369,10 @@ export const UserService = {
         email: user.email,
         industry: user.industry,
         role: user.role
-          ? { code: user.role.code.toUpperCase(), name: user.role.name }
+          ? {
+              code: (user.role.code || 'USER').toUpperCase(),
+              name: user.role.name,
+            }
           : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
@@ -552,7 +561,7 @@ export const UserService = {
       role: {
         id: role.id,
         name: role.name,
-        code: role.code.toUpperCase(),
+        code: (role.code || 'USER').toUpperCase(),
       },
       modules,
       permissions,
