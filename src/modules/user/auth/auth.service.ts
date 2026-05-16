@@ -128,6 +128,30 @@ export const UserService = {
       adminId: domain.adminId,
     });
 
+    // const verificationToken = crypto.randomBytes(32).toString('hex');
+    // const tokenExpirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // await TokenRepository.create({
+    //   token: verificationToken,
+    //   email,
+    //   tokenPurpose: 'USER_EMAIL_VERIFICATION',
+    //   tokenExpirationTime,
+    //   domainId: domain.id,
+    // });
+
+    // const { userInviteEmail } = await import('../../../templates/index.js');
+    // const verificationLink = `${variables.CLIENT_BASE_URL}/verify?email=${encodeURIComponent(email)}&token=${verificationToken}`;
+
+    // await sendMail(
+    //   email,
+    //   'Welcome to Construction ERP - Verify your account',
+    //   userInviteEmail({
+    //     recipientName: name.trim(),
+    //     domainName: typeof domain.name === 'object' && domain.name !== null ? (domain.name as Record<string, string>).en || 'Construction ERP' : String(domain.name || 'Construction ERP'),
+    //     verificationLink,
+    //   })
+    // );
+
     const accessToken = signToken({
       userId: user.id,
       domainId: user.domainId,
@@ -149,7 +173,7 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: 'USER',
+        role: { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: domain.id,
@@ -160,17 +184,18 @@ export const UserService = {
   },
 
   async loginUser(data: {
-    email: string;
+    identifier: string;
     password: string;
     speciality: IndustryEnum;
   }) {
-    const { email, password, speciality } = data;
+    const { identifier, password, speciality } = data;
 
-    if (!email || !password || !speciality) {
+    if (!identifier || !password || !speciality) {
       throw new Error(Messages.USER.EMAIL_PASSWORD_SPECIALITY_REQUIRED);
     }
 
-    const user = await UserRepository.findActiveByEmailWithRoleAndDomain(email);
+    const user =
+      await UserRepository.findActiveByIdentifierWithRoleAndDomain(identifier);
 
     if (!user) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
@@ -240,7 +265,9 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: 'USER',
+        role: user.role
+          ? { code: user.role.code, name: user.role.name }
+          : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
@@ -296,7 +323,9 @@ export const UserService = {
           name: user.name,
           email: user.email,
           industry: user.industry,
-          role: 'USER',
+          role: user.role
+            ? { code: user.role.code, name: user.role.name }
+            : { code: 'USER', name: { en: 'User' } },
         },
         domain: {
           id: user.domain.id,
@@ -330,7 +359,9 @@ export const UserService = {
         name: user.name,
         email: user.email,
         industry: user.industry,
-        role: 'USER',
+        role: user.role
+          ? { code: user.role.code, name: user.role.name }
+          : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
@@ -489,7 +520,7 @@ export const UserService = {
 
     if (!roleId) {
       return {
-        role: null,
+        role: { code: 'USER', name: { en: 'User' } },
         modules: [],
         permissions: [],
       };

@@ -21,6 +21,16 @@ export const UserRepository = {
     });
   },
 
+  findActiveByIdentifierWithRoleAndDomain(identifier: string) {
+    return prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { phone: identifier }],
+        isDeleted: false,
+      },
+      include: { role: true, domain: true },
+    });
+  },
+
   findActiveByIdAndDomain(id: string, domainId: string) {
     return prisma.user.findFirst({
       where: { id, domainId, isDeleted: false },
