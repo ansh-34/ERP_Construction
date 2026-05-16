@@ -95,7 +95,9 @@ export const DomainService = {
         email: result.domain.email,
         industry: result.domain.industry,
       },
-      ...(variables.NODE_ENV === 'development' ? { link: verificationLink } : {}),
+      ...(variables.NODE_ENV === 'development'
+        ? { link: verificationLink }
+        : {}),
     };
   },
 
@@ -142,8 +144,18 @@ export const DomainService = {
     };
   },
 
-  async listDomains(adminId: string, limit: number, offset: number, searchKey?: string) {
-    const [totalCount, domains] = await DomainRepository.listByAdmin(adminId, limit, offset, searchKey);
+  async listDomains(
+    adminId: string,
+    limit: number,
+    offset: number,
+    searchKey?: string,
+  ) {
+    const [totalCount, domains] = await DomainRepository.listByAdmin(
+      adminId,
+      limit,
+      offset,
+      searchKey,
+    );
     return {
       totalCount,
       domains,
@@ -163,9 +175,9 @@ export const DomainService = {
     if (!domain) {
       throw new Error(Messages.DOMAIN.NOT_FOUND);
     }
-  
+
     const updateData = { ...data };
-    delete updateData.email; 
+    delete updateData.email;
     delete updateData.password;
 
     return DomainRepository.update(domainId, updateData);

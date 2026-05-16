@@ -434,8 +434,6 @@ export const Messages = Object.freeze({
     CANNOT_UPDATE_NON_PENDING: 'Only pending GRNs can be updated',
     CANNOT_DELETE_NON_PENDING: 'Only pending GRNs can be deleted',
     ALREADY_ACTIONED: 'GRN has already been approved or rejected',
-
-
   },
   PURCHASE_ORDER: {
     CREATED: 'Purchase order created successfully',

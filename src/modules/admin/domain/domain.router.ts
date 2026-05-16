@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { validate } from '../../../middlewares/validate.js';
 import authMiddleware from '../../../middlewares/auth.js';
-import { seedDomain, verifyDomainToken, listDomains, getDomainById, updateDomain, deleteDomain } from './domain.controller.js';
+import {
+  seedDomain,
+  verifyDomainToken,
+  listDomains,
+  getDomainById,
+  updateDomain,
+  deleteDomain,
+} from './domain.controller.js';
 import {
   seedDomainBodySchema,
   verifyDomainTokenQuerySchema,
@@ -26,17 +33,9 @@ router.get(
 
 router.use(authMiddleware);
 
-router.get(
-  '/',
-  validate(listDomainsQuerySchema, 'query'),
-  listDomains,
-);
+router.get('/', validate(listDomainsQuerySchema, 'query'), listDomains);
 
-router.get(
-  '/:id',
-  validate(domainIdParamSchema, 'params'),
-  getDomainById,
-);
+router.get('/:id', validate(domainIdParamSchema, 'params'), getDomainById);
 
 router.put(
   '/:id',
@@ -45,10 +44,6 @@ router.put(
   updateDomain,
 );
 
-router.delete(
-  '/:id',
-  validate(domainIdParamSchema, 'params'),
-  deleteDomain,
-);
+router.delete('/:id', validate(domainIdParamSchema, 'params'), deleteDomain);
 
 export default router;

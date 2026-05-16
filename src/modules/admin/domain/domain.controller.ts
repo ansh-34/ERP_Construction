@@ -3,7 +3,7 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { DomainService } from './domain.service.js';
 import variables from '../../../config/variables.config.js';
-  
+
 const getBaseUrl = variables.FRONTEND_URL;
 
 export const seedDomain = async (req: Request, res: Response) => {
@@ -62,7 +62,12 @@ export const listDomains = async (req: Request, res: Response) => {
     const offset = parseInt(req.query.offset as string) || 0;
     const searchKey = req.query.searchKey as string;
 
-    const { totalCount, domains } = await DomainService.listDomains(adminId, limit, offset, searchKey);
+    const { totalCount, domains } = await DomainService.listDomains(
+      adminId,
+      limit,
+      offset,
+      searchKey,
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -76,7 +81,8 @@ export const listDomains = async (req: Request, res: Response) => {
       data: domains,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve domains';
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve domains';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -95,7 +101,8 @@ export const getDomainById = async (req: Request, res: Response) => {
       data: domain,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve domain';
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve domain';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -114,7 +121,8 @@ export const updateDomain = async (req: Request, res: Response) => {
       data: domain,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update domain';
+    const message =
+      error instanceof Error ? error.message : 'Failed to update domain';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -133,7 +141,8 @@ export const deleteDomain = async (req: Request, res: Response) => {
       data: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to delete domain';
+    const message =
+      error instanceof Error ? error.message : 'Failed to delete domain';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

@@ -114,12 +114,17 @@ export const DomainRepository = {
     });
   },
 
-  listByAdmin(adminId: string, limit: number, offset: number, searchKey?: string) {
+  listByAdmin(
+    adminId: string,
+    limit: number,
+    offset: number,
+    searchKey?: string,
+  ) {
     const where: any = {
       adminId,
       isDeleted: false,
     };
-    
+
     if (searchKey) {
       where.email = { contains: searchKey, mode: 'insensitive' };
     }
@@ -131,7 +136,7 @@ export const DomainRepository = {
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },
-      })
+      }),
     ]);
   },
 

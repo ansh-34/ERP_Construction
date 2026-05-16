@@ -102,11 +102,7 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
-  async approveAndCreatePO(
-    ids: string[],
-    domainId: string,
-    poCode: string,
-  ) {
+  async approveAndCreatePO(ids: string[], domainId: string, poCode: string) {
     return prisma.$transaction(async (tx) => {
       // 1. Fetch the requests to get details for the PO
       const requests = await tx.rawMaterialPurchaseRequest.findMany({
@@ -141,8 +137,15 @@ export const RawMaterialPurchaseRequestRepository = {
         data: requests.map((req) => ({
           purchaseOrderId: po.id,
           orderCode: po.code,
-          productName: typeof req.product.displayName === 'string' ? req.product.displayName : JSON.stringify(req.product.displayName),
-          productGradeName: req.productGrade ? (typeof req.productGrade.gradeDisplayName === 'string' ? req.productGrade.gradeDisplayName : JSON.stringify(req.productGrade.gradeDisplayName)) : undefined,
+          productName:
+            typeof req.product.displayName === 'string'
+              ? req.product.displayName
+              : JSON.stringify(req.product.displayName),
+          productGradeName: req.productGrade
+            ? typeof req.productGrade.gradeDisplayName === 'string'
+              ? req.productGrade.gradeDisplayName
+              : JSON.stringify(req.productGrade.gradeDisplayName)
+            : undefined,
           quantity: req.quantity,
           uomId: req.uomId,
           projectId: req.projectId,
