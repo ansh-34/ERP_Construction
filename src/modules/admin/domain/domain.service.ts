@@ -75,7 +75,7 @@ export const DomainService = {
       adminId,
     });
 
-    const verificationLink = `${baseUrl}/api/admin/domain/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `${baseUrl}/verify/token?token=${rawToken}&context=domain-onboarding&email=${encodeURIComponent(email)}&speciality=${normalizedIndustry}`;
     await sendMail(
       email,
       'Activate Your Domain — Construction ERP',
@@ -95,7 +95,7 @@ export const DomainService = {
         email: result.domain.email,
         industry: result.domain.industry,
       },
-      ...(variables.NODE_ENV === 'development' ? { token: rawToken } : {}),
+      ...(variables.NODE_ENV === 'development' ? { link: verificationLink } : {}),
     };
   },
 
@@ -140,5 +140,42 @@ export const DomainService = {
         industry: domain.industry,
       },
     };
+  },
+
+  async listDomains(adminId: string, limit: number, offset: number, searchKey?: string) {
+    const [totalCount, domains] = await DomainRepository.listByAdmin(adminId, limit, offset, searchKey);
+    return {
+      totalCount,
+      domains,
+    };
+  },
+
+  async getDomainById(adminId: string, domainId: string) {
+    const domain = await DomainRepository.findByIdAndAdmin(domainId, adminId);
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+    return domain;
+  },
+
+  async updateDomain(adminId: string, domainId: string, data: any) {
+    const domain = await DomainRepository.findByIdAndAdmin(domainId, adminId);
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+  
+    const updateData = { ...data };
+    delete updateData.email; 
+    delete updateData.password;
+
+    return DomainRepository.update(domainId, updateData);
+  },
+
+  async deleteDomain(adminId: string, domainId: string) {
+    const domain = await DomainRepository.findByIdAndAdmin(domainId, adminId);
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+    return DomainRepository.softDelete(domainId);
   },
 };

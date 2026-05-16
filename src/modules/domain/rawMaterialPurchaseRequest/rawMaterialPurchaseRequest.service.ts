@@ -216,6 +216,18 @@ export const RawMaterialPurchaseRequestService = {
       }
     }
 
+    if (approvalStatus === ApprovalStatus.APPROVED) {
+      const timestamp = Date.now();
+      const suffix = domainId.slice(0, 4).toUpperCase();
+      const poCode = `PO-${suffix}-${timestamp}`;
+
+      return RawMaterialPurchaseRequestRepository.approveAndCreatePO(
+        idArray,
+        domainId,
+        poCode,
+      );
+    }
+
     return RawMaterialPurchaseRequestRepository.bulkUpdateApproval(
       idArray,
       approvalStatus,

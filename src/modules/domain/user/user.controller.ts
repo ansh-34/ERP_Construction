@@ -3,15 +3,16 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { UserService } from './user.service.js';
+import variables from '../../../config/variables.config.js';
 
-const getBaseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
+const getBaseUrl = variables.FRONTEND_URL;
 
 export const inviteUser = async (req: Request, res: Response) => {
   try {
     const data = await UserService.inviteUser(
       req.user!.domainId,
       req.body,
-      getBaseUrl(req),
+      getBaseUrl as string,
     );
 
     return res.status(HttpStatus.OK).json({
