@@ -28,7 +28,7 @@ export const modules = [
     code: 'PROJECT',
   },
   {
-  name: 'Activity Log',
-  code: 'ACTIVITY_LOG',
+    name: 'Activity Log',
+    code: 'ACTIVITY_LOG',
   },
 ];

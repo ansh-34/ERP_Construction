@@ -12,11 +12,11 @@ export const projectStageController = {
         (req.headers.language as string) ||
         'en';
       const { name, description, progress, projectId, status } = req.body as {
-      name?: Record<string, unknown>;
-      description?: Record<string, unknown> | null;
-      progress?: number | null;
-      projectId?: string;
-      status?: StatusEnum;
+        name?: Record<string, unknown>;
+        description?: Record<string, unknown> | null;
+        progress?: number | null;
+        projectId?: string;
+        status?: StatusEnum;
       };
 
       const projectStage = await projectStageService.create(
@@ -51,7 +51,7 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const {projectId, searchKey } = req.query as {
+      const { projectId, searchKey } = req.query as {
         projectId?: string;
         searchKey?: string;
       };

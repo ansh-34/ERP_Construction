@@ -90,7 +90,7 @@ export const projectTaskController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const {projectId, stageId, searchKey } = req.query as {
+      const { projectId, stageId, searchKey } = req.query as {
         projectId?: string;
         stageId?: string;
         searchKey?: string;

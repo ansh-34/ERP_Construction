@@ -38,7 +38,6 @@ export const listProjectTaskDelayQuery = z.object({
   searchKey: z.string().trim().optional(),
 });
 
-
 export const idParams = z.object({
   id: z.string().trim().min(1, { message: 'Id is required' }),
 });
