@@ -121,12 +121,13 @@ export const AuthService = {
         id: domainOwner.id,
         name: domainOwner.name,
         email: domainOwner.email,
-        role: domainRole?.code || 'domain',
+        role: 'DOMAIN',
       },
       domain: {
         id: domainOwner.id,
         name: domainOwner.name,
         industry: domainOwner.industry,
+        adminId: domainOwner.adminId,
       },
     };
   },
@@ -177,12 +178,13 @@ export const AuthService = {
           id: domainOwner.id,
           name: domainOwner.name,
           email: domainOwner.email,
-          role: domainRole?.code || 'domain',
+          role: 'DOMAIN',
         },
         domain: {
           id: domainOwner.id,
           name: domainOwner.name,
           industry: domainOwner.industry,
+          adminId: domainOwner.adminId,
         },
       };
     }
@@ -210,12 +212,13 @@ export const AuthService = {
         id: domainOwner.id,
         name: domainOwner.name,
         email: domainOwner.email,
-        role: domainRole?.code || 'domain',
+        role: 'DOMAIN',
       },
       domain: {
         id: domainOwner.id,
         name: domainOwner.name,
         industry: domainOwner.industry,
+        adminId: domainOwner.adminId,
       },
     };
   },

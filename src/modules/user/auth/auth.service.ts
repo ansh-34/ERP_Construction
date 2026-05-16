@@ -179,6 +179,7 @@ export const UserService = {
         id: domain.id,
         name: domain.name,
         industry: domain.industry,
+        adminId: domain.adminId,
       },
     };
   },
@@ -266,13 +267,14 @@ export const UserService = {
         email: user.email,
         industry: user.industry,
         role: user.role
-          ? { code: user.role.code, name: user.role.name }
+          ? { code: user.role.code.toUpperCase(), name: user.role.name }
           : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
         name: user.domain.name,
         industry: user.domain.industry,
+        adminId: user.domain.adminId,
       },
     };
   },
@@ -324,13 +326,14 @@ export const UserService = {
           email: user.email,
           industry: user.industry,
           role: user.role
-            ? { code: user.role.code, name: user.role.name }
+            ? { code: user.role.code.toUpperCase(), name: user.role.name }
             : { code: 'USER', name: { en: 'User' } },
         },
         domain: {
           id: user.domain.id,
           name: user.domain.name,
           industry: user.domain.industry,
+          adminId: user.domain.adminId,
         },
       };
     }
@@ -360,13 +363,14 @@ export const UserService = {
         email: user.email,
         industry: user.industry,
         role: user.role
-          ? { code: user.role.code, name: user.role.name }
+          ? { code: user.role.code.toUpperCase(), name: user.role.name }
           : { code: 'USER', name: { en: 'User' } },
       },
       domain: {
         id: user.domain.id,
         name: user.domain.name,
         industry: user.domain.industry,
+        adminId: user.domain.adminId,
       },
     };
   },
@@ -548,7 +552,7 @@ export const UserService = {
       role: {
         id: role.id,
         name: role.name,
-        code: role.code,
+        code: role.code.toUpperCase(),
       },
       modules,
       permissions,
