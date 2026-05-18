@@ -37,10 +37,7 @@ type AdminCurrencyDetails = {
   updatedAt: Date;
 };
 
-function normalizeCurrencyName(
-  name: Record<string, string>,
-  langCode: string,
-) {
+function normalizeCurrencyName(name: Record<string, string>, langCode: string) {
   return name[langCode] || name.en || '';
 }
 

@@ -19,10 +19,7 @@ const normalizeCurrencyName = (
   langCode: string,
 ) => name[langCode] || name.en || '';
 
-const mapUserCurrency = (
-  currency: UserCurrencyListItem,
-  langCode: string,
-) => ({
+const mapUserCurrency = (currency: UserCurrencyListItem, langCode: string) => ({
   userRelationalId: currency.id,
   name: normalizeCurrencyName(currency.name, langCode),
   code: currency.code,

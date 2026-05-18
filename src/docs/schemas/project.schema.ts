@@ -75,7 +75,11 @@ export const ProjectSchemas = {
       id: { type: 'string', format: 'uuid' },
       name: localizedObject,
       assignee: { ...localizedObject, nullable: true },
-      plannedStartDate: { type: 'string', nullable: true, example: '2026-05-18' },
+      plannedStartDate: {
+        type: 'string',
+        nullable: true,
+        example: '2026-05-18',
+      },
       plannedEndDate: { type: 'string', nullable: true, example: '2026-05-25' },
       taskStatus: { type: 'string', example: 'PENDING' },
       taskProgress: { type: 'number', example: 20 },
@@ -92,13 +96,21 @@ export const ProjectSchemas = {
     properties: {
       name: localizedObject,
       assignee: { ...localizedObject, nullable: true },
-      plannedStartDate: { type: 'string', nullable: true, example: '2026-05-18' },
+      plannedStartDate: {
+        type: 'string',
+        nullable: true,
+        example: '2026-05-18',
+      },
       plannedEndDate: { type: 'string', nullable: true, example: '2026-05-25' },
       taskStatus: { type: 'string', example: 'PENDING' },
       taskProgress: { type: 'number', minimum: 0, example: 0 },
       totalDelayInDays: { type: 'number', minimum: 0, example: 0 },
       requiredApproval: { type: 'boolean', example: false },
-      projectBatchCode: { type: 'string', nullable: true, example: 'BATCH-001' },
+      projectBatchCode: {
+        type: 'string',
+        nullable: true,
+        example: 'BATCH-001',
+      },
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
@@ -122,7 +134,13 @@ export const ProjectSchemas = {
   },
   CreateProjectTaskDelayBody: {
     type: 'object',
-    required: ['taskId', 'requestedDelayInDays', 'delayReason', 'stageId', 'projectId'],
+    required: [
+      'taskId',
+      'requestedDelayInDays',
+      'delayReason',
+      'stageId',
+      'projectId',
+    ],
     properties: {
       taskId: { type: 'string', format: 'uuid' },
       requestedDelayInDays: { type: 'number', minimum: 0, example: 2 },

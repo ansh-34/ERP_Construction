@@ -224,7 +224,10 @@ export const ProjectPaths = {
       summary: 'List machine readings',
       security: [{ bearerAuth: [] }],
       parameters: [languageHeader, domainIdQuery, projectIdQuery, searchQuery],
-      responses: listResponse('MachineReadingObject', 'Machine readings retrieved'),
+      responses: listResponse(
+        'MachineReadingObject',
+        'Machine readings retrieved',
+      ),
     },
     post: {
       tags: ['Machine Reading'],
@@ -239,7 +242,10 @@ export const ProjectPaths = {
           },
         },
       },
-      responses: itemResponse('MachineReadingObject', 'Machine reading created'),
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading created',
+      ),
     },
   },
   '/api/domain/machine-reading/{id}': {
@@ -247,14 +253,25 @@ export const ProjectPaths = {
       tags: ['Machine Reading'],
       summary: 'Get machine reading by ID',
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, idParam('Machine reading ID'), domainIdQuery],
-      responses: itemResponse('MachineReadingObject', 'Machine reading retrieved'),
+      parameters: [
+        languageHeader,
+        idParam('Machine reading ID'),
+        domainIdQuery,
+      ],
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading retrieved',
+      ),
     },
     put: {
       tags: ['Machine Reading'],
       summary: 'Update machine reading',
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, idParam('Machine reading ID'), domainIdQuery],
+      parameters: [
+        languageHeader,
+        idParam('Machine reading ID'),
+        domainIdQuery,
+      ],
       requestBody: {
         required: true,
         content: {
@@ -263,7 +280,10 @@ export const ProjectPaths = {
           },
         },
       },
-      responses: itemResponse('MachineReadingObject', 'Machine reading updated'),
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading updated',
+      ),
     },
   },
   '/api/domain/currency': {

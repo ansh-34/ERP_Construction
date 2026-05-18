@@ -47,7 +47,7 @@ export const LanguageService = {
       },
     );
 
-return {
+    return {
       languages: (languages as AdminLanguageListItem[]).map((item) => ({
         adminRelationalId: item.id,
         name: item.language.name,
@@ -57,12 +57,12 @@ return {
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
       })),
-  pagination: {
-    totalCount,
-    offset,
-    limit,
-  },
-};
+      pagination: {
+        totalCount,
+        offset,
+        limit,
+      },
+    };
   },
   async getLanguage(id: string, adminId: string) {
     const language = await AdminLanguageRepository.findFirst(

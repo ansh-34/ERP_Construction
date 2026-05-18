@@ -45,7 +45,7 @@ export const LanguageService = {
         },
       },
     );
-     
+
     return {
       languages: (languages as DomainLanguageListItem[]).map((item) => ({
         domainRelationalId: item.id,

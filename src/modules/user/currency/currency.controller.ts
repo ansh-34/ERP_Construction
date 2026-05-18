@@ -6,8 +6,10 @@ import { UserCurrencyService } from './currency.service.js';
 export const listCurrencies = async (req: Request, res: Response) => {
   try {
     const langCode = (req.headers.language as string) || 'en';
-    const { currencies, pagination } =
-      await UserCurrencyService.listCurrencies(req.query, langCode);
+    const { currencies, pagination } = await UserCurrencyService.listCurrencies(
+      req.query,
+      langCode,
+    );
 
     return res.status(HttpStatus.OK).json({
       success: true,
