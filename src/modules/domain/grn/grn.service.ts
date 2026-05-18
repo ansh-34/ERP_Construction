@@ -54,11 +54,13 @@ export const GrnService = {
         totalTax: 0,
         totalAmount: 0,
       },
-      grnProducts ? grnProducts.map((p) => ({
-        ...p,
-        grnCode: code,
-        projectId: p.projectId || data.projectId || null,
-      })) : [],
+      grnProducts
+        ? grnProducts.map((p) => ({
+            ...p,
+            grnCode: code,
+            projectId: p.projectId || data.projectId || null,
+          }))
+        : [],
     );
   },
 
@@ -107,7 +109,10 @@ export const GrnService = {
     if (!grn) {
       throw new Error(Messages.GRN.NOT_FOUND);
     }
-    if (grn.approvalStatus !== ApprovalStatus.PENDING && grn.approvalStatus !== ApprovalStatus.REJECTED) {
+    if (
+      grn.approvalStatus !== ApprovalStatus.PENDING &&
+      grn.approvalStatus !== ApprovalStatus.REJECTED
+    ) {
       throw new Error(Messages.GRN.CANNOT_UPDATE_NON_PENDING);
     }
     return GrnRepository.update(id, data);

@@ -41,10 +41,9 @@ export const GrnRepository = {
       select: { quantity: true, rate: true },
     });
 
-    const totalAmount = products.reduce(
-      (sum: number, p: any) => sum + p.quantity * p.rate,
-      0,
-    ) + (totals._sum.tax || 0);
+    const totalAmount =
+      products.reduce((sum: number, p: any) => sum + p.quantity * p.rate, 0) +
+      (totals._sum.tax || 0);
 
     const totalTax = totals._sum.tax || 0;
 
@@ -224,7 +223,12 @@ export const GrnRepository = {
     });
   },
 
-  async updateGrnProduct(id: string, grnId: string, domainId: string, data: any) {
+  async updateGrnProduct(
+    id: string,
+    grnId: string,
+    domainId: string,
+    data: any,
+  ) {
     return prisma.$transaction(async (tx) => {
       const product = await tx.grnProduct.update({
         where: { id },

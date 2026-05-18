@@ -215,7 +215,7 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
-  // Purchase Order Methods 
+  // Purchase Order Methods
 
   async listPurchaseOrders(
     domainId: string,
@@ -320,32 +320,35 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
-  async getPoProductById(id: string, purchaseOrderId: string, domainId: string) {
+  async getPoProductById(
+    id: string,
+    purchaseOrderId: string,
+    domainId: string,
+  ) {
     return prisma.purchaseOrderProduct.findFirst({
       where: { id, purchaseOrderId, domainId, isDeleted: false },
     });
   },
 
-//   async updatePoProduct(id: string, purchaseOrderId: string, domainId: string, data: any) {
-//     return asPrisma.$transaction(async (tx: any) => {
-//       const product = await tx.purchaseOrderProduct.update({
-//         where: { id },
-//         data,
-//       });
-//       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
-//       return product;
-//     });
-//   },
+  //   async updatePoProduct(id: string, purchaseOrderId: string, domainId: string, data: any) {
+  //     return asPrisma.$transaction(async (tx: any) => {
+  //       const product = await tx.purchaseOrderProduct.update({
+  //         where: { id },
+  //         data,
+  //       });
+  //       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
+  //       return product;
+  //     });
+  //   },
 
-//   async deletePoProduct(id: string, purchaseOrderId: string, domainId: string) {
-//     return asPrisma.$transaction(async (tx: any) => {
-//       const product = await tx.purchaseOrderProduct.update({
-//         where: { id },
-//         data: { isDeleted: true, status: 'INACTIVE' },
-//       });
-//       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
-//       return product;
-//     });
-//   },
+  //   async deletePoProduct(id: string, purchaseOrderId: string, domainId: string) {
+  //     return asPrisma.$transaction(async (tx: any) => {
+  //       const product = await tx.purchaseOrderProduct.update({
+  //         where: { id },
+  //         data: { isDeleted: true, status: 'INACTIVE' },
+  //       });
+  //       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
+  //       return product;
+  //     });
+  //   },
 };
-

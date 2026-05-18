@@ -183,7 +183,9 @@ export const listPurchaseOrders = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : Messages.PURCHASE_ORDER.LIST_FAILED;
+      error instanceof Error
+        ? error.message
+        : Messages.PURCHASE_ORDER.LIST_FAILED;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -202,7 +204,9 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : Messages.PURCHASE_ORDER.NOT_FOUND;
+      error instanceof Error
+        ? error.message
+        : Messages.PURCHASE_ORDER.NOT_FOUND;
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
@@ -263,7 +267,9 @@ export const listPoProducts = async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Failed to retrieve purchase order products';
+      error instanceof Error
+        ? error.message
+        : 'Failed to retrieve purchase order products';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

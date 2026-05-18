@@ -149,8 +149,13 @@ export const listGrnProducts = async (req: Request, res: Response) => {
       data: products,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to list product line items';
-    return res.status(resolveHttpStatus(message)).json({ success: false, message });
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to list product line items';
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
   }
 };
 
@@ -190,4 +195,3 @@ export const listGrnProducts = async (req: Request, res: Response) => {
 //     return res.status(resolveHttpStatus(message)).json({ success: false, message });
 //   }
 // };
-

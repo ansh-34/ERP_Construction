@@ -53,10 +53,10 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('cannot be') ||
     message.includes('Only pending') ||
     message.includes('already approved') ||
-    message.includes('already created')  ||
+    message.includes('already created') ||
     message.includes('not generated yet') ||
-    message === 'request already actioned' 
-   ) {
+    message === 'request already actioned'
+  ) {
     return HttpStatus.BAD_REQUEST;
   }
 

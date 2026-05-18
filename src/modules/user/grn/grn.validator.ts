@@ -22,9 +22,7 @@ export const createGrnBodySchema = z.object({
   vendor: z.string().min(1),
   wbReference: z.string().optional(),
   projectId: z.string().uuid().optional(),
-  grnProducts: z
-    .array(grnProductSchema)
-    .optional(),
+  grnProducts: z.array(grnProductSchema).optional(),
 });
 
 export const updateGrnBodySchema = z.object({

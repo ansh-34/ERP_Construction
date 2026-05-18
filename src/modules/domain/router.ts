@@ -49,12 +49,8 @@ domainRouter.use('/products', productRouter);
 domainRouter.use('/uoms', uomRouter());
 domainRouter.use('/language', languageRouter);
 domainRouter.use('/currency', currencyRouter);
-domainRouter.use(
-  '/rmpr',
-  rawMaterialPurchaseRequestRouter,
-);
+domainRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 domainRouter.use('/project-user-roles', projectUserRoleRouter);
 domainRouter.use('/grn', grnRouter);
-
 
 export default domainRouter;
