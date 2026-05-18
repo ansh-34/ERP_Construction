@@ -17,6 +17,7 @@ import { ProductPaths } from './product.paths.js';
 import { UomPaths } from './uom.paths.js';
 import { ProjectUserRolePaths } from './projectUserRole.paths.js';
 import { RawMaterialPurchaseRequestPaths } from './rawMaterialPurchaseRequest.paths.js';
+import { ProjectPaths } from './project.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -38,4 +39,5 @@ export const ApiPaths = {
   ...UomPaths,
   ...ProjectUserRolePaths,
   ...RawMaterialPurchaseRequestPaths,
+  ...ProjectPaths,
 };

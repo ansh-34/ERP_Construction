@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
 import authRouter from './auth/auth.router.js';
+import languageRouter from './language/language.router.js';
+import currencyRouter from './currency/currency.router.js';
 import profileRouter from './profile/profile.router.js';
 import projectRouter from './project/project.router.js';
 import projectStageRouter from './projectStage/projectStage.routes.js';
@@ -9,6 +11,8 @@ import projectTaskDelayRouter from './projectTaskDelay/projectTaskDelay.routes.j
 const userRouter = Router();
 
 userRouter.use('/auth', authRouter);
+userRouter.use('/language', languageRouter);
+userRouter.use('/currency', currencyRouter);
 userRouter.use('/profile', profileRouter);
 userRouter.use('/projects', projectRouter);
 userRouter.use('/project-stages', projectStageRouter);
