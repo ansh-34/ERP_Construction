@@ -143,40 +143,6 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/raw-material-purchase-requests/approved': {
-    get: {
-      tags: ['Raw Material Purchase Requests'],
-      summary: 'List approved requests',
-      description:
-        'Retrieve a paginated list of approved raw material purchase requests.',
-      security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, ...paginationParams],
-      responses: { 200: listResponse, ...errors },
-    },
-  },
-
-  '/api/domain/raw-material-purchase-requests/approved/product/{productId}': {
-    get: {
-      tags: ['Raw Material Purchase Requests'],
-      summary: 'List approved requests by product',
-      description:
-        'Retrieve approved raw material purchase requests filtered by a specific product.',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        languageHeader,
-        {
-          in: 'path',
-          name: 'productId',
-          required: true,
-          schema: { type: 'string', format: 'uuid' },
-          description: 'Product ID',
-        },
-        ...paginationParams,
-      ],
-      responses: { 200: listResponse, ...errors },
-    },
-  },
-
   '/api/domain/raw-material-purchase-requests/approval': {
     put: {
       tags: ['Raw Material Purchase Requests'],

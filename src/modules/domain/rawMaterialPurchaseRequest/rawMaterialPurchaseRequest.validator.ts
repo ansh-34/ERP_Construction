@@ -17,6 +17,8 @@ export const createRawMaterialPurchaseRequestBodySchema = z.object({
   requiredBy: z.string().datetime(),
   reason: z.string().min(1),
   projectId: z.string().uuid(),
+  domainId: z.string().uuid().optional(),
+  requestedBy: z.string().uuid().optional(),
 });
 
 export const updateRawMaterialPurchaseRequestBodySchema = z.object({
@@ -43,6 +45,8 @@ export const listRawMaterialPurchaseRequestsQuerySchema =
     approvalStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
     productId: z.string().uuid().optional(),
     projectId: z.string().uuid().optional(),
+    domainId: z.string().uuid().optional(),
+    isDeleted: z.coerce.boolean().optional().default(false),
   });
 
 export const rawMaterialPurchaseRequestIdParamsSchema = idParamSchema;
@@ -51,3 +55,49 @@ export const approveRejectBodySchema = z.object({
   ids: z.union([z.string().uuid(), z.array(z.string().uuid()).min(1)]),
   approvalStatus: z.enum(['APPROVED', 'REJECTED']),
 });
+
+// --- Purchase Order Schemas ---
+
+export const listPurchaseOrdersQuerySchema = paginationQuerySchema.extend({
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  orderStatus: z.string().optional(),
+  projectId: z.string().uuid().optional(),
+  domainId: z.string().uuid().optional(),
+  isDeleted: z.coerce.boolean().optional().default(false),
+});
+
+export const poIdParamsSchema = z.object({
+  poId: z.string().uuid(),
+});
+
+export const poProductIdParamsSchema = z.object({
+  poId: z.string().uuid(),
+  productId: z.string().uuid(),
+});
+
+export const updatePurchaseOrderBodySchema = z.object({
+  vendor: z.string().min(1).optional(),
+  paymentTerms: z.string().optional(),
+  orderStatus: z.string().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+// // --- Purchase Order Product Schemas ---
+
+// export const createPoProductBodySchema = z.object({
+//   productName: z.string().min(1),
+//   productGradeName: z.string().optional(),
+//   quantity: z.number().positive(),
+//   rate: z.number().min(0),
+//   tax: z.number().min(0),
+//   uomId: z.string().uuid(),
+// });
+
+// export const updatePoProductBodySchema = z.object({
+//   productName: z.string().min(1).optional(),
+//   productGradeName: z.string().optional(),
+//   quantity: z.number().positive().optional(),
+//   rate: z.number().min(0).optional(),
+//   tax: z.number().min(0).optional(),
+//   uomId: z.string().uuid().optional(),
+// });

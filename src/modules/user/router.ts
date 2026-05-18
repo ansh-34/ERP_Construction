@@ -8,6 +8,8 @@ import projectRouter from './project/project.router.js';
 import projectStageRouter from './projectStage/projectStage.routes.js';
 import projectTaskRouter from './projectTask/projectTask.routes.js';
 import projectTaskDelayRouter from './projectTaskDelay/projectTaskDelay.routes.js';
+import grnRouter from './grn/grn.router.js';
+
 const userRouter = Router();
 
 userRouter.use('/auth', authRouter);
@@ -18,5 +20,6 @@ userRouter.use('/projects', projectRouter);
 userRouter.use('/project-stages', projectStageRouter);
 userRouter.use('/project-tasks', projectTaskRouter);
 userRouter.use('/project-task-delays', projectTaskDelayRouter);
+userRouter.use('/grn', grnRouter);
 
 export default userRouter;

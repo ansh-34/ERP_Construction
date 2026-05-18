@@ -23,7 +23,7 @@ import languageRouter from './language/language.router.js';
 import currencyRouter from './currency/currency.router.js';
 import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
 import projectUserRoleRouter from './projectUserRole/projectUserRole.router.js';
-// import grnRouter from './grn/grn.router.js';
+import grnRouter from './grn/grn.router.js';
 
 const domainRouter = Router();
 
@@ -50,10 +50,11 @@ domainRouter.use('/uoms', uomRouter());
 domainRouter.use('/language', languageRouter);
 domainRouter.use('/currency', currencyRouter);
 domainRouter.use(
-  '/raw-material-purchase-requests',
+  '/rmpr',
   rawMaterialPurchaseRequestRouter,
 );
 domainRouter.use('/project-user-roles', projectUserRoleRouter);
-// domainRouter.use('/grn', grnRouter);
+domainRouter.use('/grn', grnRouter);
+
 
 export default domainRouter;

@@ -6,7 +6,7 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return HttpStatus.SERVICE_UNAVAILABLE;
   }
 
-  if (message === 'not found') {
+  if (message === 'not found' || message.toLowerCase().includes('not found')) {
     return HttpStatus.NOT_FOUND;
   }
 
@@ -49,8 +49,14 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('is required') ||
     message.includes('already exists') ||
     message.includes('not generated yet') ||
-    message === 'request already actioned'
-  ) {
+    message.includes('does not match') ||
+    message.includes('cannot be') ||
+    message.includes('Only pending') ||
+    message.includes('already approved') ||
+    message.includes('already created')  ||
+    message.includes('not generated yet') ||
+    message === 'request already actioned' 
+   ) {
     return HttpStatus.BAD_REQUEST;
   }
 
