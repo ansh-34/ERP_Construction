@@ -5,6 +5,23 @@ import { HttpStatus, Messages } from '../constants/index.js';
 export const validate =
   (schema: ZodSchema, property: 'body' | 'query' | 'params' = 'body') =>
   (req: Request, res: Response, next: NextFunction) => {
+    const payload = req[property];
+
+    if (
+      req.user &&
+      payload &&
+      typeof payload === 'object' &&
+      (property === 'body' || property === 'query')
+    ) {
+      if (req.user.domainId) {
+        Object.assign(payload, { domainId: req.user.domainId });
+      }
+
+      if (req.user.adminId) {
+        Object.assign(payload, { adminId: req.user.adminId });
+      }
+    }
+
     const result = schema.safeParse(req[property]);
 
     if (!result.success) {

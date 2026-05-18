@@ -11,7 +11,7 @@ const nonEmptyOptionalString = z.string().trim().min(1).nullable().optional();
 
 export const createProjectTaskBody = z.object({
   name: jsonObject,
-  assignee: jsonObject.nullable().optional(),
+  assignee: z.string().trim().min(1).nullable().optional(),
   plannedStartDate: optionalDate,
   plannedEndDate: optionalDate,
   actualStartDate: optionalDate,
@@ -30,7 +30,7 @@ export const createProjectTaskBody = z.object({
 export const updateProjectTaskBody = z
   .object({
     name: jsonObject.optional(),
-    assignee: jsonObject.nullable().optional(),
+    assignee: z.string().trim().min(1).nullable().optional(),
     plannedStartDate: optionalDate,
     plannedEndDate: optionalDate,
     actualStartDate: optionalDate,

@@ -2,6 +2,7 @@ import {
   projectRepository,
   projectStageRepository,
   projectTaskRepository,
+  UserRepository,
   type ProjectTaskRecord,
   type UpdateProjectTaskInput as RepositoryUpdateProjectTaskInput,
 } from '@repositories/index';
@@ -15,7 +16,7 @@ import {
 
 export interface CreateProjectTaskInput {
   name: Record<string, unknown>;
-  assignee?: Record<string, unknown> | null;
+  assignee?: string | null;
   plannedStartDate?: string | null;
   plannedEndDate?: string | null;
   actualStartDate?: string | null;
@@ -35,7 +36,7 @@ export interface CreateProjectTaskInput {
 
 export interface UpdateProjectTaskInput {
   name?: Record<string, unknown>;
-  assignee?: Record<string, unknown> | null;
+  assignee?: string | null;
   plannedStartDate?: string | null;
   plannedEndDate?: string | null;
   actualStartDate?: string | null;
@@ -54,8 +55,10 @@ type LocalizedProjectTaskRecord = Omit<
   'name' | 'assignee'
 > & {
   name: string;
-  assignee: unknown;
+  assignee: string | null;
 };
+
+type ProjectTaskApprovalState = 'APPROVED' | 'REJECTED';
 
 function buildProjectTaskCode(name: Record<string, unknown>): string {
   return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
@@ -77,21 +80,12 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
-function getLocalizedJsonValue(
-  value: Record<string, unknown> | null,
-  language: string | null,
-): unknown {
+function getAssigneeUserId(value: Record<string, unknown> | null): string | null {
   if (!value) {
     return null;
   }
 
-  const langCode = language || 'en';
-
-  if (value[langCode] !== undefined || value.en !== undefined) {
-    return getLocalizedText(value, langCode);
-  }
-
-  return value;
+  return typeof value.userId === 'string' ? value.userId : null;
 }
 
 function normalizeProjectTask(
@@ -101,7 +95,7 @@ function normalizeProjectTask(
   return {
     ...task,
     name: getLocalizedText(task.name, language),
-    assignee: getLocalizedJsonValue(task.assignee, language),
+    assignee: getAssigneeUserId(task.assignee),
   };
 }
 
@@ -150,9 +144,9 @@ function assertCreateInput(data: CreateProjectTaskInput): void {
   if (
     data.assignee !== undefined &&
     data.assignee !== null &&
-    !isPlainObject(data.assignee)
+    !isNonEmptyString(data.assignee)
   ) {
-    throw new Error('invalid json assignee');
+    throw new Error('invalid assignee');
   }
 
   assertTaskString(data.taskStatus, 'taskStatus');
@@ -205,9 +199,9 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
   if (
     data.assignee !== undefined &&
     data.assignee !== null &&
-    !isPlainObject(data.assignee)
+    !isNonEmptyString(data.assignee)
   ) {
-    throw new Error('invalid json assignee');
+    throw new Error('invalid assignee');
   }
 
   assertTaskString(data.taskStatus, 'taskStatus');
@@ -230,11 +224,27 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
   assertStatus(data.status);
 }
 
+async function assertAssigneeExists(
+  assignee: string | null | undefined,
+  domainId: string,
+): Promise<void> {
+  if (assignee === undefined || assignee === null) {
+    return;
+  }
+
+  const user = await UserRepository.findActiveByIdAndDomain(assignee, domainId);
+
+  if (!user) {
+    throw new Error('invalid assignee');
+  }
+}
+
 function buildCreatePayload(data: CreateProjectTaskInput) {
   const code = buildProjectTaskCode(data.name);
 
   return {
     ...data,
+    assignee: data.assignee ? { userId: data.assignee } : null,
     code,
     searchText: buildProjectTaskSearchText(data.name),
     plannedStartDate: parseOptionalDate(data.plannedStartDate),
@@ -260,7 +270,9 @@ function buildUpdatePayload(
     ...(data.name !== undefined && {
       searchText: buildProjectTaskSearchText(data.name),
     }),
-    ...(data.assignee !== undefined && { assignee: data.assignee }),
+    ...(data.assignee !== undefined && {
+      assignee: data.assignee ? { userId: data.assignee } : null,
+    }),
     ...(data.plannedStartDate !== undefined && {
       plannedStartDate: parseOptionalDate(data.plannedStartDate),
     }),
@@ -320,6 +332,8 @@ export const projectTaskService = {
       if (!stage || stage.projectId !== data.projectId) {
         throw new Error('not found');
       }
+
+      await assertAssigneeExists(data.assignee, data.domainId);
 
       const createPayload = buildCreatePayload(data);
 
@@ -419,6 +433,8 @@ export const projectTaskService = {
         throw new Error('not found');
       }
 
+      await assertAssigneeExists(data.assignee, domainId);
+
       const updatePayload = buildUpdatePayload(data, existingTask);
 
       if (updatePayload.code && updatePayload.code !== existingTask.code) {
@@ -443,6 +459,68 @@ export const projectTaskService = {
       );
 
       return task ? normalizeProjectTask(task, language) : null;
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  approveOrReject: async (
+    ids: string | string[],
+    domainId: string,
+    adminId: string,
+    approvalState: ProjectTaskApprovalState,
+    language: string | null = null,
+  ): Promise<LocalizedProjectTaskRecord[]> => {
+    const idArray = Array.isArray(ids) ? ids : [ids];
+
+    if (!idArray.length || idArray.some((id) => !isNonEmptyString(id))) {
+      throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(domainId)) {
+      throw new Error('invalid domainId');
+    }
+
+    try {
+      const existingTasks = [];
+
+      for (const id of idArray) {
+        const task = await projectTaskRepository.findById(
+          id,
+          domainId,
+          adminId,
+        );
+
+        if (!task) {
+          throw new Error('not found');
+        }
+
+        if (task.taskStatus === 'APPROVED' || task.taskStatus === 'REJECTED') {
+          throw new Error('request already actioned');
+        }
+
+        existingTasks.push(task);
+      }
+
+      const updatedTasks = [];
+
+      for (const task of existingTasks) {
+        const updatedTask = await projectTaskRepository.update(
+          task.id,
+          domainId,
+          {
+            taskStatus: approvalState,
+            requiredApproval: false,
+          },
+          adminId,
+        );
+
+        if (updatedTask) {
+          updatedTasks.push(normalizeProjectTask(updatedTask, language));
+        }
+      }
+
+      return updatedTasks;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

@@ -5,6 +5,7 @@ import { isNonEmptyString, isPlainObject } from '@/utils/validation';
 
 export interface CreateLocationInput {
   name: Record<string, unknown>;
+  code?: string;
   type: string;
   parentLocationId?: string | null;
   domainId: string;
@@ -14,6 +15,7 @@ export interface CreateLocationInput {
 
 export interface UpdateLocationInput {
   name?: Record<string, unknown>;
+  code?: string;
   type?: string;
   parentLocationId?: string | null;
   status?: StatusEnum;
@@ -92,11 +94,12 @@ function assertCreateInput(data: CreateLocationInput): void {
 
 function assertUpdateInput(data: UpdateLocationInput): void {
   const hasName = data.name !== undefined;
+  const hasCode = data.code !== undefined;
   const hasType = data.type !== undefined;
   const hasParentLocationId = data.parentLocationId !== undefined;
   const hasStatus = data.status !== undefined;
 
-  if (!hasName && !hasType && !hasParentLocationId && !hasStatus) {
+  if (!hasName && !hasCode && !hasType && !hasParentLocationId && !hasStatus) {
     throw new Error('empty update payload');
   }
 
@@ -110,6 +113,10 @@ function assertUpdateInput(data: UpdateLocationInput): void {
 
   if (hasType && !isNonEmptyString(data.type)) {
     throw new Error('invalid type');
+  }
+
+  if (hasCode && !isNonEmptyString(data.code)) {
+    throw new Error('invalid code');
   }
 
   if (
@@ -137,7 +144,7 @@ export const locationService = {
     assertCreateInput(data);
 
     try {
-      const code = buildLocationCode(data.name);
+      const code = data.code || buildLocationCode(data.name);
 
       if (
         await locationRepository.findByCode(code, data.domainId, data.adminId)
@@ -259,9 +266,14 @@ export const locationService = {
 
       const updateData = {
         ...data,
+        ...(data.code !== undefined
+          ? {
+              code: data.code,
+            }
+          : {}),
         ...(data.name !== undefined
           ? {
-              code: buildLocationCode(data.name),
+              code: data.code || buildLocationCode(data.name),
               searchText: buildLocationSearchText(data.name),
             }
           : {}),

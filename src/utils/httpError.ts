@@ -48,7 +48,8 @@ export function resolveHttpStatus(message: string): HttpStatus {
   if (
     message.includes('is required') ||
     message.includes('already exists') ||
-    message.includes('not generated yet')
+    message.includes('not generated yet') ||
+    message === 'request already actioned'
   ) {
     return HttpStatus.BAD_REQUEST;
   }

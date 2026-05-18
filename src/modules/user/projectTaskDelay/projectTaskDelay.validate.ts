@@ -1,7 +1,6 @@
 import { StatusEnum } from '@constants/index';
 import { z } from 'zod';
 
-const jsonObject = z.record(z.string(), z.unknown());
 const nonNegativeNumber = z
   .number()
   .finite()
@@ -11,7 +10,7 @@ const optionalDate = z.string().trim().min(1).nullable().optional();
 export const createProjectTaskDelayBody = z.object({
   taskId: z.string().trim().min(1, { message: 'Task id is required' }),
   requestedDelayInDays: nonNegativeNumber,
-  delayReason: jsonObject,
+  delayReason: z.string().trim().min(1, { message: 'Delay reason is required' }),
   requestApproved: z.boolean().optional(),
   requestApprovalTime: optionalDate,
   stageId: z.string().trim().min(1, { message: 'Stage id is required' }),
@@ -22,7 +21,7 @@ export const createProjectTaskDelayBody = z.object({
 export const updateProjectTaskDelayBody = z
   .object({
     requestedDelayInDays: nonNegativeNumber.optional(),
-    delayReason: jsonObject.optional(),
+    delayReason: z.string().trim().min(1).optional(),
     requestApproved: z.boolean().optional(),
     requestApprovalTime: optionalDate,
     status: z.nativeEnum(StatusEnum).optional(),

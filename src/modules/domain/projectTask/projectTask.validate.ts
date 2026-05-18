@@ -11,7 +11,7 @@ const nonEmptyOptionalString = z.string().trim().min(1).nullable().optional();
 
 export const createProjectTaskBody = z.object({
   name: jsonObject,
-  assignee: jsonObject.nullable().optional(),
+  assignee: z.string().trim().min(1).nullable().optional(),
   plannedStartDate: optionalDate,
   plannedEndDate: optionalDate,
   actualStartDate: optionalDate,
@@ -31,7 +31,7 @@ export const createProjectTaskBody = z.object({
 export const updateProjectTaskBody = z
   .object({
     name: jsonObject.optional(),
-    assignee: jsonObject.nullable().optional(),
+    assignee: z.string().trim().min(1).nullable().optional(),
     plannedStartDate: optionalDate,
     plannedEndDate: optionalDate,
     actualStartDate: optionalDate,
@@ -47,6 +47,14 @@ export const updateProjectTaskBody = z
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'At least one field is required',
   });
+
+export const approveRejectProjectTaskBody = z.object({
+  ids: z.union([
+    z.string().trim().min(1, { message: 'Id is required' }),
+    z.array(z.string().trim().min(1, { message: 'Id is required' })).min(1),
+  ]),
+  approvalState: z.enum(['APPROVED', 'REJECTED']),
+});
 
 export const listProjectTaskQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),

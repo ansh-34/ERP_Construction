@@ -5,6 +5,7 @@ const jsonObject = z.record(z.string(), z.unknown());
 
 export const createLocationBody = z.object({
   name: jsonObject,
+  code: z.string().trim().min(1).optional(),
   type: z.string().trim().min(1, { message: 'Type is required' }),
   parentLocationId: z
     .string()
@@ -19,6 +20,7 @@ export const createLocationBody = z.object({
 export const updateLocationBody = z
   .object({
     name: jsonObject.optional(),
+    code: z.string().trim().min(1).optional(),
     type: z.string().trim().min(1, { message: 'Type is required' }).optional(),
     parentLocationId: z
       .string()
@@ -31,6 +33,7 @@ export const updateLocationBody = z
   .refine(
     (data) =>
       data.name !== undefined ||
+      data.code !== undefined ||
       data.type !== undefined ||
       data.parentLocationId !== undefined ||
       data.status !== undefined,

@@ -15,4 +15,12 @@ export const permissions = [
     name: 'Delete',
     code: 'DELETE',
   },
+  {
+    name: 'Approve',
+    code: 'APPROVE',
+  },
+  {
+    name: 'Reject',
+    code: 'REJECT',
+  },
 ];

@@ -29,7 +29,7 @@ export const projectTaskController = {
         status,
       } = req.body as {
         name?: Record<string, unknown>;
-        assignee?: Record<string, unknown> | null;
+        assignee?: string | null;
         plannedStartDate?: string | null;
         plannedEndDate?: string | null;
         actualStartDate?: string | null;
@@ -173,7 +173,7 @@ export const projectTaskController = {
         status,
       } = req.body as {
         name?: Record<string, unknown>;
-        assignee?: Record<string, unknown> | null;
+        assignee?: string | null;
         plannedStartDate?: string | null;
         plannedEndDate?: string | null;
         actualStartDate?: string | null;
@@ -222,6 +222,38 @@ export const projectTaskController = {
         error instanceof Error
           ? error.message
           : 'Failed to update project task';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  approveOrReject: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { ids, approvalState } = req.body as {
+        ids?: string | string[];
+        approvalState?: 'APPROVED' | 'REJECTED';
+      };
+
+      const updatedProjectTasks = await projectTaskService.approveOrReject(
+        ids ?? [],
+        req.user!.domainId,
+        req.user!.adminId,
+        approvalState ?? 'APPROVED',
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project task approval updated successfully',
+        data: updatedProjectTasks,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to approve or reject project task';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

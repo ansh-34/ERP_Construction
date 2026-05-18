@@ -9,13 +9,12 @@ import { normalizePrismaError } from '@/utils/prismaError';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
-  isPlainObject,
 } from '@/utils/validation';
 
 export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
-  delayReason: Record<string, unknown>;
+  delayReason: string;
   requestApproved?: boolean;
   requestApprovalTime?: string | null;
   stageId: string;
@@ -27,44 +26,45 @@ export interface CreateProjectTaskDelayInput {
 
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
-  delayReason?: Record<string, unknown>;
+  delayReason?: string;
   requestApproved?: boolean;
   requestApprovalTime?: string | null;
   status?: StatusEnum;
 }
+
+type ApprovalState = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 type LocalizedProjectTaskDelayRecord = Omit<
   ProjectTaskDelayRecord,
   'delayReason'
 > & {
   delayReason: string;
+  approvalState: ApprovalState;
 };
 
-function buildProjectTaskDelaySearchText(
-  delayReason: Record<string, unknown>,
-): string {
-  return Object.values(delayReason).join(' ').toLowerCase();
+function buildProjectTaskDelaySearchText(delayReason: string): string {
+  return delayReason.toLowerCase();
 }
 
-function getLocalizedText(
-  value: Record<string, unknown>,
-  language: string | null,
-): string {
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
-
-  return typeof localizedValue === 'string'
-    ? localizedValue
-    : String(localizedValue);
+function normalizeStoredDelayReason(value: Record<string, unknown>): string {
+  const reason = value.reason ?? value.en ?? '';
+  return typeof reason === 'string' ? reason : String(reason);
 }
 
 function normalizeProjectTaskDelay(
   delay: ProjectTaskDelayRecord,
   language: string | null,
 ): LocalizedProjectTaskDelayRecord {
+  const approvalState: ApprovalState = delay.requestApproved
+    ? 'APPROVED'
+    : delay.requestApprovalTime
+      ? 'REJECTED'
+      : 'PENDING';
+
   return {
     ...delay,
-    delayReason: getLocalizedText(delay.delayReason, language),
+    delayReason: normalizeStoredDelayReason(delay.delayReason),
+    approvalState,
   };
 }
 
@@ -101,12 +101,8 @@ function assertCreateInput(data: CreateProjectTaskDelayInput): void {
     throw new Error('invalid requestedDelayInDays');
   }
 
-  if (!isPlainObject(data.delayReason)) {
+  if (!isNonEmptyString(data.delayReason)) {
     throw new Error('invalid delayReason');
-  }
-
-  if (!isNonEmptyString(data.delayReason.en)) {
-    throw new Error('delayReason.en is required');
   }
 
   if (!isNonEmptyString(data.stageId)) {
@@ -138,15 +134,11 @@ function assertUpdateInput(data: UpdateProjectTaskDelayInput): void {
     throw new Error('invalid requestedDelayInDays');
   }
 
-  if (data.delayReason !== undefined && !isPlainObject(data.delayReason)) {
-    throw new Error('invalid delayReason');
-  }
-
   if (
     data.delayReason !== undefined &&
-    !isNonEmptyString(data.delayReason.en)
+    !isNonEmptyString(data.delayReason)
   ) {
-    throw new Error('delayReason.en is required');
+    throw new Error('invalid delayReason');
   }
 
   assertStatus(data.status);
@@ -155,6 +147,7 @@ function assertUpdateInput(data: UpdateProjectTaskDelayInput): void {
 function buildCreatePayload(data: CreateProjectTaskDelayInput) {
   return {
     ...data,
+    delayReason: { reason: data.delayReason },
     searchText: buildProjectTaskDelaySearchText(data.delayReason),
     requestApprovalTime: parseOptionalDate(data.requestApprovalTime),
   };
@@ -170,7 +163,9 @@ function buildUpdatePayload(
     ...(data.requestedDelayInDays !== undefined && {
       requestedDelayInDays: data.requestedDelayInDays,
     }),
-    ...(data.delayReason !== undefined && { delayReason: data.delayReason }),
+    ...(data.delayReason !== undefined && {
+      delayReason: { reason: data.delayReason },
+    }),
     ...(data.requestApproved !== undefined && {
       requestApproved: data.requestApproved,
     }),

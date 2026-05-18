@@ -11,8 +11,9 @@ export const locationController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, type, parentLocationId, status } = req.body as {
+      const { name, code, type, parentLocationId, status } = req.body as {
         name?: Record<string, unknown>;
+        code?: string;
         type?: string;
         parentLocationId?: string | null;
         status?: StatusEnum;
@@ -24,6 +25,7 @@ export const locationController = {
       const location = await locationService.create(
         {
           name: name ?? {},
+          ...(code !== undefined && { code }),
           type: type ?? '',
           ...(parentLocationId !== undefined && { parentLocationId }),
           domainId,
@@ -106,8 +108,9 @@ export const locationController = {
     try {
       const { id } = req.params as { id?: string };
       const { domainId } = req.query as { domainId?: string };
-      const { name, type, parentLocationId, status } = req.body as {
+      const { name, code, type, parentLocationId, status } = req.body as {
         name?: Record<string, unknown>;
+        code?: string;
         type?: string;
         parentLocationId?: string | null;
         status?: StatusEnum;
@@ -123,6 +126,7 @@ export const locationController = {
         req.user!.adminId,
         {
           ...(name !== undefined && { name }),
+          ...(code !== undefined && { code }),
           ...(type !== undefined && { type }),
           ...(parentLocationId !== undefined && { parentLocationId }),
           ...(status !== undefined && { status }),

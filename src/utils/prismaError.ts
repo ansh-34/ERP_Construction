@@ -23,7 +23,9 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid budget' ||
       error.message === 'invalid spent' ||
       error.message === 'invalid relation' ||
+      error.message === 'invalid assignee' ||
       error.message === 'not found' ||
+      error.message === 'request already actioned' ||
       error.message === 'empty update payload'
     ) {
       return error;

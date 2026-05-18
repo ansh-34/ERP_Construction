@@ -29,7 +29,7 @@ export const projectTaskController = {
         status,
       } = req.body as {
         name?: Record<string, unknown>;
-        assignee?: Record<string, unknown> | null;
+        assignee?: string | null;
         plannedStartDate?: string | null;
         plannedEndDate?: string | null;
         actualStartDate?: string | null;
@@ -170,7 +170,7 @@ export const projectTaskController = {
         status,
       } = req.body as {
         name?: Record<string, unknown>;
-        assignee?: Record<string, unknown> | null;
+        assignee?: string | null;
         plannedStartDate?: string | null;
         plannedEndDate?: string | null;
         actualStartDate?: string | null;

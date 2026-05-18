@@ -3,6 +3,7 @@ import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import { projectTaskController } from './projectTask.controller';
 import {
+  approveRejectProjectTaskBody,
   createProjectTaskBody,
   domainIdQuery,
   idParams,
@@ -23,6 +24,11 @@ projectTaskRouter.get(
   '/',
   validate(listProjectTaskQuery, 'query'),
   projectTaskController.getAll,
+);
+projectTaskRouter.put(
+  '/approval',
+  validate(approveRejectProjectTaskBody, 'body'),
+  projectTaskController.approveOrReject,
 );
 projectTaskRouter.get(
   '/:id',

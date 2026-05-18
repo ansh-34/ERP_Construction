@@ -6,13 +6,6 @@ const languageHeader = {
   schema: { type: 'string', default: 'en', example: 'en' },
 };
 
-const domainIdQuery = {
-  in: 'query' as const,
-  name: 'domainId',
-  required: true,
-  schema: { type: 'string', format: 'uuid' },
-};
-
 const searchQuery = {
   in: 'query' as const,
   name: 'searchKey',
@@ -132,14 +125,14 @@ const crudPaths = ({
       tags: [tag],
       summary: `Get ${entityName} by ID`,
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, idParam(`${entityName} ID`), domainIdQuery],
+      parameters: [languageHeader, idParam(`${entityName} ID`)],
       responses: itemResponse(objectSchema, `${entityName} retrieved`),
     },
     put: {
       tags: [tag],
       summary: `Update ${entityName}`,
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, idParam(`${entityName} ID`), domainIdQuery],
+      parameters: [languageHeader, idParam(`${entityName} ID`)],
       requestBody: updateSchema
         ? {
             required: true,
@@ -156,7 +149,7 @@ const crudPaths = ({
       tags: [tag],
       summary: `Delete ${entityName}`,
       security: [{ bearerAuth: [] }],
-      parameters: [idParam(`${entityName} ID`), domainIdQuery],
+      parameters: [idParam(`${entityName} ID`)],
       responses: {
         200: { description: `${entityName} deleted` },
         204: { description: `${entityName} deleted` },
@@ -174,7 +167,7 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectBody',
     updateSchema: 'UpdateProjectBody',
     entityName: 'Projects',
-    listParameters: [domainIdQuery, searchQuery],
+    listParameters: [searchQuery],
   }),
   ...crudPaths({
     basePath: '/api/domain/project-stages',
@@ -183,7 +176,7 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectStageBody',
     updateSchema: 'CreateProjectStageBody',
     entityName: 'Project stages',
-    listParameters: [domainIdQuery, projectIdQuery, searchQuery],
+    listParameters: [projectIdQuery, searchQuery],
   }),
   ...crudPaths({
     basePath: '/api/domain/project-tasks',
@@ -192,7 +185,7 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectTaskBody',
     updateSchema: 'CreateProjectTaskBody',
     entityName: 'Project tasks',
-    listParameters: [domainIdQuery, projectIdQuery, stageIdQuery, searchQuery],
+    listParameters: [projectIdQuery, stageIdQuery, searchQuery],
   }),
   ...crudPaths({
     basePath: '/api/domain/project-task-delays',
@@ -202,7 +195,6 @@ export const ProjectPaths = {
     updateSchema: 'CreateProjectTaskDelayBody',
     entityName: 'Project task delays',
     listParameters: [
-      domainIdQuery,
       projectIdQuery,
       stageIdQuery,
       taskIdQuery,
@@ -216,14 +208,14 @@ export const ProjectPaths = {
     createSchema: 'MachineryObject',
     updateSchema: 'MachineryObject',
     entityName: 'Machinery',
-    listParameters: [domainIdQuery, projectIdQuery, searchQuery],
+    listParameters: [projectIdQuery, searchQuery],
   }),
   '/api/domain/machine-reading': {
     get: {
       tags: ['Machine Reading'],
       summary: 'List machine readings',
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, domainIdQuery, projectIdQuery, searchQuery],
+      parameters: [languageHeader, projectIdQuery, searchQuery],
       responses: listResponse(
         'MachineReadingObject',
         'Machine readings retrieved',
@@ -256,7 +248,6 @@ export const ProjectPaths = {
       parameters: [
         languageHeader,
         idParam('Machine reading ID'),
-        domainIdQuery,
       ],
       responses: itemResponse(
         'MachineReadingObject',
@@ -270,7 +261,6 @@ export const ProjectPaths = {
       parameters: [
         languageHeader,
         idParam('Machine reading ID'),
-        domainIdQuery,
       ],
       requestBody: {
         required: true,

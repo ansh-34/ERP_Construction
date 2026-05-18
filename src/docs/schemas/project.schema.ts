@@ -4,6 +4,19 @@ const localizedObject = {
   example: { en: 'Sample name' },
 };
 
+const activeStatus = {
+  type: 'string',
+  enum: ['ACTIVE', 'INACTIVE'],
+  example: 'ACTIVE',
+  description: 'Allowed values: ACTIVE, INACTIVE',
+};
+
+const taskStatus = {
+  type: 'string',
+  example: 'PENDING',
+  description: 'Task workflow status. Common values: PENDING, IN_PROGRESS, COMPLETED.',
+};
+
 export const ProjectSchemas = {
   ProjectObject: {
     type: 'object',
@@ -15,7 +28,7 @@ export const ProjectSchemas = {
       spent: { type: 'number', example: 25000 },
       locationId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' },
     },
@@ -29,8 +42,7 @@ export const ProjectSchemas = {
       budget: { type: 'number', minimum: 0, example: 100000 },
       spent: { type: 'number', minimum: 0, example: 0 },
       locationId: { type: 'string', format: 'uuid' },
-      domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   UpdateProjectBody: {
@@ -40,7 +52,7 @@ export const ProjectSchemas = {
       description: { ...localizedObject, nullable: true },
       budget: { type: 'number', minimum: 0 },
       spent: { type: 'number', minimum: 0 },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   ProjectStageObject: {
@@ -52,7 +64,7 @@ export const ProjectSchemas = {
       progress: { type: 'number', example: 35 },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' },
     },
@@ -65,8 +77,7 @@ export const ProjectSchemas = {
       description: { ...localizedObject, nullable: true },
       progress: { type: 'number', minimum: 0, nullable: true, example: 0 },
       projectId: { type: 'string', format: 'uuid' },
-      domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   ProjectTaskObject: {
@@ -74,20 +85,25 @@ export const ProjectSchemas = {
     properties: {
       id: { type: 'string', format: 'uuid' },
       name: localizedObject,
-      assignee: { ...localizedObject, nullable: true },
+      assignee: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'User ID assigned to this task.',
+      },
       plannedStartDate: {
         type: 'string',
         nullable: true,
         example: '2026-05-18',
       },
       plannedEndDate: { type: 'string', nullable: true, example: '2026-05-25' },
-      taskStatus: { type: 'string', example: 'PENDING' },
+      taskStatus,
       taskProgress: { type: 'number', example: 20 },
       requiredApproval: { type: 'boolean', example: false },
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   CreateProjectTaskBody: {
@@ -95,14 +111,19 @@ export const ProjectSchemas = {
     required: ['name', 'stageId', 'projectId'],
     properties: {
       name: localizedObject,
-      assignee: { ...localizedObject, nullable: true },
+      assignee: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'User ID assigned to this task.',
+      },
       plannedStartDate: {
         type: 'string',
         nullable: true,
         example: '2026-05-18',
       },
       plannedEndDate: { type: 'string', nullable: true, example: '2026-05-25' },
-      taskStatus: { type: 'string', example: 'PENDING' },
+      taskStatus,
       taskProgress: { type: 'number', minimum: 0, example: 0 },
       totalDelayInDays: { type: 'number', minimum: 0, example: 0 },
       requiredApproval: { type: 'boolean', example: false },
@@ -113,8 +134,7 @@ export const ProjectSchemas = {
       },
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
-      domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   ProjectTaskDelayObject: {
@@ -123,13 +143,28 @@ export const ProjectSchemas = {
       id: { type: 'string', format: 'uuid' },
       taskId: { type: 'string', format: 'uuid' },
       requestedDelayInDays: { type: 'number', example: 2 },
-      delayReason: localizedObject,
-      requestApproved: { type: 'boolean', example: false },
+      delayReason: {
+        type: 'string',
+        example: 'Material delivery was delayed.',
+        description: 'Single language delay reason.',
+      },
+      requestApproved: {
+        type: 'boolean',
+        example: false,
+        description: 'false means pending, true means approved.',
+      },
+      approvalState: {
+        type: 'string',
+        enum: ['PENDING', 'APPROVED', 'REJECTED'],
+        example: 'PENDING',
+        description:
+          'Computed state. PENDING when requestApproved is false and requestApprovalTime is empty.',
+      },
       requestApprovalTime: { type: 'string', nullable: true },
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   CreateProjectTaskDelayBody: {
@@ -144,13 +179,20 @@ export const ProjectSchemas = {
     properties: {
       taskId: { type: 'string', format: 'uuid' },
       requestedDelayInDays: { type: 'number', minimum: 0, example: 2 },
-      delayReason: localizedObject,
-      requestApproved: { type: 'boolean', example: false },
+      delayReason: {
+        type: 'string',
+        example: 'Material delivery was delayed.',
+        description: 'Single language delay reason.',
+      },
+      requestApproved: {
+        type: 'boolean',
+        example: false,
+        description: 'Allowed values: false = PENDING, true = APPROVED.',
+      },
       requestApprovalTime: { type: 'string', nullable: true },
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
-      domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   MachineryObject: {
@@ -162,7 +204,7 @@ export const ProjectSchemas = {
       expectedLitrePerHour: { type: 'number', example: 12 },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
+      status: activeStatus,
     },
   },
   MachineReadingObject: {

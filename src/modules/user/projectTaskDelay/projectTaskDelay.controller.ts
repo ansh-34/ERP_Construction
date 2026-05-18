@@ -23,7 +23,7 @@ export const projectTaskDelayController = {
       } = req.body as {
         taskId?: string;
         requestedDelayInDays?: number;
-        delayReason?: Record<string, unknown>;
+        delayReason?: string;
         requestApproved?: boolean;
         requestApprovalTime?: string | null;
         stageId?: string;
@@ -38,7 +38,7 @@ export const projectTaskDelayController = {
         {
           taskId: taskId ?? '',
           requestedDelayInDays: requestedDelayInDays ?? 0,
-          delayReason: delayReason ?? {},
+          delayReason: delayReason ?? '',
           ...(requestApproved !== undefined && { requestApproved }),
           ...(requestApprovalTime !== undefined && { requestApprovalTime }),
           stageId: stageId ?? '',
@@ -144,7 +144,7 @@ export const projectTaskDelayController = {
         status,
       } = req.body as {
         requestedDelayInDays?: number;
-        delayReason?: Record<string, unknown>;
+        delayReason?: string;
         requestApproved?: boolean;
         requestApprovalTime?: string | null;
         status?: StatusEnum;
