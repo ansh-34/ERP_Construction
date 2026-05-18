@@ -72,7 +72,7 @@ export const UserService = {
         ? (domain.name as Record<string, string>).en || 'your organization'
         : String(domain.name || 'your organization');
 
-    const verificationLink = `${baseUrl}/api/user/auth/verify?token=${rawToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `${baseUrl}/verify/token?token=${rawToken}&context=user-onboarding&email=${encodeURIComponent(email)}&speciality=${domain.industry}`;
     await sendMail(
       email,
       `You're Invited to ${domainDisplayName} — Construction ERP`,
@@ -84,7 +84,7 @@ export const UserService = {
     );
 
     return variables.NODE_ENV === 'development'
-      ? { token: rawToken }
+      ? { link: verificationLink }
       : { message: 'Invite sent successfully' };
   },
 

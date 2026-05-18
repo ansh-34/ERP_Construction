@@ -143,6 +143,8 @@ model Domain {
   appErrors                   AppError[]
   vehicles                    Vehicle[]
   vehicleJourneySchedules     VehicleJourneySchedule[]
+  grns                        Grn[]
+  grnProducts                 GrnProduct[]
   dispatchVehicles            DispatchVehicle[]
   uoms                        Uom[]
   products                    Product[]
@@ -161,6 +163,8 @@ model Domain {
   machineReadings         MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
+  purchaseOrders              PurchaseOrder[]
+  purchaseOrderProducts       PurchaseOrderProduct[]
   admin                       Admin?                       @relation(fields: [adminId], references: [id])
   adminId                     String?                      @db.Uuid
 
@@ -515,6 +519,8 @@ model Uom {
   dispatchLoadedQty           DispatchVehicle[]            @relation("DispatchLoadedQtyUom")
   inventories                 Inventory[]                  @relation("InventoryUom")
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+  grnProducts                 GrnProduct[]
+  purchaseOrderProducts       PurchaseOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -720,6 +726,11 @@ enum ApprovalStatus {
   REJECTED
 }
 
+// enum OrderStatus {
+//     CONFIRMED
+//   CANCELLED
+// }
+
 model RawMaterialPurchaseRequest {
   id                            String              @id @default(uuid()) @db.Uuid
   code                          String
@@ -749,6 +760,8 @@ model RawMaterialPurchaseRequest {
   isDeleted                     Boolean             @default(false)
   createdAt                     DateTime            @default(now())
   updatedAt                     DateTime            @updatedAt
+  purchaseOrderId               String?             @db.Uuid
+  purchaseOrder                 PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -760,6 +773,63 @@ model RawMaterialPurchaseRequest {
   @@index([projectId])
   @@index([domainId])
 }
+
+
+model PurchaseOrder {
+  id           String      @id @default(uuid()) @db.Uuid
+  code         String
+  date         DateTime    @default(now())
+  vendor       String
+  totalItems   Int         @default(0)
+  totalTax     Float       @default(0)
+  totalAmount  Float       @default(0)
+  orderStatus  String 
+  paymentTerms String?
+  projectId    String?     @db.Uuid
+  project      Project?    @relation(fields: [projectId], references: [id])
+  domainId     String      @db.Uuid
+  domain       Domain      @relation(fields: [domainId], references: [id])
+  status       StatusEnum  @default(ACTIVE)
+  isDeleted    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  purchaseOrderProducts       PurchaseOrderProduct[]
+  rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([projectId])
+  @@index([domainId])
+}
+
+model PurchaseOrderProduct {
+  id               String        @id @default(uuid()) @db.Uuid
+  purchaseOrderId  String        @db.Uuid
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  orderCode        String
+  productName      String
+  productGradeName String?
+  quantity         Float
+  tax              Float         @default(0)
+  uomId            String        @db.Uuid
+  uom              Uom           @relation(fields: [uomId], references: [id])
+  rate             Float         @default(0)
+  projectId        String?       @db.Uuid
+  project          Project?      @relation(fields: [projectId], references: [id])
+  domainId         String        @db.Uuid
+  domain           Domain        @relation(fields: [domainId], references: [id])
+  status           StatusEnum    @default(ACTIVE)
+  isDeleted        Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([projectId])
+  @@index([domainId])
+}
+
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
@@ -853,6 +923,10 @@ model Project {
   machineReadings MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
+  grns                        Grn[]
+  grnProducts                 GrnProduct[]
+  purchaseOrders              PurchaseOrder[]
+  purchaseOrderProducts       PurchaseOrderProduct[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1043,4 +1117,63 @@ model ProjectUserRole {
   @@index([createdAt, domainId, userId])
   @@index([createdAt, domainId, roleId])
   @@index([createdAt, domainId, projectId])
+}
+
+model Grn {
+  id               String         @id @default(uuid()) @db.Uuid
+  code             String
+  productOrderCode String?
+  date             DateTime
+  vendor           String
+  wbReference      String?
+  totalItems       Int            @default(0)
+  totalTax         Float          @default(0)
+  totalAmount      Float          @default(0)
+  approvalStatus   ApprovalStatus @default(PENDING)
+  approvedAt       DateTime?
+  projectId        String?        @db.Uuid
+  project          Project?       @relation(fields: [projectId], references: [id])
+  domainId         String         @db.Uuid
+  domain           Domain         @relation(fields: [domainId], references: [id])
+  status           StatusEnum     @default(ACTIVE)
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  grnProducts GrnProduct[]
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([projectId])
+  @@index([domainId])
+}
+
+model GrnProduct {
+  id        String     @id @default(uuid()) @db.Uuid
+  grnId     String     @db.Uuid
+  grn       Grn        @relation(fields: [grnId], references: [id])
+  grnCode   String
+  date      DateTime
+  vendor    String
+  material  String
+  quantity  Float
+  tax       Float      @default(0)
+  uomId     String     @db.Uuid
+  uom       Uom        @relation(fields: [uomId], references: [id])
+  rate      Float      @default(0)
+  projectId String?    @db.Uuid
+  project   Project?   @relation(fields: [projectId], references: [id])
+  domainId  String     @db.Uuid
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([grnId])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([projectId])
+  @@index([domainId])
 }

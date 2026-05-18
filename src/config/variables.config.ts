@@ -8,6 +8,7 @@ const variables = {
   BASE_URL:
     process.env.BASE_URL || `http://localhost:${process.env.PORT || '5000'}`,
   MAX_REQUEST_SIZE: process.env.MAX_REQUEST_SIZE || '5mb',
+  FRONTEND_URL: process.env.FRONTEND_URL,
 
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRY: process.env.JWT_EXPIRY || '1d',

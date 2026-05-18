@@ -113,4 +113,50 @@ export const DomainRepository = {
       data: { password },
     });
   },
+
+  listByAdmin(
+    adminId: string,
+    limit: number,
+    offset: number,
+    searchKey?: string,
+  ) {
+    const where: any = {
+      adminId,
+      isDeleted: false,
+    };
+
+    if (searchKey) {
+      where.email = { contains: searchKey, mode: 'insensitive' };
+    }
+
+    return prisma.$transaction([
+      prisma.domain.count({ where }),
+      prisma.domain.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+  },
+
+  findByIdAndAdmin(id: string, adminId: string) {
+    return prisma.domain.findFirst({
+      where: { id, adminId, isDeleted: false },
+    });
+  },
+
+  update(id: string, data: any) {
+    return prisma.domain.update({
+      where: { id },
+      data,
+    });
+  },
+
+  softDelete(id: string) {
+    return prisma.domain.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+  },
 };

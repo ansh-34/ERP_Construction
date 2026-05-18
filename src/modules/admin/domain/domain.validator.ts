@@ -34,3 +34,27 @@ export const verifyDomainTokenQuerySchema = z.object({
   email: z.string().email(),
   token: z.string().min(1),
 });
+
+export const updateDomainBodySchema = z.object({
+  name: z
+    .record(
+      z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+      z.string().min(1, 'Translation cannot be empty'),
+    )
+    .optional(),
+  phone: z.string().optional(),
+  phoneCode: z.string().optional(),
+  organizationType: z.any().optional(),
+  industry: industrySchema.optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+export const listDomainsQuerySchema = z.object({
+  limit: z.string().regex(/^\d+$/).optional(),
+  offset: z.string().regex(/^\d+$/).optional(),
+  searchKey: z.string().optional(),
+});
+
+export const domainIdParamSchema = z.object({
+  id: z.string().uuid('Invalid domain ID'),
+});

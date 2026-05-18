@@ -4,8 +4,8 @@ import { validate } from '../../../middlewares/validate.js';
 import {
   createRawMaterialPurchaseRequest,
   listRawMaterialPurchaseRequests,
-  listApprovedRawMaterialPurchaseRequests,
-  listApprovedRawMaterialPurchaseRequestsByProduct,
+  // listApprovedRawMaterialPurchaseRequests,
+  // listApprovedRawMaterialPurchaseRequestsByProduct,
   getRawMaterialPurchaseRequestById,
   updateRawMaterialPurchaseRequest,
   deleteRawMaterialPurchaseRequest,
@@ -37,17 +37,17 @@ router.get(
   listRawMaterialPurchaseRequests,
 );
 
-router.get(
-  '/approved',
-  validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
-  listApprovedRawMaterialPurchaseRequests,
-);
+// router.get(
+//   '/approved',
+//   validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
+//   listApprovedRawMaterialPurchaseRequests,
+// );
 
-router.get(
-  '/approved/product/:productId',
-  validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
-  listApprovedRawMaterialPurchaseRequestsByProduct,
-);
+// router.get(
+//   '/approved/product/:productId',
+//   validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
+//   listApprovedRawMaterialPurchaseRequestsByProduct,
+// );
 
 // Single endpoint for both single and bulk approve/reject
 router.put(
