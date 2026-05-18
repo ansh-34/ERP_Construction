@@ -78,7 +78,9 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
-function getAssigneeUserId(value: Record<string, unknown> | null): string | null {
+function getAssigneeUserId(
+  value: Record<string, unknown> | null,
+): string | null {
   if (!value) {
     return null;
   }

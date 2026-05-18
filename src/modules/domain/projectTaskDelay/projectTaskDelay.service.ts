@@ -134,10 +134,7 @@ function assertUpdateInput(data: UpdateProjectTaskDelayInput): void {
     throw new Error('invalid requestedDelayInDays');
   }
 
-  if (
-    data.delayReason !== undefined &&
-    !isNonEmptyString(data.delayReason)
-  ) {
+  if (data.delayReason !== undefined && !isNonEmptyString(data.delayReason)) {
     throw new Error('invalid delayReason');
   }
 

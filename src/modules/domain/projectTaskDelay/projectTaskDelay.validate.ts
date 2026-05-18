@@ -10,7 +10,10 @@ const optionalDate = z.string().trim().min(1).nullable().optional();
 export const createProjectTaskDelayBody = z.object({
   taskId: z.string().trim().min(1, { message: 'Task id is required' }),
   requestedDelayInDays: nonNegativeNumber,
-  delayReason: z.string().trim().min(1, { message: 'Delay reason is required' }),
+  delayReason: z
+    .string()
+    .trim()
+    .min(1, { message: 'Delay reason is required' }),
   requestApproved: z.boolean().optional(),
   requestApprovalTime: optionalDate,
   stageId: z.string().trim().min(1, { message: 'Stage id is required' }),

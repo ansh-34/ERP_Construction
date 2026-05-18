@@ -14,7 +14,8 @@ const activeStatus = {
 const taskStatus = {
   type: 'string',
   example: 'PENDING',
-  description: 'Task workflow status. Common values: PENDING, IN_PROGRESS, COMPLETED.',
+  description:
+    'Task workflow status. Common values: PENDING, IN_PROGRESS, COMPLETED.',
 };
 
 export const ProjectSchemas = {

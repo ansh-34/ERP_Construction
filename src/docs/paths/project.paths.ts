@@ -194,12 +194,7 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectTaskDelayBody',
     updateSchema: 'CreateProjectTaskDelayBody',
     entityName: 'Project task delays',
-    listParameters: [
-      projectIdQuery,
-      stageIdQuery,
-      taskIdQuery,
-      searchQuery,
-    ],
+    listParameters: [projectIdQuery, stageIdQuery, taskIdQuery, searchQuery],
   }),
   ...crudPaths({
     basePath: '/api/domain/machineries',
@@ -245,10 +240,7 @@ export const ProjectPaths = {
       tags: ['Machine Reading'],
       summary: 'Get machine reading by ID',
       security: [{ bearerAuth: [] }],
-      parameters: [
-        languageHeader,
-        idParam('Machine reading ID'),
-      ],
+      parameters: [languageHeader, idParam('Machine reading ID')],
       responses: itemResponse(
         'MachineReadingObject',
         'Machine reading retrieved',
@@ -258,10 +250,7 @@ export const ProjectPaths = {
       tags: ['Machine Reading'],
       summary: 'Update machine reading',
       security: [{ bearerAuth: [] }],
-      parameters: [
-        languageHeader,
-        idParam('Machine reading ID'),
-      ],
+      parameters: [languageHeader, idParam('Machine reading ID')],
       requestBody: {
         required: true,
         content: {
