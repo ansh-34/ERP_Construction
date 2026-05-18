@@ -3,6 +3,19 @@ import { AdminLanguageRepository } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
+type AdminLanguageListItem = {
+  id: string;
+  language: {
+    id: string;
+    name: string;
+    code: string;
+    flag: string;
+    dir: 'ltr' | 'rtl';
+  };
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export const LanguageService = {
   async listLanguages(
     query: PaginationQuery & {
@@ -34,14 +47,22 @@ export const LanguageService = {
       },
     );
 
-    return {
-      languages,
-      pagination: {
-        totalCount,
-        offset,
-        limit,
-      },
-    };
+return {
+      languages: (languages as AdminLanguageListItem[]).map((item) => ({
+        adminRelationalId: item.id,
+        name: item.language.name,
+        code: item.language.code,
+        flag: item.language.flag,
+        dir: item.language.dir,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })),
+  pagination: {
+    totalCount,
+    offset,
+    limit,
+  },
+};
   },
   async getLanguage(id: string, adminId: string) {
     const language = await AdminLanguageRepository.findFirst(
@@ -72,7 +93,15 @@ export const LanguageService = {
     if (!language) {
       throw new Error(Messages.LANGUAGE.NOT_FOUND);
     }
-    return language;
+    return {
+      adminRelationalId: language.id,
+      name: language.language.name,
+      code: language.language.code,
+      flag: language.language.flag,
+      dir: language.language.dir,
+      createdAt: language.createdAt,
+      updatedAt: language.updatedAt,
+    };
   },
   async updateLanguage(
     id: string,

@@ -3,6 +3,47 @@ import { AdminCurrencyRepository } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
+type AdminCurrencyListItem = {
+  id: string;
+  currency: {
+    id: string;
+    name: Record<string, string>;
+    code: string;
+    symbol: string;
+    flag: string;
+    status: 'active' | 'inactive';
+  };
+  isDefault: boolean;
+  isEnabled: boolean;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type AdminCurrencyDetails = {
+  id: string;
+  currency: {
+    id: string;
+    name: Record<string, string>;
+    code: string;
+    symbol: string;
+    flag: string;
+    status: 'active' | 'inactive';
+  };
+  isDefault: boolean;
+  isEnabled: boolean;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+function normalizeCurrencyName(
+  name: Record<string, string>,
+  langCode: string,
+) {
+  return name[langCode] || name.en || '';
+}
+
 export const CurrencyService = {
   async listCurrencies(
     query: PaginationQuery & {
@@ -35,11 +76,20 @@ export const CurrencyService = {
       },
     );
 
-    const normalizedCurrencies = currencies.map((currency: any) => ({
-      ...currency,
-      currency:
-        currency.currency.name[langCode] || currency.currency.name.en || '',
-    }));
+    const normalizedCurrencies = (currencies as AdminCurrencyListItem[]).map(
+      (item) => ({
+        adminRelationalId: item.id,
+        name: normalizeCurrencyName(item.currency.name, langCode),
+        code: item.currency.code,
+        symbol: item.currency.symbol,
+        flag: item.currency.flag,
+        status: item.status,
+        isDefault: item.isDefault,
+        isEnabled: item.isEnabled,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      }),
+    );
 
     return {
       currencies: normalizedCurrencies,
@@ -52,7 +102,7 @@ export const CurrencyService = {
   },
 
   async getCurrency(id: string, adminId: string, langCode: string | undefined) {
-    const currency = await AdminCurrencyRepository.findFirst(
+    const currency = (await AdminCurrencyRepository.findFirst(
       {
         adminId,
         id,
@@ -77,24 +127,23 @@ export const CurrencyService = {
           updatedAt: true,
         },
       },
-    );
+    )) as AdminCurrencyDetails | null;
     if (!currency) {
       throw new Error(Messages.CURRENCY.NOT_FOUND);
     }
 
-    let normalizedCurrency = currency;
-    if (langCode) {
-      normalizedCurrency = {
-        ...currency,
-        currency: {
-          ...currency.currency,
-          name:
-            currency.currency.name[langCode] || currency.currency.name.en || '',
-        },
-      };
-    }
-
-    return normalizedCurrency;
+    return {
+      adminRelationalId: currency.id,
+      name: normalizeCurrencyName(currency.currency.name, langCode || 'en'),
+      code: currency.currency.code,
+      symbol: currency.currency.symbol,
+      flag: currency.currency.flag,
+      status: currency.status,
+      isDefault: currency.isDefault,
+      isEnabled: currency.isEnabled,
+      createdAt: currency.createdAt,
+      updatedAt: currency.updatedAt,
+    };
   },
 
   async updateCurrency(

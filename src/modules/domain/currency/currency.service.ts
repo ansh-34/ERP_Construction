@@ -3,6 +3,29 @@ import { AdminCurrencyRepository } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
+type DomainCurrencyListItem = {
+  id: string;
+  currency: {
+    id: string;
+    name: Record<string, string>;
+    code: string;
+    symbol: string;
+    flag: string;
+    status: 'active' | 'inactive';
+  };
+  isDefault: boolean;
+  isEnabled: boolean;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type DomainCurrencyDetails = DomainCurrencyListItem;
+
+function normalizeCurrencyName(name: Record<string, string>) {
+  return name.en || '';
+}
+
 export const CurrencyService = {
   async listLanguages(
     query: PaginationQuery & {
@@ -31,7 +54,18 @@ export const CurrencyService = {
     );
 
     return {
-      currencies,
+      currencies: (currencies as DomainCurrencyListItem[]).map((item) => ({
+        domainRelationalId: item.id,
+        name: normalizeCurrencyName(item.currency.name),
+        code: item.currency.code,
+        symbol: item.currency.symbol,
+        flag: item.currency.flag,
+        isDefault: item.isDefault,
+        isEnabled: item.isEnabled,
+        status: item.status,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })),
       pagination: {
         totalCount,
         offset,
@@ -41,7 +75,7 @@ export const CurrencyService = {
   },
 
   async getCurrency(id: string) {
-    const currency = await AdminCurrencyRepository.findById(id, {
+    const currency = (await AdminCurrencyRepository.findById(id, {
       select: {
         id: true,
         currency: {
@@ -60,10 +94,21 @@ export const CurrencyService = {
         createdAt: true,
         updatedAt: true,
       },
-    });
+    })) as DomainCurrencyDetails | null;
     if (!currency) {
       throw new Error(Messages.CURRENCY.NOT_FOUND);
     }
-    return currency;
+    return {
+      domainRelationalId: currency.id,
+      name: normalizeCurrencyName(currency.currency.name),
+      code: currency.currency.code,
+      symbol: currency.currency.symbol,
+      flag: currency.currency.flag,
+      isDefault: currency.isDefault,
+      isEnabled: currency.isEnabled,
+      status: currency.status,
+      createdAt: currency.createdAt,
+      updatedAt: currency.updatedAt,
+    };
   },
 };
