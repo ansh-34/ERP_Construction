@@ -50,7 +50,7 @@ export const AdminRepository = {
       isDeleted: false,
       ...(options.filters && {
         ...(options.filters.searchKey && {
-          searchText: {
+          name: {
             contains: options.filters.searchKey,
             mode: 'insensitive',
           },
