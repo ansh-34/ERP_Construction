@@ -23,7 +23,7 @@ export const createProductGradeBodySchema = z.object({
 export const updateProductGradeBodySchema = z.object({
   gradeDisplayName: localizedName.optional(),
   gradeCode: z.string().min(1).optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 //  Query schemas

@@ -52,7 +52,10 @@ export const listRoles = async (req: Request, res: Response) => {
     const { language = 'en' } = req.headers;
     const { roles, pagination } = await RoleService.listRoles(
       req.user!.domainId,
-      req.query as PaginationQuery & { status?: string; searchKey?: string },
+      req.query as PaginationQuery & {
+        status?: 'ACTIVE' | 'INACTIVE';
+        searchKey?: string;
+      },
       language as string,
     );
 

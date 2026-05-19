@@ -63,6 +63,12 @@ export const AdminService = {
     );
 
     return transaction(async (tx) => {
+      const updatedOfferedLanguages = [
+        ...new Set([defaultLanguage.id, ...(data.offeredLanguages || [])]),
+      ];
+      const updatedOfferedCurrencies = [
+        ...new Set([defaultCurrency.id, ...(data.offeredCurrencies || [])]),
+      ];
       const admin = await Promise.all([
         AdminRepository.create(
           {
@@ -72,6 +78,8 @@ export const AdminService = {
             phoneCode,
             phone,
             mediaId,
+            offeredLanguagesCount: updatedOfferedLanguages?.length || 0,
+            offeredCurrenciesCount: updatedOfferedCurrencies?.length || 0,
           },
           {
             transaction: tx,
@@ -87,18 +95,14 @@ export const AdminService = {
         ),
       ]);
 
-      const laguagesToOffer = [
-        ...new Set([defaultLanguage.id, ...(data.offeredLanguages || [])]),
-      ].map((id) => ({
+      const languagesToOffer = updatedOfferedLanguages.map((id) => ({
         adminId: admin[0].id,
         languageId: id,
         isDefault: id === defaultLanguage.id,
         isEnabled: false,
       }));
 
-      const currenciesToOffer = [
-        ...new Set([defaultCurrency.id, ...(data.offeredCurrencies || [])]),
-      ].map((id) => ({
+      const currenciesToOffer = updatedOfferedCurrencies.map((id) => ({
         adminId: admin[0].id,
         currencyId: id,
         isDefault: id === defaultCurrency.id,
@@ -106,7 +110,7 @@ export const AdminService = {
       }));
 
       await Promise.all([
-        AdminLanguageRepository.bulkCreate(laguagesToOffer, {
+        AdminLanguageRepository.bulkCreate(languagesToOffer, {
           transaction: tx,
         }),
         AdminCurrencyRepository.bulkCreate(currenciesToOffer, {
@@ -145,6 +149,10 @@ export const AdminService = {
               url: true,
             },
           },
+          offeredLanguagesCount: true,
+          enabledLanguagesCount: true,
+          offeredCurrenciesCount: true,
+          enabledCurrenciesCount: true,
           onboardingStatus: true,
           onboardingStep: true,
           createdAt: true,
@@ -154,7 +162,22 @@ export const AdminService = {
     );
 
     return {
-      admins,
+      admins: admins.map((admin) => ({
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        phone: admin.phone,
+        phoneCode: admin.phoneCode,
+        media: admin.media,
+        onboardingStatus: admin.onboardingStatus,
+        onboardingStep: admin.onboardingStep,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt,
+        offeredLanguagesCount: admin.offeredLanguagesCount,
+        enabledLanguagesCount: admin.enabledLanguagesCount,
+        offeredCurrenciesCount: admin.offeredCurrenciesCount,
+        enabledCurrenciesCount: admin.enabledCurrenciesCount,
+      })),
       pagination: {
         totalCount,
         offset,
@@ -162,18 +185,46 @@ export const AdminService = {
       },
     };
   },
-  async getAdmin(id: string) {
-    return await AdminRepository.findActiveById(id, {
+  async getAdmin(id: string, langCode: string | null) {
+    const admin = await AdminRepository.findActiveById(id, {
       select: {
         id: true,
         name: true,
         email: true,
         phone: true,
         phoneCode: true,
+        offeredLanguagesCount: true,
+        enabledLanguagesCount: true,
+        offeredCurrenciesCount: true,
+        enabledCurrenciesCount: true,
         media: {
           select: {
             id: true,
             url: true,
+          },
+        },
+        adminLanguages: {
+          select: {
+            id: true,
+            language: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+        adminCurrencies: {
+          select: {
+            id: true,
+            currency: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+              },
+            },
           },
         },
         onboardingStatus: true,
@@ -182,6 +233,31 @@ export const AdminService = {
         updatedAt: true,
       },
     });
+
+    return {
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      phone: admin.phone,
+      phoneCode: admin.phoneCode,
+      media: admin.media,
+      adminLanguages: admin.adminLanguages,
+      adminCurrencies: admin.adminCurrencies.map((currency: any) => ({
+        id: currency.currency.id,
+        code: currency.currency.code,
+        name: langCode
+          ? currency.currency.name[langCode]
+          : currency.currency.name.en || '',
+      })),
+      onboardingStatus: admin.onboardingStatus,
+      onboardingStep: admin.onboardingStep,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt,
+      offeredLanguagesCount: admin.offeredLanguagesCount || 0,
+      enabledLanguagesCount: admin.enabledLanguagesCount || 0,
+      offeredCurrenciesCount: admin.offeredCurrenciesCount || 0,
+      enabledCurrenciesCount: admin.enabledCurrenciesCount || 0,
+    };
   },
   async updateAdmin(
     id: string,

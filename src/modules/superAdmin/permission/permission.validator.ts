@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   idParamSchema,
   paginationQuerySchema,
+  statusFilterSchema,
 } from '../../common/common.validator.js';
 
 export const createPermissionBodySchema = z.object({
@@ -18,6 +19,7 @@ export const createPermissionBodySchema = z.object({
 
 export const listPermissionsQuerySchema = z.object({
   ...paginationQuerySchema.shape,
+  ...statusFilterSchema.shape,
   searchKey: z.string().optional(),
 });
 
@@ -34,7 +36,7 @@ export const updatePermissionBodySchema = z.object({
       path: ['en'],
     })
     .optional(),
-  status: z.string().optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export type CreatePermissionData = z.infer<typeof createPermissionBodySchema>;

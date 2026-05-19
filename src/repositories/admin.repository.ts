@@ -26,6 +26,8 @@ export const AdminRepository = {
       phoneCode: string | null;
       password: string;
       mediaId?: string;
+      offeredLanguagesCount?: number;
+      offeredCurrenciesCount?: number;
     },
     options: { transaction?: any } = {},
   ) {

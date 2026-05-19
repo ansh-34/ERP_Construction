@@ -5,8 +5,10 @@ import { LanguageService } from './language.service.js';
 
 export const listLanguages = async (req: Request, res: Response) => {
   try {
+    console.log('Admin ID in listLanguages controller:', req.user?.adminId); // Debug log to check adminId
     const { languages, pagination } = await LanguageService.listLanguages(
       req.query,
+      req.user!.adminId!,
     );
 
     return res.status(HttpStatus.OK).json({

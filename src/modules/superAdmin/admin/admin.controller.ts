@@ -22,12 +22,13 @@ export const createAdmin = async (req: Request, res: Response) => {
 
 export const listAdmins = async (req: Request, res: Response) => {
   try {
-    const data = await AdminService.listAdmins(req.query);
+    const { admins, pagination } = await AdminService.listAdmins(req.query);
 
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.ADMIN.RETRIEVED,
-      data,
+      data: admins,
+      pagination,
     });
   } catch (error) {
     const message =
@@ -39,7 +40,8 @@ export const listAdmins = async (req: Request, res: Response) => {
 
 export const getAdmin = async (req: Request, res: Response) => {
   try {
-    const data = await AdminService.getAdmin(req.params.id);
+    const { language } = req.headers;
+    const data = await AdminService.getAdmin(req.params.id, language as string);
 
     return res.status(HttpStatus.OK).json({
       success: true,

@@ -6,7 +6,7 @@ export const LanguageService = {
   async listLanguages(
     query: PaginationQuery & {
       searchKey?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       dir?: 'ltr' | 'rtl';
       code?: string;
     },

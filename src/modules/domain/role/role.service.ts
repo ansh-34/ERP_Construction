@@ -99,7 +99,10 @@ export const RoleService = {
 
   async listRoles(
     domainId: string,
-    query: PaginationQuery & { status?: string; searchKey?: string },
+    query: PaginationQuery & {
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+    },
     langCode: string,
   ) {
     const { offset, limit } = normalizePagination(query);
@@ -167,7 +170,7 @@ export const RoleService = {
       name?: Record<string, string>;
       code?: string;
       level?: number;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
     langCode: string = 'en',
   ) {

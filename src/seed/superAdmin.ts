@@ -38,7 +38,7 @@ export const initSuperAdmin = async () => {
         email,
         password: hashedPassword,
         name: nameObj,
-        status: 'active',
+        status: 'ACTIVE',
       },
     });
 

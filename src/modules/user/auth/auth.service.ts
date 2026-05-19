@@ -272,6 +272,8 @@ export const UserService = {
               name: user.role.name,
             }
           : { code: 'USER', name: { en: 'User' } },
+        onboardingStatus: 'COMPLETED',
+        onboardingStep: 'EMAIL_VERIFICATION',
       },
       domain: {
         id: user.domain.id,

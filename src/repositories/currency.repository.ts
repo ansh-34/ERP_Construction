@@ -128,7 +128,12 @@ export const CurrencyRepository = {
 
   update(
     id: string,
-    data: { name?: any; code?: string; status?: string; searchText?: string },
+    data: {
+      name?: any;
+      code?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchText?: string;
+    },
   ) {
     return prisma.currency.update({ where: { id }, data });
   },

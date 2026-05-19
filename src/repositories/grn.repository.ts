@@ -81,7 +81,7 @@ export const GrnRepository = {
     limit: number,
     offset: number,
     filters: {
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       approvalStatus?: string;
       projectId?: string;

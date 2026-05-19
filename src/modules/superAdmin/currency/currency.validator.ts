@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   idParamSchema,
   paginationQuerySchema,
+  statusFilterSchema,
 } from '../../common/common.validator.js';
 
 export const createCurrencyBodySchema = z.object({
@@ -29,7 +30,7 @@ export const updateCurrencyBodySchema = z.object({
       path: ['en'],
     })
     .optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
   symbol: z.string().min(1).optional(),
   flag: z.string().optional(),
 });
@@ -37,7 +38,7 @@ export const updateCurrencyBodySchema = z.object({
 export const listCurrenciesQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export const currencyIdParamsSchema = idParamSchema;

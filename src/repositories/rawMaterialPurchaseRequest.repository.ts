@@ -42,7 +42,7 @@ export const RawMaterialPurchaseRequestRepository = {
     limit: number,
     offset: number,
     filters: {
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       type?: string;
       approvalStatus?: string;
@@ -222,7 +222,7 @@ export const RawMaterialPurchaseRequestRepository = {
     limit: number,
     offset: number,
     filters: {
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       orderStatus?: string;
       projectId?: string;
       isDeleted?: boolean;

@@ -63,7 +63,7 @@ export const InventoryRepository = {
     domainId: string,
     limit: number,
     offset: number,
-    status?: string,
+    status?: 'ACTIVE' | 'INACTIVE',
   ) {
     const where: Prisma.InventoryWhereInput = {
       domainId,
@@ -94,7 +94,7 @@ export const InventoryRepository = {
   softDelete(id: string) {
     return prisma.inventory.update({
       where: { id },
-      data: { isDeleted: true, status: 'inactive' },
+      data: { isDeleted: true, status: 'INACTIVE' },
     });
   },
 

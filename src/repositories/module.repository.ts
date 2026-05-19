@@ -77,7 +77,12 @@ export const ModuleRepository = {
 
   update(
     id: string,
-    data: { name?: any; code?: string; status?: string; searchText?: string },
+    data: {
+      name?: any;
+      code?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchText?: string;
+    },
   ) {
     return prisma.module.update({ where: { id }, data });
   },

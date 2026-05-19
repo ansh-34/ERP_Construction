@@ -32,7 +32,7 @@ export const updateProductBodySchema = z.object({
     .optional(),
   code: z.string().min(1).optional(),
   productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']).optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export const listProductsQuerySchema = paginationQuerySchema

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   idParamSchema,
   paginationQuerySchema,
+  statusFilterSchema,
 } from '../../common/common.validator.js';
 
 export const createLanguageBodySchema = z.object({
@@ -17,7 +18,7 @@ export const updateLanguageBodySchema = z.object({
     .string()
     .regex(/^[a-z]{2}$/, 'Invalid language code')
     .optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
   dir: z.enum(['ltr', 'rtl']).optional(),
   flag: z.string().optional(),
 });
@@ -25,7 +26,7 @@ export const updateLanguageBodySchema = z.object({
 export const listLanguagesQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
   code: z.string().optional(),
   dir: z.enum(['ltr', 'rtl']).optional(),
 });

@@ -22,7 +22,7 @@ export const uomRepository = {
     domainId: string,
     limit: number,
     offset: number,
-    filter?: { status?: string; searchKey?: string },
+    filter?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string },
   ) {
     const searchKey = filter?.searchKey?.trim() || '';
     const where: Prisma.UomWhereInput = {

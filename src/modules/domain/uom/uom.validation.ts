@@ -28,7 +28,7 @@ export const updateUomBodySchema = z.object({
   code: z.string().min(1).optional(),
   baseUomId: z.string().uuid().optional(),
   conversionRate: z.number().min(0).optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 // Query schemas

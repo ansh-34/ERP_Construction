@@ -1,4 +1,7 @@
-import { idParamSchema } from '@/modules/common/common.validator';
+import {
+  idParamSchema,
+  statusFilterSchema,
+} from '@/modules/common/common.validator';
 import { z } from 'zod';
 
 export const createAdminSchema = z.object({
@@ -13,7 +16,7 @@ export const listAdminsQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional(),
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export const adminIdSchema = idParamSchema;
@@ -24,7 +27,7 @@ export const updateAdminSchema = z.object({
   phone: z.string().optional(),
   phoneCode: z.string().optional(),
   mediaId: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
   offeredLanguages: z.array(z.string()).optional(),
   offeredCurrencies: z.array(z.string()).optional(),
 });
