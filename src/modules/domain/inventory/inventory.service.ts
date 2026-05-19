@@ -23,8 +23,8 @@ export const InventoryService = {
       aggregation,
     ] = await prisma.$transaction([
       prisma.inventory.count({ where }),
-      prisma.inventory.count({ where: { ...where, status: 'active' } }),
-      prisma.inventory.count({ where: { ...where, status: 'inactive' } }),
+      prisma.inventory.count({ where: { ...where, status: 'ACTIVE' } }),
+      prisma.inventory.count({ where: { ...where, status: 'INACTIVE' } }),
       prisma.inventory.count({ where: { ...where, quantity: 0 } }),
       prisma.inventory.aggregate({
         where,
@@ -55,7 +55,7 @@ export const InventoryService = {
   // ─── List ───────────────────────────────────────────────
   async listInventory(
     domainId: string,
-    query: PaginationQuery & { status?: string },
+    query: PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
   ) {
     const { offset, limit } = normalizePagination(query);
 

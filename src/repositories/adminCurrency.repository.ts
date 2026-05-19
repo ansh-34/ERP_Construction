@@ -105,6 +105,8 @@ export const AdminCurrencyRepository = {
               id: true,
               name: true,
               code: true,
+              symbol: true,
+              flag: true,
             },
           },
           isDefault: true,

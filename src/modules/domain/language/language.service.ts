@@ -25,6 +25,7 @@ export const LanguageService = {
       searchKey?: string;
       isDefault?: boolean;
     },
+    adminId: string,
   ) {
     const { offset, limit } = normalizePagination({
       limit: query.limit,
@@ -37,11 +38,12 @@ export const LanguageService = {
       {
         filters: {
           searchKey: query.searchKey || '',
-          status: 'active',
+          status: 'ACTIVE',
           isEnabled: true,
           ...(Object.prototype.hasOwnProperty.call(query, 'isDefault') && {
             isDefault: query.isDefault,
           }),
+          adminId,
         },
       },
     );

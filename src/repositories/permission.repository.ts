@@ -72,7 +72,10 @@ export const PermissionRepository = {
     ]);
   },
 
-  update(id: string, data: { name?: any; code?: string; status?: string }) {
+  update(
+    id: string,
+    data: { name?: any; code?: string; status?: 'ACTIVE' | 'INACTIVE' },
+  ) {
     return prisma.permission.update({ where: { id }, data });
   },
 

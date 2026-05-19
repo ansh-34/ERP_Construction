@@ -7,7 +7,6 @@ import {
 export const listLanguagesQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
 });
 
 export const languageIdParamsSchema = idParamSchema;

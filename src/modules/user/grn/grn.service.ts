@@ -69,7 +69,7 @@ export const GrnService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       approvalStatus?: string;
       projectId?: string;

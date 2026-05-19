@@ -7,6 +7,7 @@ export const listCurrencies = async (req: Request, res: Response) => {
   try {
     const { currencies, pagination } = await CurrencyService.listLanguages(
       req.query,
+      req.user!.adminId!,
     );
 
     return res.status(HttpStatus.OK).json({

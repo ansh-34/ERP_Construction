@@ -34,7 +34,7 @@ export const UserCurrencyService = {
   async listCurrencies(
     query: PaginationQuery & {
       searchKey?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       code?: string;
     },
     langCode: string,

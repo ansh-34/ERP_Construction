@@ -52,7 +52,7 @@ export const ProjectUserRoleRepository = {
       projectId?: string;
       userId?: string;
       roleId?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
   ) {
     const where: any = { domainId, isDeleted: false };

@@ -17,7 +17,7 @@ export const UomService = {
       displayName: Record<string, string>;
       baseUomId?: string;
       conversionRate: number;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
     langCode: string = 'en',
   ) {
@@ -53,7 +53,7 @@ export const UomService = {
     query: {
       page?: string;
       limit?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       [key: string]: any;
     },
@@ -111,7 +111,7 @@ export const UomService = {
       code?: string;
       baseUomId?: string;
       conversionRate?: number;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
     langCode: string = 'en',
   ) {

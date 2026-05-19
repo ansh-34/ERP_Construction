@@ -25,7 +25,7 @@ export const updateRoleBodySchema = z.object({
   name: localizedName.optional(),
   code: z.string().min(1).optional(),
   level: z.number().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export const assignPermissionsParamsSchema = roleIdParamSchema;

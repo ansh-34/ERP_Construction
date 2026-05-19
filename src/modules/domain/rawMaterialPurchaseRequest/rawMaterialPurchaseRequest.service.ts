@@ -127,7 +127,7 @@ export const RawMaterialPurchaseRequestService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       type?: string;
       approvalStatus?: string;
@@ -290,7 +290,7 @@ export const RawMaterialPurchaseRequestService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       orderStatus?: string;
       projectId?: string;
       domainId?: string;

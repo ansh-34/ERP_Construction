@@ -11,7 +11,7 @@ export const ProductUomService = {
   async create(
     domainId: string,
     productId: string,
-    dto: { uomId: string; status?: string; [key: string]: any },
+    dto: { uomId: string; status?: 'ACTIVE' | 'INACTIVE'; [key: string]: any },
   ) {
     return prisma.$transaction(async (tx: any) => {
       const product = await tx.product.findFirst({
@@ -76,7 +76,7 @@ export const ProductUomService = {
     query: {
       page?: string;
       limit?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,

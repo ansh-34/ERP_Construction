@@ -18,7 +18,7 @@ export const ProductService = {
     data: {
       displayName: Record<string, string>;
       productType: ProductTypeEnum;
-      status: string;
+      status: 'ACTIVE' | 'INACTIVE';
     },
   ) {
     const incomingLanguageCodes: string[] = Object.keys(data.displayName || {});
@@ -50,7 +50,7 @@ export const ProductService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       [key: string]: any;
     },

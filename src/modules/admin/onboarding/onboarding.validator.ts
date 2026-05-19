@@ -1,4 +1,7 @@
-import { paginationQuerySchema } from '@/modules/common/common.validator';
+import {
+  paginationQuerySchema,
+  statusFilterSchema,
+} from '@/modules/common/common.validator';
 import { z } from 'zod';
 
 export const onboardingParamsSchema = z.object({
@@ -18,11 +21,11 @@ export const onboardingBodySchema = z.object({
 export const onboardingLanguageSelectionQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 export const onboardingCurrencySelectionQuerySchema = z.object({
   ...paginationQuerySchema.shape,
   searchKey: z.string().optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });

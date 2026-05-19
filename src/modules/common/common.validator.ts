@@ -24,5 +24,5 @@ export const pageBasedPaginationQuerySchema = z.object({
 });
 
 export const statusFilterSchema = z.object({
-  status: z.enum(['active', 'inactive']).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });

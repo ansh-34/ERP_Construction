@@ -38,7 +38,7 @@ export const RefreshTokenRepository = {
       where: {
         token,
         isDeleted: false,
-        status: 'active',
+        status: 'ACTIVE',
       },
     });
   },

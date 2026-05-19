@@ -43,7 +43,7 @@ export const UserProjectService = {
       budget: number;
       spent?: number;
       locationId: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
   ) {
     const incomingLanguageCodes: string[] = Object.keys(data.name || {});
@@ -111,7 +111,7 @@ export const UserProjectService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,
@@ -171,7 +171,7 @@ export const UserProjectService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,
