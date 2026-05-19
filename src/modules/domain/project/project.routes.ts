@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { projectController } from './project.controller';
-import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import {
   createProjectBody,
@@ -11,7 +10,6 @@ import {
 
 const projectRouter = Router();
 
-projectRouter.use(authMiddleware);
 
 projectRouter.post(
   '/',

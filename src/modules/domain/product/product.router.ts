@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
 // import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
@@ -20,7 +19,6 @@ import { productUomRouter } from '../productUom/productUom.router.js';
 
 const router = Router();
 
-router.use(authMiddleware);
 
 router.post(
   '/',

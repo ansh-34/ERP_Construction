@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createGrn,
@@ -26,7 +25,7 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
+
 
 router.post('/', validate(createGrnBodySchema, 'body'), createGrn);
 

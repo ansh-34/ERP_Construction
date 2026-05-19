@@ -206,6 +206,30 @@ export const projectTaskRepository = {
     `);
   },
 
+  findProjectIdsByAssignee: async (
+    domainId: string,
+    userId: string,
+    adminId?: string,
+  ): Promise<string[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`"assignee"->>'userId' = ${userId}`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    const result = await prisma.$queryRaw<{ projectId: string }[]>(Prisma.sql`
+      SELECT DISTINCT "projectId"
+      FROM "ProjectTask"
+      WHERE ${Prisma.join(filters, ' AND ')}
+    `);
+
+    return result.map((row) => row.projectId);
+  },
+
   findById: async (
     id: string,
     domainId: string,

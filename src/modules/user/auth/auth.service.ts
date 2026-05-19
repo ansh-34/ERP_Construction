@@ -554,8 +554,10 @@ export const UserService = {
         domainId,
       );
 
-    const modules = roleModulePermissions.map((rmp) => rmp.module);
-    const permissions = roleModulePermissions.flatMap((rmp) => rmp.permissions);
+    const modules = roleModulePermissions.map((rmp) => ({
+      ...rmp.module,
+      permissions: rmp.permissions,
+    }));
 
     return {
       role: {
@@ -564,7 +566,6 @@ export const UserService = {
         code: (role.code || 'USER').toUpperCase(),
       },
       modules,
-      permissions,
     };
   },
 };

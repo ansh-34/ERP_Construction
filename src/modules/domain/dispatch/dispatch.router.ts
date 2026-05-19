@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
 // import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
@@ -14,7 +13,6 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
 
 // stats
 router.get('/stats', /* authorize('dispatch', 'read'), */ getDispatchStats);

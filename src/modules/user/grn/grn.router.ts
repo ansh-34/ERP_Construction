@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
+import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createGrn,
@@ -19,32 +19,51 @@ import {
   listGrnsQuerySchema,
   grnIdParamsSchema,
   approveRejectGrnBodySchema,
-  // createGrnProductBodySchema,
-  // updateGrnProductBodySchema,
   grnProductIdParamsSchema,
 } from './grn.validator.js';
 
 const router = Router();
 
-router.use(authMiddleware);
 
-router.post('/', validate(createGrnBodySchema, 'body'), createGrn);
+router.post(
+  '/',
+  authorize('INVENTORY', 'CREATE'),
+  validate(createGrnBodySchema, 'body'),
+  createGrn,
+);
 
-router.get('/', validate(listGrnsQuerySchema, 'query'), listGrns);
+router.get(
+  '/',
+  authorize('INVENTORY', 'READ'),
+  validate(listGrnsQuerySchema, 'query'),
+  listGrns,
+);
 
-router.get('/:id', validate(grnIdParamsSchema, 'params'), getGrnById);
+router.get(
+  '/:id',
+  authorize('INVENTORY', 'READ'),
+  validate(grnIdParamsSchema, 'params'),
+  getGrnById,
+);
 
 router.put(
   '/:id',
+  authorize('INVENTORY', 'UPDATE'),
   validate(grnIdParamsSchema, 'params'),
   validate(updateGrnBodySchema, 'body'),
   updateGrn,
 );
 
-router.delete('/:id', validate(grnIdParamsSchema, 'params'), deleteGrn);
+router.delete(
+  '/:id',
+  authorize('INVENTORY', 'DELETE'),
+  validate(grnIdParamsSchema, 'params'),
+  deleteGrn,
+);
 
 router.put(
   '/:id/approval',
+  authorize('INVENTORY', 'APPROVE'),    //need to chech oermission later
   validate(grnIdParamsSchema, 'params'),
   validate(approveRejectGrnBodySchema, 'body'),
   approveOrRejectGrn,
@@ -54,6 +73,7 @@ router.put(
 
 // router.post(
 //   '/:id/products',
+//   authorize('INVENTORY', 'CREATE'),
 //   validate(grnIdParamsSchema, 'params'),
 //   validate(createGrnProductBodySchema, 'body'),
 //   createGrnProduct,
@@ -61,12 +81,14 @@ router.put(
 
 router.get(
   '/:id/products',
+  authorize('INVENTORY', 'READ'),
   validate(grnIdParamsSchema, 'params'),
   listGrnProducts,
 );
 
 // router.put(
 //   '/:id/products/:productId',
+//   authorize('INVENTORY', 'UPDATE'),
 //   validate(grnProductIdParamsSchema, 'params'),
 //   validate(updateGrnProductBodySchema, 'body'),
 //   updateGrnProduct,
@@ -74,6 +96,7 @@ router.get(
 
 // router.delete(
 //   '/:id/products/:productId',
+//   authorize('INVENTORY', 'DELETE'),
 //   validate(grnProductIdParamsSchema, 'params'),
 //   deleteGrnProduct,
 // );

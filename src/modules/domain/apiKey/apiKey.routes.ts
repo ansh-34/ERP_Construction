@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { apiKeyController } from './apiKey.controller';
-import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import {
   createApiKeyBody,
@@ -11,7 +10,6 @@ import {
 
 const apiKeyRouter = Router();
 
-apiKeyRouter.use(authMiddleware);
 
 apiKeyRouter.post(
   '/',

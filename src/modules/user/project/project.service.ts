@@ -3,6 +3,7 @@ import {
   projectRepository,
   ProjectUserRoleRepository,
   DomainRepository,
+  projectTaskRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -122,14 +123,11 @@ export const UserProjectService = {
       adminId,
     );
 
-    const [, assignments] = await ProjectUserRoleRepository.listByDomain(
+    const projectIds = await projectTaskRepository.findProjectIdsByAssignee(
       domainId,
-      1000,
-      0,
-      { userId, status: 'ACTIVE' },
+      userId,
+      resolvedAdminId,
     );
-
-    const projectIds = assignments.map((a) => a.projectId);
 
     if (projectIds.length === 0) {
       return {

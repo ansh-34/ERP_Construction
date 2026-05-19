@@ -24,8 +24,17 @@ import currencyRouter from './currency/currency.router.js';
 import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
 import projectUserRoleRouter from './projectUserRole/projectUserRole.router.js';
 import grnRouter from './grn/grn.router.js';
+import authMiddleware from '../../middlewares/auth.js';
+import isDomain from '../../middlewares/isDomain.js';
 
 const domainRouter = Router();
+
+// Routes that don't need domain auth globally
+domainRouter.use('/auth', authRouter);
+
+// isDomain routes
+domainRouter.use(authMiddleware);
+domainRouter.use(isDomain);
 
 domainRouter.use('/api-keys', apiKeyRouter);
 domainRouter.use('/media', mediaRouter);
@@ -36,7 +45,6 @@ domainRouter.use('/projects', projectRouter);
 domainRouter.use('/project-stages', projectStageRouter);
 domainRouter.use('/project-tasks', projectTaskRouter);
 domainRouter.use('/project-task-delays', projectTaskDelayRouter);
-domainRouter.use('/auth', authRouter);
 domainRouter.use('/profile', profileRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);

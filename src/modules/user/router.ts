@@ -9,10 +9,13 @@ import projectStageRouter from './projectStage/projectStage.routes.js';
 import projectTaskRouter from './projectTask/projectTask.routes.js';
 import projectTaskDelayRouter from './projectTaskDelay/projectTaskDelay.routes.js';
 import grnRouter from './grn/grn.router.js';
+import authMiddleware from '../../middlewares/auth.js';
 
 const userRouter = Router();
 
 userRouter.use('/auth', authRouter);
+
+userRouter.use(authMiddleware);
 userRouter.use('/language', languageRouter);
 userRouter.use('/currency', currencyRouter);
 userRouter.use('/profile', profileRouter);

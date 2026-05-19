@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import { machineReadingController } from './machineReading.controller';
 import {
@@ -12,7 +11,6 @@ import {
 
 const machineReadingRouter = Router();
 
-machineReadingRouter.use(authMiddleware);
 
 machineReadingRouter.post(
   '/',

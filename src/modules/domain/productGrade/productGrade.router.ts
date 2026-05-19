@@ -22,14 +22,12 @@ export const productGradeRouter = (): Router => {
 
   router.post(
     '/',
-    // authorize('product', 'create'),
     validate(productGradeProductIdParamSchema, 'params'),
     validate(createProductGradeBodySchema, 'body'),
     createProductGrade,
   );
   router.get(
     '/',
-    // authorize('product', 'read'),
     validate(productGradeProductIdParamSchema, 'params'),
     validate(listProductGradeQuerySchema, 'query'),
     listProductGrades,
