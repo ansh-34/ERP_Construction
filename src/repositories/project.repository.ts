@@ -42,6 +42,7 @@ export interface UpdateProjectInput {
   searchText?: string;
   budget?: number;
   spent?: number;
+  locationId?: string;
   status?: StatusEnum;
 }
 
@@ -233,6 +234,10 @@ export const projectRepository = {
 
     if (data.spent !== undefined) {
       assignments.unshift(Prisma.sql`"spent" = ${data.spent}`);
+    }
+
+    if (data.locationId !== undefined) {
+      assignments.unshift(Prisma.sql`"locationId" = ${data.locationId}`);
     }
 
     if (data.status !== undefined) {

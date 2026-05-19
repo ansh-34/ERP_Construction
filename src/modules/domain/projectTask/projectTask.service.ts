@@ -8,6 +8,7 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
@@ -56,6 +57,15 @@ type LocalizedProjectTaskRecord = Omit<
 > & {
   name: string;
   assignee: string | null;
+};
+
+type PaginatedProjectTasks = {
+  projectTasks: LocalizedProjectTaskRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
 };
 
 type ProjectTaskApprovalState = 'APPROVED' | 'REJECTED';
@@ -365,8 +375,9 @@ export const projectTaskService = {
     projectId?: string,
     stageId?: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedProjectTaskRecord[]> => {
+  ): Promise<PaginatedProjectTasks> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -380,6 +391,7 @@ export const projectTaskService = {
     }
 
     try {
+      const { offset, limit } = normalizePagination(paginationQuery);
       const tasks = await projectTaskRepository.findMany(
         domainId,
         adminId,
@@ -387,7 +399,18 @@ export const projectTaskService = {
         stageId,
         searchKey,
       );
-      return tasks.map((task) => normalizeProjectTask(task, language));
+      const paginatedTasks = tasks.slice(offset, offset + limit);
+
+      return {
+        projectTasks: paginatedTasks.map((task) =>
+          normalizeProjectTask(task, language),
+        ),
+        pagination: {
+          totalCount: tasks.length,
+          offset,
+          limit,
+        },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -499,6 +522,10 @@ export const projectTaskService = {
 
         if (task.taskStatus === 'APPROVED' || task.taskStatus === 'REJECTED') {
           throw new Error('request already actioned');
+        }
+
+        if (task.taskStatus !== 'COMPLETED') {
+          throw new Error('task not completed');
         }
 
         existingTasks.push(task);

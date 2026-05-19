@@ -5,6 +5,7 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
@@ -34,6 +35,15 @@ type LocalizedProjectStageRecord = Omit<
 > & {
   name: string;
   description: string | null;
+};
+
+type PaginatedProjectStages = {
+  projectStages: LocalizedProjectStageRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
 };
 
 function buildProjectStageCode(name: Record<string, unknown>): string {
@@ -219,20 +229,33 @@ export const projectStageService = {
     adminId: string,
     projectId: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedProjectStageRecord[]> => {
+  ): Promise<PaginatedProjectStages> => {
     if (!isNonEmptyString(domainId) || !isNonEmptyString(projectId)) {
       throw new Error('invalid ids');
     }
 
     try {
+      const { offset, limit } = normalizePagination(paginationQuery);
       const stages = await projectStageRepository.findMany(
         domainId,
         projectId,
         adminId,
         searchKey,
       );
-      return stages.map((stage) => normalizeProjectStage(stage, language));
+      const paginatedStages = stages.slice(offset, offset + limit);
+
+      return {
+        projectStages: paginatedStages.map((stage) =>
+          normalizeProjectStage(stage, language),
+        ),
+        pagination: {
+          totalCount: stages.length,
+          offset,
+          limit,
+        },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

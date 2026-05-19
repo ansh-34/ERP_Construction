@@ -90,24 +90,32 @@ export const projectTaskController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, projectId, stageId, searchKey } = req.query as {
+      const { domainId, projectId, stageId, searchKey, offset, limit } =
+        req.query as {
         domainId?: string;
         projectId?: string;
         stageId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
 
-      const projectTasks = await projectTaskService.getAll(
+      const { projectTasks, pagination } = await projectTaskService.getAll(
         domainId ?? '',
         req.user!.adminId,
         projectId,
         stageId,
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Project tasks fetched successfully',
+        pagination: {
+          currentCount: projectTasks.length,
+          ...pagination,
+        },
         data: projectTasks,
       });
     } catch (error: unknown) {

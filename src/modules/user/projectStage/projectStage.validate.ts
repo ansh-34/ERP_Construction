@@ -34,6 +34,8 @@ export const updateProjectStageBody = z
 export const listProjectStageQuery = z.object({
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

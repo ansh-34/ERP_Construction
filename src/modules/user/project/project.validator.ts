@@ -41,6 +41,7 @@ export const updateProjectBodySchema = z.object({
   description: optionalLocalizedStringSchema,
   budget: nonNegativeNumber.optional(),
   spent: nonNegativeNumber.optional(),
+  locationId: z.string().trim().min(1).optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 

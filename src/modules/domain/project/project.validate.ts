@@ -23,6 +23,7 @@ export const updateProjectBody = z
     description: jsonObject.nullable().optional(),
     budget: nonNegativeNumber.optional(),
     spent: nonNegativeNumber.optional(),
+    locationId: z.string().trim().min(1).optional(),
     status: z.nativeEnum(StatusEnum).optional(),
   })
   .refine(
@@ -31,6 +32,7 @@ export const updateProjectBody = z
       data.description !== undefined ||
       data.budget !== undefined ||
       data.spent !== undefined ||
+      data.locationId !== undefined ||
       data.status !== undefined,
     { message: 'At least one field is required' },
   );
@@ -38,6 +40,8 @@ export const updateProjectBody = z
 export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

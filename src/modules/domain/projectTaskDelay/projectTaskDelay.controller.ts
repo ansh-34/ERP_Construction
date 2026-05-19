@@ -69,26 +69,42 @@ export const projectTaskDelayController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, projectId, stageId, taskId, searchKey } = req.query as {
+      const {
+        domainId,
+        projectId,
+        stageId,
+        taskId,
+        searchKey,
+        offset,
+        limit,
+      } = req.query as {
         domainId?: string;
         projectId?: string;
         stageId?: string;
         taskId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
 
-      const projectTaskDelays = await projectTaskDelayService.getAll(
+      const { projectTaskDelays, pagination } =
+        await projectTaskDelayService.getAll(
         domainId ?? '',
         req.user!.adminId,
         projectId,
         stageId,
         taskId,
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Project task delays fetched successfully',
+        pagination: {
+          currentCount: projectTaskDelays.length,
+          ...pagination,
+        },
         data: projectTaskDelays,
       });
     } catch (error: unknown) {

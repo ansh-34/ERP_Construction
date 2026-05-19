@@ -26,6 +26,7 @@ export * from './project.repository.js';
 export * from './projectCategory.repository.js';
 export * from './projectStage.repository.js';
 export * from './projectTask.repository.js';
+export * from './projectTaskImage.repository.js';
 export * from './projectTaskDelay.repository.js';
 export * from './moduleDependencyPermission.repository.js';
 export * from './rawMaterialPurchaseRequest.repository.js';

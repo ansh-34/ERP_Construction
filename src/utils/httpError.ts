@@ -14,6 +14,10 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return HttpStatus.FORBIDDEN;
   }
 
+  if (message === 'unauthorized') {
+    return HttpStatus.FORBIDDEN;
+  }
+
   if (message.includes('Too many failed attempts')) {
     return HttpStatus.TOO_MANY_REQUESTS;
   }
@@ -49,6 +53,7 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('is required') ||
     message.includes('already exists') ||
     message.includes('not generated yet') ||
+    message === 'task not completed' ||
     message === 'request already actioned'
   ) {
     return HttpStatus.BAD_REQUEST;

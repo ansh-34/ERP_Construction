@@ -55,19 +55,26 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, searchKey } = req.query as {
+      const { domainId, searchKey, offset, limit } = req.query as {
         domainId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
-      const projects = await projectService.getAll(
+      const { projects, pagination } = await projectService.getAll(
         domainId ?? '',
         req.user!.adminId,
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Projects fetched successfully',
+        pagination: {
+          currentCount: projects.length,
+          ...pagination,
+        },
         data: projects,
       });
     } catch (error: unknown) {
@@ -115,11 +122,13 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, budget, spent, status } = req.body as {
+      const { name, description, budget, spent, locationId, status } =
+        req.body as {
         name?: Record<string, unknown>;
         description?: Record<string, unknown> | null;
         budget?: number;
         spent?: number;
+        locationId?: string;
         status?: StatusEnum;
       };
 
@@ -132,6 +141,7 @@ export const projectController = {
           ...(description !== undefined && { description }),
           ...(budget !== undefined && { budget }),
           ...(spent !== undefined && { spent }),
+          ...(locationId !== undefined && { locationId }),
           ...(status !== undefined && { status }),
         },
         language,

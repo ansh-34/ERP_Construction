@@ -73,6 +73,7 @@ model Admin {
   projects        Project[]
   projectStages   ProjectStage[]
   projectTasks    ProjectTask[]
+  projectTaskImages ProjectTaskImage[]
   projectTaskDelays ProjectTaskDelay[]
   apiKeys         ApiKey[]
   locations       Location[]
@@ -158,6 +159,7 @@ model Domain {
   projectCategories           ProjectCategory[]
   projectStages               ProjectStage[]
   projectTasks                ProjectTask[]
+  projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
   machineReadings         MachineReading[]
@@ -918,6 +920,7 @@ model Project {
 
   projectStages               ProjectStage[]
   projectTasks                ProjectTask[]
+  projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
   machineReadings MachineReading[]
@@ -969,6 +972,7 @@ model ProjectStage {
   updatedAt   DateTime   @updatedAt
 
   projectTasks      ProjectTask[]
+  projectTaskImages ProjectTaskImage[]
   projectTaskDelays ProjectTaskDelay[]
 
   @@unique([code, isDeleted, domainId, projectId])
@@ -1006,11 +1010,41 @@ model ProjectTask {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
+  projectTaskImages ProjectTaskImage[]
   projectTaskDelays ProjectTaskDelay[]
 
   @@unique([code, isDeleted, domainId, projectId, stageId])
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([createdAt, isDeleted, domainId, projectId, stageId])
+  @@index([adminId])
+}
+
+model ProjectTaskImage {
+  id          String      @id @default(uuid()) @db.Uuid
+  imageUrl    String
+  imageName   Json?       @db.JsonB
+  imageType   String?
+  description Json?       @db.JsonB
+  taskId      String      @db.Uuid
+  task        ProjectTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  stageId     String       @db.Uuid
+  stage       ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  projectId   String      @db.Uuid
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId    String      @db.Uuid
+  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String      @db.Uuid
+  admin       Admin       @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status      StatusEnum  @default(ACTIVE)
+  isDeleted   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([createdAt, isDeleted, domainId, taskId])
   @@index([createdAt, isDeleted, domainId, projectId])
   @@index([createdAt, isDeleted, domainId, projectId, stageId])
   @@index([adminId])

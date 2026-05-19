@@ -38,6 +38,8 @@ export const listProjectTaskDelayQuery = z.object({
   stageId: z.string().trim().min(1).optional(),
   taskId: z.string().trim().min(1).optional(),
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

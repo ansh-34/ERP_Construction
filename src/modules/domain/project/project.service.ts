@@ -6,6 +6,7 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
   isNonEmptyString,
   isPlainObject,
@@ -26,6 +27,15 @@ export interface CreateProjectInput {
 type LocalizedProjectRecord = Omit<ProjectRecord, 'name' | 'description'> & {
   name: string;
   description: string | null;
+};
+
+type PaginatedProjects = {
+  projects: LocalizedProjectRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
 };
 
 function buildProjectCode(name: Record<string, unknown>): string {
@@ -106,9 +116,17 @@ function assertUpdateInput(data: UpdateProjectInput): void {
   const hasDescription = data.description !== undefined;
   const hasBudget = data.budget !== undefined;
   const hasSpent = data.spent !== undefined;
+  const hasLocationId = data.locationId !== undefined;
   const hasStatus = data.status !== undefined;
 
-  if (!hasName && !hasDescription && !hasBudget && !hasSpent && !hasStatus) {
+  if (
+    !hasName &&
+    !hasDescription &&
+    !hasBudget &&
+    !hasSpent &&
+    !hasLocationId &&
+    !hasStatus
+  ) {
     throw new Error('empty update payload');
   }
 
@@ -142,6 +160,10 @@ function assertUpdateInput(data: UpdateProjectInput): void {
 
   if (hasSpent && !isNonNegativeFiniteNumber(data.spent as number)) {
     throw new Error('invalid spent');
+  }
+
+  if (hasLocationId && !isNonEmptyString(data.locationId)) {
+    throw new Error('invalid locationId');
   }
 }
 
@@ -188,20 +210,33 @@ export const projectService = {
     domainId: string,
     adminId: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedProjectRecord[]> => {
+  ): Promise<PaginatedProjects> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
 
     try {
+      const { offset, limit } = normalizePagination(paginationQuery);
       const resolvedAdminId = await resolveAdminId(domainId, adminId);
       const projects = await projectRepository.findMany(
         domainId,
         searchKey,
         resolvedAdminId,
       );
-      return projects.map((project) => normalizeProject(project, language));
+      const paginatedProjects = projects.slice(offset, offset + limit);
+
+      return {
+        projects: paginatedProjects.map((project) =>
+          normalizeProject(project, language),
+        ),
+        pagination: {
+          totalCount: projects.length,
+          offset,
+          limit,
+        },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

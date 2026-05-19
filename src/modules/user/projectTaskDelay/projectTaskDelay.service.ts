@@ -6,6 +6,7 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
@@ -38,6 +39,15 @@ type LocalizedProjectTaskDelayRecord = Omit<
 > & {
   delayReason: string;
   approvalState: 'PENDING' | 'APPROVED';
+};
+
+type PaginatedProjectTaskDelays = {
+  projectTaskDelays: LocalizedProjectTaskDelayRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
 };
 
 function buildProjectTaskDelaySearchText(delayReason: string): string {
@@ -204,8 +214,9 @@ export const projectTaskDelayService = {
     stageId?: string,
     taskId?: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedProjectTaskDelayRecord[]> => {
+  ): Promise<PaginatedProjectTaskDelays> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -223,6 +234,7 @@ export const projectTaskDelayService = {
     }
 
     try {
+      const { offset, limit } = normalizePagination(paginationQuery);
       const delays = await projectTaskDelayRepository.findMany(
         domainId,
         adminId,
@@ -231,7 +243,18 @@ export const projectTaskDelayService = {
         taskId,
         searchKey,
       );
-      return delays.map((delay) => normalizeProjectTaskDelay(delay, language));
+      const paginatedDelays = delays.slice(offset, offset + limit);
+
+      return {
+        projectTaskDelays: paginatedDelays.map((delay) =>
+          normalizeProjectTaskDelay(delay, language),
+        ),
+        pagination: {
+          totalCount: delays.length,
+          offset,
+          limit,
+        },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

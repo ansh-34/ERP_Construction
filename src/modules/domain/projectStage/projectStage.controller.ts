@@ -53,21 +53,28 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, projectId, searchKey } = req.query as {
+      const { domainId, projectId, searchKey, offset, limit } = req.query as {
         domainId?: string;
         projectId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
-      const projectStages = await projectStageService.getAll(
+      const { projectStages, pagination } = await projectStageService.getAll(
         domainId ?? '',
         req.user!.adminId,
         projectId ?? '',
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Project stages fetched successfully',
+        pagination: {
+          currentCount: projectStages.length,
+          ...pagination,
+        },
         data: projectStages,
       });
     } catch (error: unknown) {
