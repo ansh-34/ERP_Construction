@@ -1,5 +1,6 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
 import type { IndustryEnum } from '../infra/database/prisma/generated/prisma/client/enums.js';
+import { StatusEnum } from '@constants/index';
 
 export const UserRepository = {
   findActiveByEmailAndDomain(email: string, domainId: string) {
@@ -56,7 +57,12 @@ export const UserRepository = {
     adminId?: string | null;
     isEmailVerified?: boolean;
   }) {
-    return prisma.user.create({ data });
+    return prisma.user.create({
+      data: {
+        ...data,
+        status: StatusEnum.ACTIVE,
+      },
+    });
   },
 
   activateAndDeleteToken(userId: string, password: string, tokenId: string) {

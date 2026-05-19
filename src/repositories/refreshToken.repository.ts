@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { StatusEnum } from '@constants/index';
 import prisma from '../infra/database/prisma/prisma.client.js';
 import type { UserTypeEnum } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
@@ -27,6 +28,7 @@ export const RefreshTokenRepository = {
         expiry,
         userType,
         userId,
+        status: StatusEnum.ACTIVE,
       },
     });
 
@@ -38,7 +40,7 @@ export const RefreshTokenRepository = {
       where: {
         token,
         isDeleted: false,
-        status: 'active',
+        status: StatusEnum.ACTIVE,
       },
     });
   },
@@ -46,7 +48,7 @@ export const RefreshTokenRepository = {
   revoke(id: string) {
     return prisma.refreshToken.update({
       where: { id },
-      data: { isDeleted: true },
+      data: { isDeleted: true, status: StatusEnum.INACTIVE },
     });
   },
 
@@ -57,7 +59,7 @@ export const RefreshTokenRepository = {
         userType,
         isDeleted: false,
       },
-      data: { isDeleted: true },
+      data: { isDeleted: true, status: StatusEnum.INACTIVE },
     });
   },
 };

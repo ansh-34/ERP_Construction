@@ -143,7 +143,7 @@ export const locationService = {
     assertCreateInput(data);
 
     try {
-      const code = data.code || buildLocationCode(data.name);
+      const code = buildLocationCode(data.name);
 
       if (
         await locationRepository.findByCode(code, data.domainId, data.adminId)
@@ -265,10 +265,10 @@ export const locationService = {
 
       const updateData = {
         ...data,
-        ...(data.code !== undefined ? { code: data.code } : {}),
+        ...(data.code !== undefined ? { code: data.code.toUpperCase() } : {}),
         ...(data.name !== undefined
           ? {
-              code: data.code || buildLocationCode(data.name),
+              code: data.code?.toUpperCase() || buildLocationCode(data.name),
               searchText: buildLocationSearchText(data.name),
             }
           : {}),
