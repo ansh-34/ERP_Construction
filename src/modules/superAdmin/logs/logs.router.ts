@@ -4,6 +4,6 @@ import validateSuperAdmin from '../../../middlewares/validateSuperAdmin.js';
 
 const router = Router();
 
-router.get('/', validateSuperAdmin, listLogs); //list api
+router.get('/', validateSuperAdmin, listLogs); // list api
 
 export default router;
