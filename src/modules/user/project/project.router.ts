@@ -20,36 +20,20 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.post(
-  '/',
-  validate(createProjectBodySchema, 'body'),
-  createProject,
-);
-router.get(
-  '/',
-  validate(listProjectsQuerySchema, 'query'),
-  listDomainProjects,
-);
+router.post('/', validate(createProjectBodySchema, 'body'), createProject);
+router.get('/', validate(listProjectsQuerySchema, 'query'), listDomainProjects);
 router.get(
   '/my-projects',
   validate(listProjectsQuerySchema, 'query'),
   getMyProjects,
 );
-router.get(
-  '/:id',
-  validate(projectIdParamsSchema, 'params'),
-  getProjectById,
-);
+router.get('/:id', validate(projectIdParamsSchema, 'params'), getProjectById);
 router.put(
   '/:id',
   validate(projectIdParamsSchema, 'params'),
   validate(updateProjectBodySchema, 'body'),
   updateProject,
 );
-router.delete(
-  '/:id',
-  validate(projectIdParamsSchema, 'params'),
-  deleteProject,
-);
+router.delete('/:id', validate(projectIdParamsSchema, 'params'), deleteProject);
 
 export default router;
