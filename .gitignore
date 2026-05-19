@@ -9,5 +9,5 @@ src/generated/
 src/infra/database/prisma/generated/
 postman/
 
-logs/
+logs
 
