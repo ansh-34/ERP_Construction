@@ -34,7 +34,7 @@ async function deleteIfExists(filePath: string): Promise<void> {
     await fs.promises.unlink(filePath);
     console.log(`[LogUploader] Deleted: ${path.basename(filePath)}`);
   } catch (err: any) {
-    if (err.code !== 'ENOENT') throw err; 
+    if (err.code !== 'ENOENT') throw err;
   }
 }
 
@@ -51,11 +51,11 @@ async function gzipFile(source: string, destination: string): Promise<void> {
   await pipeline(
     fs.createReadStream(source),
     zlib.createGzip(),
-    fs.createWriteStream(destination)
+    fs.createWriteStream(destination),
   );
 }
 
-//  Core upload 
+//  Core upload
 
 async function uploadLogFile(date: Date): Promise<void> {
   const fileName = getLogFileName(date);
@@ -84,27 +84,33 @@ async function uploadLogFile(date: Date): Promise<void> {
   // Upload with stream — destroy stream explicitly on failure
   const gzipStream = fs.createReadStream(gzipFilePath);
   try {
-    await s3.send(new PutObjectCommand({
-      Bucket: S3_BUCKET,
-      Key: s3Key,
-      Body: gzipStream,
-      ContentType: 'application/gzip',
-      Metadata: {
-        'original-filename': fileName,
-        'compressed-size-bytes': String(compressedSize),
-        'uploaded-at': new Date().toISOString(),
-      },
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: S3_BUCKET,
+        Key: s3Key,
+        Body: gzipStream,
+        ContentType: 'application/gzip',
+        Metadata: {
+          'original-filename': fileName,
+          'compressed-size-bytes': String(compressedSize),
+          'uploaded-at': new Date().toISOString(),
+        },
+      }),
+    );
   } catch (err) {
     gzipStream.destroy(); // release file handle on failure
     throw err;
   }
 
-  console.log(`[LogUploader] Uploaded: ${gzipFileName} (${compressedSize} bytes)`);
+  console.log(
+    `[LogUploader] Uploaded: ${gzipFileName} (${compressedSize} bytes)`,
+  );
 
-  // Verify upload before deleting source 
+  // Verify upload before deleting source
   if (!(await objectExists(s3Key))) {
-    throw new Error(`[LogUploader] S3 verification failed for ${s3Key} — local files retained`);
+    throw new Error(
+      `[LogUploader] S3 verification failed for ${s3Key} — local files retained`,
+    );
   }
 
   // Safe to delete only after verified
@@ -112,7 +118,7 @@ async function uploadLogFile(date: Date): Promise<void> {
   await deleteIfExists(gzipFilePath);
 }
 
-//  Scheduler 
+//  Scheduler
 
 async function uploadAndDeleteLog(): Promise<void> {
   if (isRunning) {
@@ -145,5 +151,7 @@ export const startLogUploader = () => {
     timezone: 'Asia/Kolkata',
   });
 
-  console.log('[LogUploader] Scheduler started — uploads daily at midnight IST');
+  console.log(
+    '[LogUploader] Scheduler started — uploads daily at midnight IST',
+  );
 };

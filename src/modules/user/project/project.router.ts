@@ -18,7 +18,6 @@ import {
 
 const router = Router();
 
-
 router.post(
   '/',
   authorize('PROJECT', 'CREATE'),

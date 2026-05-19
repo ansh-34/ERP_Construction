@@ -13,7 +13,6 @@ import {
 
 const router = Router();
 
-
 // stats
 router.get(
   '/stats',

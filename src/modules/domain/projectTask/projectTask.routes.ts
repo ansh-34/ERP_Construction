@@ -12,7 +12,6 @@ import {
 
 const projectTaskRouter = Router();
 
-
 projectTaskRouter.post(
   '/',
   validate(createProjectTaskBody, 'body'),

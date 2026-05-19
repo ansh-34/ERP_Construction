@@ -11,7 +11,6 @@ import {
 
 const projectTaskRouter = Router();
 
-
 projectTaskRouter.post(
   '/',
   authorize('PROJECT_TASK', 'CREATE'),

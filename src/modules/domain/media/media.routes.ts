@@ -11,7 +11,6 @@ import {
 
 const mediaRouter = Router();
 
-
 mediaRouter.post(
   '/',
   upload.single('file'),

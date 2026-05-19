@@ -10,7 +10,6 @@ import {
 
 const apiKeyRouter = Router();
 
-
 apiKeyRouter.post(
   '/',
   validate(createApiKeyBody, 'body'),

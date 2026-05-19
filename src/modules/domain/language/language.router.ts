@@ -8,7 +8,6 @@ import {
 
 const router = Router();
 
-
 router.get('/', validate(listLanguagesQuerySchema, 'query'), listLanguages);
 router.get('/:id', validate(languageIdParamsSchema, 'params'), getLanguage);
 

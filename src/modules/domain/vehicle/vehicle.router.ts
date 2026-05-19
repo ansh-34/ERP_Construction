@@ -15,7 +15,6 @@ import { idParamSchema } from '../../common/common.validator.js';
 
 const router = Router();
 
-
 // stats
 router.get('/stats', /* authorize('vehicle', 'read'), */ getVehicleStats);
 

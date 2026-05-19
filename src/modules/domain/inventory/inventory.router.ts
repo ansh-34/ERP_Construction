@@ -16,7 +16,6 @@ import {
 
 const router = Router();
 
-
 // aggregate statistics
 router.get('/stats', /* authorize('inventory', 'read'), */ getInventoryStats);
 

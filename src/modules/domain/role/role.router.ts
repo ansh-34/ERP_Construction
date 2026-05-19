@@ -22,25 +22,16 @@ import {
 
 const router = Router();
 
-
 router.post('/', validate(createRoleBodySchema, 'body'), createRole);
 router.get('/', validate(listRolesQuerySchema, 'query'), listRoles);
-router.get(
-  '/:id',
-  validate(roleIdParamsSchema, 'params'),
-  getRoleById,
-);
+router.get('/:id', validate(roleIdParamsSchema, 'params'), getRoleById);
 router.put(
   '/:id',
   validate(roleIdParamsSchema, 'params'),
   validate(updateRoleBodySchema, 'body'),
   updateRole,
 );
-router.delete(
-  '/:id',
-  validate(roleIdParamsSchema, 'params'),
-  deleteRole,
-);
+router.delete('/:id', validate(roleIdParamsSchema, 'params'), deleteRole);
 router.post(
   '/:roleId/permissions',
   validate(assignPermissionsParamsSchema, 'params'),

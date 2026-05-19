@@ -25,8 +25,6 @@ import {
 
 const router = Router();
 
-
-
 router.post('/', validate(createGrnBodySchema, 'body'), createGrn);
 
 router.get('/', validate(listGrnsQuerySchema, 'query'), listGrns);

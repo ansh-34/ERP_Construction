@@ -9,12 +9,17 @@ import {
 
 const router = Router();
 
-
 router.get(
   '/',
-  authorize('CURRENCY', 'READ'), validate(listCurrenciesQuerySchema, 'query'), listCurrencies);
+  authorize('CURRENCY', 'READ'),
+  validate(listCurrenciesQuerySchema, 'query'),
+  listCurrencies,
+);
 router.get(
   '/:id',
-  authorize('CURRENCY', 'READ'), validate(currencyIdParamsSchema, 'params'), getCurrency);
+  authorize('CURRENCY', 'READ'),
+  validate(currencyIdParamsSchema, 'params'),
+  getCurrency,
+);
 
 export default router;

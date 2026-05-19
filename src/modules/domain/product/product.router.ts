@@ -19,7 +19,6 @@ import { productUomRouter } from '../productUom/productUom.router.js';
 
 const router = Router();
 
-
 router.post(
   '/',
   // authorize('product', 'create'),

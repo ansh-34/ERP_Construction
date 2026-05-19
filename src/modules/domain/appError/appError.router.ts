@@ -8,7 +8,6 @@ import {
 
 const router = Router();
 
-
 router.post('/', validate(createAppErrorBodySchema, 'body'), createAppError);
 router.get('/', validate(listAppErrorsQuerySchema, 'query'), listAppErrors);
 

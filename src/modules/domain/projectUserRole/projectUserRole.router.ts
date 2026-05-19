@@ -20,13 +20,8 @@ import {
 
 const router = Router();
 
-
 // Create assignment - write (Domain only)
-router.post(
-  '/',
-  validate(assignProjectUserRoleBodySchema, 'body'),
-  assign,
-);
+router.post('/', validate(assignProjectUserRoleBodySchema, 'body'), assign);
 
 // Read assignments (Any authenticated user)
 router.get('/', validate(listProjectUserRolesQuerySchema, 'query'), list);

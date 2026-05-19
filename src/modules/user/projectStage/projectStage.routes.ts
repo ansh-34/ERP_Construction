@@ -11,7 +11,6 @@ import {
 
 const projectStageRouter = Router();
 
-
 projectStageRouter.post(
   '/',
   authorize('PROJECT_STAGE', 'CREATE'),

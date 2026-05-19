@@ -9,15 +9,7 @@ import {
 const router = Router();
 
 // Protected routes
-router.post(
-  '/invite',
-  validate(inviteUserBodySchema, 'body'),
-  inviteUser,
-);
-router.get(
-  '/',
-  validate(listUsersQuerySchema, 'query'),
-  listUsers,
-);
+router.post('/invite', validate(inviteUserBodySchema, 'body'), inviteUser);
+router.get('/', validate(listUsersQuerySchema, 'query'), listUsers);
 
 export default router;

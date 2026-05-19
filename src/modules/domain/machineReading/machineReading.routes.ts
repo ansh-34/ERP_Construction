@@ -11,7 +11,6 @@ import {
 
 const machineReadingRouter = Router();
 
-
 machineReadingRouter.post(
   '/',
   validate(createMachineReadingBody, 'body'),

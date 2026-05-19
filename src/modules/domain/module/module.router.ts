@@ -8,7 +8,6 @@ import {
 
 const router = Router();
 
-
 router.get('/', validate(listModulesQuerySchema, 'query'), listModules);
 router.get('/:id', validate(moduleIdParamsSchema, 'params'), getModule);
 

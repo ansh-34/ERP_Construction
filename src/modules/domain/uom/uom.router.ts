@@ -18,7 +18,6 @@ import {
 export const uomRouter = (): Router => {
   const router = Router();
 
-  
   router.post(
     '/',
     // authorize('uom', 'create'),

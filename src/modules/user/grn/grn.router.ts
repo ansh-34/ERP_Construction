@@ -24,7 +24,6 @@ import {
 
 const router = Router();
 
-
 router.post(
   '/',
   authorize('INVENTORY', 'CREATE'),
@@ -63,7 +62,7 @@ router.delete(
 
 router.put(
   '/:id/approval',
-  authorize('INVENTORY', 'APPROVE'),    //need to chech oermission later
+  authorize('INVENTORY', 'APPROVE'), //need to chech oermission later
   validate(grnIdParamsSchema, 'params'),
   validate(approveRejectGrnBodySchema, 'body'),
   approveOrRejectGrn,

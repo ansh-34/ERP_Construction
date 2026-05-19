@@ -10,7 +10,6 @@ import {
 
 const projectRouter = Router();
 
-
 projectRouter.post(
   '/',
   validate(createProjectBody, 'body'),

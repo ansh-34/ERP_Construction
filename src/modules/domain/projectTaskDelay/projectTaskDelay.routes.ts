@@ -11,7 +11,6 @@ import {
 
 const projectTaskDelayRouter = Router();
 
-
 projectTaskDelayRouter.post(
   '/',
   validate(createProjectTaskDelayBody, 'body'),

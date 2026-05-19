@@ -11,7 +11,6 @@ import {
 
 const machineryRouter = Router();
 
-
 machineryRouter.post(
   '/',
   validate(createMachineryBody, 'body'),

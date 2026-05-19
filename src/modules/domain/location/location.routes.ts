@@ -10,7 +10,6 @@ import {
 
 const locationRouter = Router();
 
-
 locationRouter.post(
   '/',
   validate(createLocationBody, 'body'),
