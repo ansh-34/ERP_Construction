@@ -18,7 +18,7 @@ export const ProductGradeService = {
     dto: {
       gradeDisplayName: Record<string, string>;
       gradeCode?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
   ) {
@@ -70,7 +70,7 @@ export const ProductGradeService = {
     query: {
       page?: string;
       limit?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       [key: string]: any;
     },
@@ -167,7 +167,7 @@ export const ProductGradeService = {
     dto: {
       gradeDisplayName?: Record<string, string>;
       gradeCode?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
   ) {

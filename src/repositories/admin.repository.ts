@@ -26,6 +26,8 @@ export const AdminRepository = {
       phoneCode: string | null;
       password: string;
       mediaId?: string;
+      offeredLanguagesCount?: number;
+      offeredCurrenciesCount?: number;
     },
     options: { transaction?: any } = {},
   ) {
@@ -50,7 +52,7 @@ export const AdminRepository = {
       isDeleted: false,
       ...(options.filters && {
         ...(options.filters.searchKey && {
-          searchText: {
+          name: {
             contains: options.filters.searchKey,
             mode: 'insensitive',
           },

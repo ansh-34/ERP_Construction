@@ -1,5 +1,17 @@
 import prisma from '@/infra/database/prisma/prisma.client';
 
+const asPrisma = prisma as any;
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+  }
+  return JSON.stringify(value ?? '');
+};
+
 export const RawMaterialPurchaseRequestRepository = {
   async create(data: any) {
     return prisma.rawMaterialPurchaseRequest.create({ data });
@@ -20,6 +32,7 @@ export const RawMaterialPurchaseRequestRepository = {
         uom: true,
         requestedUser: { select: { id: true, name: true, email: true } },
         project: true,
+        purchaseOrder: true,
       },
     });
   },
@@ -29,17 +42,18 @@ export const RawMaterialPurchaseRequestRepository = {
     limit: number,
     offset: number,
     filters: {
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       type?: string;
       approvalStatus?: string;
       productId?: string;
       projectId?: string;
+      isDeleted?: boolean;
     },
   ) {
     const where: any = {
       domainId,
-      isDeleted: false,
+      isDeleted: filters.isDeleted ?? false,
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.type ? { type: filters.type } : {}),
       ...(filters.approvalStatus
@@ -69,6 +83,7 @@ export const RawMaterialPurchaseRequestRepository = {
           uom: true,
           requestedUser: { select: { id: true, name: true, email: true } },
           project: true,
+          purchaseOrder: true,
         },
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -87,7 +102,7 @@ export const RawMaterialPurchaseRequestRepository = {
   async softDelete(id: string) {
     return prisma.rawMaterialPurchaseRequest.update({
       where: { id },
-      data: { isDeleted: true },
+      data: { isDeleted: true, status: 'INACTIVE' },
     });
   },
 
@@ -98,64 +113,97 @@ export const RawMaterialPurchaseRequestRepository = {
   ) {
     return prisma.rawMaterialPurchaseRequest.updateMany({
       where: { id: { in: ids }, domainId, isDeleted: false },
-      data: { approvalStatus: approvalStatus as any, approvedAt: new Date() },
+      data: {
+        approvalStatus: approvalStatus as any,
+        approvedAt: approvalStatus === 'APPROVED' ? new Date() : null,
+      },
     });
   },
 
-  async approveAndCreatePO(ids: string[], domainId: string, poCode: string) {
-    return prisma.$transaction(async (tx) => {
-      // 1. Fetch the requests to get details for the PO
-      const requests = await tx.rawMaterialPurchaseRequest.findMany({
-        where: { id: { in: ids }, domainId },
+  async approveAndCreatePO(id: string, domainId: string, poCode: string) {
+    return asPrisma.$transaction(async (tx: any) => {
+      const request = await tx.rawMaterialPurchaseRequest.findFirst({
+        where: {
+          id,
+          domainId,
+          isDeleted: false,
+          approvalStatus: { in: ['PENDING', 'REJECTED'] },
+        },
         include: { product: true, productGrade: true },
       });
 
-      if (requests.length === 0) return { count: 0 };
+      if (!request) {
+        throw new Error('Purchase request not found or already approved');
+      }
 
-      // Calculate totals (assuming rate/tax as 0 initially or from some other logic, but requests don't have rate/tax)
-      const totalItems = requests.length;
-      let totalAmount = 0; // Requests don't have price, PO rate defaults to 0
-      const vendor = requests[0].vendor || 'Unknown Vendor';
-      const projectId = requests[0].projectId;
+      if (request.purchaseOrderId) {
+        throw new Error('Purchase order already created for this request');
+      }
 
-      // 2. Create the Purchase Order
       const po = await tx.purchaseOrder.create({
         data: {
           code: poCode,
-          vendor,
-          totalItems,
+          sourceRmprCode: request.code,
+          vendor: request.vendor || 'Unknown Vendor',
+          uomId: request.uomId,
+          totalItems: 0,
           totalTax: 0,
-          totalAmount,
-          orderStatus: 'CONFIRMED',
-          projectId,
-          domainId,
+          totalAmount: 0,
+          orderStatus: 'DRAFT',
+          projectId: request.projectId,
+          domainId: request.domainId,
         },
       });
 
-      // 3. Create Purchase Order Products
-      await tx.purchaseOrderProduct.createMany({
-        data: requests.map((req) => ({
+      await tx.purchaseOrderProduct.create({
+        data: {
           purchaseOrderId: po.id,
           orderCode: po.code,
-          productName:
-            typeof req.product.displayName === 'string'
-              ? req.product.displayName
-              : JSON.stringify(req.product.displayName),
-          productGradeName: req.productGrade
-            ? typeof req.productGrade.gradeDisplayName === 'string'
-              ? req.productGrade.gradeDisplayName
-              : JSON.stringify(req.productGrade.gradeDisplayName)
+          productName: toDisplayString(request.product.displayName),
+          productGradeName: request.productGrade
+            ? toDisplayString(request.productGrade.gradeDisplayName)
             : undefined,
-          quantity: req.quantity,
-          uomId: req.uomId,
-          projectId: req.projectId,
-          domainId: req.domainId,
-        })),
+          quantity: request.quantity,
+          uomId: request.uomId,
+          rate: 0,
+          tax: 0,
+          projectId: request.projectId,
+          domainId: request.domainId,
+        },
       });
 
-      // 4. Update the requests to APPROVED and link the PO
-      const result = await tx.rawMaterialPurchaseRequest.updateMany({
-        where: { id: { in: ids }, domainId },
+      const totals = await tx.purchaseOrderProduct.aggregate({
+        where: { purchaseOrderId: po.id, domainId, isDeleted: false },
+        _count: { _all: true },
+        _sum: { tax: true },
+      });
+
+      const lineItems = await tx.purchaseOrderProduct.findMany({
+        where: { purchaseOrderId: po.id, domainId, isDeleted: false },
+        select: { quantity: true, rate: true, tax: true },
+      });
+
+      const totalAmount = lineItems.reduce(
+        (sum: number, item: any) =>
+          sum + item.rate * item.quantity + item.tax * item.quantity,
+        0,
+      );
+
+      const updatedPo = await tx.purchaseOrder.update({
+        where: { id: po.id },
+        data: {
+          totalItems: totals._count._all,
+          totalTax: lineItems.reduce(
+            (sum: number, item: any) => sum + item.tax * item.quantity,
+            0,
+          ),
+          totalAmount,
+        },
+        include: { purchaseOrderProducts: true },
+      });
+
+      const updatedRequest = await tx.rawMaterialPurchaseRequest.update({
+        where: { id: request.id },
         data: {
           approvalStatus: 'APPROVED',
           approvedAt: new Date(),
@@ -163,7 +211,144 @@ export const RawMaterialPurchaseRequestRepository = {
         },
       });
 
-      return result;
+      return { request: updatedRequest, purchaseOrder: updatedPo };
     });
   },
+
+  // Purchase Order Methods
+
+  async listPurchaseOrders(
+    domainId: string,
+    limit: number,
+    offset: number,
+    filters: {
+      status?: 'ACTIVE' | 'INACTIVE';
+      orderStatus?: string;
+      projectId?: string;
+      isDeleted?: boolean;
+    },
+  ) {
+    const where: any = {
+      domainId,
+      isDeleted: filters.isDeleted ?? false,
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.orderStatus ? { orderStatus: filters.orderStatus } : {}),
+      ...(filters.projectId ? { projectId: filters.projectId } : {}),
+    };
+
+    return prisma.$transaction([
+      prisma.purchaseOrder.count({ where }),
+      prisma.purchaseOrder.findMany({
+        where,
+        include: { project: true, uom: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
+  },
+
+  async getPurchaseOrderById(id: string, domainId: string) {
+    return prisma.purchaseOrder.findFirst({
+      where: { id, domainId, isDeleted: false },
+      include: {
+        project: true,
+        uom: true,
+        purchaseOrderProducts: {
+          where: { isDeleted: false },
+          include: { uom: true },
+        },
+      },
+    });
+  },
+
+  // async updatePurchaseOrder(id: string, data: any) {
+  //   return prisma.purchaseOrder.update({
+  //     where: { id },
+  //     data,
+  //   });
+  // },
+
+  // // --- Purchase Order Product Methods ---
+
+  // async recalculatePoTotals(tx: any, purchaseOrderId: string, domainId: string) {
+  //   const totals = await tx.purchaseOrderProduct.aggregate({
+  //     where: { purchaseOrderId, domainId, isDeleted: false },
+  //     _count: { _all: true },
+  //     _sum: { tax: true },
+  //   });
+
+  //   const lineItems = await tx.purchaseOrderProduct.findMany({
+  //     where: { purchaseOrderId, domainId, isDeleted: false },
+  //     select: { quantity: true, rate: true, tax: true },
+  //   });
+
+  //   const totalAmount = lineItems.reduce(
+  //     (sum: number, item: any) =>
+  //       sum + item.rate * item.quantity + item.tax * item.quantity,
+  //     0,
+  //   );
+
+  //   const totalTax = lineItems.reduce(
+  //     (sum: number, item: any) => sum + item.tax * item.quantity,
+  //     0,
+  //   );
+
+  //   return tx.purchaseOrder.update({
+  //     where: { id: purchaseOrderId },
+  //     data: {
+  //       totalItems: totals._count._all,
+  //       totalTax,
+  //       totalAmount,
+  //     },
+  //   });
+  // },
+
+  // async createPoProduct(purchaseOrderId: string, domainId: string, data: any) {
+  //   return asPrisma.$transaction(async (tx: any) => {
+  //     const product = await tx.purchaseOrderProduct.create({ data });
+  //     await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
+  //     return product;
+  //   });
+  // },
+
+  async listPoProducts(purchaseOrderId: string, domainId: string) {
+    return prisma.purchaseOrderProduct.findMany({
+      where: { purchaseOrderId, domainId, isDeleted: false },
+      include: { uom: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  },
+
+  async getPoProductById(
+    id: string,
+    purchaseOrderId: string,
+    domainId: string,
+  ) {
+    return prisma.purchaseOrderProduct.findFirst({
+      where: { id, purchaseOrderId, domainId, isDeleted: false },
+    });
+  },
+
+  //   async updatePoProduct(id: string, purchaseOrderId: string, domainId: string, data: any) {
+  //     return asPrisma.$transaction(async (tx: any) => {
+  //       const product = await tx.purchaseOrderProduct.update({
+  //         where: { id },
+  //         data,
+  //       });
+  //       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
+  //       return product;
+  //     });
+  //   },
+
+  //   async deletePoProduct(id: string, purchaseOrderId: string, domainId: string) {
+  //     return asPrisma.$transaction(async (tx: any) => {
+  //       const product = await tx.purchaseOrderProduct.update({
+  //         where: { id },
+  //         data: { isDeleted: true, status: 'INACTIVE' },
+  //       });
+  //       await RawMaterialPurchaseRequestRepository.recalculatePoTotals(tx, purchaseOrderId, domainId);
+  //       return product;
+  //     });
+  //   },
 };

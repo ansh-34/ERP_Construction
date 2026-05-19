@@ -27,7 +27,7 @@ export const listInventory = async (req: Request, res: Response) => {
   try {
     const { items, pagination } = await InventoryService.listInventory(
       req.user!.domainId,
-      req.query as PaginationQuery & { status?: string },
+      req.query as PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
     );
 
     return res.status(HttpStatus.OK).json({

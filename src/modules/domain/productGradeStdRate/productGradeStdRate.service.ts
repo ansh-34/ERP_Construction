@@ -14,7 +14,7 @@ export const ProductGradeStdRateService = {
     gradeId: string,
     dto: {
       stdRateType: Record<string, string>;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
   ) {
@@ -56,7 +56,7 @@ export const ProductGradeStdRateService = {
     query: {
       page?: string;
       limit?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       [key: string]: any;
     },
@@ -172,7 +172,7 @@ export const ProductGradeStdRateService = {
     id: string,
     dto: {
       stdRateType?: Record<string, string>;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
   ) {

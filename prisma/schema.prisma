@@ -55,13 +55,18 @@ model Admin {
 
   password String
 
+  offeredLanguagesCount  Int @default(0)
+  enabledLanguagesCount  Int @default(0)
+  offeredCurrenciesCount Int @default(0)
+  enabledCurrenciesCount Int @default(0)
+
   isEmailVerified Boolean @default(false)
   isPhoneVerified Boolean @default(false)
 
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
 
-  status String @default("active")
+  status StatusEnum @default(ACTIVE)
 
   isDeleted Boolean @default(false)
 
@@ -75,43 +80,43 @@ model Admin {
   projectTasks    ProjectTask[]
   projectTaskImages ProjectTaskImage[]
   projectTaskDelays ProjectTaskDelay[]
-  apiKeys         ApiKey[]
-  locations       Location[]
-  machineries     Machinery[]
-  machineReadings MachineReading[]
-  mediaFiles      Media[] @relation("AdminMediaFiles")
-  users           User[]
+  apiKeys           ApiKey[]
+  locations         Location[]
+  machineries       Machinery[]
+  machineReadings   MachineReading[]
+  mediaFiles        Media[]            @relation("AdminMediaFiles")
+  users             User[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
 }
 
 model AdminLanguages {
-  id         String   @id @default(uuid()) @db.Uuid
-  adminId    String   @db.Uuid
-  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  languageId String   @db.Uuid
-  language   Language @relation(fields: [languageId], references: [id], onDelete: Restrict)
-  isEnabled  Boolean  @default(false)
-  isDefault  Boolean  @default(false)
-  status     String   @default("active")
-  isDeleted  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String     @id @default(uuid()) @db.Uuid
+  adminId    String     @db.Uuid
+  admin      Admin      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  languageId String     @db.Uuid
+  language   Language   @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  isEnabled  Boolean    @default(false)
+  isDefault  Boolean    @default(false)
+  status     StatusEnum @default(ACTIVE)
+  isDeleted  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model AdminCurrencies {
-  id         String   @id @default(uuid()) @db.Uuid
-  adminId    String   @db.Uuid
-  admin      Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  currencyId String   @db.Uuid
-  currency   Currency @relation(fields: [currencyId], references: [id])
-  isEnabled  Boolean  @default(false)
-  isDefault  Boolean  @default(false)
-  status     String   @default("active")
-  isDeleted  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String     @id @default(uuid()) @db.Uuid
+  adminId    String     @db.Uuid
+  admin      Admin      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  currencyId String     @db.Uuid
+  currency   Currency   @relation(fields: [currencyId], references: [id])
+  isEnabled  Boolean    @default(false)
+  isDefault  Boolean    @default(false)
+  status     StatusEnum @default(ACTIVE)
+  isDeleted  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Domain {
@@ -125,15 +130,15 @@ model Domain {
   mediaId          String?      @db.Uuid
   industry         IndustryEnum
   password         String
-  isEmailVerified  Boolean              @default(false)
+  isEmailVerified  Boolean      @default(false)
 
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
 
-  status           String               @default("active")
-  isDeleted        Boolean              @default(false)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   users                       User[]
   tokens                      Token[]
@@ -162,7 +167,7 @@ model Domain {
   projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
-  machineReadings         MachineReading[]
+  machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   purchaseOrders              PurchaseOrder[]
@@ -192,15 +197,15 @@ model User {
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
 
-  domainId        String  @db.Uuid
+  domainId String @db.Uuid
 
-  domain  Domain  @relation(fields: [domainId], references: [id])
-  adminId String? @db.Uuid
-  admin   Admin?  @relation(fields: [adminId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  adminId   String?    @db.Uuid
+  admin     Admin?     @relation(fields: [adminId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   rawMaterialPurchaseRequestsRequested RawMaterialPurchaseRequest[] @relation("RequestedByUser")
   projectUserRoles                     ProjectUserRole[]
@@ -220,11 +225,11 @@ model Token {
   tokenExpirationTime DateTime
   domainId            String?  @db.Uuid
 
-  domain    Domain?  @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain?    @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([createdAt, isDeleted])
 }
@@ -252,7 +257,7 @@ model RefreshToken {
   expiry    DateTime
   userType  UserTypeEnum
   userId    String       @db.Uuid
-  status    String       @default("active")
+  status    StatusEnum   @default(ACTIVE)
   isDeleted Boolean      @default(false)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -269,7 +274,7 @@ model Currency {
   searchText      String            @default("")
   symbol          String
   flag            String
-  status          String            @default("active")
+  status          StatusEnum        @default(ACTIVE)
   isDeleted       Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -286,11 +291,11 @@ model Role {
   level      Int     @default(0)
   domainId   String  @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   users                 User[]
   roleModulePermissions RoleModulePermission[]
@@ -303,16 +308,16 @@ model Role {
 }
 
 model Module {
-  id                            String   @id @default(uuid()) @db.Uuid
+  id                            String     @id @default(uuid()) @db.Uuid
   name                          Json
   code                          String
-  searchText                    String   @default("")
-  parentDependenciesCount       Int      @default(0)
-  activeParentDependenciesCount Int      @default(0)
-  status                        String   @default("active")
-  isDeleted                     Boolean  @default(false)
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  searchText                    String     @default("")
+  parentDependenciesCount       Int        @default(0)
+  activeParentDependenciesCount Int        @default(0)
+  status                        StatusEnum @default(ACTIVE)
+  isDeleted                     Boolean    @default(false)
+  createdAt                     DateTime   @default(now())
+  updatedAt                     DateTime   @updatedAt
 
   roleModulePermissions RoleModulePermission[]
   modulePermissions     ModulePermission[]
@@ -330,7 +335,7 @@ model Permission {
   name                        Json
   code                        String
   searchText                  String                       @default("")
-  status                      String                       @default("active")
+  status                      StatusEnum                   @default(ACTIVE)
   isDeleted                   Boolean                      @default(false)
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
@@ -426,7 +431,7 @@ model Inventory {
   reorderLevel   Float         @default(0)
   domainId       String        @db.Uuid
   domain         Domain        @relation(fields: [domainId], references: [id])
-  status         String        @default("active")
+  status         StatusEnum    @default(ACTIVE)
   isDeleted      Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -473,7 +478,7 @@ model Language {
   code           String
   flag           String
   dir            LangDirEnum      @default(ltr)
-  status         String           @default("active")
+  status         StatusEnum       @default(ACTIVE)
   isDeleted      Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -485,14 +490,14 @@ model Language {
 }
 
 model SuperAdmin {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
   name      Json
   email     String
   password  String
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([email, isDeleted])
   @@index([createdAt, isDeleted])
@@ -509,11 +514,11 @@ model Uom {
   conversionRate Float
   domainId       String @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   productUoms                 ProductUom[]                 @relation("ProductUom")
   vehicleLoadCapacity         Vehicle[]                    @relation("VehicleLoadCapacityUom")
@@ -523,6 +528,7 @@ model Uom {
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   grnProducts                 GrnProduct[]
   purchaseOrderProducts       PurchaseOrderProduct[]
+  purchaseOrders              PurchaseOrder[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -539,11 +545,11 @@ model Vehicle {
   alertLoadThreshold Float  @default(0)
   domainId           String @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   journeySchedules VehicleJourneySchedule[]
   dispatches       DispatchVehicle[]
@@ -575,11 +581,11 @@ model VehicleJourneySchedule {
   loadingStatus     String    @default("PENDING")
   domainId          String    @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   dispatches DispatchVehicle[]
 
@@ -616,11 +622,11 @@ model DispatchVehicle {
   journeyStatusUpdatedAt DateTime?
   domainId               String    @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String   @default("active")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([code, domainId, isDeleted, vehicleId])
   @@index([createdAt, isDeleted, domainId])
@@ -639,7 +645,7 @@ model Product {
   productGrades        ProductGrades[]
   productGradeStdRates ProductGradeStdRates[]
   inventories          Inventory[]
-  status               String
+  status               StatusEnum             @default(ACTIVE)
   isDeleted            Boolean                @default(false)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
@@ -663,11 +669,11 @@ model ProductUom {
   uom      Uom    @relation("ProductUom", fields: [uomId], references: [id])
   domainId String @db.Uuid
 
-  domain    Domain   @relation(fields: [domainId], references: [id])
-  status    String
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  domain    Domain     @relation(fields: [domainId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([productId, uomId])
 }
@@ -684,7 +690,7 @@ model ProductGrades {
   productGradeStdRates        ProductGradeStdRates[]
   inventories                 Inventory[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  status                      String
+  status                      StatusEnum                   @default(ACTIVE)
   isDeleted                   Boolean
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
@@ -707,7 +713,7 @@ model ProductGradeStdRates {
   domain         Domain        @relation(fields: [domainId], references: [id])
   product        Product       @relation(fields: [productId], references: [id])
   productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
-  status         String
+  status         StatusEnum    @default(ACTIVE)
   isDeleted      Boolean
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -776,25 +782,27 @@ model RawMaterialPurchaseRequest {
   @@index([domainId])
 }
 
-
 model PurchaseOrder {
-  id           String      @id @default(uuid()) @db.Uuid
-  code         String
-  date         DateTime    @default(now())
-  vendor       String
-  totalItems   Int         @default(0)
-  totalTax     Float       @default(0)
-  totalAmount  Float       @default(0)
-  orderStatus  String 
-  paymentTerms String?
-  projectId    String?     @db.Uuid
-  project      Project?    @relation(fields: [projectId], references: [id])
-  domainId     String      @db.Uuid
-  domain       Domain      @relation(fields: [domainId], references: [id])
-  status       StatusEnum  @default(ACTIVE)
-  isDeleted    Boolean     @default(false)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id             String     @id @default(uuid()) @db.Uuid
+  code           String
+  sourceRmprCode String?
+  date           DateTime   @default(now())
+  vendor         String
+  uomId          String?    @db.Uuid
+  uom            Uom?       @relation(fields: [uomId], references: [id])
+  totalItems     Int        @default(0)
+  totalTax       Float      @default(0)
+  totalAmount    Float      @default(0)
+  orderStatus    String
+  paymentTerms   String?
+  projectId      String?    @db.Uuid
+  project        Project?   @relation(fields: [projectId], references: [id])
+  domainId       String     @db.Uuid
+  domain         Domain     @relation(fields: [domainId], references: [id])
+  status         StatusEnum @default(ACTIVE)
+  isDeleted      Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   purchaseOrderProducts       PurchaseOrderProduct[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
@@ -803,6 +811,7 @@ model PurchaseOrder {
   @@index([createdAt, isDeleted, domainId])
   @@index([projectId])
   @@index([domainId])
+  @@index([uomId])
 }
 
 model PurchaseOrderProduct {
@@ -831,7 +840,6 @@ model PurchaseOrderProduct {
   @@index([projectId])
   @@index([domainId])
 }
-
 
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
@@ -879,20 +887,20 @@ model Location {
 }
 
 model Media {
-  id        String     @id @default(uuid()) @db.Uuid
-  name      Json       @db.JsonB
-  type      String
-  url       String     @unique
-  searchText String    @default("")
-  domainId  String     @db.Uuid
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId   String     @db.Uuid
-  admin     Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  admins    Admin[]
+  id         String     @id @default(uuid()) @db.Uuid
+  name       Json       @db.JsonB
+  type       String
+  url        String     @unique
+  searchText String     @default("")
+  domainId   String     @db.Uuid
+  domain     Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId    String     @db.Uuid
+  admin      Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
+  status     StatusEnum @default(ACTIVE)
+  isDeleted  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  admins     Admin[]
 
   @@index([domainId])
   @@index([adminId])
@@ -900,30 +908,30 @@ model Media {
 }
 
 model Project {
-  id                String          @id @default(uuid()) @db.Uuid
-  name              Json            @db.JsonB
-  code              String
-  searchText        String          @default("")
-  description       Json?           @db.JsonB
-  budget            Decimal         @db.Decimal(15, 2)
-  spent             Decimal         @default(0) @db.Decimal(15, 2)
-  locationId        String          @db.Uuid
-  location          Location        @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId          String          @db.Uuid
-  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId           String          @db.Uuid
-  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status            StatusEnum      @default(ACTIVE)
-  isDeleted         Boolean         @default(false)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  searchText  String     @default("")
+  description Json?      @db.JsonB
+  budget      Decimal    @db.Decimal(15, 2)
+  spent       Decimal    @default(0) @db.Decimal(15, 2)
+  locationId  String     @db.Uuid
+  location    Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String     @db.Uuid
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   projectStages               ProjectStage[]
   projectTasks                ProjectTask[]
   projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
-  machineReadings MachineReading[]
+  machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   grns                        Grn[]
@@ -985,7 +993,7 @@ model ProjectTask {
   id                   String       @id @default(uuid()) @db.Uuid
   name                 Json         @db.JsonB
   code                 String
-  searchText           String      @default("")
+  searchText           String       @default("")
   assignee             Json?        @db.JsonB
   plannedStartDate     DateTime?
   plannedEndDate       DateTime?
@@ -1104,14 +1112,14 @@ model Machinery {
 }
 
 model MachineReading {
-  id                String     @id @default(uuid()) @db.Uuid
-  code              String
-  searchText        String     @default("")
-  date              DateTime   @db.Date
+  id                 String     @id @default(uuid()) @db.Uuid
+  code               String
+  searchText         String     @default("")
+  date               DateTime   @db.Date
   openingFuelStock   Float
   closingFuelStock   Float?
   fuelRefillQuantity Float?
-  hoursRun          Float      @default(0)
+  hoursRun           Float      @default(0)
   machineStartTime   DateTime   @db.Time(0)
   machineEndTime     DateTime?  @db.Time(0)
   projectId          String     @db.Uuid

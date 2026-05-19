@@ -3,6 +3,7 @@ import {
   projectRepository,
   ProjectUserRoleRepository,
   DomainRepository,
+  projectTaskRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -43,7 +44,7 @@ export const UserProjectService = {
       budget: number;
       spent?: number;
       locationId: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
   ) {
     const incomingLanguageCodes: string[] = Object.keys(data.name || {});
@@ -111,7 +112,7 @@ export const UserProjectService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,
@@ -122,14 +123,11 @@ export const UserProjectService = {
       adminId,
     );
 
-    const [, assignments] = await ProjectUserRoleRepository.listByDomain(
+    const projectIds = await projectTaskRepository.findProjectIdsByAssignee(
       domainId,
-      1000,
-      0,
-      { userId, status: 'ACTIVE' },
+      userId,
+      resolvedAdminId,
     );
-
-    const projectIds = assignments.map((a) => a.projectId);
 
     if (projectIds.length === 0) {
       return {
@@ -171,7 +169,7 @@ export const UserProjectService = {
     query: {
       offset?: number | string;
       limit?: number | string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,

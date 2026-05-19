@@ -1,15 +1,18 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createRawMaterialPurchaseRequest,
   listRawMaterialPurchaseRequests,
-  // listApprovedRawMaterialPurchaseRequests,
-  // listApprovedRawMaterialPurchaseRequestsByProduct,
   getRawMaterialPurchaseRequestById,
   updateRawMaterialPurchaseRequest,
   deleteRawMaterialPurchaseRequest,
   approveOrRejectRawMaterialPurchaseRequests,
+  listPurchaseOrders,
+  getPurchaseOrderById,
+  // updatePurchaseOrder,
+  listPoProducts,
+  // updatePoProduct,
+  // deletePoProduct,
 } from './rawMaterialPurchaseRequest.controller.js';
 import {
   createRawMaterialPurchaseRequestBodySchema,
@@ -17,11 +20,15 @@ import {
   listRawMaterialPurchaseRequestsQuerySchema,
   rawMaterialPurchaseRequestIdParamsSchema,
   approveRejectBodySchema,
+  listPurchaseOrdersQuerySchema,
+  poIdParamsSchema,
+  poProductIdParamsSchema,
+  // updatePurchaseOrderBodySchema,
+  // createPoProductBodySchema,
+  // updatePoProductBodySchema,
 } from './rawMaterialPurchaseRequest.validator.js';
 
 const router = Router();
-
-router.use(authMiddleware);
 
 router.post(
   '/',
@@ -36,18 +43,6 @@ router.get(
   validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
   listRawMaterialPurchaseRequests,
 );
-
-// router.get(
-//   '/approved',
-//   validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
-//   listApprovedRawMaterialPurchaseRequests,
-// );
-
-// router.get(
-//   '/approved/product/:productId',
-//   validate(listRawMaterialPurchaseRequestsQuerySchema, 'query'),
-//   listApprovedRawMaterialPurchaseRequestsByProduct,
-// );
 
 // Single endpoint for both single and bulk approve/reject
 router.put(
@@ -78,5 +73,54 @@ router.delete(
   validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
   deleteRawMaterialPurchaseRequest,
 );
+
+// --- Purchase Order Routes ---
+
+router.get(
+  '/purchase-orders',
+  validate(listPurchaseOrdersQuerySchema, 'query'),
+  listPurchaseOrders,
+);
+
+router.get(
+  '/purchase-orders/:poId',
+  validate(poIdParamsSchema, 'params'),
+  getPurchaseOrderById,
+);
+
+// router.put(
+//   '/purchase-orders/:poId',
+//   validate(poIdParamsSchema, 'params'),
+//   validate(updatePurchaseOrderBodySchema, 'body'),
+//   updatePurchaseOrder,
+// );
+
+// --- Purchase Order Product Routes ---
+
+// router.post(
+//   '/purchase-orders/:poId/products',
+//   validate(poIdParamsSchema, 'params'),
+//   validate(createPoProductBodySchema, 'body'),
+//   createPoProduct,
+// );
+
+router.get(
+  '/purchase-orders/:poId/products',
+  validate(poIdParamsSchema, 'params'),
+  listPoProducts,
+);
+
+// router.put(
+//   '/purchase-orders/:poId/products/:productId',
+//   validate(poProductIdParamsSchema, 'params'),
+//   validate(updatePoProductBodySchema, 'body'),
+//   updatePoProduct,
+// );
+
+// router.delete(
+//   '/purchase-orders/:poId/products/:productId',
+//   validate(poProductIdParamsSchema, 'params'),
+//   deletePoProduct,
+// );
 
 export default router;

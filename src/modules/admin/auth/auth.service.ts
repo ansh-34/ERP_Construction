@@ -96,6 +96,8 @@ export const AuthService = {
         name: admin.name,
         email: admin.email,
         role: 'ADMIN',
+        onboardingStatus: admin.onboardingStatus,
+        onboardingStep: admin.onboardingStep,
       },
     };
   },

@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
-import isDomain from '../../../middlewares/isDomain.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   assign,
@@ -22,15 +20,8 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
-
 // Create assignment - write (Domain only)
-router.post(
-  '/',
-  isDomain,
-  validate(assignProjectUserRoleBodySchema, 'body'),
-  assign,
-);
+router.post('/', validate(assignProjectUserRoleBodySchema, 'body'), assign);
 
 // Read assignments (Any authenticated user)
 router.get('/', validate(listProjectUserRolesQuerySchema, 'query'), list);
@@ -54,7 +45,6 @@ router.get('/:id', validate(projectUserRoleIdParamsSchema, 'params'), getById);
 // Update/Delete assignments - write (Domain only)
 router.put(
   '/:id',
-  isDomain,
   validate(projectUserRoleIdParamsSchema, 'params'),
   validate(updateProjectUserRoleBodySchema, 'body'),
   update,
@@ -62,7 +52,6 @@ router.put(
 
 router.delete(
   '/:id',
-  isDomain,
   validate(projectUserRoleIdParamsSchema, 'params'),
   remove,
 );

@@ -133,7 +133,7 @@ export const projectRepository = {
     if (ids.length === 0) return [];
 
     const filters = [
-      Prisma.sql`"id" = ANY(${ids}::text[])`,
+      Prisma.sql`"id" = ANY(${ids}::uuid[])`,
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
     ];

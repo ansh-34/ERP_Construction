@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import authMiddleware from '../../../middlewares/auth.js';
+import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProject,
@@ -18,10 +18,18 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
-
-router.post('/', validate(createProjectBodySchema, 'body'), createProject);
-router.get('/', validate(listProjectsQuerySchema, 'query'), listDomainProjects);
+router.post(
+  '/',
+  authorize('PROJECT', 'CREATE'),
+  validate(createProjectBodySchema, 'body'),
+  createProject,
+);
+router.get(
+  '/',
+  authorize('PROJECT', 'READ'),
+  validate(listProjectsQuerySchema, 'query'),
+  listDomainProjects,
+);
 router.get(
   '/my-projects',
   validate(listProjectsQuerySchema, 'query'),

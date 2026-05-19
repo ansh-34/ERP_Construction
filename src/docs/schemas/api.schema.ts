@@ -16,6 +16,7 @@ import { UomSchemas } from './uom.schema.js';
 import { ProjectUserRoleSchemas } from './projectUserRole.schema.js';
 import { RawMaterialPurchaseRequestSchemas } from './rawMaterialPurchaseRequest.schema.js';
 import { ProjectSchemas } from './project.schema.js';
+import { GrnSchemas } from './grn.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -36,4 +37,5 @@ export const ApiSchemas = {
   ...ProjectUserRoleSchemas,
   ...RawMaterialPurchaseRequestSchemas,
   ...ProjectSchemas,
+  ...GrnSchemas,
 };

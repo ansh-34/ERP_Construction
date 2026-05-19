@@ -32,7 +32,7 @@ export const CurrencyService = {
   async listCurrencies(
     query: PaginationQuery & {
       searchKey?: string;
-      status?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
     },
     langCode: string,
   ) {

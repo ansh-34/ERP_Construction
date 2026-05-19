@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { locationController } from './location.controller';
-import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import {
   createLocationBody,
@@ -10,8 +9,6 @@ import {
 } from './location.validate';
 
 const locationRouter = Router();
-
-locationRouter.use(authMiddleware);
 
 locationRouter.post(
   '/',

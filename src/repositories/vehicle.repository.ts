@@ -154,7 +154,7 @@ export const VehicleRepository = {
       await prisma.$transaction([
         prisma.vehicle.count({ where: { domainId, isDeleted: false } }),
         prisma.vehicle.count({
-          where: { domainId, isDeleted: false, status: 'active' },
+          where: { domainId, isDeleted: false, status: 'ACTIVE' },
         }),
         prisma.vehicle.aggregate({
           where: { domainId, isDeleted: false },

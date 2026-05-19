@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { mediaController } from './media.controller';
-import authMiddleware from '@/middlewares/auth';
 import { upload } from '@/middlewares/upload';
 import { validate } from '@/middlewares/validate';
 import {
@@ -11,8 +10,6 @@ import {
 } from './media.validate';
 
 const mediaRouter = Router();
-
-mediaRouter.use(authMiddleware);
 
 mediaRouter.post(
   '/',

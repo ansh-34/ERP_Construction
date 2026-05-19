@@ -5,11 +5,8 @@ import {
   listCurrenciesQuerySchema,
   currencyIdParamsSchema,
 } from './currency.validator.js';
-import authMiddleware from '../../../middlewares/auth.js';
 
 const router = Router();
-
-router.use(authMiddleware);
 
 router.get('/', validate(listCurrenciesQuerySchema, 'query'), listCurrencies);
 

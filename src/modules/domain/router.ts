@@ -24,9 +24,18 @@ import languageRouter from './language/language.router.js';
 import currencyRouter from './currency/currency.router.js';
 import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
 import projectUserRoleRouter from './projectUserRole/projectUserRole.router.js';
-// import grnRouter from './grn/grn.router.js';
+import grnRouter from './grn/grn.router.js';
+import authMiddleware from '../../middlewares/auth.js';
+import isDomain from '../../middlewares/isDomain.js';
 
 const domainRouter = Router();
+
+// Routes that don't need domain auth globally
+domainRouter.use('/auth', authRouter);
+
+// isDomain routes
+domainRouter.use(authMiddleware);
+domainRouter.use(isDomain);
 
 domainRouter.use('/api-keys', apiKeyRouter);
 domainRouter.use('/media', mediaRouter);
@@ -38,7 +47,6 @@ domainRouter.use('/project-stages', projectStageRouter);
 domainRouter.use('/project-tasks', projectTaskRouter);
 domainRouter.use('/project-task-images', projectTaskImagesRouter);
 domainRouter.use('/project-task-delays', projectTaskDelayRouter);
-domainRouter.use('/auth', authRouter);
 domainRouter.use('/profile', profileRouter);
 domainRouter.use('/roles', roleRouter);
 domainRouter.use('/users', userRouter);
@@ -51,11 +59,8 @@ domainRouter.use('/products', productRouter);
 domainRouter.use('/uoms', uomRouter());
 domainRouter.use('/language', languageRouter);
 domainRouter.use('/currency', currencyRouter);
-domainRouter.use(
-  '/raw-material-purchase-requests',
-  rawMaterialPurchaseRequestRouter,
-);
+domainRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 domainRouter.use('/project-user-roles', projectUserRoleRouter);
-// domainRouter.use('/grn', grnRouter);
+domainRouter.use('/grn', grnRouter);
 
 export default domainRouter;

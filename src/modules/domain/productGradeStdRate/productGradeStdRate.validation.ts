@@ -27,7 +27,7 @@ export const updateProductGradeStdRateBodySchema = z.object({
   stdRateType: localizedValue.optional(),
   stdRateValue: z.number().min(0).optional(),
   alertThresold: z.number().min(0).optional(),
-  status: z.enum(['active', 'inactive']).optional(),
+  status: statusFilterSchema.shape.status.optional(),
 });
 
 // ── Query schemas ─────────────────────────────────────────────
