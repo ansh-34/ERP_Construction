@@ -124,13 +124,13 @@ export const projectController = {
         'en';
       const { name, description, budget, spent, locationId, status } =
         req.body as {
-        name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
-        budget?: number;
-        spent?: number;
-        locationId?: string;
-        status?: StatusEnum;
-      };
+          name?: Record<string, unknown>;
+          description?: Record<string, unknown> | null;
+          budget?: number;
+          spent?: number;
+          locationId?: string;
+          status?: StatusEnum;
+        };
 
       const updatedProject = await projectService.update(
         id ?? '',

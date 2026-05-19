@@ -61,10 +61,7 @@ export const userTaskSubmissionService = {
     }
 
     try {
-      const existingTask = await projectTaskRepository.findById(
-        id,
-        domainId,
-      );
+      const existingTask = await projectTaskRepository.findById(id, domainId);
 
       if (!existingTask) {
         throw new Error('not found');

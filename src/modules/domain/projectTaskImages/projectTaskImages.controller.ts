@@ -51,11 +51,11 @@ export const projectTaskImagesController = {
 
       const { projectTaskImages, pagination } =
         await projectTaskImagesService.getAll(
-        req.user!.domainId,
-        req.user!.adminId,
-        taskId,
-        { offset, limit },
-      );
+          req.user!.domainId,
+          req.user!.adminId,
+          taskId,
+          { offset, limit },
+        );
 
       return res.status(HttpStatus.OK).json({
         message: 'Project task images fetched successfully',
@@ -78,12 +78,11 @@ export const projectTaskImagesController = {
     try {
       const { id } = req.params as { id?: string };
 
-      const deletedProjectTaskImage =
-        await projectTaskImagesService.softDelete(
-          id ?? '',
-          req.user!.domainId,
-          req.user!.adminId,
-        );
+      const deletedProjectTaskImage = await projectTaskImagesService.softDelete(
+        id ?? '',
+        req.user!.domainId,
+        req.user!.adminId,
+      );
 
       if (!deletedProjectTaskImage) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });

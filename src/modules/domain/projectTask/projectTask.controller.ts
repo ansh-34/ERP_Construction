@@ -92,13 +92,13 @@ export const projectTaskController = {
         'en';
       const { domainId, projectId, stageId, searchKey, offset, limit } =
         req.query as {
-        domainId?: string;
-        projectId?: string;
-        stageId?: string;
-        searchKey?: string;
-        offset?: string;
-        limit?: string;
-      };
+          domainId?: string;
+          projectId?: string;
+          stageId?: string;
+          searchKey?: string;
+          offset?: string;
+          limit?: string;
+        };
 
       const { projectTasks, pagination } = await projectTaskService.getAll(
         domainId ?? '',

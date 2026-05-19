@@ -29,9 +29,7 @@ export const userTaskSubmissionController = {
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to submit task';
+        error instanceof Error ? error.message : 'Failed to submit task';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

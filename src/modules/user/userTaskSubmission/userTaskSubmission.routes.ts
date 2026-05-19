@@ -2,10 +2,7 @@ import { Router } from 'express';
 import authMiddleware from '@/middlewares/auth';
 import { validate } from '@/middlewares/validate';
 import { userTaskSubmissionController } from './userTaskSubmission.controller';
-import {
-  submitTaskBody,
-  idParams,
-} from './userTaskSubmission.validate';
+import { submitTaskBody, idParams } from './userTaskSubmission.validate';
 
 const userTaskSubmissionRouter = Router();
 

@@ -80,15 +80,15 @@ export const projectTaskDelayController = {
         };
       const { projectTaskDelays, pagination } =
         await projectTaskDelayService.getAll(
-        req.user!.domainId,
-        req.user!.adminId,
-        projectId,
-        stageId,
-        taskId,
-        searchKey,
-        { offset, limit },
-        language,
-      );
+          req.user!.domainId,
+          req.user!.adminId,
+          projectId,
+          stageId,
+          taskId,
+          searchKey,
+          { offset, limit },
+          language,
+        );
 
       return res.status(HttpStatus.OK).json({
         message: 'Project task delays fetched successfully',
