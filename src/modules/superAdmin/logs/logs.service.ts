@@ -17,10 +17,10 @@ export const LogsService = {
     });
 
     const response = await s3.send(command);
-    
+
     // Format the list
     const logs = (response.Contents || [])
-      .filter((item) => item.Key && item.Key !== S3_PREFIX) 
+      .filter((item) => item.Key && item.Key !== S3_PREFIX)
       .map((item) => ({
         key: item.Key,
         size: item.Size,

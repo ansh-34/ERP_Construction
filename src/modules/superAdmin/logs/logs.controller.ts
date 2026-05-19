@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import {LogsService} from './logs.service.js'
+import { LogsService } from './logs.service.js';
 import { HttpStatus } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 
@@ -12,7 +12,8 @@ export const listLogs = async (req: Request, res: Response) => {
       data,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve logs';
+    const message =
+      error instanceof Error ? error.message : 'Failed to retrieve logs';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }
