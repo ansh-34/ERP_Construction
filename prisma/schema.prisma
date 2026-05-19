@@ -55,6 +55,11 @@ model Admin {
 
   password String
 
+  offeredLanguagesCount  Int @default(0)
+  enabledLanguagesCount  Int @default(0)
+  offeredCurrenciesCount Int @default(0)
+  enabledCurrenciesCount Int @default(0)
+
   isEmailVerified Boolean @default(false)
   isPhoneVerified Boolean @default(false)
 
@@ -65,21 +70,21 @@ model Admin {
 
   isDeleted Boolean @default(false)
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  adminLanguages  AdminLanguages[]
-  adminCurrencies AdminCurrencies[]
-  domains         Domain[]
-  projects        Project[]
-  projectStages   ProjectStage[]
-  projectTasks    ProjectTask[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  adminLanguages    AdminLanguages[]
+  adminCurrencies   AdminCurrencies[]
+  domains           Domain[]
+  projects          Project[]
+  projectStages     ProjectStage[]
+  projectTasks      ProjectTask[]
   projectTaskDelays ProjectTaskDelay[]
-  apiKeys         ApiKey[]
-  locations       Location[]
-  machineries     Machinery[]
-  machineReadings MachineReading[]
-  mediaFiles      Media[] @relation("AdminMediaFiles")
-  users           User[]
+  apiKeys           ApiKey[]
+  locations         Location[]
+  machineries       Machinery[]
+  machineReadings   MachineReading[]
+  mediaFiles        Media[]            @relation("AdminMediaFiles")
+  users             User[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -124,15 +129,15 @@ model Domain {
   mediaId          String?      @db.Uuid
   industry         IndustryEnum
   password         String
-  isEmailVerified  Boolean              @default(false)
+  isEmailVerified  Boolean      @default(false)
 
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
 
-  status           String               @default("active")
-  isDeleted        Boolean              @default(false)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  status    String   @default("active")
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   users                       User[]
   tokens                      Token[]
@@ -160,7 +165,7 @@ model Domain {
   projectTasks                ProjectTask[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
-  machineReadings         MachineReading[]
+  machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   purchaseOrders              PurchaseOrder[]
@@ -190,11 +195,11 @@ model User {
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
 
-  domainId        String  @db.Uuid
+  domainId String @db.Uuid
 
-  domain  Domain  @relation(fields: [domainId], references: [id])
-  adminId String? @db.Uuid
-  admin   Admin?  @relation(fields: [adminId], references: [id])
+  domain    Domain   @relation(fields: [domainId], references: [id])
+  adminId   String?  @db.Uuid
+  admin     Admin?   @relation(fields: [adminId], references: [id])
   status    String   @default("active")
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -880,20 +885,20 @@ model Location {
 }
 
 model Media {
-  id        String     @id @default(uuid()) @db.Uuid
-  name      Json       @db.JsonB
-  type      String
-  url       String     @unique
-  searchText String    @default("")
-  domainId  String     @db.Uuid
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId   String     @db.Uuid
-  admin     Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  admins    Admin[]
+  id         String     @id @default(uuid()) @db.Uuid
+  name       Json       @db.JsonB
+  type       String
+  url        String     @unique
+  searchText String     @default("")
+  domainId   String     @db.Uuid
+  domain     Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId    String     @db.Uuid
+  admin      Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
+  status     StatusEnum @default(ACTIVE)
+  isDeleted  Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  admins     Admin[]
 
   @@index([domainId])
   @@index([adminId])
@@ -901,29 +906,29 @@ model Media {
 }
 
 model Project {
-  id                String          @id @default(uuid()) @db.Uuid
-  name              Json            @db.JsonB
-  code              String
-  searchText        String          @default("")
-  description       Json?           @db.JsonB
-  budget            Decimal         @db.Decimal(15, 2)
-  spent             Decimal         @default(0) @db.Decimal(15, 2)
-  locationId        String          @db.Uuid
-  location          Location        @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId          String          @db.Uuid
-  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId           String          @db.Uuid
-  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status            StatusEnum      @default(ACTIVE)
-  isDeleted         Boolean         @default(false)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  searchText  String     @default("")
+  description Json?      @db.JsonB
+  budget      Decimal    @db.Decimal(15, 2)
+  spent       Decimal    @default(0) @db.Decimal(15, 2)
+  locationId  String     @db.Uuid
+  location    Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String     @db.Uuid
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   projectStages               ProjectStage[]
   projectTasks                ProjectTask[]
   projectTaskDelays           ProjectTaskDelay[]
   machineries                 Machinery[]
-  machineReadings MachineReading[]
+  machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   grns                        Grn[]
@@ -984,7 +989,7 @@ model ProjectTask {
   id                   String       @id @default(uuid()) @db.Uuid
   name                 Json         @db.JsonB
   code                 String
-  searchText           String      @default("")
+  searchText           String       @default("")
   assignee             Json?        @db.JsonB
   plannedStartDate     DateTime?
   plannedEndDate       DateTime?
@@ -1073,14 +1078,14 @@ model Machinery {
 }
 
 model MachineReading {
-  id                String     @id @default(uuid()) @db.Uuid
-  code              String
-  searchText        String     @default("")
-  date              DateTime   @db.Date
+  id                 String     @id @default(uuid()) @db.Uuid
+  code               String
+  searchText         String     @default("")
+  date               DateTime   @db.Date
   openingFuelStock   Float
   closingFuelStock   Float?
   fuelRefillQuantity Float?
-  hoursRun          Float      @default(0)
+  hoursRun           Float      @default(0)
   machineStartTime   DateTime   @db.Time(0)
   machineEndTime     DateTime?  @db.Time(0)
   projectId          String     @db.Uuid

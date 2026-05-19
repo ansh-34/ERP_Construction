@@ -122,6 +122,8 @@ export const AuthService = {
         name: domainOwner.name,
         email: domainOwner.email,
         role: 'DOMAIN',
+        onboardingStatus: 'COMPLETED',
+        onboardingStep: 'EMAIL_VERIFICATION',
       },
       domain: {
         id: domainOwner.id,

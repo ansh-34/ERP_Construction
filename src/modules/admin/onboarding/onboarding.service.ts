@@ -55,14 +55,16 @@ export const OnboardingService = {
     }
 
     await Promise.all([
-      AdminRepository.update(adminId, { onboardingStep: 'CURRENCY_SELECTION' }),
+      AdminRepository.update(adminId, {
+        onboardingStep: 'CURRENCY_SELECTION',
+        enabledLanguagesCount: languageIds.length,
+      }),
       AdminLanguageRepository.enableLanguages(adminId, languageIds),
     ]);
 
     return true;
   },
   async handleCurrencySelection(currencyIds: string[], adminId: string) {
-    console.log(currencyIds);
     const areCurrenciesValid =
       await AdminCurrencyRepository.validateAdminCurrencies({
         adminId,
@@ -80,6 +82,7 @@ export const OnboardingService = {
     await Promise.all([
       AdminRepository.update(adminId, {
         onboardingStatus: 'COMPLETED',
+        enabledCurrenciesCount: currencyIds.length,
       }),
       AdminCurrencyRepository.enableCurrencies(adminId, currencyIds),
       sendMail(
