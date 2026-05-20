@@ -4,6 +4,7 @@ import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
+type RelationDetails = Record<string, unknown> | null;
 
 export interface ProjectStageRecord {
   id: string;
@@ -14,6 +15,9 @@ export interface ProjectStageRecord {
   projectId: string;
   domainId: string;
   adminId: string;
+  project?: RelationDetails;
+  domain?: RelationDetails;
+  admin?: RelationDetails;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -54,6 +58,83 @@ const projectStageSelect = Prisma.sql`
   "isDeleted",
   "createdAt",
   "updatedAt"
+`;
+
+const projectStageListSelect = Prisma.sql`
+  ps."id",
+  ps."name",
+  ps."code",
+  ps."description",
+  ps."progress",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email"
+  ) AS "admin",
+  ps."status",
+  ps."isDeleted",
+  ps."createdAt",
+  ps."updatedAt"
+`;
+
+const projectStageDetailSelect = Prisma.sql`
+  ps."id",
+  ps."name",
+  ps."code",
+  ps."description",
+  ps."progress",
+  ps."projectId",
+  ps."domainId",
+  ps."adminId",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code",
+    'description', p."description",
+    'budget', p."budget",
+    'spent', p."spent",
+    'locationId', p."locationId",
+    'location', jsonb_build_object(
+      'locationId', l."id",
+      'name', l."name",
+      'code', l."code",
+      'type', l."type",
+      'parentLocationId', l."parentLocationId",
+      'status', l."status"
+    ),
+    'status', p."status"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email",
+    'phoneCode', d."phoneCode",
+    'phone', d."phone",
+    'industry', d."industry",
+    'status', d."status"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email",
+    'phoneCode', a."phoneCode",
+    'phone', a."phone",
+    'status', a."status"
+  ) AS "admin",
+  ps."status",
+  ps."isDeleted",
+  ps."createdAt",
+  ps."updatedAt"
 `;
 
 function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
@@ -99,26 +180,30 @@ export const projectStageRepository = {
     searchKey?: string,
   ): Promise<ProjectStageRecord[]> => {
     const filters = [
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"projectId" = ${projectId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`ps."domainId" = ${domainId}`,
+      Prisma.sql`ps."projectId" = ${projectId}`,
+      Prisma.sql`ps."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`ps."adminId" = ${adminId}`);
     }
 
     if (searchKey) {
       filters.push(
-        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+        Prisma.sql`ps."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
       );
     }
 
     return prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      SELECT ${projectStageSelect}
-      FROM "ProjectStage"
+      SELECT ${projectStageListSelect}
+      FROM "ProjectStage" ps
+      INNER JOIN "Project" p ON p."id" = ps."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = ps."domainId"
+      INNER JOIN "Admin" a ON a."id" = ps."adminId"
       WHERE ${Prisma.join(filters, ' AND ')}
-      ORDER BY "createdAt" DESC
+      ORDER BY ps."createdAt" DESC
     `);
   },
 
@@ -128,18 +213,22 @@ export const projectStageRepository = {
     adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
     const filters = [
-      Prisma.sql`"id" = ${id}`,
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`ps."id" = ${id}`,
+      Prisma.sql`ps."domainId" = ${domainId}`,
+      Prisma.sql`ps."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`ps."adminId" = ${adminId}`);
     }
 
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      SELECT ${projectStageSelect}
-      FROM "ProjectStage"
+      SELECT ${projectStageDetailSelect}
+      FROM "ProjectStage" ps
+      INNER JOIN "Project" p ON p."id" = ps."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = ps."domainId"
+      INNER JOIN "Admin" a ON a."id" = ps."adminId"
       WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);

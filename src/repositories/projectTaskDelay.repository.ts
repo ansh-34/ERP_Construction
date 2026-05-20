@@ -4,6 +4,7 @@ import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
+type RelationDetails = Record<string, unknown> | null;
 
 export interface ProjectTaskDelayRecord {
   id: string;
@@ -16,6 +17,11 @@ export interface ProjectTaskDelayRecord {
   projectId: string;
   domainId: string;
   adminId: string;
+  task?: RelationDetails;
+  stage?: RelationDetails;
+  project?: RelationDetails;
+  domain?: RelationDetails;
+  admin?: RelationDetails;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -60,6 +66,125 @@ const projectTaskDelaySelect = Prisma.sql`
   "isDeleted",
   "createdAt",
   "updatedAt"
+`;
+
+const projectTaskDelayListSelect = Prisma.sql`
+  ptd."id",
+  ptd."requestedDelayInDays",
+  ptd."delayReason",
+  ptd."requestApproved",
+  ptd."requestApprovalTime",
+  jsonb_build_object(
+    'taskId', pt."id",
+    'name', pt."name",
+    'code', pt."code",
+    'taskStatus', pt."taskStatus"
+  ) AS "task",
+  jsonb_build_object(
+    'stageId', ps."id",
+    'name', ps."name",
+    'code', ps."code"
+  ) AS "stage",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email"
+  ) AS "admin",
+  ptd."status",
+  ptd."isDeleted",
+  ptd."createdAt",
+  ptd."updatedAt"
+`;
+
+const projectTaskDelayDetailSelect = Prisma.sql`
+  ptd."id",
+  ptd."taskId",
+  ptd."requestedDelayInDays",
+  ptd."delayReason",
+  ptd."requestApproved",
+  ptd."requestApprovalTime",
+  ptd."stageId",
+  ptd."projectId",
+  ptd."domainId",
+  ptd."adminId",
+  jsonb_build_object(
+    'taskId', pt."id",
+    'name', pt."name",
+    'code', pt."code",
+    'taskStatus', pt."taskStatus",
+    'taskProgress', pt."taskProgress",
+    'assignee', pt."assignee",
+    'assigneeDetails', CASE
+      WHEN u."id" IS NULL THEN NULL
+      ELSE jsonb_build_object(
+        'userId', u."id",
+        'name', u."name",
+        'email', u."email",
+        'phoneCode', u."phoneCode",
+        'phone', u."phone",
+        'roleId', u."roleId",
+        'status', u."status"
+      )
+    END,
+    'status', pt."status"
+  ) AS "task",
+  jsonb_build_object(
+    'stageId', ps."id",
+    'name', ps."name",
+    'code', ps."code",
+    'description', ps."description",
+    'progress', ps."progress",
+    'status', ps."status"
+  ) AS "stage",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code",
+    'description', p."description",
+    'budget', p."budget",
+    'spent', p."spent",
+    'locationId', p."locationId",
+    'location', jsonb_build_object(
+      'locationId', l."id",
+      'name', l."name",
+      'code', l."code",
+      'type', l."type",
+      'parentLocationId', l."parentLocationId",
+      'status', l."status"
+    ),
+    'status', p."status"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email",
+    'phoneCode', d."phoneCode",
+    'phone', d."phone",
+    'industry', d."industry",
+    'status', d."status"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email",
+    'phoneCode', a."phoneCode",
+    'phone', a."phone",
+    'status', a."status"
+  ) AS "admin",
+  ptd."status",
+  ptd."isDeleted",
+  ptd."createdAt",
+  ptd."updatedAt"
 `;
 
 function toDateSql(value: Date | null | undefined): Prisma.Sql {
@@ -128,37 +253,44 @@ export const projectTaskDelayRepository = {
     searchKey?: string,
   ): Promise<ProjectTaskDelayRecord[]> => {
     const filters = [
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`ptd."domainId" = ${domainId}`,
+      Prisma.sql`ptd."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`ptd."adminId" = ${adminId}`);
     }
 
     if (projectId) {
-      filters.push(Prisma.sql`"projectId" = ${projectId}`);
+      filters.push(Prisma.sql`ptd."projectId" = ${projectId}`);
     }
 
     if (stageId) {
-      filters.push(Prisma.sql`"stageId" = ${stageId}`);
+      filters.push(Prisma.sql`ptd."stageId" = ${stageId}`);
     }
 
     if (taskId) {
-      filters.push(Prisma.sql`"taskId" = ${taskId}`);
+      filters.push(Prisma.sql`ptd."taskId" = ${taskId}`);
     }
 
     if (searchKey) {
       filters.push(
-        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+        Prisma.sql`ptd."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
       );
     }
 
     return prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
-      SELECT ${projectTaskDelaySelect}
-      FROM "ProjectTaskDelay"
+      SELECT ${projectTaskDelayListSelect}
+      FROM "ProjectTaskDelay" ptd
+      INNER JOIN "ProjectTask" pt ON pt."id" = ptd."taskId"
+      INNER JOIN "ProjectStage" ps ON ps."id" = ptd."stageId"
+      INNER JOIN "Project" p ON p."id" = ptd."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = ptd."domainId"
+      INNER JOIN "Admin" a ON a."id" = ptd."adminId"
+      LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
-      ORDER BY "createdAt" DESC
+      ORDER BY ptd."createdAt" DESC
     `);
   },
 
@@ -168,18 +300,25 @@ export const projectTaskDelayRepository = {
     adminId?: string,
   ): Promise<ProjectTaskDelayRecord | null> => {
     const filters = [
-      Prisma.sql`"id" = ${id}`,
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`ptd."id" = ${id}`,
+      Prisma.sql`ptd."domainId" = ${domainId}`,
+      Prisma.sql`ptd."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`ptd."adminId" = ${adminId}`);
     }
 
     const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
-      SELECT ${projectTaskDelaySelect}
-      FROM "ProjectTaskDelay"
+      SELECT ${projectTaskDelayDetailSelect}
+      FROM "ProjectTaskDelay" ptd
+      INNER JOIN "ProjectTask" pt ON pt."id" = ptd."taskId"
+      INNER JOIN "ProjectStage" ps ON ps."id" = ptd."stageId"
+      INNER JOIN "Project" p ON p."id" = ptd."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = ptd."domainId"
+      INNER JOIN "Admin" a ON a."id" = ptd."adminId"
+      LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);

@@ -4,6 +4,7 @@ import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
+type RelationDetails = Record<string, unknown> | null;
 
 export interface ProjectTaskRecord {
   id: string;
@@ -24,6 +25,11 @@ export interface ProjectTaskRecord {
   projectId: string;
   domainId: string;
   adminId: string;
+  stage?: RelationDetails;
+  project?: RelationDetails;
+  domain?: RelationDetails;
+  admin?: RelationDetails;
+  assigneeDetails?: RelationDetails;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -93,6 +99,135 @@ const projectTaskSelect = Prisma.sql`
   "isDeleted",
   "createdAt",
   "updatedAt"
+`;
+
+const projectTaskListSelect = Prisma.sql`
+  pt."id",
+  pt."name",
+  pt."code",
+  pt."plannedStartDate",
+  pt."plannedEndDate",
+  pt."actualStartDate",
+  pt."actualEndDate",
+  pt."taskStatus",
+  pt."taskProgress",
+  pt."totalDelayInDays",
+  pt."requiredApproval",
+  pt."lastApprovedDeadline",
+  pt."projectBatchCode",
+  NULL AS "assignee",
+  jsonb_build_object(
+    'stageId', ps."id",
+    'name', ps."name",
+    'code', ps."code"
+  ) AS "stage",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email"
+  ) AS "admin",
+  CASE
+    WHEN u."id" IS NULL THEN NULL
+    ELSE jsonb_build_object(
+      'userId', u."id",
+      'name', u."name",
+      'email', u."email"
+    )
+  END AS "assigneeDetails",
+  pt."status",
+  pt."isDeleted",
+  pt."createdAt",
+  pt."updatedAt"
+`;
+
+const projectTaskDetailSelect = Prisma.sql`
+  pt."id",
+  pt."name",
+  pt."code",
+  pt."assignee",
+  pt."plannedStartDate",
+  pt."plannedEndDate",
+  pt."actualStartDate",
+  pt."actualEndDate",
+  pt."taskStatus",
+  pt."taskProgress",
+  pt."totalDelayInDays",
+  pt."requiredApproval",
+  pt."lastApprovedDeadline",
+  pt."projectBatchCode",
+  pt."stageId",
+  pt."projectId",
+  pt."domainId",
+  pt."adminId",
+  jsonb_build_object(
+    'stageId', ps."id",
+    'name', ps."name",
+    'code', ps."code",
+    'description', ps."description",
+    'progress', ps."progress",
+    'status', ps."status"
+  ) AS "stage",
+  jsonb_build_object(
+    'projectId', p."id",
+    'name', p."name",
+    'code', p."code",
+    'description', p."description",
+    'budget', p."budget",
+    'spent', p."spent",
+    'locationId', p."locationId",
+    'location', jsonb_build_object(
+      'locationId', l."id",
+      'name', l."name",
+      'code', l."code",
+      'type', l."type",
+      'parentLocationId', l."parentLocationId",
+      'status', l."status"
+    ),
+    'status', p."status"
+  ) AS "project",
+  jsonb_build_object(
+    'domainId', d."id",
+    'name', d."name",
+    'email', d."email",
+    'phoneCode', d."phoneCode",
+    'phone', d."phone",
+    'industry', d."industry",
+    'status', d."status"
+  ) AS "domain",
+  jsonb_build_object(
+    'adminId', a."id",
+    'name', a."name",
+    'email', a."email",
+    'phoneCode', a."phoneCode",
+    'phone', a."phone",
+    'status', a."status"
+  ) AS "admin",
+  CASE
+    WHEN u."id" IS NULL THEN NULL
+    ELSE jsonb_build_object(
+      'userId', u."id",
+      'name', u."name",
+      'email', u."email",
+      'phoneCode', u."phoneCode",
+      'phone', u."phone",
+      'roleId', u."roleId",
+      'status', u."status"
+    )
+  END AS "assigneeDetails",
+  pt."status",
+  pt."isDeleted",
+  pt."createdAt",
+  pt."updatedAt"
 `;
 
 function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
@@ -176,33 +311,39 @@ export const projectTaskRepository = {
     searchKey?: string,
   ): Promise<ProjectTaskRecord[]> => {
     const filters = [
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`pt."domainId" = ${domainId}`,
+      Prisma.sql`pt."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`pt."adminId" = ${adminId}`);
     }
 
     if (projectId) {
-      filters.push(Prisma.sql`"projectId" = ${projectId}`);
+      filters.push(Prisma.sql`pt."projectId" = ${projectId}`);
     }
 
     if (stageId) {
-      filters.push(Prisma.sql`"stageId" = ${stageId}`);
+      filters.push(Prisma.sql`pt."stageId" = ${stageId}`);
     }
 
     if (searchKey) {
       filters.push(
-        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+        Prisma.sql`pt."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
       );
     }
 
     return prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
-      SELECT ${projectTaskSelect}
-      FROM "ProjectTask"
+      SELECT ${projectTaskListSelect}
+      FROM "ProjectTask" pt
+      INNER JOIN "ProjectStage" ps ON ps."id" = pt."stageId"
+      INNER JOIN "Project" p ON p."id" = pt."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = pt."domainId"
+      INNER JOIN "Admin" a ON a."id" = pt."adminId"
+      LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
-      ORDER BY "createdAt" DESC
+      ORDER BY pt."createdAt" DESC
     `);
   },
 
@@ -236,18 +377,24 @@ export const projectTaskRepository = {
     adminId?: string,
   ): Promise<ProjectTaskRecord | null> => {
     const filters = [
-      Prisma.sql`"id" = ${id}`,
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
+      Prisma.sql`pt."id" = ${id}`,
+      Prisma.sql`pt."domainId" = ${domainId}`,
+      Prisma.sql`pt."isDeleted" = false`,
     ];
 
     if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+      filters.push(Prisma.sql`pt."adminId" = ${adminId}`);
     }
 
     const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
-      SELECT ${projectTaskSelect}
-      FROM "ProjectTask"
+      SELECT ${projectTaskDetailSelect}
+      FROM "ProjectTask" pt
+      INNER JOIN "ProjectStage" ps ON ps."id" = pt."stageId"
+      INNER JOIN "Project" p ON p."id" = pt."projectId"
+      INNER JOIN "Location" l ON l."id" = p."locationId"
+      INNER JOIN "Domain" d ON d."id" = pt."domainId"
+      INNER JOIN "Admin" a ON a."id" = pt."adminId"
+      LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
     `);
