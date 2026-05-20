@@ -61,7 +61,7 @@ function normalizeStoredDelayReason(value: Record<string, unknown>): string {
 
 function normalizeProjectTaskDelay(
   delay: ProjectTaskDelayRecord,
-  language: string | null,
+  _language: string | null,
 ): LocalizedProjectTaskDelayRecord {
   return {
     ...delay,

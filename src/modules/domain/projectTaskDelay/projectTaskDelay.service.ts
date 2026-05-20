@@ -63,7 +63,7 @@ function normalizeStoredDelayReason(value: Record<string, unknown>): string {
 
 function normalizeProjectTaskDelay(
   delay: ProjectTaskDelayRecord,
-  language: string | null,
+  _language: string | null,
 ): LocalizedProjectTaskDelayRecord {
   const approvalState: ApprovalState = delay.requestApproved
     ? 'APPROVED'

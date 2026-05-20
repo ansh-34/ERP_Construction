@@ -7,10 +7,10 @@ export const userTaskSubmissionController = {
   submit: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { actualEndDate, taskProgress, notes } = req.body as {
+      const { actualEndDate, taskProgress } = req.body as {
         actualEndDate?: string;
         taskProgress?: number;
-        notes?: string;
+        // notes?: string;
       };
       const language = req.body.language || req.headers.language || 'en';
 
