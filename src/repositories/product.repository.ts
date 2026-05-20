@@ -154,10 +154,16 @@ export const ProductRepository = {
     });
   },
 
-  softDelete(id: string) {
+  async softDelete(id: string) {
+    const product = await prisma.product.findUnique({ where: { id } });
+    const suffix = `_DEL_${Date.now()}`;
     return prisma.product.update({
       where: { id },
-      data: { isDeleted: true, status: 'INACTIVE' },
+      data: {
+        isDeleted: true,
+        status: 'INACTIVE',
+        code: (product?.code || id) + suffix,
+      },
     });
   },
 };

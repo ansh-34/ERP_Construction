@@ -7,12 +7,16 @@ import {
   getProductById,
   deleteProduct,
   updateProduct,
+  bulkUpdateGrades,
+  bulkUpdateStandardRates,
 } from './product.controller.js';
 import {
   createProductBodySchema,
   listProductsQuerySchema,
   productIdParamsSchema,
   updateProductBodySchema,
+  bulkUpdateGradesBodySchema,
+  bulkUpdateStdRatesBodySchema,
 } from './product.validator.js';
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
 import { productUomRouter } from '../productUom/productUom.router.js';
@@ -49,6 +53,22 @@ router.delete(
   // authorize('product', 'delete'),
   validate(productIdParamsSchema, 'params'),
   deleteProduct,
+);
+
+// ── Standalone bulk-update endpoints ─────────────────────────
+router.put(
+  '/:id/grades',
+  // authorize('product', 'update'),
+  validate(productIdParamsSchema, 'params'),
+  validate(bulkUpdateGradesBodySchema, 'body'),
+  bulkUpdateGrades,
+);
+router.put(
+  '/:id/standard-rates',
+  // authorize('product', 'update'),
+  validate(productIdParamsSchema, 'params'),
+  validate(bulkUpdateStdRatesBodySchema, 'body'),
+  bulkUpdateStandardRates,
 );
 
 router.use('/:productId/grades', productGradeRouter());

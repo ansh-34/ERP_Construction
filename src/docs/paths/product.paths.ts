@@ -77,6 +77,13 @@ export const ProductPaths = {
           schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
         },
         { in: 'query', name: 'status', schema: { type: 'string' } },
+        // FIX 1: Added missing searchKey query param (present in Postman collection)
+        {
+          in: 'query',
+          name: 'searchKey',
+          schema: { type: 'string' },
+          description: 'Search products by name keyword',
+        },
       ],
       responses: {
         200: {
@@ -170,7 +177,10 @@ export const ProductPaths = {
     },
   },
 
-  // Product Grades
+  // ── Standalone bulk-update endpoints ──────────────────────────
+  // FIX 2: Renamed path param from {id} to {productId} to resolve conflict
+  // with the Product Grades CRUD section below (same URL pattern, different param names).
+  // OpenAPI treats these as the same path — unified under {productId} for consistency.
   '/api/domain/products/{productId}/grades': {
     get: {
       tags: ['Product Grades'],
@@ -214,7 +224,67 @@ export const ProductPaths = {
       },
       responses: { ...createdMsg('Product grade created'), ...errors },
     },
+    put: {
+      tags: ['Products'],
+      summary: 'Bulk update product grades',
+      description:
+        'Replace/update grades for a product. Grades with id are updated, without id are created. ' +
+        'Matches Postman "Update Grades" request body shape: { grades: [...] }.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/BulkUpdateGradesBody' },
+          },
+        },
+      },
+      responses: {
+        ...successMsg('Product grades updated successfully'),
+        ...errors,
+      },
+    },
   },
+
+  '/api/domain/products/{productId}/standard-rates': {
+    put: {
+      tags: ['Products'],
+      summary: 'Bulk update product standard rates',
+      description:
+        'Replace/update standard rates for a product. Rates with id are updated, without id are created. ' +
+        'Partial updates supported — only id + changed fields required when updating.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/BulkUpdateStdRatesBody' },
+          },
+        },
+      },
+      responses: {
+        ...successMsg('Product standard rates updated successfully'),
+        ...errors,
+      },
+    },
+  },
+
   '/api/domain/products/{productId}/grades/{id}': {
     get: {
       tags: ['Product Grades'],
