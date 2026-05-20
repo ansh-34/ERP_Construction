@@ -6,6 +6,9 @@ const nonNegativeNumber = z
   .number()
   .finite()
   .nonnegative({ message: 'Value must be non-negative' });
+const progressPercentage = nonNegativeNumber.max(100, {
+  message: 'Progress cannot be greater than 100',
+});
 const optionalDate = z.string().trim().min(1).nullable().optional();
 const nonEmptyOptionalString = z.string().trim().min(1).nullable().optional();
 
@@ -17,7 +20,7 @@ export const createProjectTaskBody = z.object({
   actualStartDate: optionalDate,
   actualEndDate: optionalDate,
   taskStatus: z.string().trim().min(1).optional(),
-  taskProgress: nonNegativeNumber.optional(),
+  taskProgress: progressPercentage.optional(),
   totalDelayInDays: nonNegativeNumber.optional(),
   requiredApproval: z.boolean().optional(),
   lastApprovedDeadline: optionalDate,
@@ -36,7 +39,7 @@ export const updateProjectTaskBody = z
     actualStartDate: optionalDate,
     actualEndDate: optionalDate,
     taskStatus: z.string().trim().min(1).optional(),
-    taskProgress: nonNegativeNumber.optional(),
+    taskProgress: progressPercentage.optional(),
     totalDelayInDays: nonNegativeNumber.optional(),
     requiredApproval: z.boolean().optional(),
     lastApprovedDeadline: optionalDate,

@@ -1,4 +1,5 @@
 import {
+  projectStageRepository,
   projectTaskRepository,
   type ProjectTaskRecord,
 } from '@repositories/index';
@@ -79,6 +80,10 @@ export const userTaskSubmissionService = {
         throw new Error('invalid date');
       }
 
+      if (taskProgress !== undefined && taskProgress > 100) {
+        throw new Error('invalid taskProgress');
+      }
+
       // Update task with submission date
       const updatePayload = {
         actualEndDate: submissionDate,
@@ -96,6 +101,11 @@ export const userTaskSubmissionService = {
       if (!updatedTask) {
         throw new Error('not found');
       }
+
+      await projectStageRepository.recalculateProgress(
+        updatedTask.stageId,
+        domainId,
+      );
 
       return normalizeProjectTask(updatedTask, language);
     } catch (error: unknown) {

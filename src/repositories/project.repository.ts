@@ -14,6 +14,7 @@ export interface ProjectRecord {
   description: JsonObject | null;
   budget: number;
   spent: number;
+  progress?: number;
   locationId: string;
   domainId: string;
   adminId: string;
@@ -73,6 +74,22 @@ const projectListSelect = Prisma.sql`
   p."description",
   p."budget",
   p."spent",
+  COALESCE((
+    SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+    FROM (
+      SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+      FROM "ProjectStage" ps
+      LEFT JOIN "ProjectTask" pt ON pt."stageId" = ps."id"
+        AND pt."domainId" = ps."domainId"
+        AND pt."isDeleted" = false
+        AND pt."status" = ${StatusEnum.ACTIVE}
+      WHERE ps."projectId" = p."id"
+        AND ps."domainId" = p."domainId"
+        AND ps."isDeleted" = false
+        AND ps."status" = ${StatusEnum.ACTIVE}
+      GROUP BY ps."id"
+    ) stage_progress
+  ), 0) AS "progress",
   jsonb_build_object(
     'locationId', l."id",
     'name', l."name",
@@ -101,6 +118,22 @@ const projectDetailSelect = Prisma.sql`
   p."description",
   p."budget",
   p."spent",
+  COALESCE((
+    SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+    FROM (
+      SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+      FROM "ProjectStage" ps
+      LEFT JOIN "ProjectTask" pt ON pt."stageId" = ps."id"
+        AND pt."domainId" = ps."domainId"
+        AND pt."isDeleted" = false
+        AND pt."status" = ${StatusEnum.ACTIVE}
+      WHERE ps."projectId" = p."id"
+        AND ps."domainId" = p."domainId"
+        AND ps."isDeleted" = false
+        AND ps."status" = ${StatusEnum.ACTIVE}
+      GROUP BY ps."id"
+    ) stage_progress
+  ), 0) AS "progress",
   p."locationId",
   p."domainId",
   p."adminId",

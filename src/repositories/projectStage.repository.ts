@@ -65,11 +65,34 @@ const projectStageListSelect = Prisma.sql`
   ps."name",
   ps."code",
   ps."description",
-  ps."progress",
+  COALESCE((
+    SELECT ROUND(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100))::numeric, 2)::float
+    FROM "ProjectTask" pt
+    WHERE pt."stageId" = ps."id"
+      AND pt."domainId" = ps."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "progress",
   jsonb_build_object(
     'projectId', p."id",
     'name', p."name",
-    'code', p."code"
+    'code', p."code",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+      FROM (
+        SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+        FROM "ProjectStage" project_stages
+        LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
+          AND pt."domainId" = project_stages."domainId"
+          AND pt."isDeleted" = false
+          AND pt."status" = ${StatusEnum.ACTIVE}
+        WHERE project_stages."projectId" = p."id"
+          AND project_stages."domainId" = p."domainId"
+          AND project_stages."isDeleted" = false
+          AND project_stages."status" = ${StatusEnum.ACTIVE}
+        GROUP BY project_stages."id"
+      ) stage_progress
+    ), 0)
   ) AS "project",
   jsonb_build_object(
     'domainId', d."id",
@@ -92,7 +115,14 @@ const projectStageDetailSelect = Prisma.sql`
   ps."name",
   ps."code",
   ps."description",
-  ps."progress",
+  COALESCE((
+    SELECT ROUND(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100))::numeric, 2)::float
+    FROM "ProjectTask" pt
+    WHERE pt."stageId" = ps."id"
+      AND pt."domainId" = ps."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "progress",
   ps."projectId",
   ps."domainId",
   ps."adminId",
@@ -103,6 +133,22 @@ const projectStageDetailSelect = Prisma.sql`
     'description', p."description",
     'budget', p."budget",
     'spent', p."spent",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+      FROM (
+        SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+        FROM "ProjectStage" project_stages
+        LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
+          AND pt."domainId" = project_stages."domainId"
+          AND pt."isDeleted" = false
+          AND pt."status" = ${StatusEnum.ACTIVE}
+        WHERE project_stages."projectId" = p."id"
+          AND project_stages."domainId" = p."domainId"
+          AND project_stages."isDeleted" = false
+          AND project_stages."status" = ${StatusEnum.ACTIVE}
+        GROUP BY project_stages."id"
+      ) stage_progress
+    ), 0),
     'locationId', p."locationId",
     'location', jsonb_build_object(
       'locationId', l."id",
@@ -144,6 +190,40 @@ function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
 }
 
 export const projectStageRepository = {
+  recalculateProgress: async (
+    id: string,
+    domainId: string,
+    adminId?: string,
+  ): Promise<ProjectStageRecord | null> => {
+    const filters = [
+      Prisma.sql`ps."id" = ${id}`,
+      Prisma.sql`ps."domainId" = ${domainId}`,
+      Prisma.sql`ps."isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`ps."adminId" = ${adminId}`);
+    }
+
+    const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
+      UPDATE "ProjectStage" ps
+      SET
+        "progress" = COALESCE((
+          SELECT ROUND(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100))::numeric, 2)::float
+          FROM "ProjectTask" pt
+          WHERE pt."stageId" = ps."id"
+            AND pt."domainId" = ps."domainId"
+            AND pt."isDeleted" = false
+            AND pt."status" = ${StatusEnum.ACTIVE}
+        ), 0),
+        "updatedAt" = NOW()
+      WHERE ${Prisma.join(filters, ' AND ')}
+      RETURNING ${projectStageSelect}
+    `);
+
+    return result[0] ?? null;
+  },
+
   create: async (
     data: CreateProjectStageInput,
   ): Promise<ProjectStageRecord> => {

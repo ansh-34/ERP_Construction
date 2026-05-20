@@ -78,6 +78,29 @@ function normalizeProjectStage(
     ...stage,
     name: getLocalizedText(stage.name, language) || '',
     description: getLocalizedText(stage.description, language),
+    project: normalizeRelationDetails(stage.project, language),
+    domain: normalizeRelationDetails(stage.domain, language),
+    admin: normalizeRelationDetails(stage.admin, language),
+  };
+}
+
+function normalizeRelationDetails(
+  relation: ProjectStageRecord['project'],
+  language: string | null,
+): ProjectStageRecord['project'] {
+  if (!relation) {
+    return relation;
+  }
+
+  const name = relation.name;
+  const location = relation.location;
+
+  return {
+    ...relation,
+    name: isPlainObject(name) ? getLocalizedText(name, language) || '' : name,
+    ...(isPlainObject(location)
+      ? { location: normalizeRelationDetails(location, language) }
+      : {}),
   };
 }
 
@@ -133,10 +156,9 @@ function assertCreateInput(data: CreateProjectStageInput): void {
 function assertUpdateInput(data: UpdateProjectStageInput): void {
   const hasName = data.name !== undefined;
   const hasDescription = data.description !== undefined;
-  const hasProgress = data.progress !== undefined;
   const hasStatus = data.status !== undefined;
 
-  if (!hasName && !hasDescription && !hasProgress && !hasStatus) {
+  if (!hasName && !hasDescription && !hasStatus) {
     throw new Error('empty update payload');
   }
 
@@ -162,14 +184,6 @@ function assertUpdateInput(data: UpdateProjectStageInput): void {
     !isNonEmptyString(data.description?.en)
   ) {
     throw new Error('description.en is required');
-  }
-
-  if (
-    hasProgress &&
-    data.progress !== null &&
-    !isNonNegativeFiniteNumber(data.progress)
-  ) {
-    throw new Error('invalid progress');
   }
 
   if (
@@ -214,6 +228,7 @@ export const projectStageService = {
 
       const stage = await projectStageRepository.create({
         ...data,
+        progress: 0,
         code,
         searchText: buildProjectStageSearchText(data.name),
       });
@@ -307,8 +322,10 @@ export const projectStageService = {
         throw new Error('not found');
       }
 
+      const stageData = { ...data };
+      delete stageData.progress;
       const updateData = {
-        ...data,
+        ...stageData,
         ...(data.name !== undefined
           ? {
               ...(data.name !== undefined && {

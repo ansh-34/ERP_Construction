@@ -108,6 +108,31 @@ function normalizeProjectTask(
     ...task,
     name: getLocalizedText(task.name, language),
     assignee: getAssigneeUserId(task.assignee),
+    stage: normalizeRelationDetails(task.stage, language),
+    project: normalizeRelationDetails(task.project, language),
+    domain: normalizeRelationDetails(task.domain, language),
+    admin: normalizeRelationDetails(task.admin, language),
+    assigneeDetails: normalizeRelationDetails(task.assigneeDetails, language),
+  };
+}
+
+function normalizeRelationDetails(
+  relation: ProjectTaskRecord['project'],
+  language: string | null,
+): ProjectTaskRecord['project'] {
+  if (!relation) {
+    return relation;
+  }
+
+  const name = relation.name;
+  const location = relation.location;
+
+  return {
+    ...relation,
+    name: isPlainObject(name) ? getLocalizedText(name, language) : name,
+    ...(isPlainObject(location)
+      ? { location: normalizeRelationDetails(location, language) }
+      : {}),
   };
 }
 
@@ -166,7 +191,7 @@ function assertCreateInput(data: CreateProjectTaskInput): void {
 
   if (
     data.taskProgress !== undefined &&
-    !isNonNegativeFiniteNumber(data.taskProgress)
+    (!isNonNegativeFiniteNumber(data.taskProgress) || data.taskProgress > 100)
   ) {
     throw new Error('invalid taskProgress');
   }
@@ -221,7 +246,7 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
 
   if (
     data.taskProgress !== undefined &&
-    !isNonNegativeFiniteNumber(data.taskProgress)
+    (!isNonNegativeFiniteNumber(data.taskProgress) || data.taskProgress > 100)
   ) {
     throw new Error('invalid taskProgress');
   }
@@ -362,6 +387,11 @@ export const projectTaskService = {
       }
 
       const task = await projectTaskRepository.create(createPayload);
+      await projectStageRepository.recalculateProgress(
+        task.stageId,
+        data.domainId,
+        data.adminId,
+      );
 
       return normalizeProjectTask(task, language);
     } catch (error: unknown) {
@@ -483,6 +513,14 @@ export const projectTaskService = {
         adminId,
       );
 
+      if (task) {
+        await projectStageRepository.recalculateProgress(
+          task.stageId,
+          domainId,
+          adminId,
+        );
+      }
+
       return task ? normalizeProjectTask(task, language) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -545,6 +583,11 @@ export const projectTaskService = {
         );
 
         if (updatedTask) {
+          await projectStageRepository.recalculateProgress(
+            updatedTask.stageId,
+            domainId,
+            adminId,
+          );
           updatedTasks.push(normalizeProjectTask(updatedTask, language));
         }
       }
@@ -575,7 +618,21 @@ export const projectTaskService = {
         throw new Error('not found');
       }
 
-      return await projectTaskRepository.softDelete(id, domainId, adminId);
+      const deletedTask = await projectTaskRepository.softDelete(
+        id,
+        domainId,
+        adminId,
+      );
+
+      if (deletedTask) {
+        await projectStageRepository.recalculateProgress(
+          deletedTask.stageId,
+          domainId,
+          adminId,
+        );
+      }
+
+      return deletedTask;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

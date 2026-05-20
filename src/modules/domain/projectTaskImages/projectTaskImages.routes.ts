@@ -4,7 +4,6 @@ import { validate } from '@/middlewares/validate';
 import { projectTaskImagesController } from './projectTaskImages.controller';
 import {
   createProjectTaskImageBody,
-  domainIdQuery,
   idParams,
   listProjectTaskImageQuery,
 } from './projectTaskImages.validate';
@@ -28,7 +27,6 @@ projectTaskImagesRouter.get(
 projectTaskImagesRouter.delete(
   '/:id',
   validate(idParams, 'params'),
-  validate(domainIdQuery, 'query'),
   projectTaskImagesController.delete,
 );
 

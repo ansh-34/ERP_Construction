@@ -101,6 +101,25 @@ function normalizeProject(
     ...project,
     name: getLocalizedText(project.name, language) || '',
     description: getLocalizedText(project.description, language),
+    location: normalizeRelationDetails(project.location, language),
+    domain: normalizeRelationDetails(project.domain, language),
+    admin: normalizeRelationDetails(project.admin, language),
+  };
+}
+
+function normalizeRelationDetails(
+  relation: ProjectRecord['location'],
+  language: string | null,
+): ProjectRecord['location'] {
+  if (!relation) {
+    return relation;
+  }
+
+  const name = relation.name;
+
+  return {
+    ...relation,
+    name: isPlainObject(name) ? getLocalizedText(name, language) || '' : name,
   };
 }
 
@@ -309,7 +328,7 @@ export const projectService = {
               code: buildProjectStageCode(stage.name),
               searchText: buildProjectStageSearchText(stage.name),
               description: stage.description ?? null,
-              progress: stage.progress ?? null,
+              progress: 0,
               projectId: createdProject.id,
               domainId: data.domainId,
               adminId,

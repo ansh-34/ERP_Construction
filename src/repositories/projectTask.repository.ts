@@ -119,12 +119,36 @@ const projectTaskListSelect = Prisma.sql`
   jsonb_build_object(
     'stageId', ps."id",
     'name', ps."name",
-    'code', ps."code"
+    'code', ps."code",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(LEAST(GREATEST(stage_tasks."taskProgress", 0), 100))::numeric, 2)::float
+      FROM "ProjectTask" stage_tasks
+      WHERE stage_tasks."stageId" = ps."id"
+        AND stage_tasks."domainId" = ps."domainId"
+        AND stage_tasks."isDeleted" = false
+        AND stage_tasks."status" = ${StatusEnum.ACTIVE}
+    ), 0)
   ) AS "stage",
   jsonb_build_object(
     'projectId', p."id",
     'name', p."name",
-    'code', p."code"
+    'code', p."code",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+      FROM (
+        SELECT COALESCE(AVG(LEAST(GREATEST(project_tasks."taskProgress", 0), 100)), 0) AS "progress"
+        FROM "ProjectStage" project_stages
+        LEFT JOIN "ProjectTask" project_tasks ON project_tasks."stageId" = project_stages."id"
+          AND project_tasks."domainId" = project_stages."domainId"
+          AND project_tasks."isDeleted" = false
+          AND project_tasks."status" = ${StatusEnum.ACTIVE}
+        WHERE project_stages."projectId" = p."id"
+          AND project_stages."domainId" = p."domainId"
+          AND project_stages."isDeleted" = false
+          AND project_stages."status" = ${StatusEnum.ACTIVE}
+        GROUP BY project_stages."id"
+      ) stage_progress
+    ), 0)
   ) AS "project",
   jsonb_build_object(
     'domainId', d."id",
@@ -174,7 +198,14 @@ const projectTaskDetailSelect = Prisma.sql`
     'name', ps."name",
     'code', ps."code",
     'description', ps."description",
-    'progress', ps."progress",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(LEAST(GREATEST(stage_tasks."taskProgress", 0), 100))::numeric, 2)::float
+      FROM "ProjectTask" stage_tasks
+      WHERE stage_tasks."stageId" = ps."id"
+        AND stage_tasks."domainId" = ps."domainId"
+        AND stage_tasks."isDeleted" = false
+        AND stage_tasks."status" = ${StatusEnum.ACTIVE}
+    ), 0),
     'status', ps."status"
   ) AS "stage",
   jsonb_build_object(
@@ -184,6 +215,22 @@ const projectTaskDetailSelect = Prisma.sql`
     'description', p."description",
     'budget', p."budget",
     'spent', p."spent",
+    'progress', COALESCE((
+      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+      FROM (
+        SELECT COALESCE(AVG(LEAST(GREATEST(project_tasks."taskProgress", 0), 100)), 0) AS "progress"
+        FROM "ProjectStage" project_stages
+        LEFT JOIN "ProjectTask" project_tasks ON project_tasks."stageId" = project_stages."id"
+          AND project_tasks."domainId" = project_stages."domainId"
+          AND project_tasks."isDeleted" = false
+          AND project_tasks."status" = ${StatusEnum.ACTIVE}
+        WHERE project_stages."projectId" = p."id"
+          AND project_stages."domainId" = p."domainId"
+          AND project_stages."isDeleted" = false
+          AND project_stages."status" = ${StatusEnum.ACTIVE}
+        GROUP BY project_stages."id"
+      ) stage_progress
+    ), 0),
     'locationId', p."locationId",
     'location', jsonb_build_object(
       'locationId', l."id",

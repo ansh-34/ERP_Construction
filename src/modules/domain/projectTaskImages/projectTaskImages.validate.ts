@@ -8,25 +8,20 @@ export const createProjectTaskImageBody = z.object({
   imageName: jsonObject.nullable().optional(),
   imageType: z.string().trim().min(1).nullable().optional(),
   description: jsonObject.nullable().optional(),
-  taskId: z.string().trim().min(1, { message: 'Task id is required' }),
-  domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
-  adminId: z.string().trim().min(1, { message: 'Admin id is required' }),
+  taskId: z.string().trim().uuid({ message: 'Valid task id is required' }),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
 export const listProjectTaskImageQuery = z.object({
-  domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
-  adminId: z.string().trim().min(1, { message: 'Admin id is required' }),
-  taskId: z.string().trim().min(1).optional(),
+  taskId: z
+    .string()
+    .trim()
+    .uuid({ message: 'Valid task id is required' })
+    .optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),
 });
 
-export const domainIdQuery = z.object({
-  domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
-  adminId: z.string().trim().min(1, { message: 'Admin id is required' }),
-});
-
 export const idParams = z.object({
-  id: z.string().trim().min(1, { message: 'Id is required' }),
+  id: z.string().trim().uuid({ message: 'Valid id is required' }),
 });

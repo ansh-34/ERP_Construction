@@ -22,6 +22,21 @@ export const UserProjectService = {
         project.description,
         langCode,
       ),
+      location: UserProjectService.localizeRelation(project.location, langCode),
+      domain: UserProjectService.localizeRelation(project.domain, langCode),
+      admin: UserProjectService.localizeRelation(project.admin, langCode),
+    };
+  },
+
+  localizeRelation(relation: any, langCode: string) {
+    if (!relation || typeof relation !== 'object') return relation;
+
+    return {
+      ...relation,
+      name:
+        relation.name && typeof relation.name === 'object'
+          ? UserProjectService.localizeName(relation.name, langCode)
+          : relation.name,
     };
   },
 
@@ -129,7 +144,7 @@ export const UserProjectService = {
               code: stageCode,
               searchText: Object.values(stage.name).join(' ').toLowerCase(),
               description: stage.description || null,
-              progress: stage.progress ?? null,
+              progress: 0,
               projectId: createdProject.id,
               domainId,
               adminId: resolvedAdminId,
