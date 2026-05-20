@@ -142,11 +142,15 @@ function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
 }
 
 export const projectRepository = {
-  create: async (data: CreateProjectInput): Promise<ProjectRecord> => {
+  create: async (
+    data: CreateProjectInput,
+    options: { transaction?: any } = {},
+  ): Promise<ProjectRecord> => {
+    const prismaClient = options.transaction || prisma;
     const id = randomUUID();
     const descriptionSql = toJsonbSql(data.description);
 
-    const result = await prisma.$queryRaw<ProjectRecord[]>(Prisma.sql`
+    const result = (await prismaClient.$queryRaw(Prisma.sql`
       INSERT INTO "Project" ("id", "name", "code", "searchText", "description", "budget", "spent", "locationId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
@@ -165,7 +169,7 @@ export const projectRepository = {
         NOW()
       )
       RETURNING *
-    `);
+    `)) as ProjectRecord[];
 
     return result[0] as ProjectRecord;
   },

@@ -1,10 +1,13 @@
 import {
   projectRepository,
   DomainRepository,
+  projectStageRepository,
   type ProjectRecord,
+  type ProjectStageRecord,
   type UpdateProjectInput,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
+import prisma from '@/infra/database/prisma/prisma.client';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
@@ -12,6 +15,13 @@ import {
   isPlainObject,
   isNonNegativeFiniteNumber,
 } from '@/utils/validation';
+
+interface CreateProjectStageInProjectInput {
+  name: Record<string, unknown>;
+  description?: Record<string, unknown> | null;
+  progress?: number | null;
+  status?: StatusEnum;
+}
 
 export interface CreateProjectInput {
   name: Record<string, unknown>;
@@ -22,11 +32,24 @@ export interface CreateProjectInput {
   domainId: string;
   adminId: string;
   status: StatusEnum;
+  projectStages?: CreateProjectStageInProjectInput[];
 }
 
 type LocalizedProjectRecord = Omit<ProjectRecord, 'name' | 'description'> & {
   name: string;
   description: string | null;
+};
+
+type LocalizedProjectStageRecord = Omit<
+  ProjectStageRecord,
+  'name' | 'description'
+> & {
+  name: string;
+  description: string | null;
+};
+
+type LocalizedProjectWithStagesRecord = LocalizedProjectRecord & {
+  projectStages?: LocalizedProjectStageRecord[];
 };
 
 type PaginatedProjects = {
@@ -43,6 +66,14 @@ function buildProjectCode(name: Record<string, unknown>): string {
 }
 
 function buildProjectSearchText(name: Record<string, unknown>): string {
+  return Object.values(name).join(' ').toLowerCase();
+}
+
+function buildProjectStageCode(name: Record<string, unknown>): string {
+  return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
+}
+
+function buildProjectStageSearchText(name: Record<string, unknown>): string {
   return Object.values(name).join(' ').toLowerCase();
 }
 
@@ -70,6 +101,17 @@ function normalizeProject(
     ...project,
     name: getLocalizedText(project.name, language) || '',
     description: getLocalizedText(project.description, language),
+  };
+}
+
+function normalizeProjectStage(
+  stage: ProjectStageRecord,
+  language: string | null,
+): LocalizedProjectStageRecord {
+  return {
+    ...stage,
+    name: getLocalizedText(stage.name, language) || '',
+    description: getLocalizedText(stage.description, language),
   };
 }
 
@@ -108,6 +150,62 @@ function assertCreateInput(data: CreateProjectInput): void {
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
+  }
+
+  if (data.projectStages !== undefined) {
+    if (!Array.isArray(data.projectStages)) {
+      throw new Error('invalid projectStages');
+    }
+
+    const stageCodes = new Set<string>();
+
+    data.projectStages.forEach((stage) => {
+      if (!isPlainObject(stage.name)) {
+        throw new Error('invalid project stage json name');
+      }
+
+      if (!isNonEmptyString(stage.name.en)) {
+        throw new Error('project stage name.en is required');
+      }
+
+      if (
+        stage.description !== undefined &&
+        stage.description !== null &&
+        !isPlainObject(stage.description)
+      ) {
+        throw new Error('invalid project stage json description');
+      }
+
+      if (
+        stage.description !== undefined &&
+        stage.description !== null &&
+        !isNonEmptyString(stage.description.en)
+      ) {
+        throw new Error('project stage description.en is required');
+      }
+
+      if (
+        stage.progress !== undefined &&
+        stage.progress !== null &&
+        !isNonNegativeFiniteNumber(stage.progress)
+      ) {
+        throw new Error('invalid project stage progress');
+      }
+
+      if (
+        stage.status !== undefined &&
+        stage.status !== StatusEnum.ACTIVE &&
+        stage.status !== StatusEnum.INACTIVE
+      ) {
+        throw new Error('invalid project stage status');
+      }
+
+      const code = buildProjectStageCode(stage.name);
+      if (stageCodes.has(code)) {
+        throw new Error('duplicate project stage code');
+      }
+      stageCodes.add(code);
+    });
   }
 }
 
@@ -182,7 +280,7 @@ export const projectService = {
   create: async (
     data: CreateProjectInput,
     language: string | null = null,
-  ): Promise<LocalizedProjectRecord> => {
+  ): Promise<LocalizedProjectWithStagesRecord> => {
     assertCreateInput(data);
 
     try {
@@ -193,14 +291,51 @@ export const projectService = {
         throw new Error('duplicate code');
       }
 
-      const project = await projectRepository.create({
-        ...data,
-        adminId,
-        code,
-        searchText: buildProjectSearchText(data.name),
+      const { project } = await prisma.$transaction(async (tx: any) => {
+        const createdProject = await projectRepository.create(
+          {
+            ...data,
+            adminId,
+            code,
+            searchText: buildProjectSearchText(data.name),
+          },
+          { transaction: tx },
+        );
+
+        if (data.projectStages?.length) {
+          await projectStageRepository.bulkCreate(
+            data.projectStages.map((stage) => ({
+              name: stage.name,
+              code: buildProjectStageCode(stage.name),
+              searchText: buildProjectStageSearchText(stage.name),
+              description: stage.description ?? null,
+              progress: stage.progress ?? null,
+              projectId: createdProject.id,
+              domainId: data.domainId,
+              adminId,
+              status: stage.status ?? StatusEnum.ACTIVE,
+            })),
+            { transaction: tx, skipDuplicates: false },
+          );
+        }
+
+        return { project: createdProject };
       });
 
-      return normalizeProject(project, language);
+      const createdStages = data.projectStages?.length
+        ? await projectStageRepository.findMany(
+            data.domainId,
+            project.id,
+            adminId,
+          )
+        : [];
+
+      return {
+        ...normalizeProject(project, language),
+        projectStages: createdStages.map((stage) =>
+          normalizeProjectStage(stage, language),
+        ),
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

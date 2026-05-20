@@ -3,8 +3,10 @@ import {
   projectRepository,
   DomainRepository,
   projectTaskRepository,
+  projectStageRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const UserProjectService = {
   localizeName(value: any, langCode: string) {
@@ -44,6 +46,12 @@ export const UserProjectService = {
       spent?: number;
       locationId: string;
       status?: 'ACTIVE' | 'INACTIVE';
+      projectStages?: {
+        name: Record<string, string>;
+        description?: Record<string, string>;
+        progress?: number | null;
+        status?: 'ACTIVE' | 'INACTIVE';
+      }[];
     },
   ) {
     const incomingLanguageCodes: string[] = Object.keys(data.name || {});
@@ -53,6 +61,33 @@ export const UserProjectService = {
 
     const code = data.name.en.toString().toUpperCase().replace(/\s+/g, '_');
     const searchText = data.name.en.toString().toLowerCase();
+    const projectStages = data.projectStages || [];
+    const stageCodes = new Set<string>();
+
+    for (const stage of projectStages) {
+      const stageLanguageCodes = Object.keys(stage.name || {});
+      if (!stageLanguageCodes.includes('en')) {
+        throw new Error('project stage name.en is required');
+      }
+
+      if (stage.description) {
+        const stageDescriptionLanguageCodes = Object.keys(stage.description);
+        if (!stageDescriptionLanguageCodes.includes('en')) {
+          throw new Error('project stage description.en is required');
+        }
+      }
+
+      const stageCode = stage.name.en
+        .toString()
+        .toUpperCase()
+        .replace(/\s+/g, '_');
+
+      if (stageCodes.has(stageCode)) {
+        throw new Error('duplicate project stage code');
+      }
+
+      stageCodes.add(stageCode);
+    }
 
     const resolvedAdminId = await UserProjectService.resolveAdminId(
       domainId,
@@ -68,14 +103,58 @@ export const UserProjectService = {
       throw new Error(Messages.USER_PROJECT.CODE_ALREADY_EXISTS);
     }
 
-    return projectRepository.create({
-      ...data,
-      code,
-      searchText,
-      domainId,
-      adminId: resolvedAdminId,
-      status: (data.status as StatusEnum) ?? StatusEnum.ACTIVE,
+    const { project } = await prisma.$transaction(async (tx: any) => {
+      const createdProject = await projectRepository.create(
+        {
+          ...data,
+          code,
+          searchText,
+          domainId,
+          adminId: resolvedAdminId,
+          status: (data.status as StatusEnum) ?? StatusEnum.ACTIVE,
+        },
+        { transaction: tx },
+      );
+
+      if (projectStages.length) {
+        await projectStageRepository.bulkCreate(
+          projectStages.map((stage) => {
+            const stageCode = stage.name.en
+              .toString()
+              .toUpperCase()
+              .replace(/\s+/g, '_');
+
+            return {
+              name: stage.name,
+              code: stageCode,
+              searchText: Object.values(stage.name).join(' ').toLowerCase(),
+              description: stage.description || null,
+              progress: stage.progress ?? null,
+              projectId: createdProject.id,
+              domainId,
+              adminId: resolvedAdminId,
+              status: (stage.status as StatusEnum) ?? StatusEnum.ACTIVE,
+            };
+          }),
+          { transaction: tx, skipDuplicates: false },
+        );
+      }
+
+      return { project: createdProject };
     });
+
+    const createdStages = projectStages.length
+      ? await projectStageRepository.findMany(
+          domainId,
+          project.id,
+          resolvedAdminId,
+        )
+      : [];
+
+    return {
+      ...project,
+      projectStages: createdStages,
+    };
   },
 
   async getProjectById(

@@ -34,6 +34,16 @@ export const createProjectBodySchema = z.object({
   spent: nonNegativeNumber.optional(),
   locationId: z.string().trim().min(1, { message: 'Location id is required' }),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  projectStages: z
+    .array(
+      z.object({
+        name: localizedStringSchema,
+        description: optionalLocalizedStringSchema,
+        progress: nonNegativeNumber.nullable().optional(),
+        status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const updateProjectBodySchema = z.object({

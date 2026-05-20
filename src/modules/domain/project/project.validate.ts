@@ -13,8 +13,17 @@ export const createProjectBody = z.object({
   budget: nonNegativeNumber,
   spent: nonNegativeNumber.optional(),
   locationId: z.string().trim().min(1, { message: 'Location id is required' }),
-  domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   status: z.nativeEnum(StatusEnum).optional(),
+  projectStages: z
+    .array(
+      z.object({
+        name: jsonObject,
+        description: jsonObject.nullable().optional(),
+        progress: nonNegativeNumber.nullable().optional(),
+        status: z.nativeEnum(StatusEnum).optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const updateProjectBody = z

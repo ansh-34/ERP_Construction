@@ -11,15 +11,28 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, budget, spent, locationId, status } =
-        req.body as {
-          name?: Record<string, unknown>;
-          description?: Record<string, unknown>;
-          budget?: number;
-          spent?: number;
-          locationId?: string;
+      const {
+        name,
+        description,
+        budget,
+        spent,
+        locationId,
+        status,
+        projectStages,
+      } = req.body as {
+        name?: Record<string, unknown>;
+        description?: Record<string, unknown>;
+        budget?: number;
+        spent?: number;
+        locationId?: string;
+        status?: StatusEnum;
+        projectStages?: {
+          name: Record<string, unknown>;
+          description?: Record<string, unknown> | null;
+          progress?: number | null;
           status?: StatusEnum;
-        };
+        }[];
+      };
 
       const domainId = req.user!.domainId;
       const adminId = req.user!.adminId;
@@ -31,6 +44,7 @@ export const projectController = {
           budget: budget ?? 0,
           ...(spent !== undefined && { spent }),
           locationId: locationId ?? '',
+          ...(projectStages !== undefined && { projectStages }),
           domainId,
           adminId,
           status: status ?? StatusEnum.ACTIVE,
