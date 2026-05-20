@@ -18,9 +18,6 @@ import {
   listGrnsQuerySchema,
   grnIdParamsSchema,
   approveRejectGrnBodySchema,
-  createGrnProductBodySchema,
-  updateGrnProductBodySchema,
-  grnProductIdParamsSchema,
 } from './grn.validator.js';
 
 const router = Router();

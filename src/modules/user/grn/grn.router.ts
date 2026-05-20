@@ -19,7 +19,6 @@ import {
   listGrnsQuerySchema,
   grnIdParamsSchema,
   approveRejectGrnBodySchema,
-  grnProductIdParamsSchema,
 } from './grn.validator.js';
 
 const router = Router();
@@ -62,7 +61,7 @@ router.delete(
 
 router.put(
   '/:id/approval',
-  authorize('INVENTORY', 'APPROVE'), //need to chech oermission later
+  authorize('INVENTORY', 'APPROVE'), // need to chech oermission later
   validate(grnIdParamsSchema, 'params'),
   validate(approveRejectGrnBodySchema, 'body'),
   approveOrRejectGrn,

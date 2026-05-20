@@ -22,7 +22,6 @@ import {
   approveRejectBodySchema,
   listPurchaseOrdersQuerySchema,
   poIdParamsSchema,
-  poProductIdParamsSchema,
   // updatePurchaseOrderBodySchema,
   // createPoProductBodySchema,
   // updatePoProductBodySchema,

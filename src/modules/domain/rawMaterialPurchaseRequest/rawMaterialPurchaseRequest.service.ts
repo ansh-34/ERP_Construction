@@ -104,11 +104,7 @@ export const RawMaterialPurchaseRequestService = {
     await ensureRelationsBelongToDomain(domainId, data);
 
     const code = RawMaterialPurchaseRequestService.generateCode(domainId);
-    const {
-      domainId: _bodyDomainId,
-      requestedBy: _bodyRequestedBy,
-      ...payload
-    } = data;
+    const { ...payload } = data;
 
     return RawMaterialPurchaseRequestRepository.create({
       ...payload,
