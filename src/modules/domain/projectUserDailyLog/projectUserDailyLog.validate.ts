@@ -23,9 +23,7 @@ const dailyLogRowSchema = z.object({
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
-export const createProjectUserDailyLogBody = z
-  .array(dailyLogRowSchema)
-  .min(1);
+export const createProjectUserDailyLogBody = z.array(dailyLogRowSchema).min(1);
 
 export const updateProjectUserDailyLogBody = z
   .object({
