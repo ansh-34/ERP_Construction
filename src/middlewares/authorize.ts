@@ -10,6 +10,14 @@ const authorize = (moduleName: string, action: string) => {
     try {
       const { roleId, domainId } = req.user!;
       if (!roleId) {
+        console.warn('[authorize] Forbidden: user has no role', {
+          moduleName,
+          action,
+          userId: req.user?.userId,
+          domainId,
+          path: req.originalUrl,
+          method: req.method,
+        });
         res.status(403).json({ success: false, message: 'Forbidden' });
         return;
       }
@@ -17,6 +25,15 @@ const authorize = (moduleName: string, action: string) => {
         where: { code: moduleName, isDeleted: false },
       });
       if (!mod) {
+        console.warn('[authorize] Module not found', {
+          moduleName,
+          action,
+          userId: req.user?.userId,
+          roleId,
+          domainId,
+          path: req.originalUrl,
+          method: req.method,
+        });
         res.status(404).json({ success: false, message: 'Module not found' });
         return;
       }
@@ -69,6 +86,18 @@ const authorize = (moduleName: string, action: string) => {
       //   }
       // }
 
+      console.warn('[authorize] Forbidden: missing module permission', {
+        moduleName,
+        moduleId,
+        action: actionUpper,
+        userId: req.user?.userId,
+        roleId,
+        domainId,
+        existingPermissions: directPermission?.permissions ?? [],
+        hasRoleModulePermission: Boolean(directPermission),
+        path: req.originalUrl,
+        method: req.method,
+      });
       res.status(403).json({ success: false, message: 'Forbidden' });
     } catch (err) {
       console.error('Authorization error:', err);

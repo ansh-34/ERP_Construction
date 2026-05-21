@@ -11,6 +11,7 @@ export const validate =
       req.user &&
       payload &&
       typeof payload === 'object' &&
+      !Array.isArray(payload) &&
       (property === 'body' || property === 'query')
     ) {
       if (req.user.domainId) {

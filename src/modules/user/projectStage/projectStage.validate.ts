@@ -11,7 +11,7 @@ export const createProjectStageBody = z.object({
   name: jsonObject,
   description: jsonObject.nullable().optional(),
   progress: nonNegativeNumber.nullable().optional(),
-  projectId: z.string().trim().min(1, { message: 'Project id is required' }),
+  projectId: z.string().trim().min(1).optional(),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 

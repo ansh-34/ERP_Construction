@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
+import { StatusEnum } from '@constants/index';
 import { resolveHttpStatus } from '@/utils/httpError';
 import { userTaskSubmissionService } from './userTaskSubmission.service';
 
@@ -7,9 +8,16 @@ export const userTaskSubmissionController = {
   submit: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { actualEndDate, taskProgress } = req.body as {
+      const { actualEndDate, taskProgress, images } = req.body as {
         actualEndDate?: string;
         taskProgress?: number;
+        images?: {
+          imageUrl: string;
+          imageName?: Record<string, unknown> | null;
+          imageType?: string | null;
+          description?: Record<string, unknown> | null;
+          status?: StatusEnum;
+        }[];
         // notes?: string;
       };
       const language = req.body.language || req.headers.language || 'en';
@@ -20,6 +28,7 @@ export const userTaskSubmissionController = {
         req.user!.userId,
         actualEndDate ?? '',
         taskProgress,
+        images ?? [],
         language as string,
       );
 

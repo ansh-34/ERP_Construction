@@ -1,46 +1,46 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
 import { StatusEnum } from '@constants/index';
-import { projectStageService } from './projectStage.service';
 import { resolveHttpStatus } from '@/utils/httpError';
+import { projectUserDailyLogService } from './projectUserDailyLog.service';
 
-export const projectStageController = {
+export const projectUserDailyLogController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, progress, projectId, status } = req.body as {
-        name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
-        progress?: number | null;
-        projectId?: string;
+      const logs = req.body as {
+        date: string;
+        projectId: string;
+        userId: string;
+        startTime: string;
+        endTime: string;
+        totalWorkingHours?: number;
+        dayCharge: number;
+        notes?: string | null;
         status?: StatusEnum;
-      };
+      }[];
 
-      const projectStage = await projectStageService.create(
+      const dailyLogs = await projectUserDailyLogService.create(
         {
-          name: name ?? {},
-          ...(description !== undefined && { description }),
-          ...(progress !== undefined && { progress }),
-          ...(projectId !== undefined && { projectId }),
+          logs,
           domainId: req.user!.domainId,
           adminId: req.user!.adminId,
-          status: status ?? StatusEnum.ACTIVE,
         },
         language,
       );
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Project stage created successfully',
-        data: projectStage,
+        message: 'Project user daily logs created successfully',
+        data: dailyLogs,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to create project stage';
+          : 'Failed to create project user daily logs';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -51,34 +51,48 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { projectId, searchKey, offset, limit } = req.query as {
+      const {
+        projectId,
+        userId,
+        date,
+        startDate,
+        endDate,
+        searchKey,
+        offset,
+        limit,
+      } = req.query as {
         projectId?: string;
+        userId?: string;
+        date?: string;
+        startDate?: string;
+        endDate?: string;
         searchKey?: string;
         offset?: string;
         limit?: string;
       };
-      const { projectStages, pagination } = await projectStageService.getAll(
-        req.user!.domainId,
-        req.user!.adminId,
-        projectId ?? '',
-        searchKey,
-        { offset, limit },
-        language,
-      );
+
+      const { projectUserDailyLogs, pagination } =
+        await projectUserDailyLogService.getAll(
+          req.user!.domainId,
+          req.user!.adminId,
+          { projectId, userId, date, startDate, endDate, searchKey },
+          { offset, limit },
+          language,
+        );
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project stages fetched successfully',
+        message: 'Project user daily logs fetched successfully',
         pagination: {
-          currentCount: projectStages.length,
+          currentCount: projectUserDailyLogs.length,
           ...pagination,
         },
-        data: projectStages,
+        data: projectUserDailyLogs,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to fetch project stages';
+          : 'Failed to fetch project user daily logs';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -90,70 +104,84 @@ export const projectStageController = {
         (req.headers.language as string) ||
         'en';
       const { id } = req.params as { id?: string };
-      const projectStage = await projectStageService.getById(
+      const dailyLog = await projectUserDailyLogService.getById(
         id ?? '',
         req.user!.domainId,
         req.user!.adminId,
         language,
       );
 
-      if (!projectStage) {
+      if (!dailyLog) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project stage fetched successfully',
-        data: projectStage,
+        message: 'Project user daily log fetched successfully',
+        data: dailyLog,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to fetch project stage';
+          : 'Failed to fetch project user daily log';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
 
   update: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { id } = req.params as { id?: string };
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, progress, status } = req.body as {
-        name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
-        progress?: number | null;
+      const { id } = req.params as { id?: string };
+      const {
+        date,
+        startTime,
+        endTime,
+        totalWorkingHours,
+        dayCharge,
+        notes,
+        status,
+      } = req.body as {
+        date?: string;
+        startTime?: string;
+        endTime?: string;
+        totalWorkingHours?: number;
+        dayCharge?: number;
+        notes?: string | null;
         status?: StatusEnum;
       };
 
-      const updatedProjectStage = await projectStageService.update(
+      const dailyLog = await projectUserDailyLogService.update(
         id ?? '',
         req.user!.domainId,
         req.user!.adminId,
         {
-          ...(name !== undefined && { name }),
-          ...(description !== undefined && { description }),
-          ...(progress !== undefined && { progress }),
+          ...(date !== undefined && { date }),
+          ...(startTime !== undefined && { startTime }),
+          ...(endTime !== undefined && { endTime }),
+          ...(totalWorkingHours !== undefined && { totalWorkingHours }),
+          ...(dayCharge !== undefined && { dayCharge }),
+          ...(notes !== undefined && { notes }),
           ...(status !== undefined && { status }),
         },
         language,
       );
 
-      if (!updatedProjectStage) {
+      if (!dailyLog) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project stage updated successfully',
-        data: updatedProjectStage,
+        message: 'Project user daily log updated successfully',
+        data: dailyLog,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to update project stage';
+          : 'Failed to update project user daily log';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -161,25 +189,25 @@ export const projectStageController = {
   delete: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const deletedProjectStage = await projectStageService.softDelete(
+      const dailyLog = await projectUserDailyLogService.softDelete(
         id ?? '',
         req.user!.domainId,
         req.user!.adminId,
       );
 
-      if (!deletedProjectStage) {
+      if (!dailyLog) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Project stage deleted successfully',
-        data: deletedProjectStage,
+        message: 'Project user daily log deleted successfully',
+        data: dailyLog,
       });
     } catch (error: unknown) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to delete project stage';
+          : 'Failed to delete project user daily log';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

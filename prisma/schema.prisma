@@ -70,22 +70,24 @@ model Admin {
 
   isDeleted Boolean @default(false)
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  adminLanguages  AdminLanguages[]
-  adminCurrencies AdminCurrencies[]
-  domains         Domain[]
-  projects        Project[]
-  projectStages   ProjectStage[]
-  projectTasks    ProjectTask[]
-  projectTaskImages ProjectTaskImage[]
-  projectTaskDelays ProjectTaskDelay[]
-  apiKeys           ApiKey[]
-  locations         Location[]
-  machineries       Machinery[]
-  machineReadings   MachineReading[]
-  mediaFiles        Media[]            @relation("AdminMediaFiles")
-  users             User[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  adminLanguages         AdminLanguages[]
+  adminCurrencies        AdminCurrencies[]
+  domains                Domain[]
+  projects               Project[]
+  projectStages          ProjectStage[]
+  projectTasks           ProjectTask[]
+  projectTaskImages      ProjectTaskImage[]
+  projectTaskDelays      ProjectTaskDelay[]
+  projectUserAssignments ProjectUserAssignment[]
+  projectUserDailyLogs   ProjectUserDailyLog[]
+  apiKeys                ApiKey[]
+  locations              Location[]
+  machineries            Machinery[]
+  machineReadings        MachineReading[]
+  mediaFiles             Media[]                 @relation("AdminMediaFiles")
+  users                  User[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -166,6 +168,8 @@ model Domain {
   projectTasks                ProjectTask[]
   projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
+  projectUserAssignments      ProjectUserAssignment[]
+  projectUserDailyLogs        ProjectUserDailyLog[]
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
@@ -209,6 +213,8 @@ model User {
 
   rawMaterialPurchaseRequestsRequested RawMaterialPurchaseRequest[] @relation("RequestedByUser")
   projectUserRoles                     ProjectUserRole[]
+  projectUserAssignments               ProjectUserAssignment[]
+  projectUserDailyLogs                 ProjectUserDailyLog[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -930,6 +936,8 @@ model Project {
   projectTasks                ProjectTask[]
   projectTaskImages           ProjectTaskImage[]
   projectTaskDelays           ProjectTaskDelay[]
+  projectUserAssignments      ProjectUserAssignment[]
+  projectUserDailyLogs        ProjectUserDailyLog[]
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
@@ -1030,25 +1038,25 @@ model ProjectTask {
 }
 
 model ProjectTaskImage {
-  id          String      @id @default(uuid()) @db.Uuid
+  id          String       @id @default(uuid()) @db.Uuid
   imageUrl    String
-  imageName   Json?       @db.JsonB
+  imageName   Json?        @db.JsonB
   imageType   String?
-  description Json?       @db.JsonB
-  taskId      String      @db.Uuid
-  task        ProjectTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  description Json?        @db.JsonB
+  taskId      String       @db.Uuid
+  task        ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   stageId     String       @db.Uuid
   stage       ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  projectId   String      @db.Uuid
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  domainId    String      @db.Uuid
-  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId     String      @db.Uuid
-  admin       Admin       @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status      StatusEnum  @default(ACTIVE)
-  isDeleted   Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  projectId   String       @db.Uuid
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId    String       @db.Uuid
+  domain      Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String       @db.Uuid
+  admin       Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status      StatusEnum   @default(ACTIVE)
+  isDeleted   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
@@ -1136,6 +1144,62 @@ model MachineReading {
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([adminId])
+}
+
+model ProjectUserAssignment {
+  id                String     @id @default(uuid()) @db.Uuid
+  startDate         DateTime
+  endDate           DateTime
+  projectId         String     @db.Uuid
+  project           Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId            String     @db.Uuid
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyWorkingHours Float
+  dayCharge         Decimal    @db.Decimal(15, 2)
+  notes             String?
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([createdAt, isDeleted, domainId], map: "pua_created_deleted_domain_idx")
+  @@index([createdAt, isDeleted, domainId, projectId], map: "pua_created_deleted_domain_project_idx")
+  @@index([createdAt, isDeleted, domainId, userId], map: "pua_created_deleted_domain_user_idx")
+  @@index([createdAt, isDeleted, domainId, projectId, userId], map: "pua_created_deleted_domain_project_user_idx")
+  @@index([adminId])
+}
+
+model ProjectUserDailyLog {
+  id                String     @id @default(uuid()) @db.Uuid
+  date              DateTime
+  projectId         String     @db.Uuid
+  project           Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId            String     @db.Uuid
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime         DateTime
+  endTime           DateTime
+  totalWorkingHours Float
+  dayCharge         Decimal    @db.Decimal(15, 2)
+  notes             String?
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([createdAt, isDeleted, domainId], map: "pudl_created_deleted_domain_idx")
+  @@index([createdAt, isDeleted, domainId, projectId], map: "pudl_created_deleted_domain_project_idx")
+  @@index([createdAt, isDeleted, domainId, userId], map: "pudl_created_deleted_domain_user_idx")
+  @@index([createdAt, isDeleted, domainId, projectId, userId], map: "pudl_created_deleted_domain_project_user_idx")
+  @@index([createdAt, isDeleted, domainId, date], map: "pudl_created_deleted_domain_date_idx")
   @@index([adminId])
 }
 

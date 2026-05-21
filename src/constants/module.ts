@@ -28,6 +28,22 @@ export const modules = [
     code: 'PROJECT',
   },
   {
+    name: 'Project Stage',
+    code: 'PROJECT_STAGE',
+  },
+  {
+    name: 'Project Task',
+    code: 'PROJECT_TASK',
+  },
+  {
+    name: 'Project Task Delay',
+    code: 'PROJECT_TASK_DELAY',
+  },
+  {
+    name: 'Project Task Image',
+    code: 'PROJECT_TASK_IMAGE',
+  },
+  {
     name: 'Activity Log',
     code: 'ACTIVITY_LOG',
   },

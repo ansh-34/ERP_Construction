@@ -1,4 +1,4 @@
-import { modules } from '@constants/index';
+import { modules, StatusEnum } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
 
 export const moduleData = async () => {
@@ -16,6 +16,7 @@ export const moduleData = async () => {
         modulesData.push({
           name: module.name,
           code: module.code,
+          status: StatusEnum.ACTIVE,
         });
       }
     }

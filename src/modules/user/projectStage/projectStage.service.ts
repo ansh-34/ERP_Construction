@@ -16,7 +16,7 @@ export interface CreateProjectStageInput {
   name: Record<string, unknown>;
   description?: Record<string, unknown> | null;
   progress?: number | null;
-  projectId: string;
+  projectId?: string;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -137,10 +137,6 @@ function assertCreateInput(data: CreateProjectStageInput): void {
     throw new Error('invalid progress');
   }
 
-  if (!isNonEmptyString(data.projectId)) {
-    throw new Error('invalid projectId');
-  }
-
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
   }
@@ -151,6 +147,39 @@ function assertCreateInput(data: CreateProjectStageInput): void {
   ) {
     throw new Error('invalid status');
   }
+}
+
+async function resolveProjectId(
+  projectId: string | undefined,
+  domainId: string,
+  adminId: string,
+): Promise<string> {
+  if (isNonEmptyString(projectId)) {
+    const project = await projectRepository.findById(
+      projectId,
+      domainId,
+      adminId,
+    );
+
+    if (!project) {
+      throw new Error('not found');
+    }
+
+    return project.id;
+  }
+
+  const projects = await projectRepository.findMany(
+    domainId,
+    undefined,
+    adminId,
+  );
+  const latestProject = projects[0];
+
+  if (!latestProject) {
+    throw new Error('project not found');
+  }
+
+  return latestProject.id;
 }
 
 function assertUpdateInput(data: UpdateProjectStageInput): void {
@@ -203,15 +232,11 @@ export const projectStageService = {
     assertCreateInput(data);
 
     try {
-      const project = await projectRepository.findById(
+      const projectId = await resolveProjectId(
         data.projectId,
         data.domainId,
         data.adminId,
       );
-
-      if (!project) {
-        throw new Error('not found');
-      }
 
       const code = buildProjectStageCode(data.name);
 
@@ -219,7 +244,7 @@ export const projectStageService = {
         await projectStageRepository.findByCode(
           code,
           data.domainId,
-          data.projectId,
+          projectId,
           data.adminId,
         )
       ) {
@@ -228,6 +253,7 @@ export const projectStageService = {
 
       const stage = await projectStageRepository.create({
         ...data,
+        projectId,
         progress: 0,
         code,
         searchText: buildProjectStageSearchText(data.name),

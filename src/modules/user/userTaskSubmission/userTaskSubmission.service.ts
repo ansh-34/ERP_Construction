@@ -1,10 +1,13 @@
 import {
+  projectTaskImageRepository,
   projectStageRepository,
   projectTaskRepository,
+  type ProjectTaskImageRecord,
   type ProjectTaskRecord,
 } from '@repositories/index';
+import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { isNonEmptyString } from '@/utils/validation';
+import { isNonEmptyString, isPlainObject } from '@/utils/validation';
 
 type LocalizedProjectTaskRecord = Omit<
   ProjectTaskRecord,
@@ -12,6 +15,18 @@ type LocalizedProjectTaskRecord = Omit<
 > & {
   name: string;
   assignee: string | null;
+};
+
+type TaskSubmissionImageInput = {
+  imageUrl: string;
+  imageName?: Record<string, unknown> | null;
+  imageType?: string | null;
+  description?: Record<string, unknown> | null;
+  status?: StatusEnum;
+};
+
+type SubmittedTaskWithImages = LocalizedProjectTaskRecord & {
+  images: ProjectTaskImageRecord[];
 };
 
 function getLocalizedText(
@@ -44,6 +59,46 @@ function normalizeProjectTask(
   };
 }
 
+function assertImages(images: TaskSubmissionImageInput[]): void {
+  for (const image of images) {
+    if (!isNonEmptyString(image.imageUrl)) {
+      throw new Error('invalid imageUrl');
+    }
+
+    if (
+      image.imageName !== undefined &&
+      image.imageName !== null &&
+      !isPlainObject(image.imageName)
+    ) {
+      throw new Error('invalid imageName');
+    }
+
+    if (
+      image.description !== undefined &&
+      image.description !== null &&
+      !isPlainObject(image.description)
+    ) {
+      throw new Error('invalid description');
+    }
+
+    if (
+      image.imageType !== undefined &&
+      image.imageType !== null &&
+      !isNonEmptyString(image.imageType)
+    ) {
+      throw new Error('invalid imageType');
+    }
+
+    if (
+      image.status !== undefined &&
+      image.status !== StatusEnum.ACTIVE &&
+      image.status !== StatusEnum.INACTIVE
+    ) {
+      throw new Error('invalid image status');
+    }
+  }
+}
+
 export const userTaskSubmissionService = {
   submit: async (
     id: string,
@@ -51,8 +106,9 @@ export const userTaskSubmissionService = {
     userId: string,
     actualEndDate: string,
     taskProgress: number | undefined,
+    images: TaskSubmissionImageInput[] = [],
     language: string | null = null,
-  ): Promise<LocalizedProjectTaskRecord> => {
+  ): Promise<SubmittedTaskWithImages> => {
     if (
       !isNonEmptyString(id) ||
       !isNonEmptyString(domainId) ||
@@ -84,6 +140,8 @@ export const userTaskSubmissionService = {
         throw new Error('invalid taskProgress');
       }
 
+      assertImages(images);
+
       // Update task with submission date
       const updatePayload = {
         actualEndDate: submissionDate,
@@ -107,7 +165,33 @@ export const userTaskSubmissionService = {
         domainId,
       );
 
-      return normalizeProjectTask(updatedTask, language);
+      const createdImages = await Promise.all(
+        images.map((image) =>
+          projectTaskImageRepository.create({
+            imageUrl: image.imageUrl,
+            ...(image.imageName !== undefined && {
+              imageName: image.imageName,
+            }),
+            ...(image.imageType !== undefined && {
+              imageType: image.imageType,
+            }),
+            ...(image.description !== undefined && {
+              description: image.description,
+            }),
+            taskId: updatedTask.id,
+            stageId: updatedTask.stageId,
+            projectId: updatedTask.projectId,
+            domainId,
+            adminId: updatedTask.adminId,
+            status: image.status ?? StatusEnum.ACTIVE,
+          }),
+        ),
+      );
+
+      return {
+        ...normalizeProjectTask(updatedTask, language),
+        images: createdImages,
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
