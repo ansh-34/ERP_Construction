@@ -40,6 +40,10 @@ export const modules = [
     code: 'PROJECT_TASK_DELAY',
   },
   {
+    name: 'Project Task Image',
+    code: 'PROJECT_TASK_IMAGE',
+  },
+  {
     name: 'Activity Log',
     code: 'ACTIVITY_LOG',
   },

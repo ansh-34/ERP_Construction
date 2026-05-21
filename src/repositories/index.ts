@@ -28,6 +28,8 @@ export * from './projectStage.repository.js';
 export * from './projectTask.repository.js';
 export * from './projectTaskImage.repository.js';
 export * from './projectTaskDelay.repository.js';
+export * from './projectUserAssignment.repository.js';
+export * from './projectUserDailyLog.repository.js';
 export * from './moduleDependencyPermission.repository.js';
 export * from './rawMaterialPurchaseRequest.repository.js';
 export * from './currency.repository.js';
