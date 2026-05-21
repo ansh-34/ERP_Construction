@@ -51,6 +51,7 @@ export const swaggerSpec = {
     { name: 'Machine Reading' },
     { name: 'Domain Currency' },
     { name: 'User Currency' },
+    { name: 'Logs' },
   ],
   paths: {
     ...ApiPaths,

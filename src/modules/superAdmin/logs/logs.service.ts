@@ -1,4 +1,5 @@
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import variables from '@/config/variables.config';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { assertS3Configured, getS3Client } from '@/utils/s3Log.utils';
@@ -128,15 +129,33 @@ export const LogsService = {
       }),
     );
 
-    return (response.Contents || [])
-      .filter((item) => item.Key && item.Key !== prefix)
-      .map((item) => ({
-        key: item.Key,
-        fileName: item.Key!.replace(prefix, ''),
-        size: item.Size,
-        lastModified: item.LastModified,
-        s3Uri: `s3://${variables.S3_BUCKET}/${item.Key}`,
-      }));
+    const items = (response.Contents || []).filter(
+      (item) => item.Key && item.Key !== prefix,
+    );
+
+    const logsWithUrls = await Promise.all(
+      items.map(async (item) => {
+        const downloadUrl = await getSignedUrl(
+          getS3Client(),
+          new GetObjectCommand({
+            Bucket: variables.S3_BUCKET!,
+            Key: item.Key!,
+          }),
+          { expiresIn: 3600 },
+        );
+
+        return {
+          key: item.Key,
+          fileName: item.Key!.replace(prefix, ''),
+          // size: item.Size,
+          // lastModified: item.LastModified,
+          s3Uri: `s3://${variables.S3_BUCKET}/${item.Key}`,
+          downloadUrl,
+        };
+      }),
+    );
+
+    return logsWithUrls;
   },
 
   async getAnalytics(query: AnalyticsQuery) {
@@ -160,22 +179,22 @@ export const LogsService = {
         to: formatDateOnly(end),
       },
       summary: buildSummary(rows),
-      daily: rows.map((row) => ({
-        id: row.id,
-        date: formatDateOnly(row.date),
-        totalRequests: row.totalRequests,
-        successCount: row.successCount,
-        failureCount: row.failureCount,
-        avgResponseTime: row.avgResponseTime,
-        maxResponseTime: row.maxResponseTime,
-        minResponseTime: row.minResponseTime,
-        mostHitApi: row.mostHitApi,
-        mostHitCount: row.mostHitCount,
-        mostFailedApi: row.mostFailedApi,
-        mostFailedCount: row.mostFailedCount,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      })),
+      // daily: rows.map((row) => ({
+      //   id: row.id,
+      //   date: formatDateOnly(row.date),
+      //   totalRequests: row.totalRequests,
+      //   successCount: row.successCount,
+      //   failureCount: row.failureCount,
+      //   avgResponseTime: row.avgResponseTime,
+      //   maxResponseTime: row.maxResponseTime,
+      //   minResponseTime: row.minResponseTime,
+      //   mostHitApi: row.mostHitApi,
+      //   mostHitCount: row.mostHitCount,
+      //   mostFailedApi: row.mostFailedApi,
+      //   mostFailedCount: row.mostFailedCount,
+      //   createdAt: row.createdAt,
+      //   updatedAt: row.updatedAt,
+      // })),
     };
   },
 };
