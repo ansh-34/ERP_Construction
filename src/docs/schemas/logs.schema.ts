@@ -22,7 +22,8 @@ export const LogsSchemas = {
         format: 'uri',
         example:
           'https://infowareconstructionerp.s3.ap-south-2.amazonaws.com/logs/log21052026.log?X-Amz-Algorithm=...',
-        description: 'Presigned URL to download the log file (valid for 1 hour)',
+        description:
+          'Presigned URL to download the log file (valid for 1 hour)',
       },
     },
   },
