@@ -1314,3 +1314,22 @@ model VendorProductPricing {
   @@index([productGradeId])
   @@index([domainId])
 }
+
+model DbAnalytics {
+  id              String   @id @default(uuid()) @db.Uuid
+  date            DateTime @unique @db.Date
+  totalRequests   Int
+  successCount    Int
+  failureCount    Int
+  avgResponseTime Float
+  maxResponseTime Int
+  minResponseTime Int
+  mostHitApi      String
+  mostHitCount    Int
+  mostFailedApi   String?
+  mostFailedCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("db_analytics")
+}

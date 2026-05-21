@@ -31,6 +31,10 @@ const variables = {
 
   LOGS_ENABLE: process.env.LOGS_ENABLE || 'false',
 
+  S3_BUCKET: process.env.S3_BUCKET || process.env.AWS_BUCKET_NAME,
+  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
+  S3_LOG_PREFIX: process.env.S3_LOG_PREFIX || 'logs/',
+
   CLIENT_BASE_URL: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
 };
 
