@@ -26,7 +26,7 @@ export const projectStageController = {
           name: name ?? {},
           ...(description !== undefined && { description }),
           ...(progress !== undefined && { progress }),
-          projectId: projectId ?? '',
+          ...(projectId !== undefined && { projectId }),
           domainId: domainId ?? '',
           adminId: req.user!.adminId,
           status: status ?? StatusEnum.ACTIVE,
