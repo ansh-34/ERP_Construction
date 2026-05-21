@@ -11,7 +11,6 @@ export const createRawMaterialPurchaseRequestBodySchema = z.object({
   productGradeId: z.string().uuid(),
   quantity: z.number().positive(),
   uomId: z.string().uuid(),
-  vendor: z.string().min(1).optional(),
   brand: z.string().min(1).optional(),
   requisitionRequestDocumentUrl: z.string().url().optional(),
   requiredBy: z.string().datetime(),
@@ -28,7 +27,6 @@ export const updateRawMaterialPurchaseRequestBodySchema = z.object({
   productGradeId: z.string().uuid().optional(),
   quantity: z.number().positive().optional(),
   uomId: z.string().uuid().optional(),
-  vendor: z.string().min(1).optional(),
   brand: z.string().min(1).optional(),
   requisitionRequestDocumentUrl: z.string().url().optional(),
   requiredBy: z.string().datetime().optional(),
@@ -76,7 +74,6 @@ export const poProductIdParamsSchema = z.object({
 });
 
 export const updatePurchaseOrderBodySchema = z.object({
-  vendor: z.string().min(1).optional(),
   paymentTerms: z.string().optional(),
   orderStatus: z.string().optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),

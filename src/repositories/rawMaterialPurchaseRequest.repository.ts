@@ -65,7 +65,6 @@ export const RawMaterialPurchaseRequestRepository = {
         ? {
             OR: [
               { code: { contains: filters.searchKey, mode: 'insensitive' } },
-              { vendor: { contains: filters.searchKey, mode: 'insensitive' } },
               { brand: { contains: filters.searchKey, mode: 'insensitive' } },
               { reason: { contains: filters.searchKey, mode: 'insensitive' } },
             ],
@@ -144,7 +143,6 @@ export const RawMaterialPurchaseRequestRepository = {
         data: {
           code: poCode,
           sourceRmprCode: request.code,
-          vendor: request.vendor || 'Unknown Vendor',
           uomId: request.uomId,
           totalItems: 0,
           totalTax: 0,
