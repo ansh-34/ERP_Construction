@@ -1,5 +1,5 @@
 import { Router } from 'express';
-// import authorize from '../../../middlewares/authorize.js';
+import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProduct,
@@ -19,60 +19,60 @@ import {
   bulkUpdateStdRatesBodySchema,
 } from './product.validator.js';
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
-import { listAllDomainProductGrades } from '../productGrade/productGrade.controller.js';
+import { listAllProductGrades } from '../productGrade/productGrade.controller.js';
+import { listProductGradeQuerySchema } from '../productGrade/productGrade.validation.js';
 import { productUomRouter } from '../productUom/productUom.router.js';
 
 const router = Router();
 
 router.post(
   '/',
-  // authorize('product', 'create'),
+  authorize('PRODUCT', 'CREATE'),
   validate(createProductBodySchema, 'body'),
   createProduct,
 );
 router.get(
   '/',
-  // authorize('product', 'read'),
+  authorize('PRODUCT', 'READ'),
   validate(listProductsQuerySchema, 'query'),
   listProducts,
 );
 router.get(
   '/grades',
-  // authorize('product', 'read'),
-  validate(listProductsQuerySchema, 'query'), // reusing the same query schema since it has page, limit, searchKey, etc.
-  listAllDomainProductGrades,
+  authorize('PRODUCT', 'READ'),
+  validate(listProductGradeQuerySchema, 'query'),
+  listAllProductGrades,
 );
 router.get(
   '/:id',
-  // authorize('product', 'read'),
+  authorize('PRODUCT', 'READ'),
   validate(productIdParamsSchema, 'params'),
   getProductById,
 );
 router.put(
   '/:id',
-  // authorize('product', 'update'),
+  authorize('PRODUCT', 'UPDATE'),
   validate(productIdParamsSchema, 'params'),
   validate(updateProductBodySchema, 'body'),
   updateProduct,
 );
 router.delete(
   '/:id',
-  // authorize('product', 'delete'),
+  authorize('PRODUCT', 'DELETE'),
   validate(productIdParamsSchema, 'params'),
   deleteProduct,
 );
 
-// ── Standalone bulk-update endpoints ─────────────────────────
 router.put(
   '/:id/grades',
-  // authorize('product', 'update'),
+  authorize('PRODUCT', 'UPDATE'),
   validate(productIdParamsSchema, 'params'),
   validate(bulkUpdateGradesBodySchema, 'body'),
   bulkUpdateGrades,
 );
 router.put(
   '/:id/standard-rates',
-  // authorize('product', 'update'),
+  authorize('PRODUCT', 'UPDATE'),
   validate(productIdParamsSchema, 'params'),
   validate(bulkUpdateStdRatesBodySchema, 'body'),
   bulkUpdateStandardRates,

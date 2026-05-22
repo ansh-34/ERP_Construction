@@ -435,4 +435,104 @@ export const ProductSchemas = {
       status: { type: 'string', default: 'active' },
     },
   },
+
+  DomainProductGradesListResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Product grade retrieved successfully.',
+      },
+      data: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                gradeCode: { type: 'string', example: 'MS_ROD' },
+                gradeDisplayName: { type: 'string', example: 'MS Rod' },
+                product: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    code: { type: 'string', example: 'AGGRO_STEEL' },
+                    displayName: { type: 'string', example: 'Aggro Steel' },
+                  },
+                },
+              },
+            },
+          },
+          total: { type: 'integer', example: 14 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 2 },
+        },
+      },
+    },
+  },
+
+  ProductGradesNestedStdRatesResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Product grade retrieved successfully.',
+      },
+      data: {
+        type: 'object',
+        properties: {
+          product: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              code: { type: 'string', example: 'AGGRO_STEEL' },
+              displayName: { type: 'string', example: 'Aggro Steel' },
+            },
+          },
+          grades: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    gradeCode: { type: 'string', example: 'FINAL_B' },
+                    gradeDisplayName: {
+                      type: 'string',
+                      example: 'Final Grade B',
+                    },
+                    productGradeStdRates: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string', format: 'uuid' },
+                          stdRateType: {
+                            type: 'string',
+                            example: 'Export Rate',
+                          },
+                          stdRateValue: { type: 'number', example: 90000 },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              total: { type: 'integer', example: 2 },
+              page: { type: 'integer', example: 1 },
+              limit: { type: 'integer', example: 10 },
+              totalPages: { type: 'integer', example: 1 },
+            },
+          },
+        },
+      },
+    },
+  },
 };

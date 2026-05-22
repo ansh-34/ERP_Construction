@@ -1,6 +1,7 @@
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
+import { normalizeStatus } from '../../../utils/validation.js';
 
 export const ProductGradeService = {
   localizeName(value: any, langCode: string) {
@@ -54,13 +55,14 @@ export const ProductGradeService = {
 
     return prisma.productGrades.create({
       data: {
-        ...dto,
+        gradeDisplayName: dto.gradeDisplayName,
+        status: normalizeStatus(dto.status),
         gradeCode,
         searchText,
         productId,
         domainId,
         isDeleted: false,
-      } as any,
+      },
     });
   },
 
@@ -402,14 +404,17 @@ export const ProductGradeService = {
     const searchText = dto?.gradeDisplayName
       ? Object.values(dto.gradeDisplayName).join(' ').toLowerCase()
       : null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { domainId: _d, adminId: _a, ...gradeData } = dto;
     return prisma.productGrades.update({
       where: { id },
       data: {
-        ...dto,
+        ...gradeData,
+        ...(dto.status ? { status: normalizeStatus(dto.status) } : {}),
         ...(gradeCode ? { gradeCode } : {}),
         ...(searchText ? { searchText } : {}),
         updatedAt: new Date(),
-      } as any,
+      },
     });
   },
 

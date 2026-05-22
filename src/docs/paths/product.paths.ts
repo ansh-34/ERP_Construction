@@ -181,6 +181,42 @@ export const ProductPaths = {
   // FIX 2: Renamed path param from {id} to {productId} to resolve conflict
   // with the Product Grades CRUD section below (same URL pattern, different param names).
   // OpenAPI treats these as the same path — unified under {productId} for consistency.
+
+  '/api/domain/products/grades': {
+    get: {
+      tags: ['Product Grades'],
+      summary: 'List all product grades globally in domain',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'header',
+          name: 'language',
+          schema: { type: 'string', default: 'en' },
+        },
+        { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1 } },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+      ],
+      responses: {
+        '200': {
+          description:
+            'All product grades retrieved successfully along with their product info.',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/DomainProductGradesListResponse',
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
   '/api/domain/products/{productId}/grades': {
     get: {
       tags: ['Product Grades'],
@@ -357,6 +393,48 @@ export const ProductPaths = {
   },
 
   // Product Grade Std Rates
+  '/api/domain/products/{productId}/grades/std-rates': {
+    get: {
+      tags: ['Product Grade Std Rates'],
+      summary:
+        'List all grades for a specific product nested with their standard rates',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'header',
+          name: 'language',
+          schema: { type: 'string', default: 'en' },
+        },
+        { in: 'query', name: 'page', schema: { type: 'integer', minimum: 1 } },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+      ],
+      responses: {
+        '200': {
+          description:
+            'Nested tree of product -> grades -> std rates retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ProductGradesNestedStdRatesResponse',
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
   '/api/domain/products/{productId}/grades/{gradeId}/std-rates': {
     get: {
       tags: ['Product Grade Std Rates'],

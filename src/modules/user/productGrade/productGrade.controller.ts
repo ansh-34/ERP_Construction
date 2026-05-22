@@ -25,10 +25,7 @@ export const createProductGrade = async (req: Request, res: Response) => {
   }
 };
 
-export const listAllDomainProductGrades = async (
-  req: Request,
-  res: Response,
-) => {
+export const listAllProductGrades = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
     const result = await ProductGradeService.findAllInDomain(

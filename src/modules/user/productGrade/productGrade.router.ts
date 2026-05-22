@@ -1,5 +1,5 @@
 import { Router } from 'express';
-// import authorize from '../../../middlewares/authorize.js';
+import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProductGrade,
@@ -23,38 +23,41 @@ export const productGradeRouter = (): Router => {
 
   router.post(
     '/',
+    authorize('PRODUCT', 'CREATE'),
     validate(productGradeProductIdParamSchema, 'params'),
     validate(createProductGradeBodySchema, 'body'),
     createProductGrade,
   );
   router.get(
     '/',
+    authorize('PRODUCT', 'READ'),
     validate(productGradeProductIdParamSchema, 'params'),
     validate(listProductGradeQuerySchema, 'query'),
     listProductGrades,
   );
   router.get(
     '/std-rates',
+    authorize('PRODUCT', 'READ'),
     validate(productGradeProductIdParamSchema, 'params'),
     validate(listProductGradeQuerySchema, 'query'),
     listProductGradesWithStdRates,
   );
   router.get(
     '/:id',
-    // authorize('product', 'read'),
+    authorize('PRODUCT', 'READ'),
     validate(productGradeIdParamSchema, 'params'),
     getProductGradeById,
   );
   router.put(
     '/:id',
-    // authorize('product', 'update'),
+    authorize('PRODUCT', 'UPDATE'),
     validate(productGradeIdParamSchema, 'params'),
     validate(updateProductGradeBodySchema, 'body'),
     updateProductGrade,
   );
   router.delete(
     '/:id',
-    // authorize('product', 'delete'),
+    authorize('PRODUCT', 'DELETE'),
     validate(productGradeIdParamSchema, 'params'),
     deleteProductGrade,
   );

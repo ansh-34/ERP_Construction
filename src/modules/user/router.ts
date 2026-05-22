@@ -14,6 +14,7 @@ import projectTaskImagesRouter from './projectTaskImages/projectTaskImages.route
 import projectTaskDelayRouter from './projectTaskDelay/projectTaskDelay.routes.js';
 import userTaskSubmissionRouter from './userTaskSubmission/userTaskSubmission.routes.js';
 import grnRouter from './grn/grn.router.js';
+import productRouter from './product/product.router.js';
 import { vendorProductPriceRouter } from './vendorProductPrice/vendorProductPrice.router.js';
 import authMiddleware from '../../middlewares/auth.js';
 
@@ -35,6 +36,7 @@ userRouter.use('/project-task-images', projectTaskImagesRouter);
 userRouter.use('/project-task-delays', projectTaskDelayRouter);
 userRouter.use('/task-submission', userTaskSubmissionRouter);
 userRouter.use('/grn', grnRouter);
+userRouter.use('/products', productRouter);
 userRouter.use('/vendor-product-prices', vendorProductPriceRouter());
 
 export default userRouter;
