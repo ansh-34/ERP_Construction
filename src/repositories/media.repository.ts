@@ -3,11 +3,9 @@ import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
-type JsonObject = Record<string, unknown>;
-
 export interface MediaRecord {
   id: string;
-  name: JsonObject;
+  name: string;
   type: string;
   url: string;
   domainId: string;
@@ -19,7 +17,7 @@ export interface MediaRecord {
 }
 
 export interface CreateMediaInput {
-  name: JsonObject;
+  name: string;
   type: string;
   url: string;
   domainId: string;
@@ -28,7 +26,7 @@ export interface CreateMediaInput {
 }
 
 export interface UpdateMediaInput {
-  name?: JsonObject;
+  name?: string;
   type?: string;
   searchText?: string;
 }
@@ -46,17 +44,13 @@ const mediaSelect = Prisma.sql`
   "updatedAt"
 `;
 
-function toJsonbSql(value: JsonObject): Prisma.Sql {
-  return Prisma.sql`${JSON.stringify(value)}::jsonb`;
-}
-
 export const mediaRepository = {
   create: async (data: CreateMediaInput): Promise<MediaRecord> => {
     const id = randomUUID();
 
     const result = await prisma.$queryRaw<MediaRecord[]>(Prisma.sql`
       INSERT INTO "media" ("id", "name", "type", "url", "searchText", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${toJsonbSql(data.name)}, ${data.type}, ${data.url}, ${data.searchText}, ${data.domainId}, ${data.adminId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
+      VALUES (${id}, ${data.name}, ${data.type}, ${data.url}, ${data.searchText}, ${data.domainId}, ${data.adminId}, ${StatusEnum.ACTIVE}, false, NOW(), NOW())
       RETURNING *
     `);
 
@@ -123,7 +117,7 @@ export const mediaRepository = {
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
     if (data.name !== undefined) {
-      assignments.unshift(Prisma.sql`"name" = ${toJsonbSql(data.name)}`);
+      assignments.unshift(Prisma.sql`"name" = ${data.name}`);
     }
 
     if (data.type !== undefined) {

@@ -8,7 +8,7 @@ import { isNonEmptyString, isPlainObject } from '@/utils/validation';
 
 export interface CreateProjectCategoryInput {
   name: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   parentCategoryId?: string | null;
   domainId: string;
   status: StatusEnum;
@@ -16,17 +16,13 @@ export interface CreateProjectCategoryInput {
 
 export interface UpdateProjectCategoryInput {
   name?: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   parentCategoryId?: string | null;
   status?: StatusEnum;
 }
 
-type LocalizedProjectCategoryRecord = Omit<
-  ProjectCategoryRecord,
-  'name' | 'description'
-> & {
+type LocalizedProjectCategoryRecord = Omit<ProjectCategoryRecord, 'name'> & {
   name: string;
-  description: string | null;
 };
 
 function buildProjectCategoryCode(name: Record<string, unknown>): string {
@@ -60,8 +56,24 @@ function normalizeProjectCategory(
   return {
     ...category,
     name: getLocalizedText(category.name, language) || '',
-    description: getLocalizedText(category.description, language),
   };
+}
+
+function assertSingleLineDescription(
+  value: string | null | undefined,
+  field: string,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!isNonEmptyString(value)) {
+    throw new Error(`${field} is required`);
+  }
+
+  if (/[\r\n]/.test(value)) {
+    throw new Error(`${field} must be single-line`);
+  }
 }
 
 function assertCreateInput(data: CreateProjectCategoryInput): void {
@@ -73,21 +85,7 @@ function assertCreateInput(data: CreateProjectCategoryInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isNonEmptyString(data.description.en)
-  ) {
-    throw new Error('description.en is required');
-  }
+  assertSingleLineDescription(data.description, 'description');
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
@@ -127,20 +125,8 @@ function assertUpdateInput(data: UpdateProjectCategoryInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isNonEmptyString(data.description?.en)
-  ) {
-    throw new Error('description.en is required');
+  if (hasDescription) {
+    assertSingleLineDescription(data.description, 'description');
   }
 
   if (

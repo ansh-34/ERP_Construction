@@ -40,8 +40,13 @@ export interface UpdateProjectUserAssignmentInput {
   status?: StatusEnum;
 }
 
+type FlatProjectUserAssignmentRecord = Omit<
+  ProjectUserAssignmentRecord,
+  'project' | 'user' | 'domain' | 'admin'
+>;
+
 type PaginatedProjectUserAssignments = {
-  projectUserAssignments: ProjectUserAssignmentRecord[];
+  projectUserAssignments: FlatProjectUserAssignmentRecord[];
   pagination: {
     totalCount: number;
     offset: number;
@@ -80,49 +85,17 @@ function assertStatus(status: StatusEnum | undefined): void {
   }
 }
 
-function getLocalizedText(value: unknown, language: string | null): string {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return typeof value === 'string' ? value : '';
-  }
-
-  const record = value as Record<string, unknown>;
-  const lang = language || 'en';
-  const localizedValue = record[lang] ?? record.en ?? '';
-
-  return typeof localizedValue === 'string'
-    ? localizedValue
-    : String(localizedValue);
-}
-
-function normalizeRelation(
-  relation: Record<string, unknown> | null | undefined,
-  language: string | null,
-): Record<string, unknown> | null | undefined {
-  if (!relation) {
-    return relation;
-  }
-
-  const name = relation.name;
-
-  return {
-    ...relation,
-    name:
-      name && typeof name === 'object'
-        ? getLocalizedText(name, language)
-        : name,
-  };
-}
-
 function normalizeProjectUserAssignment(
   assignment: ProjectUserAssignmentRecord,
-  language: string | null,
-): ProjectUserAssignmentRecord {
-  return {
-    ...assignment,
-    project: normalizeRelation(assignment.project, language),
-    domain: normalizeRelation(assignment.domain, language),
-    admin: normalizeRelation(assignment.admin, language),
-  };
+  _language: string | null,
+): FlatProjectUserAssignmentRecord {
+  const assignmentData = { ...assignment };
+  delete assignmentData.project;
+  delete assignmentData.user;
+  delete assignmentData.domain;
+  delete assignmentData.admin;
+
+  return assignmentData;
 }
 
 function buildAssignmentInputs(
@@ -219,7 +192,7 @@ export const projectUserAssignmentService = {
   create: async (
     data: CreateProjectUserAssignmentInput,
     language: string | null = null,
-  ): Promise<ProjectUserAssignmentRecord[]> => {
+  ): Promise<FlatProjectUserAssignmentRecord[]> => {
     if (!isNonEmptyString(data.domainId) || !isNonEmptyString(data.adminId)) {
       throw new Error('invalid auth ids');
     }
@@ -335,7 +308,7 @@ export const projectUserAssignmentService = {
     domainId: string,
     adminId: string,
     language: string | null = null,
-  ): Promise<ProjectUserAssignmentRecord | null> => {
+  ): Promise<FlatProjectUserAssignmentRecord | null> => {
     if (
       !isNonEmptyString(id) ||
       !isNonEmptyString(domainId) ||
@@ -365,7 +338,7 @@ export const projectUserAssignmentService = {
     adminId: string,
     data: UpdateProjectUserAssignmentInput,
     language: string | null = null,
-  ): Promise<ProjectUserAssignmentRecord | null> => {
+  ): Promise<FlatProjectUserAssignmentRecord | null> => {
     if (
       !isNonEmptyString(id) ||
       !isNonEmptyString(domainId) ||

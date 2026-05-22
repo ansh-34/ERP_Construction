@@ -69,6 +69,8 @@ const projectUserAssignmentListSelect = Prisma.sql`
   pua."id",
   pua."startDate",
   pua."endDate",
+  pua."projectId",
+  pua."userId",
   jsonb_build_object(
     'projectId', p."id",
     'name', p."name",
@@ -85,6 +87,8 @@ const projectUserAssignmentListSelect = Prisma.sql`
   pua."dailyWorkingHours",
   pua."dayCharge",
   pua."notes",
+  pua."domainId",
+  pua."adminId",
   jsonb_build_object(
     'domainId', d."id",
     'name', d."name",
@@ -218,6 +222,7 @@ export const projectUserAssignmentRepository = {
       userId?: string;
       startDate?: Date;
       endDate?: Date;
+      currentDate?: Date;
       searchKey?: string;
     } = {},
   ): Promise<ProjectUserAssignmentRecord[]> => {
@@ -241,6 +246,11 @@ export const projectUserAssignmentRepository = {
 
     if (filters.endDate) {
       where.push(Prisma.sql`pua."startDate" <= ${filters.endDate}`);
+    }
+
+    if (filters.currentDate) {
+      where.push(Prisma.sql`pua."startDate" <= ${filters.currentDate}`);
+      where.push(Prisma.sql`pua."endDate" >= ${filters.currentDate}`);
     }
 
     if (filters.searchKey) {

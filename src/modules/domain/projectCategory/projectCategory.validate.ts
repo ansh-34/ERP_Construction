@@ -2,10 +2,16 @@ import { StatusEnum } from '@constants/index';
 import { z } from 'zod';
 
 const jsonObject = z.record(z.string(), z.unknown());
+const singleLineDescription = z
+  .string()
+  .trim()
+  .refine((value) => !/[\r\n]/.test(value), {
+    message: 'Description must be single-line',
+  });
 
 export const createProjectCategoryBody = z.object({
   name: jsonObject,
-  description: jsonObject.nullable().optional(),
+  description: singleLineDescription.nullable().optional(),
   parentCategoryId: z
     .string()
     .trim()
@@ -19,7 +25,7 @@ export const createProjectCategoryBody = z.object({
 export const updateProjectCategoryBody = z
   .object({
     name: jsonObject.optional(),
-    description: jsonObject.nullable().optional(),
+    description: singleLineDescription.nullable().optional(),
     parentCategoryId: z
       .string()
       .trim()

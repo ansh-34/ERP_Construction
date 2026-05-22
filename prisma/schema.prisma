@@ -192,6 +192,8 @@ model User {
   phoneCode String?
   phone     String?
   industry  IndustryEnum
+  skills    String[]     @default([])
+  minDayCharge Decimal?  @db.Decimal(15, 2)
   roleId    String?      @db.Uuid
 
   role    Role?   @relation(fields: [roleId], references: [id])
@@ -852,7 +854,7 @@ model PurchaseOrderProduct {
 model ApiKey {
   id          String     @id @default(uuid()) @db.Uuid
   name        Json       @db.JsonB
-  description Json?      @db.JsonB
+  description String?
   secret      String
   searchText  String     @default("")
   domainId    String     @db.Uuid
@@ -896,7 +898,7 @@ model Location {
 
 model Media {
   id         String     @id @default(uuid()) @db.Uuid
-  name       Json       @db.JsonB
+  name       String
   type       String
   url        String     @unique
   searchText String     @default("")
@@ -909,6 +911,7 @@ model Media {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   admins     Admin[]
+  projectTaskImages ProjectTaskImage[]
 
   @@index([domainId])
   @@index([adminId])
@@ -920,9 +923,13 @@ model Project {
   name        Json       @db.JsonB
   code        String
   searchText  String     @default("")
-  description Json?      @db.JsonB
+  description String?
   budget      Decimal    @db.Decimal(15, 2)
   spent       Decimal    @default(0) @db.Decimal(15, 2)
+  expectedStartDate DateTime?
+  expectedEndDate   DateTime?
+  actualStartDate   DateTime?
+  actualEndDate     DateTime?
   locationId  String     @db.Uuid
   location    Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
   domainId    String     @db.Uuid
@@ -959,7 +966,7 @@ model ProjectCategory {
   id          String     @id @default(uuid()) @db.Uuid
   name        Json       @db.JsonB
   code        String
-  description Json?      @db.JsonB
+  description String?
   domainId    String     @db.Uuid
   domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   status      StatusEnum @default(ACTIVE)
@@ -976,10 +983,14 @@ model ProjectStage {
   name        Json       @db.JsonB
   code        String
   searchText  String     @default("")
-  description Json?      @db.JsonB
+  description String?
   progress    Float?
-  projectId   String     @db.Uuid
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  expectedStartDate DateTime?
+  expectedEndDate   DateTime?
+  actualStartDate   DateTime?
+  actualEndDate     DateTime?
+  projectId   String?    @db.Uuid
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId    String     @db.Uuid
   domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   adminId     String     @db.Uuid
@@ -1041,10 +1052,10 @@ model ProjectTask {
 
 model ProjectTaskImage {
   id          String       @id @default(uuid()) @db.Uuid
+  imageId     String?      @db.Uuid
+  image       Media?       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageUrl    String
-  imageName   Json?        @db.JsonB
-  imageType   String?
-  description Json?        @db.JsonB
+  description String?
   taskId      String       @db.Uuid
   task        ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   stageId     String       @db.Uuid
@@ -1055,13 +1066,11 @@ model ProjectTaskImage {
   domain      Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
   adminId     String       @db.Uuid
   admin       Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status      StatusEnum   @default(ACTIVE)
   isDeleted   Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   @@index([createdAt, isDeleted, domainId])
-  @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, taskId])
   @@index([createdAt, isDeleted, domainId, projectId])
   @@index([createdAt, isDeleted, domainId, projectId, stageId])

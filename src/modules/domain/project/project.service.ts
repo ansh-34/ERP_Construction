@@ -4,7 +4,6 @@ import {
   projectStageRepository,
   type ProjectRecord,
   type ProjectStageRecord,
-  type UpdateProjectInput,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
@@ -18,16 +17,20 @@ import {
 
 interface CreateProjectStageInProjectInput {
   name: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   progress?: number | null;
+  expectedStartDate?: string;
+  expectedEndDate?: string;
   status?: StatusEnum;
 }
 
 export interface CreateProjectInput {
   name: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   budget: number;
   spent?: number;
+  expectedStartDate?: string;
+  expectedEndDate?: string;
   locationId: string;
   domainId: string;
   adminId: string;
@@ -35,17 +38,12 @@ export interface CreateProjectInput {
   projectStages?: CreateProjectStageInProjectInput[];
 }
 
-type LocalizedProjectRecord = Omit<ProjectRecord, 'name' | 'description'> & {
+type LocalizedProjectRecord = Omit<ProjectRecord, 'name'> & {
   name: string;
-  description: string | null;
 };
 
-type LocalizedProjectStageRecord = Omit<
-  ProjectStageRecord,
-  'name' | 'description'
-> & {
+type LocalizedProjectStageRecord = Omit<ProjectStageRecord, 'name'> & {
   name: string;
-  description: string | null;
 };
 
 type LocalizedProjectWithStagesRecord = LocalizedProjectRecord & {
@@ -93,6 +91,78 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
+export interface UpdateProjectInput {
+  name?: Record<string, unknown>;
+  description?: string | null;
+  budget?: number;
+  spent?: number;
+  actualStartDate?: string | null;
+  actualEndDate?: string | null;
+  locationId?: string;
+  status?: StatusEnum;
+}
+
+function parseOptionalDate(
+  value: string | Date | null | undefined,
+  field: string,
+): Date | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new Error(`invalid ${field}`);
+    }
+
+    return value;
+  }
+
+  if (!isNonEmptyString(value)) {
+    throw new Error(`invalid ${field}`);
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`invalid ${field}`);
+  }
+
+  return date;
+}
+
+function ensureDateRange(
+  startDate: Date | null | undefined,
+  endDate: Date | null | undefined,
+  startField: string,
+  endField: string,
+): void {
+  if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+    throw new Error(`${endField} cannot be before ${startField}`);
+  }
+}
+
+function assertSingleLineDescription(
+  value: string | null | undefined,
+  field: string,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!isNonEmptyString(value)) {
+    throw new Error(`${field} is required`);
+  }
+
+  if (/[\r\n]/.test(value)) {
+    throw new Error(`${field} must be single-line`);
+  }
+}
+
 function normalizeProject(
   project: ProjectRecord,
   language: string | null,
@@ -100,7 +170,6 @@ function normalizeProject(
   return {
     ...project,
     name: getLocalizedText(project.name, language) || '',
-    description: getLocalizedText(project.description, language),
     location: normalizeRelationDetails(project.location, language),
     domain: normalizeRelationDetails(project.domain, language),
     admin: normalizeRelationDetails(project.admin, language),
@@ -130,7 +199,6 @@ function normalizeProjectStage(
   return {
     ...stage,
     name: getLocalizedText(stage.name, language) || '',
-    description: getLocalizedText(stage.description, language),
   };
 }
 
@@ -143,21 +211,7 @@ function assertCreateInput(data: CreateProjectInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isNonEmptyString(data.description.en)
-  ) {
-    throw new Error('description.en is required');
-  }
+  assertSingleLineDescription(data.description, 'description');
 
   if (!isNonNegativeFiniteNumber(data.budget)) {
     throw new Error('invalid budget');
@@ -166,6 +220,13 @@ function assertCreateInput(data: CreateProjectInput): void {
   if (!isNonEmptyString(data.locationId)) {
     throw new Error('invalid locationId');
   }
+
+  ensureDateRange(
+    parseOptionalDate(data.expectedStartDate, 'expectedStartDate'),
+    parseOptionalDate(data.expectedEndDate, 'expectedEndDate'),
+    'expectedStartDate',
+    'expectedEndDate',
+  );
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
@@ -187,21 +248,10 @@ function assertCreateInput(data: CreateProjectInput): void {
         throw new Error('project stage name.en is required');
       }
 
-      if (
-        stage.description !== undefined &&
-        stage.description !== null &&
-        !isPlainObject(stage.description)
-      ) {
-        throw new Error('invalid project stage json description');
-      }
-
-      if (
-        stage.description !== undefined &&
-        stage.description !== null &&
-        !isNonEmptyString(stage.description.en)
-      ) {
-        throw new Error('project stage description.en is required');
-      }
+      assertSingleLineDescription(
+        stage.description,
+        'project stage description',
+      );
 
       if (
         stage.progress !== undefined &&
@@ -219,6 +269,19 @@ function assertCreateInput(data: CreateProjectInput): void {
         throw new Error('invalid project stage status');
       }
 
+      ensureDateRange(
+        parseOptionalDate(
+          stage.expectedStartDate,
+          'project stage expectedStartDate',
+        ),
+        parseOptionalDate(
+          stage.expectedEndDate,
+          'project stage expectedEndDate',
+        ),
+        'project stage expectedStartDate',
+        'project stage expectedEndDate',
+      );
+
       const code = buildProjectStageCode(stage.name);
       if (stageCodes.has(code)) {
         throw new Error('duplicate project stage code');
@@ -233,6 +296,8 @@ function assertUpdateInput(data: UpdateProjectInput): void {
   const hasDescription = data.description !== undefined;
   const hasBudget = data.budget !== undefined;
   const hasSpent = data.spent !== undefined;
+  const hasActualStartDate = data.actualStartDate !== undefined;
+  const hasActualEndDate = data.actualEndDate !== undefined;
   const hasLocationId = data.locationId !== undefined;
   const hasStatus = data.status !== undefined;
 
@@ -241,6 +306,8 @@ function assertUpdateInput(data: UpdateProjectInput): void {
     !hasDescription &&
     !hasBudget &&
     !hasSpent &&
+    !hasActualStartDate &&
+    !hasActualEndDate &&
     !hasLocationId &&
     !hasStatus
   ) {
@@ -255,20 +322,8 @@ function assertUpdateInput(data: UpdateProjectInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isNonEmptyString(data.description?.en)
-  ) {
-    throw new Error('description.en is required');
+  if (hasDescription) {
+    assertSingleLineDescription(data.description, 'description');
   }
 
   if (hasBudget && !isNonNegativeFiniteNumber(data.budget as number)) {
@@ -282,6 +337,13 @@ function assertUpdateInput(data: UpdateProjectInput): void {
   if (hasLocationId && !isNonEmptyString(data.locationId)) {
     throw new Error('invalid locationId');
   }
+
+  ensureDateRange(
+    parseOptionalDate(data.actualStartDate, 'actualStartDate'),
+    parseOptionalDate(data.actualEndDate, 'actualEndDate'),
+    'actualStartDate',
+    'actualEndDate',
+  );
 }
 
 async function resolveAdminId(domainId: string, adminId: string) {
@@ -317,6 +379,14 @@ export const projectService = {
             adminId,
             code,
             searchText: buildProjectSearchText(data.name),
+            expectedStartDate: parseOptionalDate(
+              data.expectedStartDate,
+              'expectedStartDate',
+            ),
+            expectedEndDate: parseOptionalDate(
+              data.expectedEndDate,
+              'expectedEndDate',
+            ),
           },
           { transaction: tx },
         );
@@ -329,6 +399,14 @@ export const projectService = {
               searchText: buildProjectStageSearchText(stage.name),
               description: stage.description ?? null,
               progress: 0,
+              expectedStartDate: parseOptionalDate(
+                stage.expectedStartDate,
+                'project stage expectedStartDate',
+              ),
+              expectedEndDate: parseOptionalDate(
+                stage.expectedEndDate,
+                'project stage expectedEndDate',
+              ),
               projectId: createdProject.id,
               domainId: data.domainId,
               adminId,
@@ -444,8 +522,18 @@ export const projectService = {
         throw new Error('not found');
       }
 
+      const { actualStartDate, actualEndDate, ...projectData } = data;
       const updateData = {
-        ...data,
+        ...projectData,
+        ...(actualStartDate !== undefined && {
+          actualStartDate: parseOptionalDate(
+            actualStartDate,
+            'actualStartDate',
+          ),
+        }),
+        ...(actualEndDate !== undefined && {
+          actualEndDate: parseOptionalDate(actualEndDate, 'actualEndDate'),
+        }),
         ...(data.name !== undefined
           ? {
               ...(data.name !== undefined && {

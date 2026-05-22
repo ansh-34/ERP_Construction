@@ -49,6 +49,12 @@ export const UserSchemas = {
       name: { type: 'string' },
       email: { type: 'string', format: 'email' },
       roleId: { type: 'string' },
+      skills: {
+        type: 'array',
+        items: { type: 'string' },
+        example: ['masonry', 'plumbing'],
+      },
+      minDayCharge: { type: 'number', minimum: 0, example: 800 },
     },
   },
   ChangePasswordBody: {

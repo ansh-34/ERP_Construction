@@ -1,22 +1,19 @@
 import {
+  mediaRepository,
   projectTaskImageRepository,
   projectTaskRepository,
   type ProjectTaskImageRecord,
 } from '@repositories/index';
-import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
-import { isNonEmptyString, isPlainObject } from '@/utils/validation';
+import { isNonEmptyString } from '@/utils/validation';
 
 export interface CreateProjectTaskImageInput {
-  imageUrl: string;
-  imageName?: Record<string, unknown> | null;
-  imageType?: string | null;
-  description?: Record<string, unknown> | null;
+  imageId: string;
+  description?: string | null;
   taskId: string;
   domainId: string;
   adminId: string;
-  status: StatusEnum;
 }
 
 type PaginatedProjectTaskImages = {
@@ -28,39 +25,9 @@ type PaginatedProjectTaskImages = {
   };
 };
 
-function assertStatus(status: StatusEnum | undefined): void {
-  if (
-    status !== undefined &&
-    status !== StatusEnum.ACTIVE &&
-    status !== StatusEnum.INACTIVE
-  ) {
-    throw new Error('invalid status');
-  }
-}
-
-function assertOptionalJson(
-  value: Record<string, unknown> | null | undefined,
-  field: string,
-): void {
-  if (value !== undefined && value !== null && !isPlainObject(value)) {
-    throw new Error(`invalid ${field}`);
-  }
-}
-
 function assertCreateInput(data: CreateProjectTaskImageInput): void {
-  if (!isNonEmptyString(data.imageUrl)) {
-    throw new Error('invalid imageUrl');
-  }
-
-  assertOptionalJson(data.imageName, 'imageName');
-  assertOptionalJson(data.description, 'description');
-
-  if (
-    data.imageType !== undefined &&
-    data.imageType !== null &&
-    !isNonEmptyString(data.imageType)
-  ) {
-    throw new Error('invalid imageType');
+  if (!isNonEmptyString(data.imageId)) {
+    throw new Error('invalid imageId');
   }
 
   if (!isNonEmptyString(data.taskId)) {
@@ -75,7 +42,17 @@ function assertCreateInput(data: CreateProjectTaskImageInput): void {
     throw new Error('invalid adminId');
   }
 
-  assertStatus(data.status);
+  if (
+    data.description !== undefined &&
+    data.description !== null &&
+    !isNonEmptyString(data.description)
+  ) {
+    throw new Error('description is required');
+  }
+
+  if (data.description && /[\r\n]/.test(data.description)) {
+    throw new Error('description must be single-line');
+  }
 }
 
 export const projectTaskImagesService = {
@@ -95,10 +72,19 @@ export const projectTaskImagesService = {
         throw new Error('not found');
       }
 
+      const media = await mediaRepository.findById(
+        data.imageId,
+        data.domainId,
+        data.adminId,
+      );
+
+      if (!media) {
+        throw new Error('not found');
+      }
+
       return await projectTaskImageRepository.create({
-        imageUrl: data.imageUrl,
-        ...(data.imageName !== undefined && { imageName: data.imageName }),
-        ...(data.imageType !== undefined && { imageType: data.imageType }),
+        imageId: media.id,
+        imageUrl: media.url,
         ...(data.description !== undefined && {
           description: data.description,
         }),
@@ -107,7 +93,6 @@ export const projectTaskImagesService = {
         projectId: task.projectId,
         domainId: data.domainId,
         adminId: data.adminId,
-        status: data.status,
       });
     } catch (error: unknown) {
       throw normalizePrismaError(error);

@@ -1,15 +1,16 @@
-import { StatusEnum } from '@constants/index';
 import { z } from 'zod';
 
-const jsonObject = z.record(z.string(), z.unknown());
+const singleLineDescription = z
+  .string()
+  .trim()
+  .refine((value) => !/[\r\n]/.test(value), {
+    message: 'Description must be single-line',
+  });
 
 export const createProjectTaskImageBody = z.object({
-  imageUrl: z.string().trim().min(1, { message: 'Image url is required' }),
-  imageName: jsonObject.nullable().optional(),
-  imageType: z.string().trim().min(1).nullable().optional(),
-  description: jsonObject.nullable().optional(),
+  imageId: z.string().trim().uuid({ message: 'Valid image id is required' }),
+  description: singleLineDescription.nullable().optional(),
   taskId: z.string().trim().uuid({ message: 'Valid task id is required' }),
-  status: z.nativeEnum(StatusEnum).optional(),
 });
 
 export const listProjectTaskImageQuery = z.object({

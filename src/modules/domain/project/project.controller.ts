@@ -16,20 +16,26 @@ export const projectController = {
         description,
         budget,
         spent,
+        expectedStartDate,
+        expectedEndDate,
         locationId,
         status,
         projectStages,
       } = req.body as {
         name?: Record<string, unknown>;
-        description?: Record<string, unknown>;
+        description?: string | null;
         budget?: number;
         spent?: number;
+        expectedStartDate?: string;
+        expectedEndDate?: string;
         locationId?: string;
         status?: StatusEnum;
         projectStages?: {
           name: Record<string, unknown>;
-          description?: Record<string, unknown> | null;
+          description?: string | null;
           progress?: number | null;
+          expectedStartDate?: string;
+          expectedEndDate?: string;
           status?: StatusEnum;
         }[];
       };
@@ -43,6 +49,8 @@ export const projectController = {
           ...(description !== undefined && { description }),
           budget: budget ?? 0,
           ...(spent !== undefined && { spent }),
+          ...(expectedStartDate !== undefined && { expectedStartDate }),
+          ...(expectedEndDate !== undefined && { expectedEndDate }),
           locationId: locationId ?? '',
           ...(projectStages !== undefined && { projectStages }),
           domainId,
@@ -136,15 +144,25 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, budget, spent, locationId, status } =
-        req.body as {
-          name?: Record<string, unknown>;
-          description?: Record<string, unknown> | null;
-          budget?: number;
-          spent?: number;
-          locationId?: string;
-          status?: StatusEnum;
-        };
+      const {
+        name,
+        description,
+        budget,
+        spent,
+        actualStartDate,
+        actualEndDate,
+        locationId,
+        status,
+      } = req.body as {
+        name?: Record<string, unknown>;
+        description?: string | null;
+        budget?: number;
+        spent?: number;
+        actualStartDate?: string | null;
+        actualEndDate?: string | null;
+        locationId?: string;
+        status?: StatusEnum;
+      };
 
       const updatedProject = await projectService.update(
         id ?? '',
@@ -155,6 +173,8 @@ export const projectController = {
           ...(description !== undefined && { description }),
           ...(budget !== undefined && { budget }),
           ...(spent !== undefined && { spent }),
+          ...(actualStartDate !== undefined && { actualStartDate }),
+          ...(actualEndDate !== undefined && { actualEndDate }),
           ...(locationId !== undefined && { locationId }),
           ...(status !== undefined && { status }),
         },

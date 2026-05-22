@@ -74,6 +74,11 @@ const projectTaskDelayListSelect = Prisma.sql`
   ptd."delayReason",
   ptd."requestApproved",
   ptd."requestApprovalTime",
+  ptd."taskId",
+  ptd."stageId",
+  ptd."projectId",
+  ptd."domainId",
+  ptd."adminId",
   jsonb_build_object(
     'taskId', pt."id",
     'name', pt."name",

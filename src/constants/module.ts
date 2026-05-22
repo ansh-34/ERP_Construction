@@ -32,6 +32,14 @@ export const modules = [
     code: 'PROJECT_STAGE',
   },
   {
+    name: 'Project User Assignment',
+    code: 'PROJECT_USER_ASSIGNMENT',
+  },
+  {
+    name: 'Project User Daily Log',
+    code: 'PROJECT_USER_DAILY_LOG',
+  },
+  {
     name: 'Project Task',
     code: 'PROJECT_TASK',
   },

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
-import { StatusEnum } from '@constants/index';
 import { resolveHttpStatus } from '@/utils/httpError';
 import { userTaskSubmissionService } from './userTaskSubmission.service';
 
@@ -13,10 +12,7 @@ export const userTaskSubmissionController = {
         taskProgress?: number;
         images?: {
           imageUrl: string;
-          imageName?: Record<string, unknown> | null;
-          imageType?: string | null;
-          description?: Record<string, unknown> | null;
-          status?: StatusEnum;
+          description?: string | null;
         }[];
         // notes?: string;
       };

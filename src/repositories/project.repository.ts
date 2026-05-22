@@ -11,9 +11,13 @@ export interface ProjectRecord {
   name: JsonObject;
   code: string;
   searchText: string;
-  description: JsonObject | null;
+  description: string | null;
   budget: number;
   spent: number;
+  expectedStartDate: Date | null;
+  expectedEndDate: Date | null;
+  actualStartDate: Date | null;
+  actualEndDate: Date | null;
   progress?: number;
   locationId: string;
   domainId: string;
@@ -31,9 +35,11 @@ export interface CreateProjectInput {
   name: JsonObject;
   code: string;
   searchText: string;
-  description?: JsonObject | null;
+  description?: string | null;
   budget: number;
   spent?: number;
+  expectedStartDate?: Date | null;
+  expectedEndDate?: Date | null;
   locationId: string;
   domainId: string;
   adminId: string;
@@ -43,10 +49,12 @@ export interface CreateProjectInput {
 export interface UpdateProjectInput {
   name?: JsonObject;
   code?: string;
-  description?: JsonObject | null;
+  description?: string | null;
   searchText?: string;
   budget?: number;
   spent?: number;
+  actualStartDate?: Date | null;
+  actualEndDate?: Date | null;
   locationId?: string;
   status?: StatusEnum;
 }
@@ -58,6 +66,10 @@ const projectSelect = Prisma.sql`
   "description",
   "budget",
   "spent",
+  "expectedStartDate",
+  "expectedEndDate",
+  "actualStartDate",
+  "actualEndDate",
   "locationId",
   "domainId",
   "adminId",
@@ -74,6 +86,13 @@ const projectListSelect = Prisma.sql`
   p."description",
   p."budget",
   p."spent",
+  p."expectedStartDate",
+  p."expectedEndDate",
+  p."actualStartDate",
+  p."actualEndDate",
+  p."locationId",
+  p."domainId",
+  p."adminId",
   COALESCE((
     SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
     FROM (
@@ -118,6 +137,10 @@ const projectDetailSelect = Prisma.sql`
   p."description",
   p."budget",
   p."spent",
+  p."expectedStartDate",
+  p."expectedEndDate",
+  p."actualStartDate",
+  p."actualEndDate",
   COALESCE((
     SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
     FROM (
@@ -168,12 +191,6 @@ const projectDetailSelect = Prisma.sql`
   p."updatedAt"
 `;
 
-function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
-  return value === null || value === undefined
-    ? Prisma.sql`NULL`
-    : Prisma.sql`${JSON.stringify(value)}::jsonb`;
-}
-
 export const projectRepository = {
   create: async (
     data: CreateProjectInput,
@@ -181,18 +198,21 @@ export const projectRepository = {
   ): Promise<ProjectRecord> => {
     const prismaClient = options.transaction || prisma;
     const id = randomUUID();
-    const descriptionSql = toJsonbSql(data.description);
 
     const result = (await prismaClient.$queryRaw(Prisma.sql`
-      INSERT INTO "Project" ("id", "name", "code", "searchText", "description", "budget", "spent", "locationId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "Project" ("id", "name", "code", "searchText", "description", "budget", "spent", "expectedStartDate", "expectedEndDate", "actualStartDate", "actualEndDate", "locationId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
         ${data.searchText},
-        ${descriptionSql},
+        ${data.description ?? null},
         ${data.budget},
         ${data.spent ?? 0},
+        ${data.expectedStartDate ?? null},
+        ${data.expectedEndDate ?? null},
+        NULL,
+        NULL,
         ${data.locationId},
         ${data.domainId},
         ${data.adminId},
@@ -338,9 +358,7 @@ export const projectRepository = {
     }
 
     if (data.description !== undefined) {
-      assignments.unshift(
-        Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
-      );
+      assignments.unshift(Prisma.sql`"description" = ${data.description}`);
     }
 
     if (data.searchText !== undefined) {
@@ -353,6 +371,16 @@ export const projectRepository = {
 
     if (data.spent !== undefined) {
       assignments.unshift(Prisma.sql`"spent" = ${data.spent}`);
+    }
+
+    if (data.actualStartDate !== undefined) {
+      assignments.unshift(
+        Prisma.sql`"actualStartDate" = ${data.actualStartDate}`,
+      );
+    }
+
+    if (data.actualEndDate !== undefined) {
+      assignments.unshift(Prisma.sql`"actualEndDate" = ${data.actualEndDate}`);
     }
 
     if (data.locationId !== undefined) {
@@ -421,6 +449,8 @@ export const projectRepository = {
         description: item.description || null,
         budget: item.budget,
         spent: item.spent || 0,
+        expectedStartDate: item.expectedStartDate ?? null,
+        expectedEndDate: item.expectedEndDate ?? null,
         locationId: item.locationId,
         domainId: item.domainId,
         adminId: item.adminId,

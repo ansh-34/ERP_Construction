@@ -14,8 +14,10 @@ import {
 
 export interface CreateProjectStageInput {
   name: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   progress?: number | null;
+  expectedStartDate?: string;
+  expectedEndDate?: string;
   projectId?: string;
   domainId: string;
   adminId: string;
@@ -24,17 +26,18 @@ export interface CreateProjectStageInput {
 
 export interface UpdateProjectStageInput {
   name?: Record<string, unknown>;
-  description?: Record<string, unknown> | null;
+  description?: string | null;
   progress?: number | null;
+  actualStartDate?: string | null;
+  actualEndDate?: string | null;
   status?: StatusEnum;
 }
 
 type LocalizedProjectStageRecord = Omit<
   ProjectStageRecord,
-  'name' | 'description'
+  'name' | 'project' | 'domain' | 'admin'
 > & {
   name: string;
-  description: string | null;
 };
 
 type PaginatedProjectStages = {
@@ -70,37 +73,79 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
+function parseOptionalDate(
+  value: string | Date | null | undefined,
+  field: string,
+): Date | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new Error(`invalid ${field}`);
+    }
+
+    return value;
+  }
+
+  if (!isNonEmptyString(value)) {
+    throw new Error(`invalid ${field}`);
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`invalid ${field}`);
+  }
+
+  return date;
+}
+
+function ensureDateRange(
+  startDate: Date | null | undefined,
+  endDate: Date | null | undefined,
+  startField: string,
+  endField: string,
+): void {
+  if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+    throw new Error(`${endField} cannot be before ${startField}`);
+  }
+}
+
+function assertSingleLineDescription(
+  value: string | null | undefined,
+  field: string,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!isNonEmptyString(value)) {
+    throw new Error(`${field} is required`);
+  }
+
+  if (/[\r\n]/.test(value)) {
+    throw new Error(`${field} must be single-line`);
+  }
+}
+
 function normalizeProjectStage(
   stage: ProjectStageRecord,
   language: string | null,
 ): LocalizedProjectStageRecord {
+  const stageData = { ...stage };
+  delete stageData.project;
+  delete stageData.domain;
+  delete stageData.admin;
+
   return {
-    ...stage,
+    ...stageData,
     name: getLocalizedText(stage.name, language) || '',
-    description: getLocalizedText(stage.description, language),
-    project: normalizeRelationDetails(stage.project, language),
-    domain: normalizeRelationDetails(stage.domain, language),
-    admin: normalizeRelationDetails(stage.admin, language),
-  };
-}
-
-function normalizeRelationDetails(
-  relation: ProjectStageRecord['project'],
-  language: string | null,
-): ProjectStageRecord['project'] {
-  if (!relation) {
-    return relation;
-  }
-
-  const name = relation.name;
-  const location = relation.location;
-
-  return {
-    ...relation,
-    name: isPlainObject(name) ? getLocalizedText(name, language) || '' : name,
-    ...(isPlainObject(location)
-      ? { location: normalizeRelationDetails(location, language) }
-      : {}),
   };
 }
 
@@ -113,21 +158,7 @@ function assertCreateInput(data: CreateProjectStageInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    data.description !== undefined &&
-    data.description !== null &&
-    !isNonEmptyString(data.description.en)
-  ) {
-    throw new Error('description.en is required');
-  }
+  assertSingleLineDescription(data.description, 'description');
 
   if (
     data.progress !== undefined &&
@@ -141,6 +172,13 @@ function assertCreateInput(data: CreateProjectStageInput): void {
     throw new Error('invalid domainId');
   }
 
+  ensureDateRange(
+    parseOptionalDate(data.expectedStartDate, 'expectedStartDate'),
+    parseOptionalDate(data.expectedEndDate, 'expectedEndDate'),
+    'expectedStartDate',
+    'expectedEndDate',
+  );
+
   if (
     data.status !== StatusEnum.ACTIVE &&
     data.status !== StatusEnum.INACTIVE
@@ -149,11 +187,11 @@ function assertCreateInput(data: CreateProjectStageInput): void {
   }
 }
 
-async function resolveProjectId(
+async function validateProjectId(
   projectId: string | undefined,
   domainId: string,
   adminId: string,
-): Promise<string> {
+): Promise<string | undefined> {
   if (isNonEmptyString(projectId)) {
     const project = await projectRepository.findById(
       projectId,
@@ -168,26 +206,23 @@ async function resolveProjectId(
     return project.id;
   }
 
-  const projects = await projectRepository.findMany(
-    domainId,
-    undefined,
-    adminId,
-  );
-  const latestProject = projects[0];
-
-  if (!latestProject) {
-    throw new Error('project not found');
-  }
-
-  return latestProject.id;
+  return undefined;
 }
 
 function assertUpdateInput(data: UpdateProjectStageInput): void {
   const hasName = data.name !== undefined;
   const hasDescription = data.description !== undefined;
   const hasStatus = data.status !== undefined;
+  const hasActualStartDate = data.actualStartDate !== undefined;
+  const hasActualEndDate = data.actualEndDate !== undefined;
 
-  if (!hasName && !hasDescription && !hasStatus) {
+  if (
+    !hasName &&
+    !hasDescription &&
+    !hasStatus &&
+    !hasActualStartDate &&
+    !hasActualEndDate
+  ) {
     throw new Error('empty update payload');
   }
 
@@ -199,20 +234,8 @@ function assertUpdateInput(data: UpdateProjectStageInput): void {
     throw new Error('name.en is required');
   }
 
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isPlainObject(data.description)
-  ) {
-    throw new Error('invalid json description');
-  }
-
-  if (
-    hasDescription &&
-    data.description !== null &&
-    !isNonEmptyString(data.description?.en)
-  ) {
-    throw new Error('description.en is required');
+  if (hasDescription) {
+    assertSingleLineDescription(data.description, 'description');
   }
 
   if (
@@ -222,6 +245,13 @@ function assertUpdateInput(data: UpdateProjectStageInput): void {
   ) {
     throw new Error('invalid status');
   }
+
+  ensureDateRange(
+    parseOptionalDate(data.actualStartDate, 'actualStartDate'),
+    parseOptionalDate(data.actualEndDate, 'actualEndDate'),
+    'actualStartDate',
+    'actualEndDate',
+  );
 }
 
 export const projectStageService = {
@@ -232,7 +262,7 @@ export const projectStageService = {
     assertCreateInput(data);
 
     try {
-      const projectId = await resolveProjectId(
+      const projectId = await validateProjectId(
         data.projectId,
         data.domainId,
         data.adminId,
@@ -257,6 +287,14 @@ export const projectStageService = {
         progress: 0,
         code,
         searchText: buildProjectStageSearchText(data.name),
+        expectedStartDate: parseOptionalDate(
+          data.expectedStartDate,
+          'expectedStartDate',
+        ),
+        expectedEndDate: parseOptionalDate(
+          data.expectedEndDate,
+          'expectedEndDate',
+        ),
       });
 
       return normalizeProjectStage(stage, language);
@@ -348,10 +386,19 @@ export const projectStageService = {
         throw new Error('not found');
       }
 
-      const stageData = { ...data };
+      const { actualStartDate, actualEndDate, ...stageData } = data;
       delete stageData.progress;
       const updateData = {
         ...stageData,
+        ...(actualStartDate !== undefined && {
+          actualStartDate: parseOptionalDate(
+            actualStartDate,
+            'actualStartDate',
+          ),
+        }),
+        ...(actualEndDate !== undefined && {
+          actualEndDate: parseOptionalDate(actualEndDate, 'actualEndDate'),
+        }),
         ...(data.name !== undefined
           ? {
               ...(data.name !== undefined && {

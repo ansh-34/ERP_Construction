@@ -35,7 +35,7 @@ export interface UpdateProjectTaskDelayInput {
 
 type LocalizedProjectTaskDelayRecord = Omit<
   ProjectTaskDelayRecord,
-  'delayReason'
+  'delayReason' | 'task' | 'stage' | 'project' | 'domain' | 'admin'
 > & {
   delayReason: string;
   approvalState: 'PENDING' | 'APPROVED';
@@ -59,65 +59,21 @@ function normalizeStoredDelayReason(value: Record<string, unknown>): string {
   return typeof reason === 'string' ? reason : String(reason);
 }
 
-function getLocalizedText(
-  value: Record<string, unknown> | null,
-  language: string | null,
-): string | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
-
-  return typeof localizedValue === 'string'
-    ? localizedValue
-    : String(localizedValue);
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
-}
-
-function normalizeRelationDetails(
-  relation: ProjectTaskDelayRecord['project'],
-  language: string | null,
-): ProjectTaskDelayRecord['project'] {
-  if (!relation) {
-    return relation;
-  }
-
-  const name = relation.name;
-  const location = relation.location;
-  const assigneeDetails = relation.assigneeDetails;
-
-  return {
-    ...relation,
-    name: isPlainObject(name) ? getLocalizedText(name, language) || '' : name,
-    ...(isPlainObject(location)
-      ? { location: normalizeRelationDetails(location, language) }
-      : {}),
-    ...(isPlainObject(assigneeDetails)
-      ? {
-          assigneeDetails: normalizeRelationDetails(assigneeDetails, language),
-        }
-      : {}),
-  };
-}
-
 function normalizeProjectTaskDelay(
   delay: ProjectTaskDelayRecord,
-  language: string | null,
+  _language: string | null,
 ): LocalizedProjectTaskDelayRecord {
+  const delayData = { ...delay };
+  delete delayData.task;
+  delete delayData.stage;
+  delete delayData.project;
+  delete delayData.domain;
+  delete delayData.admin;
+
   return {
-    ...delay,
+    ...delayData,
     delayReason: normalizeStoredDelayReason(delay.delayReason),
     approvalState: delay.requestApproved ? 'APPROVED' : 'PENDING',
-    task: normalizeRelationDetails(delay.task, language),
-    stage: normalizeRelationDetails(delay.stage, language),
-    project: normalizeRelationDetails(delay.project, language),
-    domain: normalizeRelationDetails(delay.domain, language),
-    admin: normalizeRelationDetails(delay.admin, language),
   };
 }
 

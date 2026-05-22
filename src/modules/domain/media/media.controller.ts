@@ -15,7 +15,7 @@ export const mediaController = {
       const adminId = req.user!.adminId;
       const { file } = req;
       const { name } = req.body as {
-        name?: Record<string, unknown>;
+        name?: string;
       };
 
       if (!file) {
@@ -28,7 +28,7 @@ export const mediaController = {
       try {
         media = await mediaService.create(
           {
-            name: name ?? { en: file.originalname },
+            name: name ?? file.originalname,
             type: file.mimetype,
             url,
             domainId,
@@ -122,7 +122,7 @@ export const mediaController = {
         (req.headers.language as string) ||
         'en';
       const { name, type } = req.body as {
-        name?: Record<string, unknown>;
+        name?: string;
         type?: string;
       };
 
