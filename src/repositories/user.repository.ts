@@ -53,6 +53,8 @@ export const UserRepository = {
     phone?: string | null;
     phoneCode?: string | null;
     roleId?: string | null;
+    skills?: string[];
+    minDayCharge?: number | null;
     domainId: string;
     adminId?: string | null;
     isEmailVerified?: boolean;
@@ -107,6 +109,8 @@ export const UserRepository = {
           email: true,
           phone: true,
           industry: true,
+          skills: true,
+          minDayCharge: true,
           roleId: true,
           role: { select: { id: true, name: true, code: true } },
           status: true,

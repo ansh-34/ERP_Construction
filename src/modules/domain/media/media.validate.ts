@@ -1,15 +1,21 @@
 import { z } from 'zod';
 
-const jsonObject = z.record(z.string(), z.unknown());
+const singleLineName = z
+  .string()
+  .trim()
+  .min(1, { message: 'Name is required' })
+  .refine((value) => !/[\r\n]/.test(value), {
+    message: 'Name must be single-line',
+  });
 
 export const createMediaBody = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
-  name: jsonObject.optional(),
+  name: singleLineName.optional(),
 });
 
 export const updateMediaBody = z
   .object({
-    name: jsonObject.optional(),
+    name: singleLineName.optional(),
     type: z.string().trim().min(1, { message: 'Type is required' }).optional(),
   })
   .refine((data) => data.name !== undefined || data.type !== undefined, {

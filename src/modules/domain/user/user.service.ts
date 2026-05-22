@@ -15,10 +15,16 @@ import { normalizePagination } from '../../../utils/pagination.js';
 export const UserService = {
   async inviteUser(
     domainId: string,
-    data: { name?: string; email: string; roleId?: string },
+    data: {
+      name?: string;
+      email: string;
+      roleId?: string;
+      skills?: string[];
+      minDayCharge?: number;
+    },
     baseUrl: string,
   ) {
-    const { name, email, roleId } = data;
+    const { name, email, roleId, skills, minDayCharge } = data;
 
     if (!email) {
       throw new Error(Messages.USER.EMAIL_REQUIRED);
@@ -53,6 +59,8 @@ export const UserService = {
       password: temporaryPassword,
       industry: domain.industry,
       roleId: roleId || null,
+      skills: skills ?? [],
+      minDayCharge: minDayCharge ?? null,
       domainId,
       adminId: domain.adminId,
       isEmailVerified: false,

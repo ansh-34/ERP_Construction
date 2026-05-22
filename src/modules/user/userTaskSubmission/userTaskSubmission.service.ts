@@ -5,9 +5,8 @@ import {
   type ProjectTaskImageRecord,
   type ProjectTaskRecord,
 } from '@repositories/index';
-import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { isNonEmptyString, isPlainObject } from '@/utils/validation';
+import { isNonEmptyString } from '@/utils/validation';
 
 type LocalizedProjectTaskRecord = Omit<
   ProjectTaskRecord,
@@ -19,10 +18,7 @@ type LocalizedProjectTaskRecord = Omit<
 
 type TaskSubmissionImageInput = {
   imageUrl: string;
-  imageName?: Record<string, unknown> | null;
-  imageType?: string | null;
-  description?: Record<string, unknown> | null;
-  status?: StatusEnum;
+  description?: string | null;
 };
 
 type SubmittedTaskWithImages = LocalizedProjectTaskRecord & {
@@ -65,36 +61,14 @@ function assertImages(images: TaskSubmissionImageInput[]): void {
       throw new Error('invalid imageUrl');
     }
 
-    if (
-      image.imageName !== undefined &&
-      image.imageName !== null &&
-      !isPlainObject(image.imageName)
-    ) {
-      throw new Error('invalid imageName');
-    }
+    if (image.description !== undefined && image.description !== null) {
+      if (!isNonEmptyString(image.description)) {
+        throw new Error('description is required');
+      }
 
-    if (
-      image.description !== undefined &&
-      image.description !== null &&
-      !isPlainObject(image.description)
-    ) {
-      throw new Error('invalid description');
-    }
-
-    if (
-      image.imageType !== undefined &&
-      image.imageType !== null &&
-      !isNonEmptyString(image.imageType)
-    ) {
-      throw new Error('invalid imageType');
-    }
-
-    if (
-      image.status !== undefined &&
-      image.status !== StatusEnum.ACTIVE &&
-      image.status !== StatusEnum.INACTIVE
-    ) {
-      throw new Error('invalid image status');
+      if (/[\r\n]/.test(image.description)) {
+        throw new Error('description must be single-line');
+      }
     }
   }
 }
@@ -169,12 +143,6 @@ export const userTaskSubmissionService = {
         images.map((image) =>
           projectTaskImageRepository.create({
             imageUrl: image.imageUrl,
-            ...(image.imageName !== undefined && {
-              imageName: image.imageName,
-            }),
-            ...(image.imageType !== undefined && {
-              imageType: image.imageType,
-            }),
             ...(image.description !== undefined && {
               description: image.description,
             }),
@@ -183,7 +151,6 @@ export const userTaskSubmissionService = {
             projectId: updatedTask.projectId,
             domainId,
             adminId: updatedTask.adminId,
-            status: image.status ?? StatusEnum.ACTIVE,
           }),
         ),
       );

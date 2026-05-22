@@ -53,7 +53,13 @@ export interface UpdateProjectTaskInput {
 
 type LocalizedProjectTaskRecord = Omit<
   ProjectTaskRecord,
-  'name' | 'assignee'
+  | 'name'
+  | 'assignee'
+  | 'stage'
+  | 'project'
+  | 'domain'
+  | 'admin'
+  | 'assigneeDetails'
 > & {
   name: string;
   assignee: string | null;
@@ -102,35 +108,17 @@ function normalizeProjectTask(
   task: ProjectTaskRecord,
   language: string | null,
 ): LocalizedProjectTaskRecord {
+  const taskData = { ...task };
+  delete taskData.stage;
+  delete taskData.project;
+  delete taskData.domain;
+  delete taskData.admin;
+  delete taskData.assigneeDetails;
+
   return {
-    ...task,
+    ...taskData,
     name: getLocalizedText(task.name, language),
     assignee: getAssigneeUserId(task.assignee),
-    stage: normalizeRelationDetails(task.stage, language),
-    project: normalizeRelationDetails(task.project, language),
-    domain: normalizeRelationDetails(task.domain, language),
-    admin: normalizeRelationDetails(task.admin, language),
-    assigneeDetails: normalizeRelationDetails(task.assigneeDetails, language),
-  };
-}
-
-function normalizeRelationDetails(
-  relation: ProjectTaskRecord['project'],
-  language: string | null,
-): ProjectTaskRecord['project'] {
-  if (!relation) {
-    return relation;
-  }
-
-  const name = relation.name;
-  const location = relation.location;
-
-  return {
-    ...relation,
-    name: isPlainObject(name) ? getLocalizedText(name, language) : name,
-    ...(isPlainObject(location)
-      ? { location: normalizeRelationDetails(location, language) }
-      : {}),
   };
 }
 

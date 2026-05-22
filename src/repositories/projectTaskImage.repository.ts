@@ -1,62 +1,50 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
-import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
-type JsonObject = Record<string, unknown>;
+type RelationDetails = Record<string, unknown> | null;
 
 export interface ProjectTaskImageRecord {
   id: string;
+  imageId: string | null;
   imageUrl: string;
-  imageName: JsonObject | null;
-  imageType: string | null;
-  description: JsonObject | null;
+  description: string | null;
   taskId: string;
   stageId: string;
   projectId: string;
   domainId: string;
   adminId: string;
-  status: StatusEnum;
+  image?: RelationDetails;
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateProjectTaskImageInput {
+  imageId?: string | null;
   imageUrl: string;
-  imageName?: JsonObject | null;
-  imageType?: string | null;
-  description?: JsonObject | null;
+  description?: string | null;
   taskId: string;
   stageId: string;
   projectId: string;
   domainId: string;
   adminId: string;
-  status: StatusEnum;
 }
 
 const projectTaskImageSelect = Prisma.sql`
   "id",
+  "imageId",
   "imageUrl",
-  "imageName",
-  "imageType",
   "description",
   "taskId",
   "stageId",
   "projectId",
   "domainId",
   "adminId",
-  "status",
   "isDeleted",
   "createdAt",
   "updatedAt"
 `;
-
-function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
-  return value === null || value === undefined
-    ? Prisma.sql`NULL`
-    : Prisma.sql`${JSON.stringify(value)}::jsonb`;
-}
 
 export const projectTaskImageRepository = {
   create: async (
@@ -67,32 +55,28 @@ export const projectTaskImageRepository = {
     const result = await prisma.$queryRaw<ProjectTaskImageRecord[]>(Prisma.sql`
       INSERT INTO "ProjectTaskImage" (
         "id",
+        "imageId",
         "imageUrl",
-        "imageName",
-        "imageType",
         "description",
         "taskId",
         "stageId",
         "projectId",
         "domainId",
         "adminId",
-        "status",
         "isDeleted",
         "createdAt",
         "updatedAt"
       )
       VALUES (
         ${id},
+        ${data.imageId ?? null},
         ${data.imageUrl},
-        ${toJsonbSql(data.imageName)},
-        ${data.imageType ?? null},
-        ${toJsonbSql(data.description)},
+        ${data.description ?? null},
         ${data.taskId},
         ${data.stageId},
         ${data.projectId},
         ${data.domainId},
         ${data.adminId},
-        ${data.status},
         false,
         NOW(),
         NOW()
@@ -171,7 +155,7 @@ export const projectTaskImageRepository = {
 
     const result = await prisma.$queryRaw<ProjectTaskImageRecord[]>(Prisma.sql`
       UPDATE "ProjectTaskImage"
-      SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
+      SET "isDeleted" = true, "updatedAt" = NOW()
       WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskImageSelect}
     `);

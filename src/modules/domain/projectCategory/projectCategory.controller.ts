@@ -13,7 +13,7 @@ export const projectCategoryController = {
         'en';
       const { name, description, domainId, status } = req.body as {
         name?: Record<string, unknown>;
-        description?: Record<string, unknown>;
+        description?: string | null;
         domainId?: string;
         status?: StatusEnum;
       };
@@ -111,7 +111,7 @@ export const projectCategoryController = {
         'en';
       const { name, description, status } = req.body as {
         name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
+        description?: string | null;
         status?: StatusEnum;
       };
 

@@ -10,7 +10,7 @@ export interface ProjectCategoryRecord {
   name: JsonObject;
   code: string;
   searchText: string;
-  description: JsonObject | null;
+  description: string | null;
   domainId: string;
   status: StatusEnum;
   isDeleted: boolean;
@@ -22,7 +22,7 @@ export interface CreateProjectCategoryInput {
   name: JsonObject;
   code: string;
   searchText: string;
-  description?: JsonObject | null;
+  description?: string | null;
   domainId: string;
   status: StatusEnum;
 }
@@ -31,7 +31,7 @@ export interface UpdateProjectCategoryInput {
   name?: JsonObject;
   code?: string;
   searchText?: string;
-  description?: JsonObject | null;
+  description?: string | null;
   status?: StatusEnum;
 }
 
@@ -48,22 +48,15 @@ const projectCategorySelect = Prisma.sql`
   "updatedAt"
 `;
 
-function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
-  return value === null || value === undefined
-    ? Prisma.sql`NULL`
-    : Prisma.sql`${JSON.stringify(value)}::jsonb`;
-}
-
 export const projectCategoryRepository = {
   create: async (
     data: CreateProjectCategoryInput,
   ): Promise<ProjectCategoryRecord> => {
     const id = randomUUID();
-    const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectCategoryRecord[]>(Prisma.sql`
       INSERT INTO "ProjectCategory" ("id", "name", "code", "searchText", "description", "domainId", "status", "isDeleted", "createdAt", "updatedAt")
-      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.searchText}, ${descriptionSql}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
+      VALUES (${id}, ${JSON.stringify(data.name)}::jsonb, ${data.code}, ${data.searchText}, ${data.description ?? null}, ${data.domainId}, ${data.status}, false, NOW(), NOW())
       RETURNING *
     `);
 
@@ -143,9 +136,7 @@ export const projectCategoryRepository = {
     }
 
     if (data.description !== undefined) {
-      assignments.unshift(
-        Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
-      );
+      assignments.unshift(Prisma.sql`"description" = ${data.description}`);
     }
 
     if (data.status !== undefined) {

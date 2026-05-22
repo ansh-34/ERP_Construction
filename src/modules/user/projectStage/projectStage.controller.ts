@@ -11,10 +11,20 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, progress, projectId, status } = req.body as {
+      const {
+        name,
+        description,
+        progress,
+        expectedStartDate,
+        expectedEndDate,
+        projectId,
+        status,
+      } = req.body as {
         name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
+        description?: string | null;
         progress?: number | null;
+        expectedStartDate?: string;
+        expectedEndDate?: string;
         projectId?: string;
         status?: StatusEnum;
       };
@@ -24,6 +34,8 @@ export const projectStageController = {
           name: name ?? {},
           ...(description !== undefined && { description }),
           ...(progress !== undefined && { progress }),
+          ...(expectedStartDate !== undefined && { expectedStartDate }),
+          ...(expectedEndDate !== undefined && { expectedEndDate }),
           ...(projectId !== undefined && { projectId }),
           domainId: req.user!.domainId,
           adminId: req.user!.adminId,
@@ -121,10 +133,19 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, description, progress, status } = req.body as {
+      const {
+        name,
+        description,
+        progress,
+        actualStartDate,
+        actualEndDate,
+        status,
+      } = req.body as {
         name?: Record<string, unknown>;
-        description?: Record<string, unknown> | null;
+        description?: string | null;
         progress?: number | null;
+        actualStartDate?: string | null;
+        actualEndDate?: string | null;
         status?: StatusEnum;
       };
 
@@ -136,6 +157,8 @@ export const projectStageController = {
           ...(name !== undefined && { name }),
           ...(description !== undefined && { description }),
           ...(progress !== undefined && { progress }),
+          ...(actualStartDate !== undefined && { actualStartDate }),
+          ...(actualEndDate !== undefined && { actualEndDate }),
           ...(status !== undefined && { status }),
         },
         language,

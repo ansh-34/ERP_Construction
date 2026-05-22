@@ -392,6 +392,14 @@ export const UserPaths = {
                         name: { type: 'string' },
                         email: { type: 'string', format: 'email' },
                         phone: { type: 'string', nullable: true },
+                        skills: {
+                          type: 'array',
+                          items: { type: 'string' },
+                        },
+                        minDayCharge: {
+                          type: 'number',
+                          nullable: true,
+                        },
                         status: { type: 'string', example: 'active' },
                         isEmailVerified: { type: 'boolean' },
                         createdAt: { type: 'string', format: 'date-time' },

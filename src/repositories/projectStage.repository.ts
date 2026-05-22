@@ -10,9 +10,13 @@ export interface ProjectStageRecord {
   id: string;
   name: JsonObject;
   code: string;
-  description: JsonObject | null;
+  description: string | null;
   progress: number | null;
-  projectId: string;
+  expectedStartDate: Date | null;
+  expectedEndDate: Date | null;
+  actualStartDate: Date | null;
+  actualEndDate: Date | null;
+  projectId: string | null;
   domainId: string;
   adminId: string;
   project?: RelationDetails;
@@ -28,9 +32,11 @@ export interface CreateProjectStageInput {
   name: JsonObject;
   code: string;
   searchText: string;
-  description?: JsonObject | null;
+  description?: string | null;
   progress?: number | null;
-  projectId: string;
+  expectedStartDate?: Date | null;
+  expectedEndDate?: Date | null;
+  projectId?: string | null;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -39,9 +45,11 @@ export interface CreateProjectStageInput {
 export interface UpdateProjectStageInput {
   name?: JsonObject;
   code?: string;
-  description?: JsonObject | null;
+  description?: string | null;
   searchText?: string;
   progress?: number | null;
+  actualStartDate?: Date | null;
+  actualEndDate?: Date | null;
   status?: StatusEnum;
 }
 
@@ -51,6 +59,10 @@ const projectStageSelect = Prisma.sql`
   "code",
   "description",
   "progress",
+  "expectedStartDate",
+  "expectedEndDate",
+  "actualStartDate",
+  "actualEndDate",
   "projectId",
   "domainId",
   "adminId",
@@ -65,6 +77,13 @@ const projectStageListSelect = Prisma.sql`
   ps."name",
   ps."code",
   ps."description",
+  ps."expectedStartDate",
+  ps."expectedEndDate",
+  ps."actualStartDate",
+  ps."actualEndDate",
+  ps."projectId",
+  ps."domainId",
+  ps."adminId",
   COALESCE((
     SELECT ROUND(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100))::numeric, 2)::float
     FROM "ProjectTask" pt
@@ -73,27 +92,30 @@ const projectStageListSelect = Prisma.sql`
       AND pt."isDeleted" = false
       AND pt."status" = ${StatusEnum.ACTIVE}
   ), 0) AS "progress",
-  jsonb_build_object(
-    'projectId', p."id",
-    'name', p."name",
-    'code', p."code",
-    'progress', COALESCE((
-      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
-      FROM (
-        SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
-        FROM "ProjectStage" project_stages
-        LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
-          AND pt."domainId" = project_stages."domainId"
-          AND pt."isDeleted" = false
-          AND pt."status" = ${StatusEnum.ACTIVE}
-        WHERE project_stages."projectId" = p."id"
-          AND project_stages."domainId" = p."domainId"
-          AND project_stages."isDeleted" = false
-          AND project_stages."status" = ${StatusEnum.ACTIVE}
-        GROUP BY project_stages."id"
-      ) stage_progress
-    ), 0)
-  ) AS "project",
+  CASE
+    WHEN p."id" IS NULL THEN NULL
+    ELSE jsonb_build_object(
+      'projectId', p."id",
+      'name', p."name",
+      'code', p."code",
+      'progress', COALESCE((
+        SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+        FROM (
+          SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+          FROM "ProjectStage" project_stages
+          LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
+            AND pt."domainId" = project_stages."domainId"
+            AND pt."isDeleted" = false
+            AND pt."status" = ${StatusEnum.ACTIVE}
+          WHERE project_stages."projectId" = p."id"
+            AND project_stages."domainId" = p."domainId"
+            AND project_stages."isDeleted" = false
+            AND project_stages."status" = ${StatusEnum.ACTIVE}
+          GROUP BY project_stages."id"
+        ) stage_progress
+      ), 0)
+    )
+  END AS "project",
   jsonb_build_object(
     'domainId', d."id",
     'name', d."name",
@@ -115,6 +137,10 @@ const projectStageDetailSelect = Prisma.sql`
   ps."name",
   ps."code",
   ps."description",
+  ps."expectedStartDate",
+  ps."expectedEndDate",
+  ps."actualStartDate",
+  ps."actualEndDate",
   COALESCE((
     SELECT ROUND(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100))::numeric, 2)::float
     FROM "ProjectTask" pt
@@ -126,40 +152,46 @@ const projectStageDetailSelect = Prisma.sql`
   ps."projectId",
   ps."domainId",
   ps."adminId",
-  jsonb_build_object(
-    'projectId', p."id",
-    'name', p."name",
-    'code', p."code",
-    'description', p."description",
-    'budget', p."budget",
-    'spent', p."spent",
-    'progress', COALESCE((
-      SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
-      FROM (
-        SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
-        FROM "ProjectStage" project_stages
-        LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
-          AND pt."domainId" = project_stages."domainId"
-          AND pt."isDeleted" = false
-          AND pt."status" = ${StatusEnum.ACTIVE}
-        WHERE project_stages."projectId" = p."id"
-          AND project_stages."domainId" = p."domainId"
-          AND project_stages."isDeleted" = false
-          AND project_stages."status" = ${StatusEnum.ACTIVE}
-        GROUP BY project_stages."id"
-      ) stage_progress
-    ), 0),
-    'locationId', p."locationId",
-    'location', jsonb_build_object(
-      'locationId', l."id",
-      'name', l."name",
-      'code', l."code",
-      'type', l."type",
-      'parentLocationId', l."parentLocationId",
-      'status', l."status"
-    ),
-    'status', p."status"
-  ) AS "project",
+  CASE
+    WHEN p."id" IS NULL THEN NULL
+    ELSE jsonb_build_object(
+      'projectId', p."id",
+      'name', p."name",
+      'code', p."code",
+      'description', p."description",
+      'budget', p."budget",
+      'spent', p."spent",
+      'progress', COALESCE((
+        SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
+        FROM (
+          SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
+          FROM "ProjectStage" project_stages
+          LEFT JOIN "ProjectTask" pt ON pt."stageId" = project_stages."id"
+            AND pt."domainId" = project_stages."domainId"
+            AND pt."isDeleted" = false
+            AND pt."status" = ${StatusEnum.ACTIVE}
+          WHERE project_stages."projectId" = p."id"
+            AND project_stages."domainId" = p."domainId"
+            AND project_stages."isDeleted" = false
+            AND project_stages."status" = ${StatusEnum.ACTIVE}
+          GROUP BY project_stages."id"
+        ) stage_progress
+      ), 0),
+      'locationId', p."locationId",
+      'location', CASE
+        WHEN l."id" IS NULL THEN NULL
+        ELSE jsonb_build_object(
+          'locationId', l."id",
+          'name', l."name",
+          'code', l."code",
+          'type', l."type",
+          'parentLocationId', l."parentLocationId",
+          'status', l."status"
+        )
+      END,
+      'status', p."status"
+    )
+  END AS "project",
   jsonb_build_object(
     'domainId', d."id",
     'name', d."name",
@@ -182,12 +214,6 @@ const projectStageDetailSelect = Prisma.sql`
   ps."createdAt",
   ps."updatedAt"
 `;
-
-function toJsonbSql(value: JsonObject | null | undefined): Prisma.Sql {
-  return value === null || value === undefined
-    ? Prisma.sql`NULL`
-    : Prisma.sql`${JSON.stringify(value)}::jsonb`;
-}
 
 export const projectStageRepository = {
   recalculateProgress: async (
@@ -228,18 +254,21 @@ export const projectStageRepository = {
     data: CreateProjectStageInput,
   ): Promise<ProjectStageRecord> => {
     const id = randomUUID();
-    const descriptionSql = toJsonbSql(data.description);
 
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
-      INSERT INTO "ProjectStage" ("id", "name", "code", "searchText", "description", "progress", "projectId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
+      INSERT INTO "ProjectStage" ("id", "name", "code", "searchText", "description", "progress", "expectedStartDate", "expectedEndDate", "actualStartDate", "actualEndDate", "projectId", "domainId", "adminId", "status", "isDeleted", "createdAt", "updatedAt")
       VALUES (
         ${id},
         ${JSON.stringify(data.name)}::jsonb,
         ${data.code},
         ${data.searchText},
-        ${descriptionSql},
+        ${data.description ?? null},
         ${data.progress ?? null},
-        ${data.projectId},
+        ${data.expectedStartDate ?? null},
+        ${data.expectedEndDate ?? null},
+        NULL,
+        NULL,
+        ${data.projectId ?? null},
         ${data.domainId},
         ${data.adminId},
         ${data.status},
@@ -278,8 +307,8 @@ export const projectStageRepository = {
     return prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       SELECT ${projectStageListSelect}
       FROM "ProjectStage" ps
-      INNER JOIN "Project" p ON p."id" = ps."projectId"
-      INNER JOIN "Location" l ON l."id" = p."locationId"
+      LEFT JOIN "Project" p ON p."id" = ps."projectId"
+      LEFT JOIN "Location" l ON l."id" = p."locationId"
       INNER JOIN "Domain" d ON d."id" = ps."domainId"
       INNER JOIN "Admin" a ON a."id" = ps."adminId"
       WHERE ${Prisma.join(filters, ' AND ')}
@@ -305,8 +334,8 @@ export const projectStageRepository = {
     const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
       SELECT ${projectStageDetailSelect}
       FROM "ProjectStage" ps
-      INNER JOIN "Project" p ON p."id" = ps."projectId"
-      INNER JOIN "Location" l ON l."id" = p."locationId"
+      LEFT JOIN "Project" p ON p."id" = ps."projectId"
+      LEFT JOIN "Location" l ON l."id" = p."locationId"
       INNER JOIN "Domain" d ON d."id" = ps."domainId"
       INNER JOIN "Admin" a ON a."id" = ps."adminId"
       WHERE ${Prisma.join(filters, ' AND ')}
@@ -319,15 +348,20 @@ export const projectStageRepository = {
   findByCode: async (
     code: string,
     domainId: string,
-    projectId: string,
+    projectId?: string | null,
     adminId?: string,
   ): Promise<ProjectStageRecord | null> => {
     const filters = [
       Prisma.sql`"code" = ${code}`,
       Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"projectId" = ${projectId}`,
       Prisma.sql`"isDeleted" = false`,
     ];
+
+    filters.push(
+      projectId === null || projectId === undefined
+        ? Prisma.sql`"projectId" IS NULL`
+        : Prisma.sql`"projectId" = ${projectId}`,
+    );
 
     if (adminId) {
       filters.push(Prisma.sql`"adminId" = ${adminId}`);
@@ -362,9 +396,7 @@ export const projectStageRepository = {
     }
 
     if (data.description !== undefined) {
-      assignments.unshift(
-        Prisma.sql`"description" = ${toJsonbSql(data.description)}`,
-      );
+      assignments.unshift(Prisma.sql`"description" = ${data.description}`);
     }
 
     if (data.searchText !== undefined) {
@@ -373,6 +405,16 @@ export const projectStageRepository = {
 
     if (data.progress !== undefined) {
       assignments.unshift(Prisma.sql`"progress" = ${data.progress}`);
+    }
+
+    if (data.actualStartDate !== undefined) {
+      assignments.unshift(
+        Prisma.sql`"actualStartDate" = ${data.actualStartDate}`,
+      );
+    }
+
+    if (data.actualEndDate !== undefined) {
+      assignments.unshift(Prisma.sql`"actualEndDate" = ${data.actualEndDate}`);
     }
 
     if (data.status !== undefined) {
@@ -436,7 +478,9 @@ export const projectStageRepository = {
         searchText: item.searchText,
         description: item.description || null,
         progress: item.progress || null,
-        projectId: item.projectId,
+        expectedStartDate: item.expectedStartDate ?? null,
+        expectedEndDate: item.expectedEndDate ?? null,
+        projectId: item.projectId ?? null,
         domainId: item.domainId,
         adminId: item.adminId,
         status: item.status,

@@ -15,29 +15,70 @@ export const UserProjectService = {
   },
 
   localizeProject(project: any, langCode: string) {
+    const projectData = { ...project };
+    delete projectData.location;
+    delete projectData.domain;
+    delete projectData.admin;
+
     return {
-      ...project,
+      ...projectData,
       name: UserProjectService.localizeName(project.name, langCode),
-      description: UserProjectService.localizeName(
-        project.description,
-        langCode,
-      ),
-      location: UserProjectService.localizeRelation(project.location, langCode),
-      domain: UserProjectService.localizeRelation(project.domain, langCode),
-      admin: UserProjectService.localizeRelation(project.admin, langCode),
     };
   },
 
-  localizeRelation(relation: any, langCode: string) {
-    if (!relation || typeof relation !== 'object') return relation;
+  localizeProjectStage(stage: any, langCode: string) {
+    const stageData = { ...stage };
+    delete stageData.project;
+    delete stageData.domain;
+    delete stageData.admin;
 
     return {
-      ...relation,
-      name:
-        relation.name && typeof relation.name === 'object'
-          ? UserProjectService.localizeName(relation.name, langCode)
-          : relation.name,
+      ...stageData,
+      name: UserProjectService.localizeName(stage.name, langCode),
     };
+  },
+
+  parseOptionalDate(value: string | Date | null | undefined, field: string) {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) {
+        throw new Error(`invalid ${field}`);
+      }
+
+      return value;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new Error(`invalid ${field}`);
+    }
+
+    return date;
+  },
+
+  ensureDateRange(
+    startDate: Date | null | undefined,
+    endDate: Date | null | undefined,
+    startField: string,
+    endField: string,
+  ) {
+    if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+      throw new Error(`${endField} cannot be before ${startField}`);
+    }
+  },
+
+  assertSingleLineDescription(value: string | null | undefined, field: string) {
+    if (value === undefined || value === null) return;
+
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      throw new Error(`${field} is required`);
+    }
+
+    if (/[\r\n]/.test(value)) {
+      throw new Error(`${field} must be single-line`);
+    }
   },
 
   async resolveAdminId(domainId: string, adminId: string) {
@@ -56,15 +97,19 @@ export const UserProjectService = {
     adminId: string,
     data: {
       name: Record<string, string>;
-      description?: Record<string, string>;
+      description?: string | null;
       budget: number;
       spent?: number;
+      expectedStartDate?: string;
+      expectedEndDate?: string;
       locationId: string;
       status?: 'ACTIVE' | 'INACTIVE';
       projectStages?: {
         name: Record<string, string>;
-        description?: Record<string, string>;
+        description?: string | null;
         progress?: number | null;
+        expectedStartDate?: string;
+        expectedEndDate?: string;
         status?: 'ACTIVE' | 'INACTIVE';
       }[];
     },
@@ -78,6 +123,22 @@ export const UserProjectService = {
     const searchText = data.name.en.toString().toLowerCase();
     const projectStages = data.projectStages || [];
     const stageCodes = new Set<string>();
+    UserProjectService.assertSingleLineDescription(
+      data.description,
+      'description',
+    );
+    UserProjectService.ensureDateRange(
+      UserProjectService.parseOptionalDate(
+        data.expectedStartDate,
+        'expectedStartDate',
+      ),
+      UserProjectService.parseOptionalDate(
+        data.expectedEndDate,
+        'expectedEndDate',
+      ),
+      'expectedStartDate',
+      'expectedEndDate',
+    );
 
     for (const stage of projectStages) {
       const stageLanguageCodes = Object.keys(stage.name || {});
@@ -85,12 +146,10 @@ export const UserProjectService = {
         throw new Error('project stage name.en is required');
       }
 
-      if (stage.description) {
-        const stageDescriptionLanguageCodes = Object.keys(stage.description);
-        if (!stageDescriptionLanguageCodes.includes('en')) {
-          throw new Error('project stage description.en is required');
-        }
-      }
+      UserProjectService.assertSingleLineDescription(
+        stage.description,
+        'project stage description',
+      );
 
       const stageCode = stage.name.en
         .toString()
@@ -100,6 +159,19 @@ export const UserProjectService = {
       if (stageCodes.has(stageCode)) {
         throw new Error('duplicate project stage code');
       }
+
+      UserProjectService.ensureDateRange(
+        UserProjectService.parseOptionalDate(
+          stage.expectedStartDate,
+          'project stage expectedStartDate',
+        ),
+        UserProjectService.parseOptionalDate(
+          stage.expectedEndDate,
+          'project stage expectedEndDate',
+        ),
+        'project stage expectedStartDate',
+        'project stage expectedEndDate',
+      );
 
       stageCodes.add(stageCode);
     }
@@ -122,6 +194,14 @@ export const UserProjectService = {
       const createdProject = await projectRepository.create(
         {
           ...data,
+          expectedStartDate: UserProjectService.parseOptionalDate(
+            data.expectedStartDate,
+            'expectedStartDate',
+          ),
+          expectedEndDate: UserProjectService.parseOptionalDate(
+            data.expectedEndDate,
+            'expectedEndDate',
+          ),
           code,
           searchText,
           domainId,
@@ -145,6 +225,14 @@ export const UserProjectService = {
               searchText: Object.values(stage.name).join(' ').toLowerCase(),
               description: stage.description || null,
               progress: 0,
+              expectedStartDate: UserProjectService.parseOptionalDate(
+                stage.expectedStartDate,
+                'project stage expectedStartDate',
+              ),
+              expectedEndDate: UserProjectService.parseOptionalDate(
+                stage.expectedEndDate,
+                'project stage expectedEndDate',
+              ),
               projectId: createdProject.id,
               domainId,
               adminId: resolvedAdminId,
@@ -168,7 +256,9 @@ export const UserProjectService = {
 
     return {
       ...project,
-      projectStages: createdStages,
+      projectStages: createdStages.map((stage) =>
+        UserProjectService.localizeProjectStage(stage, 'en'),
+      ),
     };
   },
 
@@ -326,7 +416,37 @@ export const UserProjectService = {
       }
     }
 
-    return projectRepository.update(id, domainId, data, resolvedAdminId);
+    if (data.description !== undefined) {
+      UserProjectService.assertSingleLineDescription(
+        data.description,
+        'description',
+      );
+    }
+
+    const updateData = {
+      ...data,
+      ...(data.actualStartDate !== undefined && {
+        actualStartDate: UserProjectService.parseOptionalDate(
+          data.actualStartDate,
+          'actualStartDate',
+        ),
+      }),
+      ...(data.actualEndDate !== undefined && {
+        actualEndDate: UserProjectService.parseOptionalDate(
+          data.actualEndDate,
+          'actualEndDate',
+        ),
+      }),
+    };
+
+    UserProjectService.ensureDateRange(
+      updateData.actualStartDate,
+      updateData.actualEndDate,
+      'actualStartDate',
+      'actualEndDate',
+    );
+
+    return projectRepository.update(id, domainId, updateData, resolvedAdminId);
   },
 
   async deleteProject(domainId: string, adminId: string, id: string) {

@@ -72,6 +72,8 @@ const projectUserDailyLogSelect = Prisma.sql`
 const projectUserDailyLogListSelect = Prisma.sql`
   pudl."id",
   pudl."date",
+  pudl."projectId",
+  pudl."userId",
   jsonb_build_object(
     'projectId', p."id",
     'name', p."name",
@@ -90,6 +92,8 @@ const projectUserDailyLogListSelect = Prisma.sql`
   pudl."totalWorkingHours",
   pudl."dayCharge",
   pudl."notes",
+  pudl."domainId",
+  pudl."adminId",
   jsonb_build_object(
     'domainId', d."id",
     'name', d."name",

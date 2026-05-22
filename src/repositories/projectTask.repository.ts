@@ -115,7 +115,11 @@ const projectTaskListSelect = Prisma.sql`
   pt."requiredApproval",
   pt."lastApprovedDeadline",
   pt."projectBatchCode",
-  NULL AS "assignee",
+  pt."stageId",
+  pt."projectId",
+  pt."domainId",
+  pt."adminId",
+  pt."assignee",
   jsonb_build_object(
     'stageId', ps."id",
     'name', ps."name",

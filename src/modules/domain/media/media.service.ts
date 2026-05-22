@@ -1,9 +1,9 @@
 import { mediaRepository, type MediaRecord } from '@repositories/index';
 import { normalizePrismaError } from '@/utils/prismaError';
-import { isNonEmptyString, isPlainObject } from '@/utils/validation';
+import { isNonEmptyString } from '@/utils/validation';
 
 export interface CreateMediaInput {
-  name: Record<string, unknown>;
+  name: string;
   type: string;
   url: string;
   domainId: string;
@@ -11,38 +11,12 @@ export interface CreateMediaInput {
 }
 
 export interface UpdateMediaInput {
-  name?: Record<string, unknown>;
+  name?: string;
   type?: string;
 }
 
-type LocalizedMediaRecord = Omit<MediaRecord, 'name'> & {
-  name: string;
-};
-
-function buildMediaSearchText(name: Record<string, unknown>): string {
-  return Object.values(name).join(' ').toLowerCase();
-}
-
-function getLocalizedText(
-  value: Record<string, unknown>,
-  language: string | null,
-): string {
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
-
-  return typeof localizedValue === 'string'
-    ? localizedValue
-    : String(localizedValue);
-}
-
-function normalizeMedia(
-  media: MediaRecord,
-  language: string | null,
-): LocalizedMediaRecord {
-  return {
-    ...media,
-    name: getLocalizedText(media.name, language),
-  };
+function buildMediaSearchText(name: string): string {
+  return name.toLowerCase();
 }
 
 function isValidUrl(value: string): boolean {
@@ -56,12 +30,12 @@ function isValidUrl(value: string): boolean {
 }
 
 function assertCreateInput(data: CreateMediaInput): void {
-  if (!isPlainObject(data.name)) {
+  if (!isNonEmptyString(data.name)) {
     throw new Error('invalid name');
   }
 
-  if (!isNonEmptyString(data.name.en)) {
-    throw new Error('name.en is required');
+  if (/[\r\n]/.test(data.name)) {
+    throw new Error('name must be single-line');
   }
 
   if (!isNonEmptyString(data.type)) {
@@ -89,12 +63,12 @@ function assertUpdateInput(data: UpdateMediaInput): void {
     throw new Error('empty update payload');
   }
 
-  if (hasName && !isPlainObject(data.name)) {
+  if (hasName && !isNonEmptyString(data.name)) {
     throw new Error('invalid name');
   }
 
-  if (hasName && !isNonEmptyString(data.name?.en)) {
-    throw new Error('name.en is required');
+  if (hasName && /[\r\n]/.test(data.name as string)) {
+    throw new Error('name must be single-line');
   }
 
   if (hasType && !isNonEmptyString(data.type)) {
@@ -105,8 +79,8 @@ function assertUpdateInput(data: UpdateMediaInput): void {
 export const mediaService = {
   create: async (
     data: CreateMediaInput,
-    language: string | null = null,
-  ): Promise<LocalizedMediaRecord> => {
+    _language: string | null = null,
+  ): Promise<MediaRecord> => {
     assertCreateInput(data);
 
     try {
@@ -121,7 +95,7 @@ export const mediaService = {
         searchText: buildMediaSearchText(data.name),
       });
 
-      return normalizeMedia(media, language);
+      return media;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -131,8 +105,8 @@ export const mediaService = {
     domainId: string,
     adminId: string,
     searchKey?: string,
-    language: string | null = null,
-  ): Promise<LocalizedMediaRecord[]> => {
+    _language: string | null = null,
+  ): Promise<MediaRecord[]> => {
     if (!isNonEmptyString(domainId) || !isNonEmptyString(adminId)) {
       throw new Error('invalid ids');
     }
@@ -143,7 +117,7 @@ export const mediaService = {
         adminId,
         searchKey,
       );
-      return media.map((item) => normalizeMedia(item, language));
+      return media;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -153,8 +127,8 @@ export const mediaService = {
     id: string,
     domainId: string,
     adminId: string,
-    language: string | null = null,
-  ): Promise<LocalizedMediaRecord | null> => {
+    _language: string | null = null,
+  ): Promise<MediaRecord | null> => {
     if (
       !isNonEmptyString(id) ||
       !isNonEmptyString(domainId) ||
@@ -165,7 +139,7 @@ export const mediaService = {
 
     try {
       const media = await mediaRepository.findById(id, domainId, adminId);
-      return media ? normalizeMedia(media, language) : null;
+      return media;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -176,8 +150,8 @@ export const mediaService = {
     domainId: string,
     adminId: string,
     data: UpdateMediaInput,
-    language: string | null = null,
-  ): Promise<LocalizedMediaRecord | null> => {
+    _language: string | null = null,
+  ): Promise<MediaRecord | null> => {
     if (
       !isNonEmptyString(id) ||
       !isNonEmptyString(domainId) ||
@@ -214,7 +188,7 @@ export const mediaService = {
         adminId,
         updateData,
       );
-      return media ? normalizeMedia(media, language) : null;
+      return media;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

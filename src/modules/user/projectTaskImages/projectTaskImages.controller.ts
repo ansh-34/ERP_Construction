@@ -1,32 +1,24 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
-import { StatusEnum } from '@constants/index';
 import { resolveHttpStatus } from '@/utils/httpError';
 import { projectTaskImagesService } from './projectTaskImages.service';
 
 export const projectTaskImagesController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
-      const { imageUrl, imageName, imageType, description, taskId, status } =
-        req.body as {
-          imageUrl?: string;
-          imageName?: Record<string, unknown> | null;
-          imageType?: string | null;
-          description?: Record<string, unknown> | null;
-          taskId?: string;
-          status?: StatusEnum;
-        };
+      const { imageId, description, taskId } = req.body as {
+        imageId?: string;
+        description?: string | null;
+        taskId?: string;
+      };
 
       const projectTaskImage = await projectTaskImagesService.create({
-        imageUrl: imageUrl ?? '',
-        ...(imageName !== undefined && { imageName }),
-        ...(imageType !== undefined && { imageType }),
+        imageId: imageId ?? '',
         ...(description !== undefined && { description }),
         taskId: taskId ?? '',
         domainId: req.user!.domainId,
         adminId: req.user!.adminId,
         userId: req.user!.userId,
-        status: status ?? StatusEnum.ACTIVE,
       });
 
       return res.status(HttpStatus.CREATED).json({
