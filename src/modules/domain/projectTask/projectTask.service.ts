@@ -395,6 +395,7 @@ export const projectTaskService = {
 
       return normalizeProjectTask(task, language);
     } catch (error: unknown) {
+      console.error('[ProjectTaskService.create]', error);
       throw normalizePrismaError(error);
     }
   },

@@ -19,6 +19,16 @@ const lockedExpectedDate = z
 const createOnlyActualDate = z
   .never({ invalid_type_error: 'Actual dates can only be set during update' })
   .optional();
+const approvalAction = z.enum([
+  'APPROVED',
+  'REJECTED',
+  'APPROVAL',
+  'REJECTION',
+]);
+const idsSchema = z.union([
+  z.string().trim().min(1, { message: 'Id is required' }),
+  z.array(z.string().trim().min(1, { message: 'Id is required' })).min(1),
+]);
 
 export const createProjectBody = z.object({
   name: jsonObject,
@@ -79,6 +89,62 @@ export const domainIdQuery = z.object({
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),
 });
+
+export const submitProjectTaskBody = z.object({
+  taskId: z.string().trim().min(1, { message: 'Task id is required' }),
+  userId: z.string().trim().min(1, { message: 'User id is required' }),
+  actualEndDate: dateString,
+  taskProgress: nonNegativeNumber.max(100).optional(),
+  images: z
+    .array(
+      z.object({
+        imageId: z.string().trim().min(1).optional(),
+        imageUrl: z
+          .string()
+          .trim()
+          .min(1, { message: 'Image url is required' }),
+        description: singleLineDescription.nullable().optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const listProjectTaskSubmissionQuery = z.object({
+  projectId: z.string().trim().min(1).optional(),
+  stageId: z.string().trim().min(1).optional(),
+  taskId: z.string().trim().min(1).optional(),
+  userId: z.string().trim().min(1).optional(),
+  approvalState: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
+  searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
+});
+
+export const projectTaskSubmissionActionBody = z
+  .object({
+    ids: idsSchema,
+    action: approvalAction.optional(),
+    approvalState: approvalAction.optional(),
+  })
+  .refine(
+    (data) => data.action !== undefined || data.approvalState !== undefined,
+    {
+      message: 'Action is required',
+    },
+  );
+
+export const projectTaskDelayActionBody = z
+  .object({
+    ids: idsSchema,
+    action: approvalAction.optional(),
+    approvalState: approvalAction.optional(),
+  })
+  .refine(
+    (data) => data.action !== undefined || data.approvalState !== undefined,
+    {
+      message: 'Action is required',
+    },
+  );
 
 export const idParams = z.object({
   id: z.string().trim().min(1, { message: 'Id is required' }),

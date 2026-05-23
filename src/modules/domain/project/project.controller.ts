@@ -196,6 +196,170 @@ export const projectController = {
     }
   },
 
+  submitTask: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { taskId, userId, actualEndDate, taskProgress, images } =
+        req.body as {
+          taskId?: string;
+          userId?: string;
+          actualEndDate?: string;
+          taskProgress?: number;
+          images?: {
+            imageId?: string;
+            imageUrl: string;
+            description?: string | null;
+          }[];
+        };
+
+      const taskSubmission = await projectService.submitTask(
+        {
+          taskId: taskId ?? '',
+          userId: userId ?? '',
+          actualEndDate: actualEndDate ?? '',
+          ...(taskProgress !== undefined && { taskProgress }),
+          ...(images !== undefined && { images }),
+        },
+        req.user!.domainId,
+        req.user!.adminId,
+        language,
+      );
+
+      return res.status(HttpStatus.CREATED).json({
+        message: 'Project task submitted successfully',
+        data: taskSubmission,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to submit project task';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  getTaskSubmissions: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const {
+        projectId,
+        stageId,
+        taskId,
+        userId,
+        approvalState,
+        searchKey,
+        offset,
+        limit,
+      } = req.query as {
+        projectId?: string;
+        stageId?: string;
+        taskId?: string;
+        userId?: string;
+        approvalState?: 'PENDING' | 'APPROVED' | 'REJECTED';
+        searchKey?: string;
+        offset?: string;
+        limit?: string;
+      };
+
+      const { taskSubmissions, pagination } =
+        await projectService.getTaskSubmissions(
+          req.user!.domainId,
+          req.user!.adminId,
+          { projectId, stageId, taskId, userId, approvalState, searchKey },
+          { offset, limit },
+          language,
+        );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project task submissions fetched successfully',
+        pagination: {
+          currentCount: taskSubmissions.length,
+          ...pagination,
+        },
+        data: taskSubmissions,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project task submissions';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  actionTaskSubmission: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        'en';
+      const { ids, action, approvalState } = req.body as {
+        ids?: string | string[];
+        action?: 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
+        approvalState?: 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
+      };
+
+      const taskSubmissions = await projectService.actionTaskSubmissions(
+        ids ?? [],
+        action ?? approvalState ?? 'APPROVED',
+        req.user!.domainId,
+        req.user!.adminId,
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project task submission action completed successfully',
+        data: taskSubmissions,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to action project task submission';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  actionTaskDelay: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { ids, action, approvalState } = req.body as {
+        ids?: string | string[];
+        action?: 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
+        approvalState?: 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
+      };
+
+      const taskDelays = await projectService.actionTaskDelays(
+        ids ?? [],
+        action ?? approvalState ?? 'APPROVED',
+        req.user!.domainId,
+        req.user!.adminId,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project task delay action completed successfully',
+        data: taskDelays,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to action project task delay';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
   delete: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
