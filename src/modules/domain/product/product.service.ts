@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import { ProductRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { normalizeStatus } from '../../../utils/validation.js';
 
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 
@@ -35,6 +36,10 @@ export const ProductService = {
     delete productFields.domainId;
     delete productFields.adminId;
 
+    if (productFields.status) {
+      productFields.status = normalizeStatus(productFields.status);
+    }
+
     return prisma.$transaction(async (tx: any) => {
       // 1. Create the product
       const product = await tx.product.create({
@@ -66,7 +71,7 @@ export const ProductService = {
               gradeDisplayName: g.gradeDisplayName,
               gradeCode: gCode,
               searchText: gSearchText,
-              status: g.status || 'ACTIVE',
+              status: normalizeStatus(g.status),
               domainId,
               isDeleted: false,
             },
@@ -106,7 +111,7 @@ export const ProductService = {
               stdRateValue: sr.stdRateValue,
               alertThresold: sr.alertThresold,
               searchText: srSearchText,
-              status: sr.status || 'ACTIVE',
+              status: normalizeStatus(sr.status),
               domainId,
               isDeleted: false,
             },
@@ -367,6 +372,10 @@ export const ProductService = {
     delete productFields.domainId;
     delete productFields.adminId;
 
+    if (productFields.status) {
+      productFields.status = normalizeStatus(productFields.status);
+    }
+
     await ProductRepository.update(id, {
       ...productFields,
       ...(code ? { code } : {}),
@@ -432,7 +441,7 @@ export const ProductService = {
               gradeDisplayName: grade.gradeDisplayName,
               gradeCode: gCode,
               searchText,
-              status: grade.status,
+              status: grade.status ? normalizeStatus(grade.status) : undefined,
             },
           });
         } else {
@@ -444,7 +453,7 @@ export const ProductService = {
               gradeDisplayName: grade.gradeDisplayName,
               gradeCode: gCode,
               searchText,
-              status: grade.status || 'ACTIVE',
+              status: normalizeStatus(grade.status),
               isDeleted: false,
             },
           });
@@ -497,7 +506,7 @@ export const ProductService = {
               stdRateValue: sr.stdRateValue,
               alertThresold: sr.alertThresold,
               searchText,
-              status: sr.status,
+              status: sr.status ? normalizeStatus(sr.status) : undefined,
             },
           });
         } else {
@@ -511,7 +520,7 @@ export const ProductService = {
               stdRateValue: sr.stdRateValue,
               alertThresold: sr.alertThresold,
               searchText,
-              status: sr.status || 'ACTIVE',
+              status: normalizeStatus(sr.status),
               isDeleted: false,
             },
           });

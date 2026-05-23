@@ -124,6 +124,69 @@ export const ProductUomService = {
     };
   },
 
+  async findAllDomainProductUoms(
+    domainId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
+    const page = parseInt(query.page ?? '1');
+    const limit = parseInt(query.limit ?? '10');
+    const skip = (page - 1) * limit;
+
+    const where = {
+      domainId,
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.productUom.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          uom: true,
+          product: true,
+        },
+      }),
+      prisma.productUom.count({ where }),
+    ]);
+
+    const normalizedData = data.map((productUom: any) => ({
+      ...productUom,
+      uom: {
+        ...productUom.uom,
+        displayName: ProductUomService.localizeName(
+          productUom.uom.displayName,
+          langCode,
+        ),
+      },
+      product: productUom.product
+        ? {
+            ...productUom.product,
+            displayName: ProductUomService.localizeName(
+              productUom.product.displayName,
+              langCode,
+            ),
+          }
+        : productUom.product,
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+
   async findOne(
     domainId: string,
     productId: string,

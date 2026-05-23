@@ -39,7 +39,7 @@ router.get(
 router.get(
   '/grades',
   // authorize('product', 'read'),
-  validate(listProductsQuerySchema, 'query'), // reusing the same query schema since it has page, limit, searchKey, etc.
+  validate(listProductsQuerySchema, 'query'),
   listAllDomainProductGrades,
 );
 router.get(
@@ -62,7 +62,6 @@ router.delete(
   deleteProduct,
 );
 
-// ── Standalone bulk-update endpoints ─────────────────────────
 router.put(
   '/:id/grades',
   // authorize('product', 'update'),

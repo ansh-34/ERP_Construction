@@ -20,6 +20,7 @@ import { RawMaterialPurchaseRequestPaths } from './rawMaterialPurchaseRequest.pa
 import { ProjectPaths } from './project.paths.js';
 import { GrnPaths } from './grn.paths.js';
 import { LogsPaths } from './logs.paths.js';
+import { InvoicePaths } from './invoice.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -44,4 +45,5 @@ export const ApiPaths = {
   ...ProjectPaths,
   ...GrnPaths,
   ...LogsPaths,
+  ...InvoicePaths,
 };

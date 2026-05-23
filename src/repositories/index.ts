@@ -40,3 +40,4 @@ export * from './adminLanguage.repository.js';
 export * from './projectUserRole.repository.js';
 export * from './grn.repository.js';
 export * from './vendorProductPrice.repository.js';
+export * from './invoice.repository.js';

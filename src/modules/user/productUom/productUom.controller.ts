@@ -47,6 +47,27 @@ export const listProductUoms = async (req: Request, res: Response) => {
   }
 };
 
+export const listAllDomainProductUoms = async (req: Request, res: Response) => {
+  try {
+    const { language = 'en' } = req.headers;
+    const result = await ProductUomService.findAllDomainProductUoms(
+      req.user!.domainId,
+      req.query as any,
+      language as string,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_UOM.RETRIEVED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.PRODUCT_UOM.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const getProductUomById = async (req: Request, res: Response) => {
   try {
     const { language } = req.headers;
