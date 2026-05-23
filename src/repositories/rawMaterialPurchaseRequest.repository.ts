@@ -119,89 +119,71 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
-  async approveAndCreatePO(id: string, domainId: string, poCode: string) {
+  async approveAndCreatePO(code: string, domainId: string, poCode: string) {
     return asPrisma.$transaction(async (tx: any) => {
-      const request = await tx.rawMaterialPurchaseRequest.findFirst({
+      // Fetch all sibling requests that share the same request code
+      const requests = await tx.rawMaterialPurchaseRequest.findMany({
         where: {
-          id,
+          code,
           domainId,
           isDeleted: false,
-          approvalStatus: { in: ['PENDING', 'REJECTED'] },
         },
         include: { product: true, productGrade: true },
       });
 
-      if (!request) {
-        throw new Error('Purchase request not found or already approved');
+      if (requests.length === 0) {
+        throw new Error('No purchase requests found for code');
       }
 
-      if (request.purchaseOrderId) {
-        throw new Error('Purchase order already created for this request');
+      // Check if any request in the unified group is already approved or has a PO
+      const alreadyActioned = requests.some(
+        (r: any) => r.approvalStatus === 'APPROVED' || r.purchaseOrderId,
+      );
+      if (alreadyActioned) {
+        throw new Error(
+          'One or more products in this request have already been approved or linked to a purchase order',
+        );
       }
+
+      const targetRequest = requests[0];
 
       const po = await tx.purchaseOrder.create({
         data: {
           code: poCode,
-          sourceRmprCode: request.code,
-          uomId: request.uomId,
-          totalItems: 0,
-          totalTax: 0,
-          totalAmount: 0,
-          orderStatus: 'DRAFT',
-          projectId: request.projectId,
-          domainId: request.domainId,
+          sourceRmprCode: code,
+          orderStatus: 'PENDING_VENDOR',
+          projectId: targetRequest.projectId,
+          domainId: targetRequest.domainId,
         },
       });
 
-      await tx.purchaseOrderProduct.create({
-        data: {
-          purchaseOrderId: po.id,
-          orderCode: po.code,
-          productName: toDisplayString(request.product.displayName),
-          productGradeName: request.productGrade
-            ? toDisplayString(request.productGrade.gradeDisplayName)
-            : undefined,
-          quantity: request.quantity,
-          uomId: request.uomId,
-          rate: 0,
-          tax: 0,
-          projectId: request.projectId,
-          domainId: request.domainId,
+      // Create a PO product line item for each item in the RMPR group
+      for (const req of requests) {
+        await tx.purchaseOrderProduct.create({
+          data: {
+            purchaseOrderId: po.id,
+            orderCode: po.code,
+            productName: toDisplayString(req.product.displayName),
+            productGradeName: req.productGrade
+              ? toDisplayString(req.productGrade.gradeDisplayName)
+              : undefined,
+            quantity: req.quantity,
+            uomId: req.uomId,
+            rate: 0,
+            tax: 0,
+            projectId: req.projectId,
+            domainId: req.domainId,
+          },
+        });
+      }
+
+      // Update all items in the request to APPROVED and link to the PO
+      await tx.rawMaterialPurchaseRequest.updateMany({
+        where: {
+          code: targetRequest.code,
+          domainId,
+          isDeleted: false,
         },
-      });
-
-      const totals = await tx.purchaseOrderProduct.aggregate({
-        where: { purchaseOrderId: po.id, domainId, isDeleted: false },
-        _count: { _all: true },
-        _sum: { tax: true },
-      });
-
-      const lineItems = await tx.purchaseOrderProduct.findMany({
-        where: { purchaseOrderId: po.id, domainId, isDeleted: false },
-        select: { quantity: true, rate: true, tax: true },
-      });
-
-      const totalAmount = lineItems.reduce(
-        (sum: number, item: any) =>
-          sum + item.rate * item.quantity + item.tax * item.quantity,
-        0,
-      );
-
-      const updatedPo = await tx.purchaseOrder.update({
-        where: { id: po.id },
-        data: {
-          totalItems: totals._count._all,
-          totalTax: lineItems.reduce(
-            (sum: number, item: any) => sum + item.tax * item.quantity,
-            0,
-          ),
-          totalAmount,
-        },
-        include: { purchaseOrderProducts: true },
-      });
-
-      const updatedRequest = await tx.rawMaterialPurchaseRequest.update({
-        where: { id: request.id },
         data: {
           approvalStatus: 'APPROVED',
           approvedAt: new Date(),
@@ -209,7 +191,18 @@ export const RawMaterialPurchaseRequestRepository = {
         },
       });
 
-      return { request: updatedRequest, purchaseOrder: updatedPo };
+      // Retrieve the targetRequest updated state to return
+      const updatedRequest = await tx.rawMaterialPurchaseRequest.findFirst({
+        where: { id: targetRequest.id },
+      });
+
+      // Retrieve the full PO with products to return
+      const fullPo = await tx.purchaseOrder.findFirst({
+        where: { id: po.id },
+        include: { purchaseOrderProducts: true },
+      });
+
+      return { request: updatedRequest, purchaseOrder: fullPo };
     });
   },
 
@@ -238,7 +231,7 @@ export const RawMaterialPurchaseRequestRepository = {
       prisma.purchaseOrder.count({ where }),
       prisma.purchaseOrder.findMany({
         where,
-        include: { project: true, uom: true },
+        include: { project: true },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
@@ -251,7 +244,6 @@ export const RawMaterialPurchaseRequestRepository = {
       where: { id, domainId, isDeleted: false },
       include: {
         project: true,
-        uom: true,
         purchaseOrderProducts: {
           where: { isDeleted: false },
           include: { uom: true },

@@ -21,6 +21,8 @@ import {
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
 import { listAllDomainProductGrades } from '../productGrade/productGrade.controller.js';
 import { productUomRouter } from '../productUom/productUom.router.js';
+import { listAllDomainProductUoms } from '../productUom/productUom.controller.js';
+import { listProductUomQuerySchema } from '../productUom/productUom.validation.js';
 
 const router = Router();
 
@@ -39,8 +41,14 @@ router.get(
 router.get(
   '/grades',
   // authorize('product', 'read'),
-  validate(listProductsQuerySchema, 'query'), // reusing the same query schema since it has page, limit, searchKey, etc.
+  validate(listProductsQuerySchema, 'query'),
   listAllDomainProductGrades,
+);
+router.get(
+  '/uoms',
+  // authorize('product', 'read'),
+  validate(listProductUomQuerySchema, 'query'),
+  listAllDomainProductUoms,
 );
 router.get(
   '/:id',
@@ -62,7 +70,6 @@ router.delete(
   deleteProduct,
 );
 
-// ── Standalone bulk-update endpoints ─────────────────────────
 router.put(
   '/:id/grades',
   // authorize('product', 'update'),

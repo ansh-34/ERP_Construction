@@ -56,7 +56,7 @@ const listResponse = {
 };
 
 export const RawMaterialPurchaseRequestPaths = {
-  '/api/domain/raw-material-purchase-requests': {
+  '/api/domain/rmpr': {
     post: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'Create purchase request',
@@ -143,37 +143,18 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/raw-material-purchase-requests/approval': {
+  '/api/domain/rmpr/approval': {
     put: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'Approve or reject requests',
       description:
-        'Approve or reject one or more raw material purchase requests. Supports both single ID and bulk array of IDs.',
+        'Approve or reject one or more raw material purchase requests by their group code.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/ApproveRejectBody' },
-            examples: {
-              single: {
-                summary: 'Single approval',
-                value: {
-                  ids: '5c6d7e8f-9012-3456-7890-abcdef123456',
-                  approvalStatus: 'APPROVED',
-                },
-              },
-              bulk: {
-                summary: 'Bulk approval',
-                value: {
-                  ids: [
-                    '5c6d7e8f-9012-3456-7890-abcdef123456',
-                    '6d7e8f90-1234-5678-90ab-cdef12345678',
-                  ],
-                  approvalStatus: 'APPROVED',
-                },
-              },
-            },
           },
         },
       },
@@ -188,7 +169,7 @@ export const RawMaterialPurchaseRequestPaths = {
                   success: { type: 'boolean', example: true },
                   message: {
                     type: 'string',
-                    example: 'Approval status updated',
+                    example: 'Approval status updated successfully',
                   },
                   data: { type: 'object' },
                 },
@@ -201,7 +182,147 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/raw-material-purchase-requests/{id}': {
+  '/api/domain/rmpr/code/{code}': {
+    get: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'Get grouped request by code',
+      description:
+        'Retrieve a grouped raw material purchase request by its unique code, including all product line items.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        languageHeader,
+        {
+          in: 'path',
+          name: 'code',
+          required: true,
+          schema: { type: 'string' },
+          example: 'RMPR-DOMA-1716382000000',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Purchase request group retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Raw material purchase requests retrieved',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+    delete: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'Delete requests by code',
+      description:
+        'Soft-delete all raw material purchase requests associated with a group code.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'code',
+          required: true,
+          schema: { type: 'string' },
+          example: 'RMPR-DOMA-1716382000000',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Grouped purchase requests deleted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Raw material purchase requests deleted successfully',
+                  },
+                  data: { type: 'object', nullable: true, example: null },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/rmpr/code/{code}/product/{productId}': {
+    put: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'Update request product by code',
+      description:
+        'Update a specific product line item in a grouped raw material purchase request.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'code',
+          required: true,
+          schema: { type: 'string' },
+          example: 'RMPR-DOMA-1716382000000',
+        },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/UpdateRawMaterialPurchaseRequestBody',
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Grouped purchase request product updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Raw material purchase request updated successfully',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/RawMaterialPurchaseRequestObject',
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/rmpr/{id}': {
     get: {
       tags: ['Raw Material Purchase Requests'],
       summary: 'Get request by ID',
@@ -316,6 +437,167 @@ export const RawMaterialPurchaseRequestPaths = {
                       'Raw material purchase request deleted successfully',
                   },
                   data: { type: 'object', nullable: true, example: null },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/rmpr/po': {
+    get: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'List purchase orders',
+      description:
+        'Retrieve a paginated list of purchase orders generated from RMPR approval.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        ...paginationParams,
+        {
+          in: 'query',
+          name: 'status',
+          schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+        },
+        {
+          in: 'query',
+          name: 'orderStatus',
+          schema: { type: 'string', enum: ['PENDING_VENDOR', 'INVOICED'] },
+        },
+        {
+          in: 'query',
+          name: 'projectId',
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Purchase orders retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Purchase orders retrieved',
+                  },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer', example: 1 },
+                      totalCount: { type: 'integer', example: 1 },
+                      offset: { type: 'integer', example: 0 },
+                      limit: { type: 'integer', example: 10 },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/PurchaseOrderObject',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/rmpr/po/{poId}': {
+    get: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'Get purchase order by ID',
+      description:
+        'Retrieve a single purchase order by its ID, with product line items nested inside.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'poId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Purchase order retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Purchase order retrieved',
+                  },
+                  data: {
+                    allOf: [
+                      { $ref: '#/components/schemas/PurchaseOrderObject' },
+                      {
+                        type: 'object',
+                        properties: {
+                          purchaseOrderProducts: {
+                            type: 'array',
+                            items: {
+                              $ref: '#/components/schemas/PurchaseOrderProductObject',
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/rmpr/po/{poId}/products': {
+    get: {
+      tags: ['Raw Material Purchase Requests'],
+      summary: 'List products in a purchase order',
+      description:
+        'Retrieve the product line items belonging to a purchase order.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'poId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Purchase order products retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Purchase order products retrieved successfully',
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/PurchaseOrderProductObject',
+                    },
+                  },
                 },
               },
             },

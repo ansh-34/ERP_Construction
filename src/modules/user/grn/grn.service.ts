@@ -36,8 +36,11 @@ export const GrnService = {
       if (!po) {
         throw new Error('Purchase Order not found');
       }
-      if (po.orderStatus !== 'APPROVED') {
-        throw new Error('GRN can only be created against an APPROVED PO');
+      if (
+        po.orderStatus !== 'PENDING_VENDOR' &&
+        po.orderStatus !== 'INVOICED'
+      ) {
+        throw new Error('GRN can only be created against an active PO');
       }
     }
 

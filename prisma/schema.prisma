@@ -177,6 +177,8 @@ model Domain {
   purchaseOrders              PurchaseOrder[]
   vendorProductPricings       VendorProductPricing[]
   purchaseOrderProducts       PurchaseOrderProduct[]
+  invoices                    Invoice[]
+  invoiceItems                InvoiceItem[]
   admin                       Admin?                       @relation(fields: [adminId], references: [id])
   adminId                     String?                      @db.Uuid
 
@@ -537,8 +539,8 @@ model Uom {
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   grnProducts                 GrnProduct[]
   purchaseOrderProducts       PurchaseOrderProduct[]
-  purchaseOrders              PurchaseOrder[]
   vendorProductPricings       VendorProductPricing[]
+  invoiceItems                InvoiceItem[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -663,6 +665,7 @@ model Product {
   productUoms                 ProductUom[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   vendorProductPricings       VendorProductPricing[]
+  invoiceItems                InvoiceItem[]
 
   @@unique([code, domainId, isDeleted])
   @@index([isDeleted])
@@ -702,6 +705,7 @@ model ProductGrades {
   inventories                 Inventory[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   vendorProductPricings       VendorProductPricing[]
+  invoiceItems                InvoiceItem[]
   status                      StatusEnum                   @default(ACTIVE)
   isDeleted                   Boolean
   createdAt                   DateTime                     @default(now())
@@ -746,10 +750,16 @@ enum ApprovalStatus {
   REJECTED
 }
 
-// enum OrderStatus {
-//     CONFIRMED
-//   CANCELLED
-// }
+enum POStatus {
+  PENDING_VENDOR
+  INVOICED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
 
 model RawMaterialPurchaseRequest {
   id                            String              @id @default(uuid()) @db.Uuid
@@ -768,7 +778,7 @@ model RawMaterialPurchaseRequest {
   requestedBy                   String              @db.Uuid
   requestedUser                 User                @relation("RequestedByUser", fields: [requestedBy], references: [id])
   requiredBy                    DateTime
-  reason                        String
+  reason                        String?
   approvalStatus                ApprovalStatus      @default(PENDING)
   approvedAt                    DateTime?
   projectId                     String              @db.Uuid
@@ -782,7 +792,7 @@ model RawMaterialPurchaseRequest {
   purchaseOrderId               String?             @db.Uuid
   purchaseOrder                 PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
 
-  @@unique([code, domainId, isDeleted])
+  @@index([code, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([productId])
@@ -798,13 +808,7 @@ model PurchaseOrder {
   code           String
   sourceRmprCode String?
   date           DateTime   @default(now())
-  uomId          String?    @db.Uuid
-  uom            Uom?       @relation(fields: [uomId], references: [id])
-  totalItems     Int        @default(0)
-  totalTax       Float      @default(0)
-  totalAmount    Float      @default(0)
-  orderStatus    String
-  paymentTerms   String?
+  orderStatus    POStatus   @default(PENDING_VENDOR)
   projectId      String?    @db.Uuid
   project        Project?   @relation(fields: [projectId], references: [id])
   domainId       String     @db.Uuid
@@ -816,12 +820,12 @@ model PurchaseOrder {
 
   purchaseOrderProducts       PurchaseOrderProduct[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+  invoices                    Invoice[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
   @@index([projectId])
   @@index([domainId])
-  @@index([uomId])
 }
 
 model PurchaseOrderProduct {
@@ -830,7 +834,7 @@ model PurchaseOrderProduct {
   purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
   orderCode        String
   productName      String
-  productGradeName String?
+  productGradeName String
   quantity         Float
   tax              Float         @default(0)
   uomId            String        @db.Uuid
@@ -848,6 +852,64 @@ model PurchaseOrderProduct {
   @@index([purchaseOrderId])
   @@index([createdAt, isDeleted, domainId])
   @@index([projectId])
+  @@index([domainId])
+}
+
+model Invoice {
+  id              String                @id @default(uuid()) @db.Uuid
+  invoiceCode     String
+  purchaseOrderId String                @db.Uuid
+  purchaseOrder   PurchaseOrder         @relation(fields: [purchaseOrderId], references: [id])
+  vendorId        String?               @db.Uuid
+  vendor          VendorProductPricing? @relation(fields: [vendorId], references: [id])
+  vendorName      String
+  invoiceDate     DateTime              @default(now())
+  dueDate         DateTime?
+  totalAmount     Float                 @default(0)
+  totalTax        Float                 @default(0)
+  projectId       String                @db.Uuid
+  paymentStatus   PaymentStatus         @default(UNPAID)
+  project         Project               @relation(fields: [projectId], references: [id])
+  domainId        String                @db.Uuid
+  domain          Domain                @relation(fields: [domainId], references: [id])
+  status          StatusEnum            @default(ACTIVE)
+  isDeleted       Boolean               @default(false)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  items InvoiceItem[]
+
+  @@unique([invoiceCode, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([purchaseOrderId])
+  @@index([projectId])
+  @@index([domainId])
+}
+
+model InvoiceItem {
+  id             String         @id @default(uuid()) @db.Uuid
+  invoiceId      String         @db.Uuid
+  invoice        Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId      String         @db.Uuid
+  product        Product        @relation(fields: [productId], references: [id])
+  productGradeId String?        @db.Uuid
+  productGrade   ProductGrades? @relation(fields: [productGradeId], references: [id])
+  description    String?
+  quantity       Int
+  uomId          String         @db.Uuid
+  uom            Uom            @relation(fields: [uomId], references: [id])
+  taxAmount      Float          @default(0)
+  totalAmount    Float          @default(0)
+  discount       Float?         @default(0)
+  domainId       String         @db.Uuid
+  domain         Domain         @relation(fields: [domainId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@index([productGradeId])
+  @@index([createdAt, domainId])
   @@index([domainId])
 }
 
@@ -955,6 +1017,7 @@ model Project {
   grnProducts                 GrnProduct[]
   purchaseOrders              PurchaseOrder[]
   purchaseOrderProducts       PurchaseOrderProduct[]
+  invoices                    Invoice[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1296,25 +1359,26 @@ model GrnProduct {
 }
 
 model VendorProductPricing {
-  id             String        @id @default(uuid()) @db.Uuid
-  vendorName     String
-  productId      String        @db.Uuid
-  product        Product       @relation(fields: [productId], references: [id])
-  productGradeId String        @db.Uuid
-  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
-  uomId          String        @db.Uuid
-  uom            Uom           @relation(fields: [uomId], references: [id])
-  price          Float
-  productCode    String?
+  id               String        @id @default(uuid()) @db.Uuid
+  vendorName       String
+  productId        String        @db.Uuid
+  product          Product       @relation(fields: [productId], references: [id])
+  productGradeId   String        @db.Uuid
+  productGrade     ProductGrades @relation(fields: [productGradeId], references: [id])
+  uomId            String        @db.Uuid
+  uom              Uom           @relation(fields: [uomId], references: [id])
+  price            Float
+  productCode      String?
   productGradeCode String?
-  uomCode        String?
-  searchText     String        @default("")
-  domainId       String        @db.Uuid
-  domain         Domain        @relation(fields: [domainId], references: [id])
-  status         StatusEnum    @default(ACTIVE)
-  isDeleted      Boolean       @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  uomCode          String?
+  searchText       String        @default("")
+  domainId         String        @db.Uuid
+  domain           Domain        @relation(fields: [domainId], references: [id])
+  status           StatusEnum    @default(ACTIVE)
+  isDeleted        Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  invoices         Invoice[]
 
   @@unique([vendorName, productId, productGradeId, uomId, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])

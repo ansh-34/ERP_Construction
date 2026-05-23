@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
+import { normalizeStatus } from '../../../utils/validation.js';
 
 export const ProductUomService = {
   localizeName(value: any, langCode: string) {
@@ -33,14 +34,15 @@ export const ProductUomService = {
       if (existing?.isDeleted) {
         return tx.productUom.update({
           where: { id: existing.id },
-          data: { isDeleted: false, status: dto.status },
+          data: { isDeleted: false, status: normalizeStatus(dto.status) },
           include: { uom: true },
         });
       }
 
+      const status = normalizeStatus(dto.status);
       try {
         return await tx.productUom.create({
-          data: { productId, uomId: dto.uomId, domainId, status: dto.status },
+          data: { productId, uomId: dto.uomId, domainId, status },
           include: { uom: true },
         });
       } catch (error: any) {
@@ -59,7 +61,7 @@ export const ProductUomService = {
           if (conflicted?.isDeleted) {
             return tx.productUom.update({
               where: { id: conflicted.id },
-              data: { isDeleted: false, status: dto.status },
+              data: { isDeleted: false, status },
               include: { uom: true },
             });
           }
@@ -111,6 +113,69 @@ export const ProductUomService = {
           langCode,
         ),
       },
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+
+  async findAllDomainProductUoms(
+    domainId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
+    const page = parseInt(query.page ?? '1');
+    const limit = parseInt(query.limit ?? '10');
+    const skip = (page - 1) * limit;
+
+    const where = {
+      domainId,
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.productUom.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          uom: true,
+          product: true,
+        },
+      }),
+      prisma.productUom.count({ where }),
+    ]);
+
+    const normalizedData = data.map((productUom: any) => ({
+      ...productUom,
+      uom: {
+        ...productUom.uom,
+        displayName: ProductUomService.localizeName(
+          productUom.uom.displayName,
+          langCode,
+        ),
+      },
+      product: productUom.product
+        ? {
+            ...productUom.product,
+            displayName: ProductUomService.localizeName(
+              productUom.product.displayName,
+              langCode,
+            ),
+          }
+        : productUom.product,
     }));
 
     return {

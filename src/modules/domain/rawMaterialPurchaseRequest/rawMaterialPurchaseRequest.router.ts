@@ -4,8 +4,11 @@ import {
   createRawMaterialPurchaseRequest,
   listRawMaterialPurchaseRequests,
   getRawMaterialPurchaseRequestById,
+  getRawMaterialPurchaseRequestByCode,
   updateRawMaterialPurchaseRequest,
   deleteRawMaterialPurchaseRequest,
+  deleteRawMaterialPurchaseRequestByCode,
+  updateRawMaterialPurchaseRequestByCodeAndProduct,
   approveOrRejectRawMaterialPurchaseRequests,
   listPurchaseOrders,
   getPurchaseOrderById,
@@ -19,6 +22,8 @@ import {
   updateRawMaterialPurchaseRequestBodySchema,
   listRawMaterialPurchaseRequestsQuerySchema,
   rawMaterialPurchaseRequestIdParamsSchema,
+  rawMaterialPurchaseRequestCodeParamsSchema,
+  updateRawMaterialPurchaseRequestByCodeParamsSchema,
   approveRejectBodySchema,
   listPurchaseOrdersQuerySchema,
   poIdParamsSchema,
@@ -43,12 +48,34 @@ router.get(
   listRawMaterialPurchaseRequests,
 );
 
-// Single endpoint for both single and bulk approve/reject
+// Single endpoint for bulk approve/reject by code
 router.put(
   '/approval',
   // authorize('rawMaterialPurchaseRequest', 'approve'),
   validate(approveRejectBodySchema, 'body'),
   approveOrRejectRawMaterialPurchaseRequests,
+);
+
+router.get(
+  '/code/:code',
+  // authorize('rawMaterialPurchaseRequest', 'read'),
+  validate(rawMaterialPurchaseRequestCodeParamsSchema, 'params'),
+  getRawMaterialPurchaseRequestByCode,
+);
+
+router.delete(
+  '/code/:code',
+  // authorize('rawMaterialPurchaseRequest', 'delete'),
+  validate(rawMaterialPurchaseRequestCodeParamsSchema, 'params'),
+  deleteRawMaterialPurchaseRequestByCode,
+);
+
+router.put(
+  '/code/:code/product/:productId',
+  // authorize('rawMaterialPurchaseRequest', 'update'),
+  validate(updateRawMaterialPurchaseRequestByCodeParamsSchema, 'params'),
+  validate(updateRawMaterialPurchaseRequestBodySchema, 'body'),
+  updateRawMaterialPurchaseRequestByCodeAndProduct,
 );
 
 router.get(
@@ -76,19 +103,19 @@ router.delete(
 // --- Purchase Order Routes ---
 
 router.get(
-  '/purchase-orders',
+  '/po',
   validate(listPurchaseOrdersQuerySchema, 'query'),
   listPurchaseOrders,
 );
 
 router.get(
-  '/purchase-orders/:poId',
+  '/po/:poId',
   validate(poIdParamsSchema, 'params'),
   getPurchaseOrderById,
 );
 
 // router.put(
-//   '/purchase-orders/:poId',
+//   '/po/:poId',
 //   validate(poIdParamsSchema, 'params'),
 //   validate(updatePurchaseOrderBodySchema, 'body'),
 //   updatePurchaseOrder,
@@ -97,27 +124,27 @@ router.get(
 // --- Purchase Order Product Routes ---
 
 // router.post(
-//   '/purchase-orders/:poId/products',
+//   '/po/:poId/products',
 //   validate(poIdParamsSchema, 'params'),
 //   validate(createPoProductBodySchema, 'body'),
 //   createPoProduct,
 // );
 
 router.get(
-  '/purchase-orders/:poId/products',
+  '/po/:poId/products',
   validate(poIdParamsSchema, 'params'),
   listPoProducts,
 );
 
 // router.put(
-//   '/purchase-orders/:poId/products/:productId',
+//   '/po/:poId/products/:productId',kil
 //   validate(poProductIdParamsSchema, 'params'),
 //   validate(updatePoProductBodySchema, 'body'),
 //   updatePoProduct,
 // );
 
 // router.delete(
-//   '/purchase-orders/:poId/products/:productId',
+//   '/po/:poId/products/:productId',
 //   validate(poProductIdParamsSchema, 'params'),
 //   deletePoProduct,
 // );

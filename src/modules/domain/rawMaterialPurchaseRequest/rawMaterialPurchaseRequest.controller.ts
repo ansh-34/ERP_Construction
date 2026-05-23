@@ -132,10 +132,85 @@ export const deleteRawMaterialPurchaseRequest = async (
   }
 };
 
+export const deleteRawMaterialPurchaseRequestByCode = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    await RawMaterialPurchaseRequestService.deleteRequestByCode(
+      req.user!.domainId,
+      req.params.code,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.DELETED,
+      data: null,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.RAW_MATERIAL_PURCHASE_REQUEST.DELETE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const updateRawMaterialPurchaseRequestByCodeAndProduct = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const request =
+      await RawMaterialPurchaseRequestService.updateRequestByCodeAndProduct(
+        req.user!.domainId,
+        req.params.code,
+        req.params.productId,
+        req.body,
+      );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.UPDATED,
+      data: request,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.RAW_MATERIAL_PURCHASE_REQUEST.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const getRawMaterialPurchaseRequestByCode = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const requestGroup =
+      await RawMaterialPurchaseRequestService.getRequestByCode(
+        req.user!.domainId,
+        req.params.code,
+      );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.RAW_MATERIAL_PURCHASE_REQUEST.RETRIEVED,
+      data: requestGroup,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 /**
- * Unified approve/reject endpoint.
- * Accepts both a single UUID string and an array of UUIDs via `ids` in body.
- * Body: { ids: string | string[], approvalStatus: 'APPROVED' | 'REJECTED' }
+ * Unified approve/reject endpoint by code.
+ * Body: { code: string, approvalStatus: 'APPROVED' | 'REJECTED' }
  */
 export const approveOrRejectRawMaterialPurchaseRequests = async (
   req: Request,
@@ -145,7 +220,7 @@ export const approveOrRejectRawMaterialPurchaseRequests = async (
     const result =
       await RawMaterialPurchaseRequestService.approveOrRejectRequests(
         req.user!.domainId,
-        req.body.ids,
+        req.body.code,
         req.body.approvalStatus as ApprovalStatus,
       );
     return res.status(HttpStatus.OK).json({

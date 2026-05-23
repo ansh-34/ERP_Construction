@@ -466,4 +466,25 @@ export const Messages = Object.freeze({
     IMPORT_FAILED: 'Failed to import vendor product pricing',
     EXPORT_FAILED: 'Failed to export vendor product pricing',
   },
+  INVOICE: {
+    CREATED: 'Invoice created successfully',
+    RETRIEVED: 'Invoice retrieved successfully',
+    UPDATED: 'Invoice updated successfully',
+    DELETED: 'Invoice deleted successfully',
+    NOT_FOUND: 'Invoice not found',
+    CREATE_FAILED: 'Failed to create invoice',
+    LIST_FAILED: 'Failed to retrieve invoices',
+    UPDATE_FAILED: 'Failed to update invoice',
+    DELETE_FAILED: 'Failed to delete invoice',
+    ITEMS_RETRIEVED: 'Invoice items retrieved successfully',
+    ITEM_NOT_FOUND: 'Invoice item not found',
+    ITEM_UPDATED: 'Invoice item updated successfully',
+    ITEM_UPDATE_FAILED: 'Failed to update invoice item',
+    GENERATED: 'Invoices generated from purchase order successfully',
+    GENERATE_FAILED: 'Failed to generate invoices from purchase order',
+    VENDORS_NOT_ASSIGNED:
+      'All PO products must have a vendor assigned before generating invoices',
+    ALREADY_GENERATED:
+      'Invoices have already been generated for this purchase order',
+  },
 });

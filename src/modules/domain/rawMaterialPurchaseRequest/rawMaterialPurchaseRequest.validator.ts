@@ -5,19 +5,22 @@ import {
 } from '../../common/common.validator.js';
 
 export const createRawMaterialPurchaseRequestBodySchema = z.object({
-  // date: z.string().datetime({ message: 'Invalid date format' }),
   type: z.enum(['IMPORT', 'LOCAL']),
-  productId: z.string().uuid(),
-  productGradeId: z.string().uuid(),
-  quantity: z.number().positive(),
-  uomId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  requiredBy: z.string().datetime(),
+  reason: z.string().optional(),
   brand: z.string().min(1).optional(),
   requisitionRequestDocumentUrl: z.string().url().optional(),
-  requiredBy: z.string().datetime(),
-  reason: z.string().min(1),
-  projectId: z.string().uuid(),
-  domainId: z.string().uuid().optional(),
-  requestedBy: z.string().uuid().optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        productGradeId: z.string().uuid(),
+        quantity: z.number().positive(),
+        uomId: z.string().uuid(),
+      }),
+    )
+    .min(1, 'At least one item is required'),
 });
 
 export const updateRawMaterialPurchaseRequestBodySchema = z.object({
@@ -49,8 +52,17 @@ export const listRawMaterialPurchaseRequestsQuerySchema =
 
 export const rawMaterialPurchaseRequestIdParamsSchema = idParamSchema;
 
+export const rawMaterialPurchaseRequestCodeParamsSchema = z.object({
+  code: z.string().min(1),
+});
+
+export const updateRawMaterialPurchaseRequestByCodeParamsSchema = z.object({
+  code: z.string().min(1),
+  productId: z.string().uuid(),
+});
+
 export const approveRejectBodySchema = z.object({
-  ids: z.union([z.string().uuid(), z.array(z.string().uuid()).min(1)]),
+  code: z.string().min(1),
   approvalStatus: z.enum(['APPROVED', 'REJECTED']),
 });
 

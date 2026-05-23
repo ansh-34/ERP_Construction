@@ -18,7 +18,7 @@ const localizedName = z
 // Body schemas
 export const createUomBodySchema = z.object({
   displayName: localizedName,
-  baseUomId: z.string().uuid().optional(),
+  baseUomId: z.string().uuid(),
   conversionRate: z.number().min(0, 'conversionRate must be >= 0'),
   status: z.enum(['active', 'inactive']).default('active'),
 });

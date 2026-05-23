@@ -16,6 +16,7 @@ import userTaskSubmissionRouter from './userTaskSubmission/userTaskSubmission.ro
 import grnRouter from './grn/grn.router.js';
 import productRouter from './product/product.router.js';
 import { vendorProductPriceRouter } from './vendorProductPrice/vendorProductPrice.router.js';
+import { uomRouter } from './uom/uom.router.js';
 import authMiddleware from '../../middlewares/auth.js';
 
 const userRouter = Router();
@@ -38,5 +39,6 @@ userRouter.use('/task-submission', userTaskSubmissionRouter);
 userRouter.use('/grn', grnRouter);
 userRouter.use('/products', productRouter);
 userRouter.use('/vendor-product-prices', vendorProductPriceRouter());
+userRouter.use('/uoms', uomRouter());
 
 export default userRouter;
