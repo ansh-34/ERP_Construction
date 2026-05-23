@@ -33,10 +33,12 @@ export const listAllProductGrades = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
+    const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =
@@ -60,10 +62,14 @@ export const listProductGradesWithStdRates = async (
       req.query as any,
       language as string,
     );
+    const { product, grades } = result;
+    const { data, ...pagination } = grades as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      product,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =
@@ -84,10 +90,12 @@ export const listProductGrades = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
+    const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =

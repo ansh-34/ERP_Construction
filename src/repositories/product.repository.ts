@@ -124,7 +124,14 @@ export const ProductRepository = {
             },
           }),
         },
-        include: productWithDetails, // ← full nested details now
+        include: {
+          _count: {
+            select: {
+              productGrades: { where: { isDeleted: false } },
+              productUoms: { where: { isDeleted: false } },
+            },
+          },
+        },
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },

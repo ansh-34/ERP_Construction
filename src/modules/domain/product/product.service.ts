@@ -32,7 +32,7 @@ export const ProductService = {
       throw new Error(Messages.PRODUCT.CODE_ALREADY_EXISTS);
     }
 
-    const { grades, standardRates, ...productFields } = data;
+    const { grades, standardRates, uoms, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
@@ -50,6 +50,19 @@ export const ProductService = {
           domainId,
         },
       });
+
+      // 1.5 Create Uoms
+      if (uoms && uoms.length > 0) {
+        for (const uom of uoms) {
+          await tx.productUom.create({
+            data: {
+              productId: product.id,
+              uomId: uom.id,
+              domainId,
+            },
+          });
+        }
+      }
 
       // 2. Create grades if provided
       const gradeMap = new Map<string, string>(); // gradeCode -> gradeId
@@ -77,6 +90,28 @@ export const ProductService = {
             },
           });
           gradeMap.set(gCode, created.id);
+
+          // Create standard rates nested inside the grade
+          if (g.standardRates && g.standardRates.length > 0) {
+            for (const sr of g.standardRates) {
+              const srSearchText = Object.values(sr.stdRateType || {})
+                .join(' ')
+                .toLowerCase();
+              await tx.productGradeStdRates.create({
+                data: {
+                  productId: product.id,
+                  productGradeId: created.id,
+                  stdRateType: sr.stdRateType,
+                  stdRateValue: sr.stdRateValue,
+                  alertThresold: sr.alertThresold,
+                  searchText: srSearchText,
+                  status: normalizeStatus(sr.status),
+                  domainId,
+                  isDeleted: false,
+                },
+              });
+            }
+          }
         }
       }
 
@@ -129,6 +164,10 @@ export const ProductService = {
               productGradeStdRates: { where: { isDeleted: false } },
             },
           },
+          productUoms: {
+            where: { isDeleted: false },
+            include: { uom: true },
+          },
         },
       });
     });
@@ -157,76 +196,15 @@ export const ProductService = {
       },
     );
 
-    const localizedProducts = products.map((product: any) => ({
-      ...product,
-      displayName: ProductService.localizeName(product.displayName, langCode),
-      productGrades: (product.productGrades || []).map((grade: any) => ({
-        ...grade,
-        gradeDisplayName: ProductService.localizeName(
-          grade.gradeDisplayName,
-          langCode,
-        ),
-        productGradeStdRates: (grade.productGradeStdRates || []).map(
-          (stdRate: any) => ({
-            ...stdRate,
-            stdRateType: ProductService.localizeName(
-              stdRate.stdRateType,
-              langCode,
-            ),
-            productGrade: stdRate.productGrade
-              ? {
-                  ...stdRate.productGrade,
-                  gradeDisplayName: ProductService.localizeName(
-                    stdRate.productGrade.gradeDisplayName,
-                    langCode,
-                  ),
-                }
-              : stdRate.productGrade,
-          }),
-        ),
-        // inventories: (grade.inventories || []).map((inv: any) => ({
-        //   ...inv,
-        //   uom: inv.uom
-        //     ? {
-        //         ...inv.uom,
-        //         displayName: ProductService.localizeName(
-        //           inv.uom.displayName,
-        //           langCode,
-        //         ),
-        //       }
-        //     : inv.uom,
-        // })),
-      })),
-      productUoms: (product.productUoms || []).map((productUom: any) => ({
-        ...productUom,
-        uom: {
-          ...productUom.uom,
-          displayName: ProductService.localizeName(
-            productUom.uom.displayName,
-            langCode,
-          ),
-        },
-      })),
-      inventories: (product.inventories || []).map((inventory: any) => ({
-        ...inventory,
-        productGrade: inventory.productGrade
-          ? {
-              ...inventory.productGrade,
-              gradeDisplayName: ProductService.localizeName(
-                inventory.productGrade.gradeDisplayName,
-                langCode,
-              ),
-            }
-          : inventory.productGrade,
-        uom: {
-          ...inventory.uom,
-          displayName: ProductService.localizeName(
-            inventory.uom.displayName,
-            langCode,
-          ),
-        },
-      })),
-    }));
+    const localizedProducts = products.map((product: any) => {
+      const { _count, ...rest } = product;
+      return {
+        ...rest,
+        displayName: ProductService.localizeName(product.displayName, langCode),
+        gradesCount: _count?.productGrades || 0,
+        uomsCount: _count?.productUoms || 0,
+      };
+    });
 
     return {
       products: localizedProducts,
@@ -368,7 +346,7 @@ export const ProductService = {
       }
     }
 
-    const { grades, standardRates, ...productFields } = data;
+    const { grades, standardRates, uoms, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
@@ -381,6 +359,11 @@ export const ProductService = {
       ...(code ? { code } : {}),
       ...(searchText ? { searchText } : {}),
     });
+
+    // Handle uoms if provided
+    if (uoms) {
+      await ProductService.bulkUpdateUoms(domainId, id, uoms);
+    }
 
     // Handle grades if provided
     if (grades && grades.length > 0) {
@@ -433,6 +416,7 @@ export const ProductService = {
           .join(' ')
           .toLowerCase();
 
+        let gradeId = grade.id;
         if (grade.id) {
           // Update existing
           await tx.productGrades.update({
@@ -446,7 +430,7 @@ export const ProductService = {
           });
         } else {
           // Create new
-          await tx.productGrades.create({
+          const created = await tx.productGrades.create({
             data: {
               productId,
               domainId,
@@ -457,7 +441,69 @@ export const ProductService = {
               isDeleted: false,
             },
           });
+          gradeId = created.id;
         }
+
+        // Handle nested standardRates
+        if (grade.standardRates) {
+          for (const sr of grade.standardRates) {
+            const srSearchText = Object.values(sr.stdRateType || {})
+              .join(' ')
+              .toLowerCase();
+
+            if (sr.id) {
+              await tx.productGradeStdRates.update({
+                where: { id: sr.id },
+                data: {
+                  productGradeId: gradeId,
+                  stdRateType: sr.stdRateType,
+                  stdRateValue: sr.stdRateValue,
+                  alertThresold: sr.alertThresold,
+                  searchText: srSearchText,
+                  status: sr.status ? normalizeStatus(sr.status) : undefined,
+                },
+              });
+            } else {
+              await tx.productGradeStdRates.create({
+                data: {
+                  productId,
+                  productGradeId: gradeId,
+                  domainId,
+                  stdRateType: sr.stdRateType,
+                  stdRateValue: sr.stdRateValue,
+                  alertThresold: sr.alertThresold,
+                  searchText: srSearchText,
+                  status: normalizeStatus(sr.status),
+                  isDeleted: false,
+                },
+              });
+            }
+          }
+        }
+      }
+    });
+  },
+
+  // Standalone bulk update: uoms
+
+  async bulkUpdateUoms(domainId: string, productId: string, uoms: any[]) {
+    await prisma.$transaction(async (tx: any) => {
+      // Get existing uoms
+      const existing = await tx.productUom.findMany({
+        where: { productId, domainId },
+      });
+
+      // Add new
+      const existingUomIds = existing.map((e: any) => e.uomId);
+      const toAdd = uoms.filter((u: any) => !existingUomIds.includes(u.id));
+      for (const u of toAdd) {
+        await tx.productUom.create({
+          data: {
+            productId,
+            uomId: u.id,
+            domainId,
+          },
+        });
       }
     });
   },

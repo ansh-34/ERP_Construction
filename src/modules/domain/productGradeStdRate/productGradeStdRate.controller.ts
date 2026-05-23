@@ -39,10 +39,12 @@ export const listProductGradeStdRates = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
+    const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
-      data: result,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =

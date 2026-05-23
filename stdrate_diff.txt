@@ -1,0 +1,190 @@
+diff -ur src/modules/domain/productGradeStdRate/productGradeStdRate.controller.ts src/modules/user/productGradeStdRate/productGradeStdRate.controller.ts
+--- src/modules/domain/productGradeStdRate/productGradeStdRate.controller.ts	2026-05-23 16:12:12.546083944 +0530
++++ src/modules/user/productGradeStdRate/productGradeStdRate.controller.ts	2026-05-09 13:11:32.699420510 +0530
+@@ -39,12 +39,10 @@
+       req.query as any,
+       language as string,
+     );
+-    const { data, ...pagination } = result as any;
+     return res.status(HttpStatus.OK).json({
+       success: true,
+       message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+-      pagination,
+-      data,
++      data: result,
+     });
+   } catch (error) {
+     const message =
+diff -ur src/modules/domain/productGradeStdRate/productGradeStdRate.router.ts src/modules/user/productGradeStdRate/productGradeStdRate.router.ts
+--- src/modules/domain/productGradeStdRate/productGradeStdRate.router.ts	2026-05-08 15:25:07.249801324 +0530
++++ src/modules/user/productGradeStdRate/productGradeStdRate.router.ts	2026-05-22 16:01:51.236240927 +0530
+@@ -1,5 +1,5 @@
+ import { Router } from 'express';
+-// import authorize from '../../../middlewares/authorize.js';
++import authorize from '../../../middlewares/authorize.js';
+ import { validate } from '../../../middlewares/validate.js';
+ import {
+   createProductGradeStdRate,
+@@ -21,34 +21,34 @@
+ 
+   router.post(
+     '/',
+-    // authorize('product', 'create'),
++    authorize('PRODUCT', 'CREATE'),
+     validate(productGradeStdRateParentParamSchema, 'params'),
+     validate(createProductGradeStdRateBodySchema, 'body'),
+     createProductGradeStdRate,
+   );
+   router.get(
+     '/',
+-    //  authorize('product', 'read'),
++    authorize('PRODUCT', 'READ'),
+     validate(productGradeStdRateParentParamSchema, 'params'),
+     validate(listProductGradeStdRateQuerySchema, 'query'),
+     listProductGradeStdRates,
+   );
+   router.get(
+     '/:id',
+-    //  authorize('product', 'read'),
++    authorize('PRODUCT', 'READ'),
+     validate(productGradeStdRateIdParamSchema, 'params'),
+     getProductGradeStdRateById,
+   );
+   router.put(
+     '/:id',
+-    //  authorize('product', 'update'),
++    authorize('PRODUCT', 'UPDATE'),
+     validate(productGradeStdRateIdParamSchema, 'params'),
+     validate(updateProductGradeStdRateBodySchema, 'body'),
+     updateProductGradeStdRate,
+   );
+   router.delete(
+     '/:id',
+-    //   authorize('product', 'delete'),
++    authorize('PRODUCT', 'DELETE'),
+     validate(productGradeStdRateIdParamSchema, 'params'),
+     deleteProductGradeStdRate,
+   );
+diff -ur src/modules/domain/productGradeStdRate/productGradeStdRate.service.ts src/modules/user/productGradeStdRate/productGradeStdRate.service.ts
+--- src/modules/domain/productGradeStdRate/productGradeStdRate.service.ts	2026-05-23 15:58:02.809356832 +0530
++++ src/modules/user/productGradeStdRate/productGradeStdRate.service.ts	2026-05-23 16:15:44.798682004 +0530
+@@ -1,6 +1,7 @@
+ import prisma from '../../../infra/database/prisma/prisma.client.js';
+ import { Messages } from '../../../constants/index.js';
+ import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
++import { normalizeStatus } from '../../../utils/validation.js';
+ 
+ export const ProductGradeStdRateService = {
+   localizeName(value: any, langCode: string) {
+@@ -34,13 +35,16 @@
+ 
+     return prisma.productGradeStdRates.create({
+       data: {
+-        ...dto,
++        stdRateType: dto.stdRateType,
++        stdRateValue: dto.stdRateValue,
++        alertThresold: dto.alertThresold,
++        status: normalizeStatus(dto.status),
+         searchText,
+         productId,
+         productGradeId: gradeId,
+         domainId,
+         isDeleted: false,
+-      } as any,
++      },
+       include: {
+         productGrade: {
+           select: { id: true, gradeDisplayName: true, gradeCode: true },
+@@ -118,56 +122,37 @@
+     id: string,
+     language: string | null = null,
+   ) {
+-    const product = await prisma.product.findFirst({
+-      where: { id: productId, domainId, isDeleted: false },
++    const record: any = await prisma.productGradeStdRates.findFirst({
++      where: {
++        id,
++        productGradeId: gradeId,
++        productId,
++        domainId,
++        isDeleted: false,
++      },
+       include: {
+-        productGrades: {
+-          where: { id: gradeId, isDeleted: false },
+-          include: {
+-            productGradeStdRates: {
+-              where: { id, isDeleted: false },
+-            },
+-          },
++        productGrade: {
++          select: { id: true, gradeDisplayName: true, gradeCode: true },
+         },
+       },
+     });
+-
+-    if (
+-      !product ||
+-      product.productGrades.length === 0 ||
+-      product.productGrades[0].productGradeStdRates.length === 0
+-    ) {
+-      throw new Error(Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND);
+-    }
+-
+-    const grade = product.productGrades[0];
+-    const stdRate = grade.productGradeStdRates[0];
++    if (!record) throw new Error(Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND);
+ 
+     if (language) {
+-      product.displayName = ProductGradeStdRateService.localizeName(
+-        product.displayName,
+-        language,
+-      );
+-      grade.gradeDisplayName = ProductGradeStdRateService.localizeName(
+-        grade.gradeDisplayName,
+-        language,
+-      );
+-      stdRate.stdRateType = ProductGradeStdRateService.localizeName(
+-        stdRate.stdRateType,
++      record.stdRateType = ProductGradeStdRateService.localizeName(
++        record.stdRateType,
+         language,
+       );
++      if (record.productGrade) {
++        record.productGrade.gradeDisplayName =
++          ProductGradeStdRateService.localizeName(
++            record.productGrade.gradeDisplayName,
++            language,
++          );
++      }
+     }
+ 
+-    const { productGradeStdRates, ...gradeData } = grade;
+-    const { productGrades, ...productData } = product;
+-
+-    return {
+-      ...productData,
+-      productGrade: {
+-        ...gradeData,
+-        productGradeStdRate: stdRate,
+-      },
+-    };
++    return record;
+   },
+ 
+   async update(
+@@ -197,10 +182,13 @@
+       searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
+     }
+ 
++    // eslint-disable-next-line @typescript-eslint/no-unused-vars
++    const { domainId: _d, adminId: _a, ...rateData } = dto;
+     return prisma.productGradeStdRates.update({
+       where: { id },
+       data: {
+-        ...dto,
++        ...rateData,
++        ...(dto.status ? { status: normalizeStatus(dto.status) } : {}),
+         ...(searchText ? { searchText } : {}),
+         updatedAt: new Date(),
+       } as any,

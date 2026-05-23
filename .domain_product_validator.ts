@@ -20,17 +20,13 @@ const gradeItemSchema = z.object({
   gradeDisplayName: localizedName,
   gradeCode: z.string().min(1).optional(),
   status: z.enum(['active', 'inactive']).default('active'),
-  standardRates: z
-    .array(
-      z.object({
-        id: z.string().uuid().optional(),
-        stdRateType: localizedName,
-        stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
-        alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-        status: z.enum(['active', 'inactive']).default('active'),
-      }),
-    )
-    .optional(),
+  standardRates: z.array(z.object({
+    id: z.string().uuid().optional(),
+    stdRateType: localizedName,
+    stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
+    alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
+    status: z.enum(['active', 'inactive']).default('active'),
+  })).optional(),
 });
 
 const standardRateItemSchema = z.object({
@@ -74,14 +70,6 @@ export const bulkUpdateGradesBodySchema = z.object({
 
 export const bulkUpdateStdRatesBodySchema = z.object({
   standardRates: z.array(standardRateItemSchema).min(1),
-});
-
-export const bulkUpdateUomsBodySchema = z.object({
-  uoms: z.array(uomItemSchema).min(1),
-});
-
-export const bulkDeleteBodySchema = z.object({
-  ids: z.array(z.string().uuid()).min(1),
 });
 
 export const listProductsQuerySchema = paginationQuerySchema

@@ -1,7 +1,6 @@
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
-import { normalizeStatus } from '../../../utils/validation.js';
 
 export const ProductGradeStdRateService = {
   localizeName(value: any, langCode: string) {
@@ -35,16 +34,13 @@ export const ProductGradeStdRateService = {
 
     return prisma.productGradeStdRates.create({
       data: {
-        stdRateType: dto.stdRateType,
-        stdRateValue: dto.stdRateValue,
-        alertThresold: dto.alertThresold,
-        status: normalizeStatus(dto.status),
+        ...dto,
         searchText,
         productId,
         productGradeId: gradeId,
         domainId,
         isDeleted: false,
-      },
+      } as any,
       include: {
         productGrade: {
           select: { id: true, gradeDisplayName: true, gradeCode: true },
@@ -94,11 +90,6 @@ export const ProductGradeStdRateService = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          productGrade: {
-            select: { id: true, gradeDisplayName: true, gradeCode: true },
-          },
-        },
       }),
       prisma.productGradeStdRates.count({ where }),
     ]);
@@ -109,15 +100,6 @@ export const ProductGradeStdRateService = {
         stdRate.stdRateType,
         langCode,
       ),
-      productGrade: stdRate.productGrade
-        ? {
-            ...stdRate.productGrade,
-            gradeDisplayName: ProductGradeStdRateService.localizeName(
-              stdRate.productGrade.gradeDisplayName,
-              langCode,
-            ),
-          }
-        : stdRate.productGrade,
     }));
 
     return {
@@ -136,37 +118,58 @@ export const ProductGradeStdRateService = {
     id: string,
     language: string | null = null,
   ) {
-    const record: any = await prisma.productGradeStdRates.findFirst({
-      where: {
-        id,
-        productGradeId: gradeId,
-        productId,
-        domainId,
-        isDeleted: false,
-      },
+    const product = await prisma.product.findFirst({
+      where: { id: productId, domainId, isDeleted: false },
       include: {
-        productGrade: {
-          select: { id: true, gradeDisplayName: true, gradeCode: true },
+        productGrades: {
+          where: { id: gradeId, isDeleted: false },
+          include: {
+            productGradeStdRates: {
+              where: { id, isDeleted: false },
+            },
+          },
         },
       },
     });
-    if (!record) throw new Error(Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND);
 
-    if (language) {
-      record.stdRateType = ProductGradeStdRateService.localizeName(
-        record.stdRateType,
-        language,
-      );
-      if (record.productGrade) {
-        record.productGrade.gradeDisplayName =
-          ProductGradeStdRateService.localizeName(
-            record.productGrade.gradeDisplayName,
-            language,
-          );
-      }
+    if (
+      !product ||
+      product.productGrades.length === 0 ||
+      product.productGrades[0].productGradeStdRates.length === 0
+    ) {
+      throw new Error(Messages.PRODUCT_GRADE_STD_RATE.NOT_FOUND);
     }
 
-    return record;
+    const grade = product.productGrades[0];
+    const stdRate = grade.productGradeStdRates[0];
+
+    if (language) {
+      product.displayName = ProductGradeStdRateService.localizeName(
+        product.displayName,
+        language,
+      );
+      grade.gradeDisplayName = ProductGradeStdRateService.localizeName(
+        grade.gradeDisplayName,
+        language,
+      );
+      stdRate.stdRateType = ProductGradeStdRateService.localizeName(
+        stdRate.stdRateType,
+        language,
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { productGradeStdRates, ...gradeData } = grade;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { productGrades, ...productData } = product;
+
+    return {
+      ...productData,
+      productGrade: {
+        ...gradeData,
+        productGradeStdRate: stdRate,
+      },
+    };
   },
 
   async update(
@@ -196,13 +199,10 @@ export const ProductGradeStdRateService = {
       searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { domainId: _d, adminId: _a, ...rateData } = dto;
     return prisma.productGradeStdRates.update({
       where: { id },
       data: {
-        ...rateData,
-        ...(dto.status ? { status: normalizeStatus(dto.status) } : {}),
+        ...dto,
         ...(searchText ? { searchText } : {}),
         updatedAt: new Date(),
       } as any,

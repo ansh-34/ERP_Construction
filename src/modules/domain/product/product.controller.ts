@@ -153,3 +153,23 @@ export const bulkUpdateStandardRates = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const bulkUpdateUoms = async (req: Request, res: Response) => {
+  try {
+    await ProductService.bulkUpdateUoms(
+      req.user!.domainId,
+      req.params.id,
+      req.body.uoms,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT.UPDATED,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.PRODUCT.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

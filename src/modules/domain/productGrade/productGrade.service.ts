@@ -185,14 +185,6 @@ export const ProductGradeService = {
               displayName: true,
             },
           },
-          productGradeStdRates: {
-            where: { isDeleted: false },
-            select: {
-              id: true,
-              stdRateType: true,
-              stdRateValue: true,
-            },
-          },
         },
       }),
       prisma.productGrades.count({ where }),
@@ -215,16 +207,6 @@ export const ProductGradeService = {
             ),
           }
         : undefined,
-      productGradeStdRates: (grade.productGradeStdRates || []).map(
-        (stdRate: any) => ({
-          id: stdRate.id,
-          stdRateType: ProductGradeService.localizeName(
-            stdRate.stdRateType,
-            langCode,
-          ),
-          stdRateValue: stdRate.stdRateValue,
-        }),
-      ),
     }));
 
     return {
@@ -341,18 +323,32 @@ export const ProductGradeService = {
     id: string,
     language: string | null = null,
   ) {
-    const record: any = await prisma.productGrades.findFirst({
-      where: { id, productId, domainId, isDeleted: false },
-      include: { productGradeStdRates: { where: { isDeleted: false } } },
+    const product = await prisma.product.findFirst({
+      where: { id: productId, domainId, isDeleted: false },
+      include: {
+        productGrades: {
+          where: { id, isDeleted: false },
+          include: { productGradeStdRates: { where: { isDeleted: false } } },
+        },
+      },
     });
-    if (!record) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
+
+    if (!product || product.productGrades.length === 0) {
+      throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
+    }
+
+    const grade = product.productGrades[0];
 
     if (language) {
-      record.gradeDisplayName = ProductGradeService.localizeName(
-        record.gradeDisplayName,
+      product.displayName = ProductGradeService.localizeName(
+        product.displayName,
         language,
       );
-      record.productGradeStdRates = (record.productGradeStdRates || []).map(
+      grade.gradeDisplayName = ProductGradeService.localizeName(
+        grade.gradeDisplayName,
+        language,
+      );
+      grade.productGradeStdRates = (grade.productGradeStdRates || []).map(
         (stdRate: any) => ({
           ...stdRate,
           stdRateType: ProductGradeService.localizeName(
@@ -363,7 +359,13 @@ export const ProductGradeService = {
       );
     }
 
-    return record;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { productGrades, ...productData } = product;
+
+    return {
+      ...productData,
+      productGrade: grade,
+    };
   },
 
   async update(

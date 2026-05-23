@@ -36,10 +36,12 @@ export const listAllDomainProductGrades = async (
       req.query as any,
       language as string,
     );
+    const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =
@@ -63,10 +65,19 @@ export const listProductGradesWithStdRates = async (
       req.query as any,
       language as string,
     );
+    // findAllWithStdRates returns { product, grades: { data, total, page, limit, totalPages } }
+    // It's already slightly different, but the user said "list all product grades dont put two data field same with list standard rates".
+    // I'll flatten it to avoid nested `grades.data` if that's what's happening.
+    // Let's just leave findAllWithStdRates as is unless I restructure it completely. Wait, no.
+    // Actually, I'll just destructure result.grades for listProductGradesWithStdRates.
+    const { product, grades } = result;
+    const { data, ...pagination } = grades as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      product,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =
@@ -87,10 +98,12 @@ export const listProductGrades = async (req: Request, res: Response) => {
       req.query as any,
       language as string,
     );
+    const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE.RETRIEVED,
-      data: result,
+      pagination,
+      data,
     });
   } catch (error) {
     const message =

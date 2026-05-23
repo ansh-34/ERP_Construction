@@ -1,0 +1,90 @@
+diff -ur src/modules/domain/product/product.router.ts src/modules/user/product/product.router.ts
+--- src/modules/domain/product/product.router.ts	2026-05-23 11:41:13.279642209 +0530
++++ src/modules/user/product/product.router.ts	2026-05-23 11:29:45.602814435 +0530
+@@ -1,5 +1,5 @@
+ import { Router } from 'express';
+-// import authorize from '../../../middlewares/authorize.js';
++import authorize from '../../../middlewares/authorize.js';
+ import { validate } from '../../../middlewares/validate.js';
+ import {
+   createProduct,
+@@ -19,7 +19,8 @@
+   bulkUpdateStdRatesBodySchema,
+ } from './product.validator.js';
+ import { productGradeRouter } from '../productGrade/productGrade.router.js';
+-import { listAllDomainProductGrades } from '../productGrade/productGrade.controller.js';
++import { listAllProductGrades } from '../productGrade/productGrade.controller.js';
++import { listProductGradeQuerySchema } from '../productGrade/productGrade.validation.js';
+ import { productUomRouter } from '../productUom/productUom.router.js';
+ import { listAllDomainProductUoms } from '../productUom/productUom.controller.js';
+ import { listProductUomQuerySchema } from '../productUom/productUom.validation.js';
+@@ -28,58 +29,58 @@
+ 
+ router.post(
+   '/',
+-  // authorize('product', 'create'),
++  authorize('PRODUCT', 'CREATE'),
+   validate(createProductBodySchema, 'body'),
+   createProduct,
+ );
+ router.get(
+   '/',
+-  // authorize('product', 'read'),
++  authorize('PRODUCT', 'READ'),
+   validate(listProductsQuerySchema, 'query'),
+   listProducts,
+ );
+ router.get(
+   '/grades',
+-  // authorize('product', 'read'),
+-  validate(listProductsQuerySchema, 'query'),
+-  listAllDomainProductGrades,
++  authorize('PRODUCT', 'READ'),
++  validate(listProductGradeQuerySchema, 'query'),
++  listAllProductGrades,
+ );
+ router.get(
+   '/uoms',
+-  // authorize('product', 'read'),
++  authorize('PRODUCT', 'READ'),
+   validate(listProductUomQuerySchema, 'query'),
+   listAllDomainProductUoms,
+ );
+ router.get(
+   '/:id',
+-  // authorize('product', 'read'),
++  authorize('PRODUCT', 'READ'),
+   validate(productIdParamsSchema, 'params'),
+   getProductById,
+ );
+ router.put(
+   '/:id',
+-  // authorize('product', 'update'),
++  authorize('PRODUCT', 'UPDATE'),
+   validate(productIdParamsSchema, 'params'),
+   validate(updateProductBodySchema, 'body'),
+   updateProduct,
+ );
+ router.delete(
+   '/:id',
+-  // authorize('product', 'delete'),
++  authorize('PRODUCT', 'DELETE'),
+   validate(productIdParamsSchema, 'params'),
+   deleteProduct,
+ );
+ 
+ router.put(
+   '/:id/grades',
+-  // authorize('product', 'update'),
++  authorize('PRODUCT', 'UPDATE'),
+   validate(productIdParamsSchema, 'params'),
+   validate(bulkUpdateGradesBodySchema, 'body'),
+   bulkUpdateGrades,
+ );
+ router.put(
+   '/:id/standard-rates',
+-  // authorize('product', 'update'),
++  authorize('PRODUCT', 'UPDATE'),
+   validate(productIdParamsSchema, 'params'),
+   validate(bulkUpdateStdRatesBodySchema, 'body'),
+   bulkUpdateStandardRates,

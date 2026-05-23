@@ -9,6 +9,7 @@ import {
   updateProduct,
   bulkUpdateGrades,
   bulkUpdateStandardRates,
+  bulkUpdateUoms,
 } from './product.controller.js';
 import {
   createProductBodySchema,
@@ -17,6 +18,7 @@ import {
   updateProductBodySchema,
   bulkUpdateGradesBodySchema,
   bulkUpdateStdRatesBodySchema,
+  bulkUpdateUomsBodySchema,
 } from './product.validator.js';
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
 import { listAllProductGrades } from '../productGrade/productGrade.controller.js';
@@ -84,6 +86,14 @@ router.put(
   validate(productIdParamsSchema, 'params'),
   validate(bulkUpdateStdRatesBodySchema, 'body'),
   bulkUpdateStandardRates,
+);
+
+router.put(
+  '/:id/uoms',
+  authorize('PRODUCT', 'UPDATE'),
+  validate(productIdParamsSchema, 'params'),
+  validate(bulkUpdateUomsBodySchema, 'body'),
+  bulkUpdateUoms,
 );
 
 router.use('/:productId/grades', productGradeRouter());
