@@ -40,6 +40,7 @@ const variables = {
     process.env.AWS_BUCKET_NAME,
   S3_PUBLIC_URL: process.env.S3_PUBLIC_URL || process.env.AWS_S3_PUBLIC_URL,
   S3_OBJECT_ACL: process.env.S3_OBJECT_ACL || 'public-read',
+  S3_LOG_PREFIX: process.env.S3_LOG_PREFIX || 'logs/',
 
   CLIENT_BASE_URL: process.env.CLIENT_BASE_URL || 'http://localhost:3000',
 };

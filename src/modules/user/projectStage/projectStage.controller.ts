@@ -17,7 +17,6 @@ export const projectStageController = {
         progress,
         expectedStartDate,
         expectedEndDate,
-        projectId,
         status,
       } = req.body as {
         name?: Record<string, unknown>;
@@ -25,7 +24,6 @@ export const projectStageController = {
         progress?: number | null;
         expectedStartDate?: string;
         expectedEndDate?: string;
-        projectId?: string;
         status?: StatusEnum;
       };
 
@@ -36,7 +34,6 @@ export const projectStageController = {
           ...(progress !== undefined && { progress }),
           ...(expectedStartDate !== undefined && { expectedStartDate }),
           ...(expectedEndDate !== undefined && { expectedEndDate }),
-          ...(projectId !== undefined && { projectId }),
           domainId: req.user!.domainId,
           adminId: req.user!.adminId,
           status: status ?? StatusEnum.ACTIVE,
@@ -63,8 +60,7 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { projectId, searchKey, offset, limit } = req.query as {
-        projectId?: string;
+      const { searchKey, offset, limit } = req.query as {
         searchKey?: string;
         offset?: string;
         limit?: string;
@@ -72,7 +68,6 @@ export const projectStageController = {
       const { projectStages, pagination } = await projectStageService.getAll(
         req.user!.domainId,
         req.user!.adminId,
-        projectId ?? '',
         searchKey,
         { offset, limit },
         language,

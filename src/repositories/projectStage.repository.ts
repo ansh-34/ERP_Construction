@@ -284,15 +284,18 @@ export const projectStageRepository = {
 
   findMany: async (
     domainId: string,
-    projectId: string,
+    projectId?: string | null,
     adminId?: string,
     searchKey?: string,
   ): Promise<ProjectStageRecord[]> => {
     const filters = [
       Prisma.sql`ps."domainId" = ${domainId}`,
-      Prisma.sql`ps."projectId" = ${projectId}`,
       Prisma.sql`ps."isDeleted" = false`,
     ];
+
+    if (projectId) {
+      filters.push(Prisma.sql`ps."projectId" = ${projectId}`);
+    }
 
     if (adminId) {
       filters.push(Prisma.sql`ps."adminId" = ${adminId}`);

@@ -1,5 +1,4 @@
 import {
-  projectRepository,
   projectStageRepository,
   type ProjectStageRecord,
 } from '@repositories/index';
@@ -18,7 +17,6 @@ export interface CreateProjectStageInput {
   progress?: number | null;
   expectedStartDate?: string;
   expectedEndDate?: string;
-  projectId?: string;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -217,28 +215,6 @@ function assertCreateInput(data: CreateProjectStageInput): void {
   }
 }
 
-async function validateProjectId(
-  projectId: string | undefined,
-  domainId: string,
-  adminId: string,
-): Promise<string | undefined> {
-  if (isNonEmptyString(projectId)) {
-    const project = await projectRepository.findById(
-      projectId,
-      domainId,
-      adminId,
-    );
-
-    if (!project) {
-      throw new Error('not found');
-    }
-
-    return project.id;
-  }
-
-  return undefined;
-}
-
 function assertUpdateInput(data: UpdateProjectStageInput): void {
   const hasName = data.name !== undefined;
   const hasDescription = data.description !== undefined;
@@ -292,19 +268,13 @@ export const projectStageService = {
     assertCreateInput(data);
 
     try {
-      const projectId = await validateProjectId(
-        data.projectId,
-        data.domainId,
-        data.adminId,
-      );
-
       const code = buildProjectStageCode(data.name);
 
       if (
         await projectStageRepository.findByCode(
           code,
           data.domainId,
-          projectId,
+          null,
           data.adminId,
         )
       ) {
@@ -313,7 +283,7 @@ export const projectStageService = {
 
       const stage = await projectStageRepository.create({
         ...data,
-        projectId,
+        projectId: null,
         progress: 0,
         code,
         searchText: buildProjectStageSearchText(data.name),
@@ -336,12 +306,11 @@ export const projectStageService = {
   getAll: async (
     domainId: string,
     adminId: string,
-    projectId: string,
     searchKey?: string,
     paginationQuery: PaginationQuery = {},
     language: string | null = null,
   ): Promise<PaginatedProjectStages> => {
-    if (!isNonEmptyString(domainId) || !isNonEmptyString(projectId)) {
+    if (!isNonEmptyString(domainId)) {
       throw new Error('invalid ids');
     }
 
@@ -349,7 +318,7 @@ export const projectStageService = {
       const { offset, limit } = normalizePagination(paginationQuery);
       const stages = await projectStageRepository.findMany(
         domainId,
-        projectId,
+        undefined,
         adminId,
         searchKey,
       );

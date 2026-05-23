@@ -28,7 +28,6 @@ export const createProjectStageBody = z.object({
   expectedEndDate: dateString.optional(),
   actualStartDate: createOnlyActualDate,
   actualEndDate: createOnlyActualDate,
-  projectId: z.string().trim().min(1).optional(),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
@@ -55,7 +54,6 @@ export const updateProjectStageBody = z
   );
 
 export const listProjectStageQuery = z.object({
-  projectId: z.string().trim().min(1, { message: 'Project id is required' }),
   searchKey: z.string().trim().optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),
