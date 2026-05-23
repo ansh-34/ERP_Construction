@@ -63,4 +63,56 @@ export const modules = [
     name: 'Vendor Product Price',
     code: 'VENDOR_PRODUCT_PRICE',
   },
+  {
+    name: 'Invoice',
+    code: 'INVOICE',
+  },
+  {
+    name: 'UOM',
+    code: 'UOM',
+  },
+  {
+    name: 'GRN',
+    code: 'GRN',
+  },
+  {
+    name: 'Raw Material Purchase Request',
+    code: 'RAW_MATERIAL_PURCHASE_REQUEST',
+  },
+  {
+    name: 'Machinery',
+    code: 'MACHINERY',
+  },
+  {
+    name: 'Machine Reading',
+    code: 'MACHINE_READING',
+  },
+  {
+    name: 'Currency',
+    code: 'CURRENCY',
+  },
+  {
+    name: 'Location',
+    code: 'LOCATION',
+  },
+  {
+    name: 'Project Category',
+    code: 'PROJECT_CATEGORY',
+  },
+  {
+    name: 'Project User Role',
+    code: 'PROJECT_USER_ROLE',
+  },
+  {
+    name: 'Media',
+    code: 'MEDIA',
+  },
+  {
+    name: 'API Key',
+    code: 'API_KEY',
+  },
+  {
+    name: 'Role',
+    code: 'ROLE',
+  },
 ];
