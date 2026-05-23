@@ -1,26 +1,38 @@
 export const permissions = [
   {
-    name: 'Create',
+    name: {
+      en: 'Create',
+    },
     code: 'CREATE',
   },
   {
-    name: 'Read',
+    name: {
+      en: 'Read',
+    },
     code: 'READ',
   },
   {
-    name: 'Update',
+    name: {
+      en: 'Update',
+    },
     code: 'UPDATE',
   },
   {
-    name: 'Delete',
+    name: {
+      en: 'Delete',
+    },
     code: 'DELETE',
   },
   {
-    name: 'Approve',
+    name: {
+      en: 'Approve',
+    },
     code: 'APPROVE',
   },
   {
-    name: 'Reject',
+    name: {
+      en: 'Reject',
+    },
     code: 'REJECT',
   },
 ];

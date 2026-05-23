@@ -5,14 +5,63 @@ export const ModulePermissionRepository = {
     return prisma.modulePermission.findFirst({ where: { moduleId } });
   },
 
-  list(limit: number, offset: number) {
+  list(
+    limit: number,
+    offset: number,
+    options: { filter?: any; transaction?: any } = {},
+  ) {
+    const whereClause: any = {
+      isDeleted: false,
+      module: {
+        isDeleted: false,
+      },
+      permission: {
+        isDeleted: false,
+        ...(options.filter?.searchKey && {
+          searchText: {
+            contains: options.filter.searchKey,
+            mode: 'insensitive',
+          },
+        }),
+
+        ...(options.filter?.status && {
+          status: options.filter.status,
+        }),
+      },
+      ...(options.filter?.moduleId && {
+        moduleId: options.filter.moduleId,
+      }),
+      ...(options.filter?.permissionId && {
+        permissionId: options.filter.permissionId,
+      }),
+    };
+
     return prisma.$transaction([
-      prisma.modulePermission.count(),
+      prisma.modulePermission.count({
+        where: whereClause,
+      }),
+
       prisma.modulePermission.findMany({
         include: {
-          module: { select: { id: true, name: true, code: true } },
+          module: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
+          permission: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
         },
-        orderBy: { createdAt: 'desc' },
+        where: whereClause,
+        orderBy: {
+          createdAt: 'desc',
+        },
         skip: offset,
         take: limit,
       }),

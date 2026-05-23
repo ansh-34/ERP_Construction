@@ -1,66 +1,98 @@
 export const modules = [
   {
-    name: 'Inventory',
+    name: {
+      en: 'Inventory',
+    },
     code: 'INVENTORY',
   },
   {
-    name: 'Vehicle',
+    name: {
+      en: 'Vehicle',
+    },
     code: 'VEHICLE',
   },
   {
-    name: 'Journey',
+    name: {
+      en: 'Journey',
+    },
     code: 'JOURNEY',
   },
   {
-    name: 'Dispatch',
+    name: {
+      en: 'Dispatch',
+    },
     code: 'DISPATCH',
   },
   {
-    name: 'Language',
+    name: {
+      en: 'Language',
+    },
     code: 'LANGUAGE',
   },
   {
-    name: 'App_Error',
+    name: {
+      en: 'App Error',
+    },
     code: 'APP_ERROR',
   },
   {
-    name: 'Project',
+    name: {
+      en: 'Project',
+    },
     code: 'PROJECT',
   },
   {
-    name: 'Project Stage',
+    name: {
+      en: 'Project Stage',
+    },
     code: 'PROJECT_STAGE',
   },
   {
-    name: 'Project User Assignment',
+    name: {
+      en: 'Project User Assignment',
+    },
     code: 'PROJECT_USER_ASSIGNMENT',
   },
   {
-    name: 'Project User Daily Log',
+    name: {
+      en: 'Project User Daily Log',
+    },
     code: 'PROJECT_USER_DAILY_LOG',
   },
   {
-    name: 'Project Task',
+    name: {
+      en: 'Project Task',
+    },
     code: 'PROJECT_TASK',
   },
   {
-    name: 'Project Task Delay',
+    name: {
+      en: 'Project Task Delay',
+    },
     code: 'PROJECT_TASK_DELAY',
   },
   {
-    name: 'Project Task Image',
+    name: {
+      en: 'Project Task Image',
+    },
     code: 'PROJECT_TASK_IMAGE',
   },
   {
-    name: 'Activity Log',
+    name: {
+      en: 'Activity Log',
+    },
     code: 'ACTIVITY_LOG',
   },
   {
-    name: 'Product',
+    name: {
+      en: 'Product',
+    },
     code: 'PRODUCT',
   },
   {
-    name: 'Vendor Product Price',
+    name: {
+      en: 'Vendor Product Price',
+    },
     code: 'VENDOR_PRODUCT_PRICE',
   },
   {
