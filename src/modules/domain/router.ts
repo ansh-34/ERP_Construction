@@ -31,6 +31,8 @@ import { vendorProductPriceRouter } from './vendorProductPrice/vendorProductPric
 import invoiceRouter from './invoice/invoice.router.js';
 import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
+import moduleRouter from './module/module.router';
+import modulePermissionRouter from './modulePermission/modulePermission.router';
 
 const domainRouter = Router();
 
@@ -70,5 +72,7 @@ domainRouter.use('/project-user-roles', projectUserRoleRouter);
 domainRouter.use('/grn', grnRouter);
 domainRouter.use('/vendor-product-prices', vendorProductPriceRouter());
 domainRouter.use('/invoices', invoiceRouter);
+domainRouter.use('/modules', moduleRouter);
+domainRouter.use('/module-permissions', modulePermissionRouter);
 
 export default domainRouter;

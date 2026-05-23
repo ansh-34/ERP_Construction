@@ -39,7 +39,10 @@ export const PermissionRepository = {
   listActive(
     limit: number,
     offset: number,
-    options: { filter?: { searchKey?: string }; transaction?: any } = {},
+    options: {
+      filter?: { searchKey?: string; status?: 'ACTIVE' | 'INACTIVE' };
+      transaction?: any;
+    } = {},
   ) {
     const prismaClient = options?.transaction || prisma;
 
@@ -51,6 +54,7 @@ export const PermissionRepository = {
           mode: 'insensitive',
         },
       }),
+      ...(options.filter?.status && { status: options.filter.status }),
     };
 
     return prismaClient.$transaction([
