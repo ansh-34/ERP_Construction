@@ -7,14 +7,19 @@ import {
   getProductById,
   deleteProduct,
   updateProduct,
+  bulkUpdateGrades,
+  bulkUpdateStandardRates,
 } from './product.controller.js';
 import {
   createProductBodySchema,
   listProductsQuerySchema,
   productIdParamsSchema,
   updateProductBodySchema,
+  bulkUpdateGradesBodySchema,
+  bulkUpdateStdRatesBodySchema,
 } from './product.validator.js';
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
+import { listAllDomainProductGrades } from '../productGrade/productGrade.controller.js';
 import { productUomRouter } from '../productUom/productUom.router.js';
 
 const router = Router();
@@ -30,6 +35,12 @@ router.get(
   // authorize('product', 'read'),
   validate(listProductsQuerySchema, 'query'),
   listProducts,
+);
+router.get(
+  '/grades',
+  // authorize('product', 'read'),
+  validate(listProductsQuerySchema, 'query'), // reusing the same query schema since it has page, limit, searchKey, etc.
+  listAllDomainProductGrades,
 );
 router.get(
   '/:id',
@@ -49,6 +60,22 @@ router.delete(
   // authorize('product', 'delete'),
   validate(productIdParamsSchema, 'params'),
   deleteProduct,
+);
+
+// ── Standalone bulk-update endpoints ─────────────────────────
+router.put(
+  '/:id/grades',
+  // authorize('product', 'update'),
+  validate(productIdParamsSchema, 'params'),
+  validate(bulkUpdateGradesBodySchema, 'body'),
+  bulkUpdateGrades,
+);
+router.put(
+  '/:id/standard-rates',
+  // authorize('product', 'update'),
+  validate(productIdParamsSchema, 'params'),
+  validate(bulkUpdateStdRatesBodySchema, 'body'),
+  bulkUpdateStandardRates,
 );
 
 router.use('/:productId/grades', productGradeRouter());

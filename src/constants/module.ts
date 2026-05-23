@@ -55,4 +55,12 @@ export const modules = [
     name: 'Activity Log',
     code: 'ACTIVITY_LOG',
   },
+  {
+    name: 'Product',
+    code: 'PRODUCT',
+  },
+  {
+    name: 'Vendor Product Price',
+    code: 'VENDOR_PRODUCT_PRICE',
+  },
 ];

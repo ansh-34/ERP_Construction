@@ -175,6 +175,7 @@ model Domain {
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   projectUserRoles            ProjectUserRole[]
   purchaseOrders              PurchaseOrder[]
+  vendorProductPricings       VendorProductPricing[]
   purchaseOrderProducts       PurchaseOrderProduct[]
   admin                       Admin?                       @relation(fields: [adminId], references: [id])
   adminId                     String?                      @db.Uuid
@@ -537,6 +538,7 @@ model Uom {
   grnProducts                 GrnProduct[]
   purchaseOrderProducts       PurchaseOrderProduct[]
   purchaseOrders              PurchaseOrder[]
+  vendorProductPricings       VendorProductPricing[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -660,6 +662,7 @@ model Product {
 
   productUoms                 ProductUom[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+  vendorProductPricings       VendorProductPricing[]
 
   @@unique([code, domainId, isDeleted])
   @@index([isDeleted])
@@ -698,6 +701,7 @@ model ProductGrades {
   productGradeStdRates        ProductGradeStdRates[]
   inventories                 Inventory[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
+  vendorProductPricings       VendorProductPricing[]
   status                      StatusEnum                   @default(ACTIVE)
   isDeleted                   Boolean
   createdAt                   DateTime                     @default(now())
@@ -759,7 +763,6 @@ model RawMaterialPurchaseRequest {
   quantity                      Float
   uomId                         String              @db.Uuid
   uom                           Uom                 @relation(fields: [uomId], references: [id])
-  vendor                        String?
   brand                         String?
   requisitionRequestDocumentUrl String?
   requestedBy                   String              @db.Uuid
@@ -795,7 +798,6 @@ model PurchaseOrder {
   code           String
   sourceRmprCode String?
   date           DateTime   @default(now())
-  vendor         String
   uomId          String?    @db.Uuid
   uom            Uom?       @relation(fields: [uomId], references: [id])
   totalItems     Int        @default(0)
@@ -1291,4 +1293,52 @@ model GrnProduct {
   @@index([createdAt, isDeleted, domainId, status])
   @@index([projectId])
   @@index([domainId])
+}
+
+model VendorProductPricing {
+  id             String        @id @default(uuid()) @db.Uuid
+  vendorName     String
+  productId      String        @db.Uuid
+  product        Product       @relation(fields: [productId], references: [id])
+  productGradeId String        @db.Uuid
+  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
+  uomId          String        @db.Uuid
+  uom            Uom           @relation(fields: [uomId], references: [id])
+  price          Float
+  productCode    String?
+  productGradeCode String?
+  uomCode        String?
+  searchText     String        @default("")
+  domainId       String        @db.Uuid
+  domain         Domain        @relation(fields: [domainId], references: [id])
+  status         StatusEnum    @default(ACTIVE)
+  isDeleted      Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([vendorName, productId, productGradeId, uomId, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
+  @@index([productId])
+  @@index([productGradeId])
+  @@index([domainId])
+}
+
+model DbAnalytics {
+  id              String   @id @default(uuid()) @db.Uuid
+  date            DateTime @unique @db.Date
+  totalRequests   Int
+  successCount    Int
+  failureCount    Int
+  avgResponseTime Float
+  maxResponseTime Int
+  minResponseTime Int
+  mostHitApi      String
+  mostHitCount    Int
+  mostFailedApi   String?
+  mostFailedCount Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("db_analytics")
 }

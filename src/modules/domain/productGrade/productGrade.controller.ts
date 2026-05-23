@@ -25,6 +25,59 @@ export const createProductGrade = async (req: Request, res: Response) => {
   }
 };
 
+export const listAllDomainProductGrades = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { language = 'en' } = req.headers;
+    const result = await ProductGradeService.findAllInDomain(
+      req.user!.domainId,
+      req.query as any,
+      language as string,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_GRADE.RETRIEVED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const listProductGradesWithStdRates = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { language = 'en' } = req.headers;
+    const result = await ProductGradeService.findAllWithStdRates(
+      req.user!.domainId,
+      req.params.productId,
+      req.query as any,
+      language as string,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_GRADE.RETRIEVED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const listProductGrades = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;

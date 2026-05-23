@@ -90,7 +90,6 @@ export const RawMaterialPurchaseRequestService = {
       productGradeId: string;
       quantity: number;
       uomId: string;
-      vendor?: string;
       brand?: string;
       requisitionRequestDocumentUrl?: string;
       requiredBy: string;

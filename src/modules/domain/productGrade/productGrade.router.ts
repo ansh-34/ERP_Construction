@@ -4,6 +4,7 @@ import { validate } from '../../../middlewares/validate.js';
 import {
   createProductGrade,
   listProductGrades,
+  listProductGradesWithStdRates,
   getProductGradeById,
   updateProductGrade,
   deleteProductGrade,
@@ -31,6 +32,12 @@ export const productGradeRouter = (): Router => {
     validate(productGradeProductIdParamSchema, 'params'),
     validate(listProductGradeQuerySchema, 'query'),
     listProductGrades,
+  );
+  router.get(
+    '/std-rates',
+    validate(productGradeProductIdParamSchema, 'params'),
+    validate(listProductGradeQuerySchema, 'query'),
+    listProductGradesWithStdRates,
   );
   router.get(
     '/:id',

@@ -1,25 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import fs from 'fs';
-import path from 'path';
+import fs from 'fs/promises';
 import variables from '../config/variables.config.js';
+import { ensureLogDir, getLogFilePath } from '../utils/logFile.utils.js';
 
-const LOG_DIR = path.join(process.cwd(), 'logs');
-
-if (!fs.existsSync(LOG_DIR)) {
-  fs.mkdirSync(LOG_DIR, { recursive: true });
-}
-
-const formatDate = (date = new Date()) => {
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const yyyy = date.getFullYear();
-  return `${dd}${mm}${yyyy}`;
-};
-
-const getLogFilePath = () => {
-  const date = formatDate();
-  return path.join(LOG_DIR, `log${date}.log`);
-};
+ensureLogDir();
 
 export const requestLogger = (
   req: Request,
@@ -34,40 +18,33 @@ export const requestLogger = (
   const beforeTime = Date.now();
   const oldJson = res.json.bind(res);
 
-  // Override the res.json method to intercept the response body
-  res.json = (body: any) => {
+  res.json = (body: unknown) => {
     oldJson(body);
 
-    const afterTime = Date.now();
-    const responseTime = afterTime - beforeTime;
-
-    // Asynchronously save the log so it doesn't block the request lifecycle
+    const responseTime = Date.now() - beforeTime;
     saveLog(req, res, body, responseTime).catch((err) => {
-      console.error('Failed to save request log:', err);
+      console.error('[RequestLogger] Failed to save request log:', err);
     });
-    return res as any;
+    return res;
   };
   next();
 };
+
 async function saveLog(
   req: Request,
   res: Response,
-  responseBody: any,
+  responseBody: unknown,
   responseTime: number,
 ) {
   const endpoint = req.originalUrl || req.url;
   const method = req.method;
   const statusCode = res.statusCode;
 
-  // Safely stringify objects
   const requestData = req.body ? JSON.stringify(req.body) : null;
   const responseData = responseBody ? JSON.stringify(responseBody) : null;
 
-  // Extract custom headers for device info
   const deviceId = (req.headers['x-device-id'] as string) || null;
   const appVersion = (req.headers['x-app-version'] as string) || null;
-
-  // Try to get IP address
   const deviceIP = req.ip || req.socket.remoteAddress || null;
 
   const logObject = {
@@ -83,7 +60,8 @@ async function saveLog(
     appVersion,
   };
 
-  const logString = JSON.stringify(logObject);
-
-  await fs.promises.appendFile(getLogFilePath(), logString + '\n');
+  await fs.appendFile(
+    getLogFilePath(new Date()),
+    `${JSON.stringify(logObject)}\n`,
+  );
 }

@@ -64,6 +64,82 @@ export const ProductGradeService = {
     });
   },
 
+  async findAllInDomain(
+    domainId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
+    const page = parseInt(query.page ?? '1');
+    const limit = parseInt(query.limit ?? '10');
+    const skip = (page - 1) * limit;
+
+    const where = {
+      domainId,
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+      ...(query.searchKey && {
+        searchText: {
+          contains: query.searchKey.trim(),
+          mode: Prisma.QueryMode.insensitive,
+        },
+      }),
+    };
+    const [data, total] = await Promise.all([
+      prisma.productGrades.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          gradeCode: true,
+          gradeDisplayName: true,
+          product: {
+            select: {
+              id: true,
+              code: true,
+              displayName: true,
+            },
+          },
+        },
+      }),
+      prisma.productGrades.count({ where }),
+    ]);
+
+    const normalizedData = data.map((grade: any) => ({
+      id: grade.id,
+      gradeCode: grade.gradeCode,
+      gradeDisplayName: ProductGradeService.localizeName(
+        grade.gradeDisplayName,
+        langCode,
+      ),
+      product: grade.product
+        ? {
+            id: grade.product.id,
+            code: grade.product.code,
+            displayName: ProductGradeService.localizeName(
+              grade.product.displayName,
+              langCode,
+            ),
+          }
+        : undefined,
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+
   async findAll(
     domainId: string,
     productId: string,
@@ -98,24 +174,55 @@ export const ProductGradeService = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { productGradeStdRates: { where: { isDeleted: false } } },
+        select: {
+          id: true,
+          gradeCode: true,
+          gradeDisplayName: true,
+          product: {
+            select: {
+              id: true,
+              code: true,
+              displayName: true,
+            },
+          },
+          productGradeStdRates: {
+            where: { isDeleted: false },
+            select: {
+              id: true,
+              stdRateType: true,
+              stdRateValue: true,
+            },
+          },
+        },
       }),
       prisma.productGrades.count({ where }),
     ]);
 
     const normalizedData = data.map((grade: any) => ({
-      ...grade,
+      id: grade.id,
+      gradeCode: grade.gradeCode,
       gradeDisplayName: ProductGradeService.localizeName(
         grade.gradeDisplayName,
         langCode,
       ),
+      product: grade.product
+        ? {
+            id: grade.product.id,
+            code: grade.product.code,
+            displayName: ProductGradeService.localizeName(
+              grade.product.displayName,
+              langCode,
+            ),
+          }
+        : undefined,
       productGradeStdRates: (grade.productGradeStdRates || []).map(
         (stdRate: any) => ({
-          ...stdRate,
+          id: stdRate.id,
           stdRateType: ProductGradeService.localizeName(
             stdRate.stdRateType,
             langCode,
           ),
+          stdRateValue: stdRate.stdRateValue,
         }),
       ),
     }));
@@ -126,6 +233,105 @@ export const ProductGradeService = {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+    };
+  },
+
+  async findAllWithStdRates(
+    domainId: string,
+    productId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
+    const page = parseInt(query.page ?? '1');
+    const limit = parseInt(query.limit ?? '10');
+    const skip = (page - 1) * limit;
+
+    const product = await prisma.product.findFirst({
+      where: { id: productId, domainId, isDeleted: false },
+      select: { id: true, code: true, displayName: true },
+    });
+
+    if (!product) {
+      throw new Error(Messages.PRODUCT.NOT_FOUND);
+    }
+
+    const where = {
+      domainId,
+      productId,
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+      ...(query.searchKey && {
+        searchText: {
+          contains: query.searchKey.trim(),
+          mode: Prisma.QueryMode.insensitive,
+        },
+      }),
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.productGrades.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          gradeCode: true,
+          gradeDisplayName: true,
+          productGradeStdRates: {
+            where: { isDeleted: false },
+            select: {
+              id: true,
+              stdRateType: true,
+              stdRateValue: true,
+            },
+          },
+        },
+      }),
+      prisma.productGrades.count({ where }),
+    ]);
+
+    const normalizedGrades = data.map((grade: any) => ({
+      id: grade.id,
+      gradeCode: grade.gradeCode,
+      gradeDisplayName: ProductGradeService.localizeName(
+        grade.gradeDisplayName,
+        langCode,
+      ),
+      productGradeStdRates: (grade.productGradeStdRates || []).map(
+        (stdRate: any) => ({
+          id: stdRate.id,
+          stdRateType: ProductGradeService.localizeName(
+            stdRate.stdRateType,
+            langCode,
+          ),
+          stdRateValue: stdRate.stdRateValue,
+        }),
+      ),
+    }));
+
+    return {
+      product: {
+        id: product.id,
+        code: product.code,
+        displayName: ProductGradeService.localizeName(
+          product.displayName,
+          langCode,
+        ),
+      },
+      grades: {
+        data: normalizedGrades,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   },
 

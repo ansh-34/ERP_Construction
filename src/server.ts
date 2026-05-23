@@ -16,7 +16,7 @@ const startServer = async () => {
 
     await runFunctions();
 
-    // log cron jobs for s3 scheduler
+    // log cron jobs for s3 scheduler and db upload
     // startLogUploader();
 
     app.listen(port, () => {
