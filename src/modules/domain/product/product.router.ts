@@ -21,6 +21,8 @@ import {
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
 import { listAllDomainProductGrades } from '../productGrade/productGrade.controller.js';
 import { productUomRouter } from '../productUom/productUom.router.js';
+import { listAllDomainProductUoms } from '../productUom/productUom.controller.js';
+import { listProductUomQuerySchema } from '../productUom/productUom.validation.js';
 
 const router = Router();
 
@@ -41,6 +43,12 @@ router.get(
   // authorize('product', 'read'),
   validate(listProductsQuerySchema, 'query'),
   listAllDomainProductGrades,
+);
+router.get(
+  '/uoms',
+  // authorize('product', 'read'),
+  validate(listProductUomQuerySchema, 'query'),
+  listAllDomainProductUoms,
 );
 router.get(
   '/:id',
