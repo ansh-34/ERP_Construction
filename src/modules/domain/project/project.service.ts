@@ -2,8 +2,15 @@ import {
   projectRepository,
   DomainRepository,
   projectStageRepository,
+  projectTaskDelayRepository,
+  projectTaskImageRepository,
+  projectTaskRepository,
+  UserRepository,
   type ProjectRecord,
   type ProjectStageRecord,
+  type ProjectTaskDelayRecord,
+  type ProjectTaskImageRecord,
+  type ProjectTaskRecord,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
@@ -59,6 +66,35 @@ type PaginatedProjects = {
   };
 };
 
+type ApprovalAction = 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
+type NormalizedApprovalState = 'APPROVED' | 'REJECTED';
+type SubmissionApprovalState = 'PENDING' | NormalizedApprovalState;
+
+type TaskSubmissionImageInput = {
+  imageId?: string;
+  imageUrl: string;
+  description?: string | null;
+};
+
+type LocalizedTaskSubmissionRecord = Omit<
+  ProjectTaskRecord,
+  'name' | 'assignee' | 'stage' | 'project' | 'domain' | 'admin'
+> & {
+  name: string;
+  assignee: string | null;
+  approvalState: SubmissionApprovalState;
+  images?: ProjectTaskImageRecord[];
+};
+
+type PaginatedTaskSubmissions = {
+  taskSubmissions: LocalizedTaskSubmissionRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
+};
+
 function buildProjectCode(name: Record<string, unknown>): string {
   return name.en?.toString().toUpperCase().replace(/\s+/g, '_') || '';
 }
@@ -89,6 +125,76 @@ function getLocalizedText(
   return typeof localizedValue === 'string'
     ? localizedValue
     : String(localizedValue);
+}
+
+function getTaskAssigneeUserId(
+  value: Record<string, unknown> | null,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  return typeof value.userId === 'string' ? value.userId : null;
+}
+
+function normalizeApprovalAction(
+  action: ApprovalAction,
+): NormalizedApprovalState {
+  return action === 'APPROVED' || action === 'APPROVAL'
+    ? 'APPROVED'
+    : 'REJECTED';
+}
+
+function getSubmissionApprovalState(
+  task: ProjectTaskRecord,
+): SubmissionApprovalState {
+  if (task.taskStatus === 'APPROVED') {
+    return 'APPROVED';
+  }
+
+  if (task.taskStatus === 'REJECTED') {
+    return 'REJECTED';
+  }
+
+  return 'PENDING';
+}
+
+function normalizeTaskSubmission(
+  task: ProjectTaskRecord,
+  language: string | null,
+  images?: ProjectTaskImageRecord[],
+): LocalizedTaskSubmissionRecord {
+  const taskData = { ...task };
+  delete taskData.stage;
+  delete taskData.project;
+  delete taskData.domain;
+  delete taskData.admin;
+
+  return {
+    ...taskData,
+    name: getLocalizedText(task.name, language) || '',
+    assignee: getTaskAssigneeUserId(task.assignee),
+    approvalState: getSubmissionApprovalState(task),
+    ...(images !== undefined && { images }),
+  };
+}
+
+function assertTaskSubmissionImages(images: TaskSubmissionImageInput[]): void {
+  for (const image of images) {
+    if (!isNonEmptyString(image.imageUrl)) {
+      throw new Error('invalid imageUrl');
+    }
+
+    if (image.description !== undefined && image.description !== null) {
+      if (!isNonEmptyString(image.description)) {
+        throw new Error('description is required');
+      }
+
+      if (/[\r\n]/.test(image.description)) {
+        throw new Error('description must be single-line');
+      }
+    }
+  }
 }
 
 function normalizeDescription(
@@ -175,6 +281,33 @@ function ensureDateRange(
   }
 }
 
+function ensureDateWithinProjectRange(
+  stageStartDate: Date | null | undefined,
+  stageEndDate: Date | null | undefined,
+  projectStartDate: Date | null | undefined,
+  projectEndDate: Date | null | undefined,
+): void {
+  if (
+    stageStartDate &&
+    projectStartDate &&
+    stageStartDate.getTime() < projectStartDate.getTime()
+  ) {
+    throw new Error(
+      'project stage expectedStartDate cannot be before project expectedStartDate',
+    );
+  }
+
+  if (
+    stageEndDate &&
+    projectEndDate &&
+    stageEndDate.getTime() > projectEndDate.getTime()
+  ) {
+    throw new Error(
+      'project stage expectedEndDate cannot be after project expectedEndDate',
+    );
+  }
+}
+
 function assertSingleLineDescription(
   value: string | null | undefined,
   field: string,
@@ -258,6 +391,14 @@ function assertCreateInput(data: CreateProjectInput): void {
     'expectedStartDate',
     'expectedEndDate',
   );
+  const projectExpectedStartDate = parseOptionalDate(
+    data.expectedStartDate,
+    'expectedStartDate',
+  );
+  const projectExpectedEndDate = parseOptionalDate(
+    data.expectedEndDate,
+    'expectedEndDate',
+  );
 
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
@@ -300,17 +441,26 @@ function assertCreateInput(data: CreateProjectInput): void {
         throw new Error('invalid project stage status');
       }
 
+      const stageExpectedStartDate = parseOptionalDate(
+        stage.expectedStartDate,
+        'project stage expectedStartDate',
+      );
+      const stageExpectedEndDate = parseOptionalDate(
+        stage.expectedEndDate,
+        'project stage expectedEndDate',
+      );
+
       ensureDateRange(
-        parseOptionalDate(
-          stage.expectedStartDate,
-          'project stage expectedStartDate',
-        ),
-        parseOptionalDate(
-          stage.expectedEndDate,
-          'project stage expectedEndDate',
-        ),
+        stageExpectedStartDate,
+        stageExpectedEndDate,
         'project stage expectedStartDate',
         'project stage expectedEndDate',
+      );
+      ensureDateWithinProjectRange(
+        stageExpectedStartDate,
+        stageExpectedEndDate,
+        projectExpectedStartDate,
+        projectExpectedEndDate,
       );
 
       const code = buildProjectStageCode(stage.name);
@@ -594,6 +744,301 @@ export const projectService = {
         resolvedAdminId,
       );
       return project ? normalizeProject(project, language) : null;
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  submitTask: async (
+    data: {
+      taskId: string;
+      userId: string;
+      actualEndDate: string;
+      taskProgress?: number;
+      images?: TaskSubmissionImageInput[];
+    },
+    domainId: string,
+    adminId: string,
+    language: string | null = null,
+  ): Promise<LocalizedTaskSubmissionRecord> => {
+    if (
+      !isNonEmptyString(data.taskId) ||
+      !isNonEmptyString(data.userId) ||
+      !isNonEmptyString(domainId)
+    ) {
+      throw new Error('invalid ids');
+    }
+
+    try {
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const user = await UserRepository.findActiveByIdAndDomain(
+        data.userId,
+        domainId,
+      );
+
+      if (!user) {
+        throw new Error('user not found');
+      }
+
+      const task = await projectTaskRepository.findById(
+        data.taskId,
+        domainId,
+        resolvedAdminId,
+      );
+
+      if (!task) {
+        throw new Error('not found');
+      }
+
+      if (getTaskAssigneeUserId(task.assignee) !== data.userId) {
+        throw new Error('user is not assigned to this task');
+      }
+
+      const actualEndDate = parseOptionalDate(
+        data.actualEndDate,
+        'actualEndDate',
+      );
+
+      if (!actualEndDate) {
+        throw new Error('invalid actualEndDate');
+      }
+
+      if (
+        data.taskProgress !== undefined &&
+        (!isNonNegativeFiniteNumber(data.taskProgress) ||
+          data.taskProgress > 100)
+      ) {
+        throw new Error('invalid taskProgress');
+      }
+
+      const images = data.images ?? [];
+      assertTaskSubmissionImages(images);
+
+      const updatedTask = await projectTaskRepository.update(
+        task.id,
+        domainId,
+        {
+          actualEndDate,
+          taskProgress: data.taskProgress ?? 100,
+          taskStatus: 'COMPLETED',
+          requiredApproval: true,
+        },
+        resolvedAdminId,
+      );
+
+      if (!updatedTask) {
+        throw new Error('not found');
+      }
+
+      await projectStageRepository.recalculateProgress(
+        updatedTask.stageId,
+        domainId,
+        resolvedAdminId,
+      );
+
+      const createdImages = await Promise.all(
+        images.map((image) =>
+          projectTaskImageRepository.create({
+            imageId: image.imageId ?? null,
+            imageUrl: image.imageUrl,
+            ...(image.description !== undefined && {
+              description: image.description,
+            }),
+            taskId: updatedTask.id,
+            stageId: updatedTask.stageId,
+            projectId: updatedTask.projectId,
+            domainId,
+            adminId: resolvedAdminId,
+          }),
+        ),
+      );
+
+      return normalizeTaskSubmission(updatedTask, language, createdImages);
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getTaskSubmissions: async (
+    domainId: string,
+    adminId: string,
+    filters: {
+      projectId?: string;
+      stageId?: string;
+      taskId?: string;
+      userId?: string;
+      approvalState?: SubmissionApprovalState;
+      searchKey?: string;
+    },
+    paginationQuery: PaginationQuery = {},
+    language: string | null = null,
+  ): Promise<PaginatedTaskSubmissions> => {
+    if (!isNonEmptyString(domainId)) {
+      throw new Error('invalid domainId');
+    }
+
+    try {
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const { offset, limit } = normalizePagination(paginationQuery);
+      const tasks = await projectTaskRepository.findMany(
+        domainId,
+        resolvedAdminId,
+        filters.projectId,
+        filters.stageId,
+        filters.searchKey,
+      );
+      const submittedTasks = tasks.filter((task) => {
+        if (filters.taskId && task.id !== filters.taskId) {
+          return false;
+        }
+
+        if (
+          filters.userId &&
+          getTaskAssigneeUserId(task.assignee) !== filters.userId
+        ) {
+          return false;
+        }
+
+        const approvalState = getSubmissionApprovalState(task);
+        if (filters.approvalState && approvalState !== filters.approvalState) {
+          return false;
+        }
+
+        return (
+          task.requiredApproval === true ||
+          task.taskStatus === 'COMPLETED' ||
+          task.taskStatus === 'APPROVED' ||
+          task.taskStatus === 'REJECTED'
+        );
+      });
+      const paginatedTasks = submittedTasks.slice(offset, offset + limit);
+
+      return {
+        taskSubmissions: paginatedTasks.map((task) =>
+          normalizeTaskSubmission(task, language),
+        ),
+        pagination: {
+          totalCount: submittedTasks.length,
+          offset,
+          limit,
+        },
+      };
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  actionTaskSubmissions: async (
+    ids: string | string[],
+    action: ApprovalAction,
+    domainId: string,
+    adminId: string,
+    language: string | null = null,
+  ): Promise<LocalizedTaskSubmissionRecord[]> => {
+    const idArray = Array.isArray(ids) ? ids : [ids];
+
+    if (!idArray.length || idArray.some((id) => !isNonEmptyString(id))) {
+      throw new Error('invalid ids');
+    }
+
+    try {
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const approvalState = normalizeApprovalAction(action);
+      const updatedTasks = [];
+
+      for (const id of idArray) {
+        const task = await projectTaskRepository.findById(
+          id,
+          domainId,
+          resolvedAdminId,
+        );
+
+        if (!task) {
+          throw new Error('not found');
+        }
+
+        if (task.taskStatus === 'APPROVED' || task.taskStatus === 'REJECTED') {
+          throw new Error('request already actioned');
+        }
+
+        if (task.taskStatus !== 'COMPLETED' && task.requiredApproval !== true) {
+          throw new Error('task submission not pending approval');
+        }
+
+        const updatedTask = await projectTaskRepository.update(
+          id,
+          domainId,
+          {
+            taskStatus: approvalState,
+            requiredApproval: false,
+          },
+          resolvedAdminId,
+        );
+
+        if (updatedTask) {
+          await projectStageRepository.recalculateProgress(
+            updatedTask.stageId,
+            domainId,
+            resolvedAdminId,
+          );
+          updatedTasks.push(normalizeTaskSubmission(updatedTask, language));
+        }
+      }
+
+      return updatedTasks;
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  actionTaskDelays: async (
+    ids: string | string[],
+    action: ApprovalAction,
+    domainId: string,
+    adminId: string,
+  ): Promise<ProjectTaskDelayRecord[]> => {
+    const idArray = Array.isArray(ids) ? ids : [ids];
+
+    if (!idArray.length || idArray.some((id) => !isNonEmptyString(id))) {
+      throw new Error('invalid ids');
+    }
+
+    try {
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const approvalState = normalizeApprovalAction(action);
+      const updatedDelays = [];
+
+      for (const id of idArray) {
+        const delay = await projectTaskDelayRepository.findById(
+          id,
+          domainId,
+          resolvedAdminId,
+        );
+
+        if (!delay) {
+          throw new Error('not found');
+        }
+
+        if (delay.requestApproved !== null) {
+          throw new Error('request already actioned');
+        }
+
+        const updatedDelay = await projectTaskDelayRepository.update(
+          id,
+          domainId,
+          {
+            requestApproved: approvalState === 'APPROVED',
+            requestApprovalTime: new Date(),
+          },
+          resolvedAdminId,
+        );
+
+        if (updatedDelay) {
+          updatedDelays.push(updatedDelay);
+        }
+      }
+
+      return updatedDelays;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
