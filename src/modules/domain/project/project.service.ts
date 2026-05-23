@@ -91,6 +91,35 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
+function normalizeDescription(
+  value: unknown,
+  language: string | null,
+): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (isPlainObject(value)) {
+    return getLocalizedText(value, language);
+  }
+
+  if (typeof value !== 'string') {
+    return String(value);
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (isPlainObject(parsed)) {
+      return getLocalizedText(parsed, language);
+    }
+  } catch {
+    // Value is already a plain single-line description.
+  }
+
+  return value;
+}
+
 export interface UpdateProjectInput {
   name?: Record<string, unknown>;
   description?: string | null;
@@ -170,6 +199,7 @@ function normalizeProject(
   return {
     ...project,
     name: getLocalizedText(project.name, language) || '',
+    description: normalizeDescription(project.description, language),
     location: normalizeRelationDetails(project.location, language),
     domain: normalizeRelationDetails(project.domain, language),
     admin: normalizeRelationDetails(project.admin, language),
@@ -199,6 +229,7 @@ function normalizeProjectStage(
   return {
     ...stage,
     name: getLocalizedText(stage.name, language) || '',
+    description: normalizeDescription(stage.description, language),
   };
 }
 

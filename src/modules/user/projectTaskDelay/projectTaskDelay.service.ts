@@ -16,7 +16,7 @@ export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
   delayReason: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: string | null;
   stageId: string;
   projectId: string;
@@ -28,7 +28,7 @@ export interface CreateProjectTaskDelayInput {
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
   delayReason?: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: string | null;
   status?: StatusEnum;
 }
@@ -38,7 +38,7 @@ type LocalizedProjectTaskDelayRecord = Omit<
   'delayReason' | 'task' | 'stage' | 'project' | 'domain' | 'admin'
 > & {
   delayReason: string;
-  approvalState: 'PENDING' | 'APPROVED';
+  approvalState: 'PENDING' | 'APPROVED' | 'REJECTED';
 };
 
 type PaginatedProjectTaskDelays = {
@@ -73,7 +73,12 @@ function normalizeProjectTaskDelay(
   return {
     ...delayData,
     delayReason: normalizeStoredDelayReason(delay.delayReason),
-    approvalState: delay.requestApproved ? 'APPROVED' : 'PENDING',
+    approvalState:
+      delay.requestApproved === null
+        ? 'PENDING'
+        : delay.requestApproved
+          ? 'APPROVED'
+          : 'REJECTED',
   };
 }
 

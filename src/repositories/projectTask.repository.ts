@@ -18,7 +18,7 @@ export interface ProjectTaskRecord {
   taskStatus: string;
   taskProgress: number;
   totalDelayInDays: number;
-  requiredApproval: boolean;
+  requiredApproval: boolean | null;
   lastApprovedDeadline: Date | null;
   projectBatchCode: string | null;
   stageId: string;
@@ -48,7 +48,7 @@ export interface CreateProjectTaskInput {
   taskStatus?: string;
   taskProgress?: number;
   totalDelayInDays?: number;
-  requiredApproval?: boolean;
+  requiredApproval?: boolean | null;
   lastApprovedDeadline?: Date | null;
   projectBatchCode?: string | null;
   stageId: string;
@@ -70,7 +70,7 @@ export interface UpdateProjectTaskInput {
   taskStatus?: string;
   taskProgress?: number;
   totalDelayInDays?: number;
-  requiredApproval?: boolean;
+  requiredApproval?: boolean | null;
   lastApprovedDeadline?: Date | null;
   projectBatchCode?: string | null;
   status?: StatusEnum;
@@ -336,7 +336,7 @@ export const projectTaskRepository = {
         ${data.taskStatus ?? 'PENDING'},
         ${data.taskProgress ?? 0},
         ${data.totalDelayInDays ?? 0},
-        ${data.requiredApproval ?? false},
+        ${data.requiredApproval ?? null},
         ${toDateSql(data.lastApprovedDeadline)},
         ${data.projectBatchCode ?? null},
         ${data.stageId},
@@ -635,7 +635,7 @@ export const projectTaskRepository = {
         taskStatus: item.taskStatus || 'pending',
         taskProgress: item.taskProgress || 0,
         totalDelayInDays: item.totalDelayInDays || 0,
-        requiredApproval: item.requiredApproval || false,
+        requiredApproval: item.requiredApproval ?? null,
         lastApprovedDeadline: item.lastApprovedDeadline || null,
         projectBatchCode: item.projectBatchCode || null,
         stageId: item.stageId,

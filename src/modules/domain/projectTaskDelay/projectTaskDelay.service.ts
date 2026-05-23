@@ -16,7 +16,7 @@ export interface CreateProjectTaskDelayInput {
   taskId: string;
   requestedDelayInDays: number;
   delayReason: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: string | null;
   stageId: string;
   projectId: string;
@@ -28,7 +28,7 @@ export interface CreateProjectTaskDelayInput {
 export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
   delayReason?: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: string | null;
   status?: StatusEnum;
 }
@@ -111,11 +111,12 @@ function normalizeProjectTaskDelay(
   delay: ProjectTaskDelayRecord,
   language: string | null,
 ): LocalizedProjectTaskDelayRecord {
-  const approvalState: ApprovalState = delay.requestApproved
-    ? 'APPROVED'
-    : delay.requestApprovalTime
-      ? 'REJECTED'
-      : 'PENDING';
+  const approvalState: ApprovalState =
+    delay.requestApproved === null
+      ? 'PENDING'
+      : delay.requestApproved
+        ? 'APPROVED'
+        : 'REJECTED';
 
   return {
     ...delay,

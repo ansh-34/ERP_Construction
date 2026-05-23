@@ -14,7 +14,7 @@ export const createProjectTaskDelayBody = z.object({
     .string()
     .trim()
     .min(1, { message: 'Delay reason is required' }),
-  requestApproved: z.boolean().optional(),
+  requestApproved: z.boolean().nullable().optional(),
   requestApprovalTime: optionalDate,
   stageId: z.string().trim().min(1, { message: 'Stage id is required' }),
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
@@ -25,7 +25,7 @@ export const updateProjectTaskDelayBody = z
   .object({
     requestedDelayInDays: nonNegativeNumber.optional(),
     delayReason: z.string().trim().min(1).optional(),
-    requestApproved: z.boolean().optional(),
+    requestApproved: z.boolean().nullable().optional(),
     requestApprovalTime: optionalDate,
     status: z.nativeEnum(StatusEnum).optional(),
   })

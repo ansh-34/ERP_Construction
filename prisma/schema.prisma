@@ -184,16 +184,16 @@ model Domain {
 }
 
 model User {
-  id        String       @id @default(uuid()) @db.Uuid
-  name      String
-  email     String
-  password  String
-  phoneCode String?
-  phone     String?
-  industry  IndustryEnum
-  skills    String[]     @default([])
-  minDayCharge Decimal?  @db.Decimal(15, 2)
-  roleId    String?      @db.Uuid
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String
+  email        String
+  password     String
+  phoneCode    String?
+  phone        String?
+  industry     IndustryEnum
+  skills       String[]     @default([])
+  minDayCharge Decimal?     @db.Decimal(15, 2)
+  roleId       String?      @db.Uuid
 
   role    Role?   @relation(fields: [roleId], references: [id])
   mediaId String? @db.Uuid
@@ -895,20 +895,20 @@ model Location {
 }
 
 model Media {
-  id         String     @id @default(uuid()) @db.Uuid
-  name       String
-  type       String
-  url        String     @unique
-  searchText String     @default("")
-  domainId   String     @db.Uuid
-  domain     Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId    String     @db.Uuid
-  admin      Admin      @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
-  status     StatusEnum @default(ACTIVE)
-  isDeleted  Boolean    @default(false)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  admins     Admin[]
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String
+  type              String
+  url               String             @unique
+  searchText        String             @default("")
+  domainId          String             @db.Uuid
+  domain            Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String             @db.Uuid
+  admin             Admin              @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum         @default(ACTIVE)
+  isDeleted         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  admins            Admin[]
   projectTaskImages ProjectTaskImage[]
 
   @@index([domainId])
@@ -917,27 +917,27 @@ model Media {
 }
 
 model Project {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        Json       @db.JsonB
-  code        String
-  searchText  String     @default("")
-  description String?
-  budget      Decimal    @db.Decimal(15, 2)
-  spent       Decimal    @default(0) @db.Decimal(15, 2)
+  id                String     @id @default(uuid()) @db.Uuid
+  name              Json       @db.JsonB
+  code              String
+  searchText        String     @default("")
+  description       String?
+  budget            Decimal    @db.Decimal(15, 2)
+  spent             Decimal    @default(0) @db.Decimal(15, 2)
   expectedStartDate DateTime?
   expectedEndDate   DateTime?
   actualStartDate   DateTime?
   actualEndDate     DateTime?
-  locationId  String     @db.Uuid
-  location    Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId    String     @db.Uuid
-  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId     String     @db.Uuid
-  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status      StatusEnum @default(ACTIVE)
-  isDeleted   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  locationId        String     @db.Uuid
+  location          Location   @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   projectStages               ProjectStage[]
   projectTasks                ProjectTask[]
@@ -977,26 +977,26 @@ model ProjectCategory {
 }
 
 model ProjectStage {
-  id          String     @id @default(uuid()) @db.Uuid
-  name        Json       @db.JsonB
-  code        String
-  searchText  String     @default("")
-  description String?
-  progress    Float?
+  id                String     @id @default(uuid()) @db.Uuid
+  name              Json       @db.JsonB
+  code              String
+  searchText        String     @default("")
+  description       String?
+  progress          Float?
   expectedStartDate DateTime?
   expectedEndDate   DateTime?
   actualStartDate   DateTime?
   actualEndDate     DateTime?
-  projectId   String?    @db.Uuid
-  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  domainId    String     @db.Uuid
-  domain      Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId     String     @db.Uuid
-  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status      StatusEnum @default(ACTIVE)
-  isDeleted   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  projectId         String?    @db.Uuid
+  project           Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   projectTasks      ProjectTask[]
   projectTaskImages ProjectTaskImage[]
@@ -1021,7 +1021,7 @@ model ProjectTask {
   taskStatus           String       @default("PENDING")
   taskProgress         Float        @default(0)
   totalDelayInDays     Float        @default(0)
-  requiredApproval     Boolean      @default(false)
+  requiredApproval     Boolean?
   lastApprovedDeadline DateTime?
   projectBatchCode     String?
   stageId              String       @db.Uuid
@@ -1082,7 +1082,7 @@ model ProjectTaskDelay {
   requestedDelayInDays Float        @default(0)
   delayReason          Json         @db.JsonB
   searchText           String       @default("")
-  requestApproved      Boolean      @default(false)
+  requestApproved      Boolean?
   requestApprovalTime  DateTime?
   stageId              String       @db.Uuid
   stage                ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)

@@ -37,7 +37,7 @@ export const projectTaskController = {
         taskStatus?: string;
         taskProgress?: number;
         totalDelayInDays?: number;
-        requiredApproval?: boolean;
+        requiredApproval?: boolean | null;
         lastApprovedDeadline?: string | null;
         projectBatchCode?: string | null;
         stageId?: string;
@@ -185,7 +185,7 @@ export const projectTaskController = {
         taskStatus?: string;
         taskProgress?: number;
         totalDelayInDays?: number;
-        requiredApproval?: boolean;
+        requiredApproval?: boolean | null;
         lastApprovedDeadline?: string | null;
         projectBatchCode?: string | null;
         status?: StatusEnum;

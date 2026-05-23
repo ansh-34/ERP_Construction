@@ -22,7 +22,7 @@ export const mediaController = {
         throw new Error('invalid file');
       }
 
-      const url = await uploadToS3(file, 'media');
+      const url = await uploadToS3(file, `media/${adminId}/${domainId}`);
       let media;
 
       try {

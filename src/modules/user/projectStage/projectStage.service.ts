@@ -73,6 +73,35 @@ function getLocalizedText(
     : String(localizedValue);
 }
 
+function normalizeDescription(
+  value: unknown,
+  language: string | null,
+): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (isPlainObject(value)) {
+    return getLocalizedText(value, language);
+  }
+
+  if (typeof value !== 'string') {
+    return String(value);
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (isPlainObject(parsed)) {
+      return getLocalizedText(parsed, language);
+    }
+  } catch {
+    // Value is already a plain single-line description.
+  }
+
+  return value;
+}
+
 function parseOptionalDate(
   value: string | Date | null | undefined,
   field: string,
@@ -146,6 +175,7 @@ function normalizeProjectStage(
   return {
     ...stageData,
     name: getLocalizedText(stage.name, language) || '',
+    description: normalizeDescription(stage.description, language),
   };
 }
 

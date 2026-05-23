@@ -11,7 +11,7 @@ export interface ProjectTaskDelayRecord {
   taskId: string;
   requestedDelayInDays: number;
   delayReason: JsonObject;
-  requestApproved: boolean;
+  requestApproved: boolean | null;
   requestApprovalTime: Date | null;
   stageId: string;
   projectId: string;
@@ -33,7 +33,7 @@ export interface CreateProjectTaskDelayInput {
   requestedDelayInDays: number;
   delayReason: JsonObject;
   searchText: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: Date | null;
   stageId: string;
   projectId: string;
@@ -46,7 +46,7 @@ export interface UpdateProjectTaskDelayInput {
   requestedDelayInDays?: number;
   delayReason?: JsonObject;
   searchText?: string;
-  requestApproved?: boolean;
+  requestApproved?: boolean | null;
   requestApprovalTime?: Date | null;
   status?: StatusEnum;
 }
@@ -279,7 +279,7 @@ export const projectTaskDelayRepository = {
         ${data.requestedDelayInDays},
         ${toJsonbSql(data.delayReason)},
         ${data.searchText},
-        ${data.requestApproved ?? false},
+        ${data.requestApproved ?? null},
         ${toDateSql(data.requestApprovalTime)},
         ${data.stageId},
         ${data.projectId},
@@ -477,7 +477,7 @@ export const projectTaskDelayRepository = {
         requestedDelayInDays: item.requestedDelayInDays,
         delayReason: item.delayReason,
         searchText: item.searchText,
-        requestApproved: item.requestApproved || false,
+        requestApproved: item.requestApproved ?? null,
         requestApprovalTime: item.requestApprovalTime || null,
         stageId: item.stageId,
         projectId: item.projectId,

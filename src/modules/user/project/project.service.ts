@@ -14,6 +14,28 @@ export const UserProjectService = {
     return value[langCode] || value.en || '';
   },
 
+  localizeDescription(value: unknown, langCode: string) {
+    if (value === null || value === undefined) return null;
+
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      return UserProjectService.localizeName(value, langCode);
+    }
+
+    if (typeof value !== 'string') return String(value);
+
+    try {
+      const parsed = JSON.parse(value) as unknown;
+
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return UserProjectService.localizeName(parsed, langCode);
+      }
+    } catch {
+      // Value is already a plain single-line description.
+    }
+
+    return value;
+  },
+
   localizeProject(project: any, langCode: string) {
     const projectData = { ...project };
     delete projectData.location;
@@ -23,6 +45,10 @@ export const UserProjectService = {
     return {
       ...projectData,
       name: UserProjectService.localizeName(project.name, langCode),
+      description: UserProjectService.localizeDescription(
+        project.description,
+        langCode,
+      ),
     };
   },
 
@@ -35,6 +61,10 @@ export const UserProjectService = {
     return {
       ...stageData,
       name: UserProjectService.localizeName(stage.name, langCode),
+      description: UserProjectService.localizeDescription(
+        stage.description,
+        langCode,
+      ),
     };
   },
 
