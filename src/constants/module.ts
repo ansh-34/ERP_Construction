@@ -96,55 +96,81 @@ export const modules = [
     code: 'VENDOR_PRODUCT_PRICE',
   },
   {
-    name: 'Invoice',
+    name: {
+      en: 'Invoice',
+    },
     code: 'INVOICE',
   },
   {
-    name: 'UOM',
+    name: {
+      en: 'UOM',
+    },
     code: 'UOM',
   },
   {
-    name: 'GRN',
+    name: {
+      en: 'GRN',
+    },
     code: 'GRN',
   },
   {
-    name: 'Raw Material Purchase Request',
+    name: {
+      en: 'Raw Material Purchase Request',
+    },
     code: 'RAW_MATERIAL_PURCHASE_REQUEST',
   },
   {
-    name: 'Machinery',
+    name: {
+      en: 'Machinery',
+    },
     code: 'MACHINERY',
   },
   {
-    name: 'Machine Reading',
+    name: {
+      en: 'Machine Reading',
+    },
     code: 'MACHINE_READING',
   },
   {
-    name: 'Currency',
+    name: {
+      en: 'Currency',
+    },
     code: 'CURRENCY',
   },
   {
-    name: 'Location',
+    name: {
+      en: 'Location',
+    },
     code: 'LOCATION',
   },
   {
-    name: 'Project Category',
+    name: {
+      en: 'Project Category',
+    },
     code: 'PROJECT_CATEGORY',
   },
   {
-    name: 'Project User Role',
+    name: {
+      en: 'Project User Role',
+    },
     code: 'PROJECT_USER_ROLE',
   },
   {
-    name: 'Media',
+    name: {
+      en: 'Media',
+    },
     code: 'MEDIA',
   },
   {
-    name: 'API Key',
+    name: {
+      en: 'API Key',
+    },
     code: 'API_KEY',
   },
   {
-    name: 'Role',
+    name: {
+      en: 'Role',
+    },
     code: 'ROLE',
   },
 ];

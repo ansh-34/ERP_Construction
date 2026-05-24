@@ -5,32 +5,35 @@ import {
   statusFilterSchema,
 } from '../../common/common.validator.js';
 
-const grnProductSchema = z.object({
-  date: z.coerce.date(),
-  vendor: z.string().min(1),
+export const grnProductSchema = z.object({
   material: z.string().min(1),
   quantity: z.number().positive(),
-  tax: z.number().min(0).default(0),
+  tax: z.number().nonnegative().optional().default(0),
   uomId: z.string().uuid(),
-  rate: z.number().min(0).default(0),
-  projectId: z.string().uuid().optional(),
+  rate: z.number().nonnegative().optional().default(0),
 });
 
 export const createGrnBodySchema = z.object({
-  productOrderCode: z.string().optional(),
-  date: z.coerce.date(),
-  vendor: z.string().min(1),
   wbReference: z.string().optional(),
-  projectId: z.string().uuid().optional(),
-  grnProducts: z.array(grnProductSchema).optional(),
+  invoiceId: z.string().uuid(),
+  totalItems: z.number().int().nonnegative(),
+  totalTax: z.number().nonnegative().optional().default(0),
+  totalAmount: z.number().nonnegative(),
 });
 
 export const updateGrnBodySchema = z.object({
-  productOrderCode: z.string().optional(),
-  date: z.coerce.date().optional(),
-  vendor: z.string().min(1).optional(),
   wbReference: z.string().optional(),
-  projectId: z.string().uuid().optional(),
+  totalItems: z.number().int().nonnegative().optional(),
+  totalTax: z.number().nonnegative().optional(),
+  totalAmount: z.number().nonnegative().optional(),
+  grnProducts: z
+    .array(
+      grnProductSchema.extend({
+        id: z.string().uuid().optional(),
+      }),
+    )
+    .optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
 export const approveRejectGrnBodySchema = z.object({
@@ -47,9 +50,9 @@ export const listGrnsQuerySchema = paginationQuerySchema
 
 export const grnIdParamsSchema = idParamSchema;
 
-// export const createGrnProductBodySchema = grnProductSchema;
+export const createGrnProductBodySchema = grnProductSchema;
 
-// export const updateGrnProductBodySchema = grnProductSchema.partial();
+export const updateGrnProductBodySchema = grnProductSchema.partial();
 
 export const grnProductIdParamsSchema = z.object({
   id: z.string().uuid(),

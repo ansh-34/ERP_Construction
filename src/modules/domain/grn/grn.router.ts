@@ -7,10 +7,10 @@ import {
   updateGrn,
   deleteGrn,
   approveOrRejectGrn,
-  // createGrnProduct,
+  createGrnProduct,
   listGrnProducts,
-  // updateGrnProduct,
-  // deleteGrnProduct,
+  updateGrnProduct,
+  deleteGrnProduct,
 } from './grn.controller.js';
 import {
   createGrnBodySchema,
@@ -18,6 +18,9 @@ import {
   listGrnsQuerySchema,
   grnIdParamsSchema,
   approveRejectGrnBodySchema,
+  createGrnProductBodySchema,
+  updateGrnProductBodySchema,
+  grnProductIdParamsSchema,
 } from './grn.validator.js';
 
 const router = Router();
@@ -44,14 +47,14 @@ router.put(
   approveOrRejectGrn,
 );
 
-// --- Product Routes ---
+// Product Routes
 
-// router.post(
-//   '/:id/products',
-//   validate(grnIdParamsSchema, 'params'),
-//   validate(createGrnProductBodySchema, 'body'),
-//   createGrnProduct,
-// );
+router.post(
+  '/:id/products',
+  validate(grnIdParamsSchema, 'params'),
+  validate(createGrnProductBodySchema, 'body'),
+  createGrnProduct,
+);
 
 router.get(
   '/:id/products',
@@ -59,17 +62,17 @@ router.get(
   listGrnProducts,
 );
 
-// router.put(
-//   '/:id/products/:productId',
-//   validate(grnProductIdParamsSchema, 'params'),
-//   validate(updateGrnProductBodySchema, 'body'),
-//   updateGrnProduct,
-// );
+router.put(
+  '/:id/products/:productId',
+  validate(grnProductIdParamsSchema, 'params'),
+  validate(updateGrnProductBodySchema, 'body'),
+  updateGrnProduct,
+);
 
-// router.delete(
-//   '/:id/products/:productId',
-//   validate(grnProductIdParamsSchema, 'params'),
-//   deleteGrnProduct,
-// );
+router.delete(
+  '/:id/products/:productId',
+  validate(grnProductIdParamsSchema, 'params'),
+  deleteGrnProduct,
+);
 
 export default router;

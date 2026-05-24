@@ -10,7 +10,6 @@ export const GrnSchemas = {
       code: { type: 'string', example: 'GRN-20260519103015' },
       productOrderCode: {
         type: 'string',
-        nullable: true,
         example: 'PO-APP-123',
       },
       date: {
@@ -18,10 +17,16 @@ export const GrnSchemas = {
         format: 'date-time',
         example: '2026-05-19T10:30:15Z',
       },
-      vendor: { type: 'string', example: 'Supplier Inc.' },
+      vendorId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'a63b0a70-87a4-44cd-9e90-252bfd83a152',
+      },
+      vendorName: { type: 'string', example: 'Supplier Inc.' },
       wbReference: { type: 'string', nullable: true, example: 'WB-456' },
       projectId: { type: 'string', format: 'uuid', nullable: true },
       domainId: { type: 'string', format: 'uuid' },
+      invoiceId: { type: 'string', format: 'uuid' },
       approvalStatus: {
         type: 'string',
         enum: ['PENDING', 'APPROVED', 'REJECTED'],
@@ -35,6 +40,11 @@ export const GrnSchemas = {
       isDeleted: { type: 'boolean', example: false },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' },
+      grnProducts: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/GrnProductObject' },
+        description: 'Associated product line items of this GRN.',
+      },
     },
   },
   GrnProductObject: {
@@ -49,8 +59,14 @@ export const GrnSchemas = {
       quantity: { type: 'number', example: 100 },
       rate: { type: 'number', example: 10 },
       tax: { type: 'number', example: 5 },
+      amt: {
+        type: 'number',
+        example: 1005,
+        description: 'Calculated dynamically as (quantity * rate) + tax',
+      },
       uomId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid', nullable: true },
+      invoiceId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
       status: { type: 'string', example: 'ACTIVE' },
       isDeleted: { type: 'boolean', example: false },
@@ -60,61 +76,66 @@ export const GrnSchemas = {
   },
   CreateGrnProductBody: {
     type: 'object',
-    required: [
-      'date',
-      'material',
-      'vendor',
-      'quantity',
-      'rate',
-      'tax',
-      'uomId',
-    ],
+    required: ['material', 'vendor', 'quantity', 'rate', 'uomId', 'invoiceId'],
     properties: {
-      date: {
-        type: 'string',
-        format: 'date-time',
-        example: '2026-05-19T10:30:15Z',
-      },
       material: { type: 'string', example: 'Cement' },
       vendor: { type: 'string', example: 'Supplier Inc.' },
       quantity: { type: 'number', example: 100 },
       rate: { type: 'number', example: 10 },
       tax: { type: 'number', example: 5 },
       uomId: { type: 'string', format: 'uuid' },
-      projectId: { type: 'string', format: 'uuid', nullable: true },
+      invoiceId: { type: 'string', format: 'uuid' },
     },
   },
   CreateGrnBody: {
     type: 'object',
-    required: ['date', 'vendor'],
+    required: ['invoiceId', 'totalItems', 'totalAmount'],
     properties: {
-      productOrderCode: {
-        type: 'string',
-        nullable: true,
-        example: 'PO-APP-123',
-      },
-      date: {
-        type: 'string',
-        format: 'date-time',
-        example: '2026-05-19T10:30:15Z',
-      },
-      vendor: { type: 'string', example: 'Supplier Inc.' },
       wbReference: { type: 'string', nullable: true, example: 'WB-456' },
-      projectId: { type: 'string', format: 'uuid', nullable: true },
-      grnProducts: {
-        type: 'array',
-        items: { $ref: '#/components/schemas/CreateGrnProductBody' },
-      },
+      invoiceId: { type: 'string', format: 'uuid' },
+      totalItems: { type: 'integer', example: 10 },
+      totalTax: { type: 'number', example: 15.5 },
+      totalAmount: { type: 'number', example: 350.0 },
     },
   },
   UpdateGrnBody: {
     type: 'object',
     properties: {
-      vendor: { type: 'string', example: 'Supplier Inc. Updated' },
       wbReference: { type: 'string', example: 'WB-456-UPDATED' },
+      totalItems: { type: 'integer', example: 12 },
+      totalTax: { type: 'number', example: 18.0 },
+      totalAmount: { type: 'number', example: 400.0 },
+      grnProducts: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description:
+                'Pass ID of existing product to update, omit to create a new product.',
+            },
+            material: { type: 'string', example: 'Cement' },
+            quantity: { type: 'number', example: 100 },
+            rate: { type: 'number', example: 10 },
+            tax: { type: 'number', example: 5 },
+            uomId: { type: 'string', format: 'uuid' },
+          },
+        },
+      },
     },
   },
-
+  UpdateGrnProductBody: {
+    type: 'object',
+    properties: {
+      material: { type: 'string', example: 'Cement' },
+      quantity: { type: 'number', example: 120 },
+      rate: { type: 'number', example: 12 },
+      tax: { type: 'number', example: 8 },
+      uomId: { type: 'string', format: 'uuid' },
+    },
+  },
   ApproveRejectGrnBody: {
     type: 'object',
     required: ['approvalStatus'],

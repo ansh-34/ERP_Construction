@@ -125,23 +125,28 @@ export const approveOrRejectGrn = async (req: Request, res: Response) => {
   }
 };
 
-// export const createGrnProduct = async (req: Request, res: Response) => {
-//   try {
-//     const product = await GrnService.createGrnProduct(
-//       req.user!.domainId as string,
-//       req.params.id,
-//       req.body,
-//     );
-//     return res.status(HttpStatus.CREATED).json({
-//       success: true,
-//       message: 'Product line item created successfully',
-//       data: product,
-//     });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : 'Failed to create product line item';
-//     return res.status(resolveHttpStatus(message)).json({ success: false, message });
-//   }
-// };
+export const createGrnProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await GrnService.createGrnProduct(
+      req.user!.domainId as string,
+      req.params.id,
+      req.body,
+    );
+    return res.status(HttpStatus.CREATED).json({
+      success: true,
+      message: 'Product line item created successfully',
+      data: product,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to create product line item';
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
 
 export const listGrnProducts = async (req: Request, res: Response) => {
   try {
@@ -165,39 +170,49 @@ export const listGrnProducts = async (req: Request, res: Response) => {
   }
 };
 
-// export const updateGrnProduct = async (req: Request, res: Response) => {
-//   try {
-//     const product = await GrnService.updateGrnProduct(
-//       req.user!.domainId as string,
-//       req.params.id,
-//       req.params.productId,
-//       req.body,
-//     );
-//     return res.status(HttpStatus.OK).json({
-//       success: true,
-//       message: 'Product line item updated successfully',
-//       data: product,
-//     });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : 'Failed to update product line item';
-//     return res.status(resolveHttpStatus(message)).json({ success: false, message });
-//   }
-// };
+export const updateGrnProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await GrnService.updateGrnProduct(
+      req.user!.domainId as string,
+      req.params.id,
+      req.params.productId,
+      req.body,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product line item updated successfully',
+      data: product,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to update product line item';
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
 
-// export const deleteGrnProduct = async (req: Request, res: Response) => {
-//   try {
-//     await GrnService.deleteGrnProduct(
-//       req.user!.domainId as string,
-//       req.params.id,
-//       req.params.productId,
-//     );
-//     return res.status(HttpStatus.OK).json({
-//       success: true,
-//       message: 'Product line item deleted successfully',
-//       data: null,
-//     });
-//   } catch (error) {
-//     const message = error instanceof Error ? error.message : 'Failed to delete product line item';
-//     return res.status(resolveHttpStatus(message)).json({ success: false, message });
-//   }
-// };
+export const deleteGrnProduct = async (req: Request, res: Response) => {
+  try {
+    await GrnService.deleteGrnProduct(
+      req.user!.domainId as string,
+      req.params.id,
+      req.params.productId,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Product line item deleted successfully',
+      data: null,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to delete product line item';
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};

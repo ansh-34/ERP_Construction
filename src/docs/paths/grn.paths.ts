@@ -139,9 +139,9 @@ const buildGrnPaths = (basePath: string, tags: string[]) => ({
     },
     put: {
       tags,
-      summary: 'Update GRN header',
+      summary: 'Update GRN and associated Products',
       description:
-        'Update the vendor or WB reference of a PENDING or REJECTED GRN.',
+        'Update the general details (such as waybill reference) and sync/update the product line items of a PENDING or REJECTED GRN. Within the grnProducts array, product items can be passed with an id (updates existing line item) or without an id (creates a new line item).',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -278,6 +278,99 @@ const buildGrnPaths = (basePath: string, tags: string[]) => ({
                     type: 'array',
                     items: { $ref: '#/components/schemas/GrnProductObject' },
                   },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  [`${basePath}/{id}/products/{productId}`]: {
+    put: {
+      tags,
+      summary: 'Update GRN Product Line Item',
+      description:
+        'Update the quantity, rate, tax, or material name of a specific product line item. The parent GRN totals will automatically recalculate.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateGrnProductBody' },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Product line item updated successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Product line item updated successfully',
+                  },
+                  data: { $ref: '#/components/schemas/GrnProductObject' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+    delete: {
+      tags,
+      summary: 'Delete GRN Product Line Item',
+      description: 'Soft-delete a specific product line item from the GRN.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'path',
+          name: 'productId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Product line item deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Product line item deleted successfully',
+                  },
+                  data: { type: 'null' },
                 },
               },
             },
