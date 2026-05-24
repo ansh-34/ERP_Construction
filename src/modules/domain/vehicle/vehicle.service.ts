@@ -20,10 +20,10 @@ export const VehicleService = {
     domainId: string,
     data: {
       numberPlate: string;
-      vehicleType?: string;
-      loadCapacity?: number;
-      loadCapacityUomId?: string;
-      alertLoadThreshold?: number;
+      vehicleType: string;
+      loadCapacity: number;
+      loadCapacityUomId: string;
+      alertLoadThreshold: number;
     },
   ) {
     const {
@@ -47,10 +47,10 @@ export const VehicleService = {
 
     return VehicleRepository.create({
       numberPlate,
-      vehicleType: vehicleType ?? 'TRUCK',
-      loadCapacity: loadCapacity ?? 0,
-      loadCapacityUomId: loadCapacityUomId || null,
-      alertLoadThreshold: alertLoadThreshold ?? 0,
+      vehicleType,
+      loadCapacity,
+      loadCapacityUomId,
+      alertLoadThreshold,
       domainId,
     });
   },
@@ -81,5 +81,16 @@ export const VehicleService = {
         limit,
       },
     };
+  },
+
+  async deleteVehicle(domainId: string, id: string) {
+    const vehicle = await VehicleRepository.findActiveByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!vehicle) {
+      throw new Error(Messages.VEHICLE.NOT_FOUND);
+    }
+    return VehicleRepository.softDelete(id);
   },
 };

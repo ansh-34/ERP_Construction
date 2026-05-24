@@ -17,6 +17,13 @@ export const JourneyScheduleRepository = {
     return prisma.vehicleJourneySchedule.create({ data });
   },
 
+  softDelete(id: string) {
+    return prisma.vehicleJourneySchedule.update({
+      where: { id },
+      data: { isDeleted: true, status: 'INACTIVE' },
+    });
+  },
+
   listByDomain(domainId: string, limit: number, offset: number) {
     return prisma.$transaction([
       prisma.vehicleJourneySchedule.count({

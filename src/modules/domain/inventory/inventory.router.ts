@@ -6,6 +6,7 @@ import {
   listInventory,
   createInventoryEntry,
   updateReorderLevel,
+  deleteInventoryEntry,
 } from './inventory.controller.js';
 import {
   createInventoryBodySchema,
@@ -41,6 +42,13 @@ router.put(
   validate(inventoryIdParamsSchema, 'params'),
   validate(updateReorderLevelBodySchema, 'body'),
   updateReorderLevel,
+);
+
+// delete entry
+router.delete(
+  '/:id',
+  validate(inventoryIdParamsSchema, 'params'),
+  deleteInventoryEntry,
 );
 
 export default router;

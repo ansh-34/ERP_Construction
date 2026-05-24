@@ -6,7 +6,7 @@ export const DispatchPaths = {
       tags: ['Dispatch'],
       summary: 'Dispatch tracking stats',
       description:
-        'Returns total dispatches, journey status breakdown, loading status breakdown, distance, load, and fuel summaries.',
+        'Returns total dispatches, journey status breakdown (scheduled/inTransit/delivered/cancelled), loading status breakdown, distance, load, and fuel summaries.',
       security: [{ bearerAuth: [] }],
       responses: {
         200: {
@@ -25,6 +25,8 @@ export const DispatchPaths = {
     get: {
       tags: ['Dispatch'],
       summary: 'List dispatch entries',
+      description:
+        'Returns paginated list with nested vehicle, journeySchedule, and loadedQuantityUom relations.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -53,6 +55,8 @@ export const DispatchPaths = {
     post: {
       tags: ['Dispatch'],
       summary: 'Create dispatch',
+      description:
+        'Creates a dispatch entry. Code is auto-generated in DV-DDMMYYYYHHMMSS format. All shared fields (date, driverName, startLocation, etc.) are inherited from the parent Journey Schedule.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -71,19 +75,11 @@ export const DispatchPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Dispatch created' },
-                  data: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string', format: 'uuid' },
-                      code: { type: 'string', example: 'DSP-042' },
-                      vehicleId: { type: 'string', format: 'uuid' },
-                      journeyStatus: { type: 'string', example: 'SCHEDULED' },
-                      loadingStatus: { type: 'string', example: 'PENDING' },
-                      status: { type: 'string', example: 'active' },
-                      createdAt: { type: 'string', format: 'date-time' },
-                    },
+                  message: {
+                    type: 'string',
+                    example: 'Dispatch entry created',
                   },
+                  data: { $ref: '#/components/schemas/DispatchObject' },
                 },
               },
             },

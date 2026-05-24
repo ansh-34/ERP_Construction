@@ -184,4 +184,11 @@ export const VehicleRepository = {
       })),
     };
   },
+
+  softDelete(id: string) {
+    return prisma.vehicle.update({
+      where: { id },
+      data: { isDeleted: true, status: 'INACTIVE' },
+    });
+  },
 };

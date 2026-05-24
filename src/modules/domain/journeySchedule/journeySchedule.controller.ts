@@ -71,3 +71,25 @@ export const listJourneySchedules = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const deleteJourneySchedule = async (req: Request, res: Response) => {
+  try {
+    await JourneyScheduleService.deleteJourneySchedule(
+      req.user!.domainId,
+      req.params.id,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.JOURNEY_SCHEDULE.DELETED,
+      data: null,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.JOURNEY_SCHEDULE.DELETE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

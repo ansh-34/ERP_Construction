@@ -40,9 +40,18 @@ export const InventorySchemas = {
     type: 'object',
     properties: {
       id: { type: 'string', format: 'uuid' },
+      productId: { type: 'string', format: 'uuid' },
+      productGradeId: { type: 'string', format: 'uuid' },
       quantity: { type: 'number', example: 1200 },
+      uomId: { type: 'string', format: 'uuid' },
       reorderLevel: { type: 'number', example: 500 },
-      status: { type: 'string', example: 'active' },
+      domainId: { type: 'string', format: 'uuid' },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        example: 'ACTIVE',
+      },
+      isDeleted: { type: 'boolean', example: false },
       product: {
         type: 'object',
         properties: {
@@ -69,7 +78,7 @@ export const InventorySchemas = {
           id: { type: 'string', format: 'uuid' },
           gradeDisplayName: { type: 'object', example: { en: 'Fine Sand' } },
           gradeCode: { type: 'string', example: 'FS' },
-          status: { type: 'string', example: 'active' },
+          status: { type: 'string', example: 'ACTIVE' },
           productGradeStdRates: {
             type: 'array',
             items: {
@@ -82,7 +91,7 @@ export const InventorySchemas = {
                 },
                 stdRateValue: { type: 'number', example: 450 },
                 alertThresold: { type: 'number', example: 500 },
-                status: { type: 'string', example: 'active' },
+                status: { type: 'string', example: 'ACTIVE' },
               },
             },
           },

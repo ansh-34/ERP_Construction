@@ -12,54 +12,57 @@ export const DispatchService = {
     return DispatchRepository.getStats(domainId);
   },
 
+  async generateCode(domainId: string, vehicleId: string): Promise<string> {
+    let attempts = 0;
+    while (attempts < 10) {
+      const now = new Date();
+      const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+      const day = pad(now.getDate());
+      const month = pad(now.getMonth() + 1);
+      const year = now.getFullYear();
+      const hours = pad(now.getHours());
+      const minutes = pad(now.getMinutes());
+      const seconds = pad(now.getSeconds());
+
+      const code = `DV-${day}${month}${year}${hours}${minutes}${seconds}`;
+
+      const existing = await DispatchRepository.findDuplicateForVehicle(
+        code,
+        domainId,
+        vehicleId,
+      );
+      if (!existing) {
+        return code;
+      }
+      attempts++;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error('Failed to generate unique dispatch code');
+  },
+
   async createDispatch(
     domainId: string,
     data: {
       vehicleId: string;
-      code: string;
-      journeyScheduleId?: string;
+      journeyScheduleId: string;
       description?: string;
-      date?: string;
-      driverName?: string;
-      startLocation?: string;
-      endLocation?: string;
-      distance?: number;
-      average?: number;
-      expectedFuelValue?: number;
-      actualFuelValue?: number;
-      fuelAlertThreshold?: number;
-      loadedQuantity?: number;
-      loadedQuantityUomId?: string;
-      loadedAt?: string;
-      loadingStatus?: string;
-      journeyStatus?: string;
+      actualFuelValue: number;
+      journeyStatus: string;
     },
   ) {
     const {
       vehicleId,
-      code,
       journeyScheduleId,
       description,
-      date,
-      driverName,
-      startLocation,
-      endLocation,
-      distance,
-      average,
-      expectedFuelValue,
       actualFuelValue,
-      fuelAlertThreshold,
-      loadedQuantity,
-      loadedQuantityUomId,
-      loadedAt,
-      loadingStatus,
       journeyStatus,
     } = data;
 
-    if (!vehicleId || !code) {
+    if (!vehicleId) {
       throw new Error(Messages.DISPATCH.VEHICLE_CODE_REQUIRED);
     }
 
+    // Validate parent Vehicle exists
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
       vehicleId,
       domainId,
@@ -69,17 +72,20 @@ export const DispatchService = {
       throw new Error(Messages.VEHICLE.NOT_FOUND_IN_DOMAIN);
     }
 
-    if (journeyScheduleId) {
-      const schedule = await JourneyScheduleRepository.findActiveByIdAndDomain(
-        journeyScheduleId,
-        domainId,
-      );
+    // Validate parent Journey Schedule exists and inherit fields
+    const schedule = await JourneyScheduleRepository.findActiveByIdAndDomain(
+      journeyScheduleId,
+      domainId,
+    );
 
-      if (!schedule) {
-        throw new Error(Messages.JOURNEY_SCHEDULE.NOT_FOUND);
-      }
+    if (!schedule) {
+      throw new Error(Messages.JOURNEY_SCHEDULE.NOT_FOUND);
     }
 
+    // Generate code automatically
+    const code = await DispatchService.generateCode(domainId, vehicleId);
+
+    // Check duplicate
     const existing = await DispatchRepository.findDuplicateForVehicle(
       code,
       domainId,
@@ -93,22 +99,22 @@ export const DispatchService = {
     return DispatchRepository.create({
       vehicleId,
       code,
-      journeyScheduleId: journeyScheduleId || null,
+      journeyScheduleId,
       description: description || null,
-      date: date ? new Date(date) : null,
-      driverName: driverName || null,
-      startLocation: startLocation || null,
-      endLocation: endLocation || null,
-      distance: distance ?? 0,
-      average: average ?? 0,
-      expectedFuelValue: expectedFuelValue ?? 0,
-      actualFuelValue: actualFuelValue ?? 0,
-      fuelAlertThreshold: fuelAlertThreshold ?? 0,
-      loadedQuantity: loadedQuantity ?? 0,
-      loadedQuantityUomId: loadedQuantityUomId || null,
-      loadedAt: loadedAt ? new Date(loadedAt) : null,
-      loadingStatus: loadingStatus ?? 'PENDING',
-      journeyStatus: journeyStatus ?? 'SCHEDULED',
+      date: new Date(),
+      driverName: schedule.driverName,
+      startLocation: schedule.startLocation,
+      endLocation: schedule.endLocation,
+      distance: schedule.distance,
+      average: schedule.average,
+      expectedFuelValue: schedule.expectedFuelValue,
+      actualFuelValue,
+      fuelAlertThreshold: schedule.fuelAlertThreshold,
+      loadedQuantity: schedule.loadedQuantity,
+      loadedQuantityUomId: schedule.loadedQuantityUomId,
+      loadedAt: schedule.loadedAt,
+      loadingStatus: schedule.loadingStatus,
+      journeyStatus,
       journeyStatusUpdatedAt: new Date(),
       domainId,
     });

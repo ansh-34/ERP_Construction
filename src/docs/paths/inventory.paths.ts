@@ -137,4 +137,41 @@ export const InventoryPaths = {
       },
     },
   },
+  '/api/domain/inventory/{id}': {
+    delete: {
+      tags: ['Inventory'],
+      summary: 'Delete inventory entry',
+      description: 'Soft deletes an inventory entry.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Inventory entry deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Inventory entry deleted successfully',
+                  },
+                  data: { type: 'object', nullable: true, default: null },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
 };

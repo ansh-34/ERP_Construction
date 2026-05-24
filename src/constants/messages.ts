@@ -178,6 +178,8 @@ export const Messages = Object.freeze({
     NOT_FOUND_IN_DOMAIN: 'Vehicle not found in this domain',
     NOT_FOUND: 'Vehicle not found',
     DETAIL_FAILED: 'Failed to fetch vehicle details',
+    DELETED: 'Vehicle deleted successfully',
+    DELETE_FAILED: 'Failed to delete vehicle',
   },
   LANGUAGE: {
     CREATED: 'Language created',
@@ -266,6 +268,7 @@ export const Messages = Object.freeze({
   INVENTORY: {
     RETRIEVED: 'Inventory retrieved',
     CREATED: 'Inventory entry created successfully',
+    DELETED: 'Inventory entry deleted successfully',
     STATS_RETRIEVED: 'Inventory stats retrieved',
     EXPORTED: 'Inventory exported successfully',
     REORDER_UPDATED: 'Reorder level updated successfully',
@@ -275,6 +278,7 @@ export const Messages = Object.freeze({
     STATS_FAILED: 'Failed to fetch inventory stats',
     EXPORT_FAILED: 'Failed to export inventory',
     REORDER_UPDATE_FAILED: 'Failed to update reorder level',
+    DELETE_FAILED: 'Failed to delete inventory entry',
     DUPLICATE_ENTRY:
       'Inventory entry for this product and grade already exists',
     PRODUCT_NOT_FOUND: 'Product not found',
@@ -294,6 +298,8 @@ export const Messages = Object.freeze({
     DUPLICATE_FOR_VEHICLE:
       'Journey schedule with this code already exists for this vehicle',
     NOT_FOUND: 'Journey schedule not found',
+    DELETED: 'Journey schedule deleted successfully',
+    DELETE_FAILED: 'Failed to delete journey schedule',
   },
   DISPATCH: {
     CREATED: 'Dispatch entry created',

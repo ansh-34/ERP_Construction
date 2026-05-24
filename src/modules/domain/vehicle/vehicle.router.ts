@@ -6,6 +6,7 @@ import {
   getVehicleById,
   createVehicle,
   listVehicles,
+  deleteVehicle,
 } from './vehicle.controller.js';
 import {
   createVehicleBodySchema,
@@ -40,6 +41,14 @@ router.post(
   // authorize('vehicle', 'create'),
   validate(createVehicleBodySchema, 'body'),
   createVehicle,
+);
+
+// delete
+router.delete(
+  '/:id',
+  // authorize('vehicle', 'delete'),
+  validate(idParamSchema, 'params'),
+  deleteVehicle,
 );
 
 export default router;

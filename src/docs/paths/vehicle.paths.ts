@@ -74,17 +74,7 @@ export const VehiclePaths = {
                 properties: {
                   success: { type: 'boolean', example: true },
                   message: { type: 'string', example: 'Vehicle created' },
-                  data: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string', format: 'uuid' },
-                      numberPlate: { type: 'string', example: 'MH-12-AB-1234' },
-                      vehicleType: { type: 'string', example: 'TRUCK' },
-                      loadCapacity: { type: 'number', example: 5000 },
-                      status: { type: 'string', example: 'active' },
-                      createdAt: { type: 'string', format: 'date-time' },
-                    },
-                  },
+                  data: { $ref: '#/components/schemas/VehicleObject' },
                 },
               },
             },
@@ -99,7 +89,7 @@ export const VehiclePaths = {
       tags: ['Vehicles'],
       summary: 'Get vehicle by ID',
       description:
-        'Returns full vehicle detail with all journey schedules and all dispatches history.',
+        'Returns full vehicle detail with all journey schedules, dispatches history, and UOM info.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -115,6 +105,42 @@ export const VehiclePaths = {
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/VehicleDetailResponse' },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+    delete: {
+      tags: ['Vehicles'],
+      summary: 'Delete vehicle (soft delete)',
+      description:
+        'Soft deletes a vehicle by setting isDeleted to true and status to INACTIVE.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Vehicle deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Vehicle deleted successfully',
+                  },
+                  data: { type: 'object', nullable: true, example: null },
+                },
+              },
             },
           },
         },

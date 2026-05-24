@@ -134,4 +134,12 @@ export const InventoryService = {
 
     return InventoryRepository.update(id, { reorderLevel });
   },
+
+  // ─── Delete Entry ──────────────────────────────────────
+  async deleteEntry(domainId: string, id: string) {
+    const record = await InventoryRepository.findByIdAndDomain(id, domainId);
+    if (!record) throw new Error(Messages.INVENTORY.NOT_FOUND);
+
+    return InventoryRepository.softDelete(id);
+  },
 };

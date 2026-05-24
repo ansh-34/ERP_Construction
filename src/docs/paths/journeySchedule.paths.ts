@@ -27,6 +27,8 @@ export const JourneySchedulePaths = {
     get: {
       tags: ['Journey Schedules'],
       summary: 'List journey schedules',
+      description:
+        'Returns paginated list with nested truck and loadedQuantityUom relations.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -57,6 +59,8 @@ export const JourneySchedulePaths = {
     post: {
       tags: ['Journey Schedules'],
       summary: 'Create journey schedule',
+      description:
+        'Creates a journey schedule. Code is auto-generated in VJS-DDMMYYYYHHMMSS format. All fields except description are mandatory.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -80,16 +84,46 @@ export const JourneySchedulePaths = {
                     example: 'Journey schedule created',
                   },
                   data: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'string', format: 'uuid' },
-                      code: { type: 'string', example: 'JS-001' },
-                      truckId: { type: 'string', format: 'uuid' },
-                      loadingStatus: { type: 'string', example: 'PENDING' },
-                      status: { type: 'string', example: 'active' },
-                      createdAt: { type: 'string', format: 'date-time' },
-                    },
+                    $ref: '#/components/schemas/JourneyScheduleObject',
                   },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/journey-schedules/{id}': {
+    delete: {
+      tags: ['Journey Schedules'],
+      summary: 'Delete journey schedule (soft delete)',
+      description:
+        'Soft deletes a journey schedule by setting isDeleted to true and status to INACTIVE.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Journey schedule deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Journey schedule deleted successfully',
+                  },
+                  data: { type: 'object', nullable: true, example: null },
                 },
               },
             },

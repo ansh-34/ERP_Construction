@@ -3,10 +3,10 @@ import { paginationQuerySchema } from '../../common/common.validator.js';
 
 export const createVehicleBodySchema = z.object({
   numberPlate: z.string().min(1),
-  vehicleType: z.string().optional(),
-  loadCapacity: z.number().optional(),
-  loadCapacityUomId: z.string().optional(),
-  alertLoadThreshold: z.number().optional(),
+  vehicleType: z.string().min(1),
+  loadCapacity: z.number().positive(),
+  loadCapacityUomId: z.string().uuid(),
+  alertLoadThreshold: z.number().nonnegative(),
 });
 
 export const listVehiclesQuerySchema = paginationQuerySchema;
