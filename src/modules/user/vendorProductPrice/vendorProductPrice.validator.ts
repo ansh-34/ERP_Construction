@@ -14,7 +14,9 @@ export const createVendorProductPriceBodySchema = z.object({
   productCode: z.string().optional(),
   productGradeCode: z.string().optional(),
   uomCode: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'ACTIVE', 'INACTIVE']).default('ACTIVE'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
 });
 
 export const updateVendorProductPriceBodySchema = z.object({

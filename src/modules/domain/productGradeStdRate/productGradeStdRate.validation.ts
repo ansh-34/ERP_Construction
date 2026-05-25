@@ -20,7 +20,9 @@ export const createProductGradeStdRateBodySchema = z.object({
   stdRateType: localizedValue,
   stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
   alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-  status: z.enum(['active', 'inactive', 'ACTIVE', 'INACTIVE']).default('ACTIVE'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
 });
 
 export const updateProductGradeStdRateBodySchema = z.object({

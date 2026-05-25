@@ -8,7 +8,9 @@ import {
 // ── Body schemas ──────────────────────────────────────────────
 export const createProductUomBodySchema = z.object({
   uomId: z.string().uuid('uomId must be a valid UUID'),
-  status: z.enum(['active', 'inactive', 'ACTIVE', 'INACTIVE']).default('ACTIVE'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
 });
 
 // ── Query schemas ─────────────────────────────────────────────
