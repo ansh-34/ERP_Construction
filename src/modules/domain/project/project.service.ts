@@ -308,6 +308,26 @@ function ensureDateWithinProjectRange(
   }
 }
 
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
+function getApprovedDelayTaskUpdate(
+  task: ProjectTaskRecord,
+  requestedDelayInDays: number,
+): Pick<ProjectTaskRecord, 'totalDelayInDays' | 'lastApprovedDeadline'> {
+  const currentDeadline = task.lastApprovedDeadline ?? task.plannedEndDate;
+
+  if (!currentDeadline) {
+    throw new Error('task plannedEndDate is required');
+  }
+
+  return {
+    totalDelayInDays: (task.totalDelayInDays ?? 0) + requestedDelayInDays,
+    lastApprovedDeadline: addDays(currentDeadline, requestedDelayInDays),
+  };
+}
+
 function assertSingleLineDescription(
   value: string | null | undefined,
   field: string,
@@ -1023,6 +1043,24 @@ export const projectService = {
           throw new Error('request already actioned');
         }
 
+        const task =
+          approvalState === 'APPROVED'
+            ? await projectTaskRepository.findById(
+                delay.taskId,
+                domainId,
+                resolvedAdminId,
+              )
+            : null;
+
+        if (approvalState === 'APPROVED' && !task) {
+          throw new Error('not found');
+        }
+
+        const taskDelayUpdate =
+          approvalState === 'APPROVED' && task
+            ? getApprovedDelayTaskUpdate(task, delay.requestedDelayInDays)
+            : null;
+
         const updatedDelay = await projectTaskDelayRepository.update(
           id,
           domainId,
@@ -1034,6 +1072,15 @@ export const projectService = {
         );
 
         if (updatedDelay) {
+          if (taskDelayUpdate) {
+            await projectTaskRepository.update(
+              updatedDelay.taskId,
+              domainId,
+              taskDelayUpdate,
+              resolvedAdminId,
+            );
+          }
+
           updatedDelays.push(updatedDelay);
         }
       }

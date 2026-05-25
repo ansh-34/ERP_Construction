@@ -29,6 +29,7 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'not found' ||
       error.message === 'unauthorized' ||
       error.message === 'task not completed' ||
+      error.message === 'task plannedEndDate is required' ||
       error.message === 'request already actioned' ||
       error.message === 'empty update payload' ||
       error.message.includes('cannot be')
