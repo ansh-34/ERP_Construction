@@ -47,13 +47,19 @@ const uomItemSchema = z.object({
   id: z.string().uuid(),
 });
 
+const uomsSchema = z.union([
+  z.array(z.string().uuid()),
+  z.array(uomItemSchema),
+]);
+
 // Product body schemas
 
 export const createProductBodySchema = z.object({
   displayName: localizedName,
   productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']),
   status: z.enum(['active', 'inactive']).default('active'),
-  uoms: z.array(uomItemSchema).optional(),
+  uom: z.array(z.string().uuid()).optional(),
+  uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),
   standardRates: z.array(standardRateItemSchema).optional(),
 });
@@ -63,7 +69,8 @@ export const updateProductBodySchema = z.object({
   code: z.string().min(1).optional(),
   productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']).optional(),
   status: statusFilterSchema.shape.status.optional(),
-  uoms: z.array(uomItemSchema).optional(),
+  uom: z.array(z.string().uuid()).optional(),
+  uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),
   standardRates: z.array(standardRateItemSchema).optional(),
 });
@@ -77,7 +84,8 @@ export const bulkUpdateStdRatesBodySchema = z.object({
 });
 
 export const bulkUpdateUomsBodySchema = z.object({
-  uoms: z.array(uomItemSchema).min(1),
+  uom: z.array(z.string().uuid()).optional(),
+  uoms: uomsSchema.optional(),
 });
 
 export const listProductsQuerySchema = paginationQuerySchema

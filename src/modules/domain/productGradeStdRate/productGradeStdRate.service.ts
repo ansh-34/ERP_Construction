@@ -62,10 +62,19 @@ export const ProductGradeStdRateService = {
     },
     langCode: string,
   ) {
-    const grade = await prisma.productGrades.findFirst({
-      where: { id: gradeId, productId, domainId, isDeleted: false },
+    const product = await prisma.product.findFirst({
+      where: { id: productId, domainId, isDeleted: false },
+      include: {
+        productGrades: {
+          where: { id: gradeId, isDeleted: false },
+        },
+      },
     });
-    if (!grade) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
+
+    if (!product || product.productGrades.length === 0) {
+      throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
+    }
+    const grade = product.productGrades[0];
 
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -102,8 +111,32 @@ export const ProductGradeStdRateService = {
       ),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { productGrades, ...productData } = product;
+    const gradeData = grade;
+
+    const localizedProduct = {
+      ...productData,
+      displayName: ProductGradeStdRateService.localizeName(
+        product.displayName,
+        langCode,
+      ),
+    };
+
+    const localizedGrade = {
+      ...gradeData,
+      gradeDisplayName: ProductGradeStdRateService.localizeName(
+        grade.gradeDisplayName,
+        langCode,
+      ),
+      productGradeStdRates: normalizedData,
+    };
+
     return {
-      data: normalizedData,
+      data: {
+        ...localizedProduct,
+        productGrade: localizedGrade,
+      },
       total,
       page,
       limit,

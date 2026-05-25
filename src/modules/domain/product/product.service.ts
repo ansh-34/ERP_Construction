@@ -32,13 +32,15 @@ export const ProductService = {
       throw new Error(Messages.PRODUCT.CODE_ALREADY_EXISTS);
     }
 
-    const { grades, standardRates, uoms, ...productFields } = data;
+    const { grades, standardRates, uoms, uom, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
     if (productFields.status) {
       productFields.status = normalizeStatus(productFields.status);
     }
+
+    const mergedUoms = uom || uoms;
 
     return prisma.$transaction(async (tx: any) => {
       // 1. Create the product
@@ -52,12 +54,16 @@ export const ProductService = {
       });
 
       // 1.5 Create Uoms
-      if (uoms && uoms.length > 0) {
-        for (const uom of uoms) {
+      if (mergedUoms && mergedUoms.length > 0) {
+        const normalizedUoms = mergedUoms.map((item: any) => {
+          if (typeof item === 'string') return { id: item };
+          return item;
+        });
+        for (const u of normalizedUoms) {
           await tx.productUom.create({
             data: {
               productId: product.id,
-              uomId: uom.id,
+              uomId: u.id,
               domainId,
             },
           });
@@ -346,7 +352,7 @@ export const ProductService = {
       }
     }
 
-    const { grades, standardRates, uoms, ...productFields } = data;
+    const { grades, standardRates, uoms, uom, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
@@ -360,9 +366,10 @@ export const ProductService = {
       ...(searchText ? { searchText } : {}),
     });
 
+    const mergedUoms = uom || uoms;
     // Handle uoms if provided
-    if (uoms) {
-      await ProductService.bulkUpdateUoms(domainId, id, uoms);
+    if (mergedUoms) {
+      await ProductService.bulkUpdateUoms(domainId, id, mergedUoms);
     }
 
     // Handle grades if provided
@@ -495,7 +502,13 @@ export const ProductService = {
 
       // Add new
       const existingUomIds = existing.map((e: any) => e.uomId);
-      const toAdd = uoms.filter((u: any) => !existingUomIds.includes(u.id));
+      const normalizedUoms = (uoms || []).map((item: any) => {
+        if (typeof item === 'string') return { id: item };
+        return item;
+      });
+      const toAdd = normalizedUoms.filter(
+        (u: any) => !existingUomIds.includes(u.id),
+      );
       for (const u of toAdd) {
         await tx.productUom.create({
           data: {
