@@ -20,6 +20,9 @@ import { uomRouter } from './uom/uom.router.js';
 import authMiddleware from '../../middlewares/auth.js';
 import modulePermissionRouter from './modulePermission/modulePermission.router.js';
 import moduleRouter from './module/module.router.js';
+import inventoryRouter from './inventory/inventory.router.js';
+import invoiceRouter from './invoice/invoice.router.js';
+import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
 
 const userRouter = Router();
 
@@ -42,6 +45,9 @@ userRouter.use('/grn', grnRouter);
 userRouter.use('/products', productRouter);
 userRouter.use('/vendor-product-prices', vendorProductPriceRouter());
 userRouter.use('/uoms', uomRouter());
+userRouter.use('/inventory', inventoryRouter);
+userRouter.use('/invoices', invoiceRouter);
+userRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 userRouter.use('/modules', moduleRouter);
 userRouter.use('/module-permissions', modulePermissionRouter);
 

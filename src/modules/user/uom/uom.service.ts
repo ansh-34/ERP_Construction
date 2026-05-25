@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import { uomRepository } from '../../../repositories/index.js';
 import { normalizeStatus } from '../../../utils/validation.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const UomService = {
   localizeName(value: any, langCode: string) {
@@ -37,6 +38,9 @@ export const UomService = {
     }
 
     const { displayName, baseUomId, conversionRate, status } = dto;
+    const searchText = Object.values(displayName || {})
+      .join(' ')
+      .toLowerCase();
 
     const record = await uomRepository.create({
       displayName,
@@ -45,6 +49,7 @@ export const UomService = {
       status: status ? normalizeStatus(status) : 'ACTIVE',
       code,
       domainId,
+      searchText,
       isDeleted: false,
     } as any);
 
@@ -79,10 +84,37 @@ export const UomService = {
       },
     );
 
-    const localizedUoms = uoms.map((uom: any) => ({
-      ...uom,
-      displayName: UomService.localizeName(uom.displayName, langCode),
-    }));
+    const baseUomIds = uoms
+      .map((u: any) => u.baseUomId)
+      .filter((id): id is string => !!id);
+
+    const baseUoms =
+      baseUomIds.length > 0
+        ? await prisma.uom.findMany({
+            where: { id: { in: baseUomIds }, isDeleted: false },
+          })
+        : [];
+
+    const baseUomMap = new Map(baseUoms.map((bu: any) => [bu.id, bu]));
+
+    const localizedUoms = uoms.map((uom: any) => {
+      const baseUomRaw = uom.baseUomId ? baseUomMap.get(uom.baseUomId) : null;
+      const baseUom = baseUomRaw
+        ? {
+            ...baseUomRaw,
+            displayName: UomService.localizeName(
+              baseUomRaw.displayName,
+              langCode,
+            ),
+          }
+        : null;
+
+      return {
+        ...uom,
+        displayName: UomService.localizeName(uom.displayName, langCode),
+        baseUom,
+      };
+    });
 
     return {
       data: localizedUoms,
@@ -99,6 +131,21 @@ export const UomService = {
 
     if (!record) throw new Error(Messages.UOM.NOT_FOUND);
 
+    let baseUom = null;
+    if (record.baseUomId) {
+      const baseUomRaw = await prisma.uom.findFirst({
+        where: { id: record.baseUomId, domainId, isDeleted: false },
+      });
+      if (baseUomRaw) {
+        baseUom = {
+          ...baseUomRaw,
+          displayName: language
+            ? UomService.localizeName(baseUomRaw.displayName, language)
+            : baseUomRaw.displayName,
+        };
+      }
+    }
+
     if (language) {
       record.displayName = UomService.localizeName(
         record.displayName,
@@ -106,7 +153,10 @@ export const UomService = {
       );
     }
 
-    return record;
+    return {
+      ...record,
+      baseUom,
+    };
   },
 
   async update(

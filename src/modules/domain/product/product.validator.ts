@@ -19,7 +19,9 @@ const gradeItemSchema = z.object({
   id: z.string().uuid().optional(),
   gradeDisplayName: localizedName,
   gradeCode: z.string().min(1).optional(),
-  status: z.enum(['active', 'inactive']).default('active'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
   standardRates: z
     .array(
       z.object({
@@ -27,7 +29,9 @@ const gradeItemSchema = z.object({
         stdRateType: localizedName,
         stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
         alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-        status: z.enum(['active', 'inactive']).default('active'),
+        status: z
+          .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+          .default('ACTIVE'),
       }),
     )
     .optional(),
@@ -40,7 +44,9 @@ const standardRateItemSchema = z.object({
   stdRateType: localizedName,
   stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
   alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-  status: z.enum(['active', 'inactive']).default('active'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
 });
 
 const uomItemSchema = z.object({
@@ -57,7 +63,9 @@ const uomsSchema = z.union([
 export const createProductBodySchema = z.object({
   displayName: localizedName,
   productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']),
-  status: z.enum(['active', 'inactive']).default('active'),
+  status: z
+    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
+    .default('ACTIVE'),
   uom: z.array(z.string().uuid()).optional(),
   uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),

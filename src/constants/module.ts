@@ -117,7 +117,19 @@ export const modules = [
     name: {
       en: 'Raw Material Purchase Request',
     },
-    code: 'RAW_MATERIAL_PURCHASE_REQUEST',
+    code: 'RMPR',
+  },
+  {
+    name: {
+      en: 'Purchase Order',
+    },
+    code: 'PO',
+  },
+  {
+    name: {
+      en: 'Purchase Order List',
+    },
+    code: 'POP',
   },
   {
     name: {

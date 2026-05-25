@@ -17,7 +17,7 @@ const localizedName = z
 
 export const createProductGradeBodySchema = z.object({
   gradeDisplayName: localizedName,
-  status: z.enum(['active', 'inactive']).default('active'),
+  status: z.enum(['active', 'inactive', 'ACTIVE', 'INACTIVE']).default('ACTIVE'),
 });
 
 export const updateProductGradeBodySchema = z.object({
