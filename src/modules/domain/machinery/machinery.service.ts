@@ -9,13 +9,12 @@ import { normalizePrismaError } from '@/utils/prismaError';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
-  isPlainObject,
 } from '@/utils/validation';
 
 export interface CreateMachineryInput {
   code: string;
-  type: Record<string, unknown>;
-  expectedLitrePerHour: number;
+  type: string;
+  expectedLitrePerHour?: number;
   projectId: string;
   domainId: string;
   adminId: string;
@@ -26,14 +25,18 @@ type LocalizedMachineryRecord = Omit<MachineryRecord, 'type'> & {
   type: string;
 };
 
-function buildMachinerySearchText(type: Record<string, unknown>): string {
-  return Object.values(type).join(' ').toLowerCase();
+function buildMachinerySearchText(type: string): string {
+  return type.toLowerCase();
 }
 
 function getLocalizedText(
-  value: Record<string, unknown>,
+  value: string | Record<string, unknown>,
   language: string | null,
 ): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+
   const langCode = language || 'en';
   const localizedValue = value[langCode] ?? value.en ?? '';
 
@@ -67,15 +70,14 @@ function assertCreateInput(data: CreateMachineryInput): void {
     throw new Error('invalid code');
   }
 
-  if (!isPlainObject(data.type)) {
+  if (!isNonEmptyString(data.type)) {
     throw new Error('invalid type');
   }
 
-  if (!isNonEmptyString(data.type.en)) {
-    throw new Error('type.en is required');
-  }
-
-  if (!isNonNegativeFiniteNumber(data.expectedLitrePerHour)) {
+  if (
+    data.expectedLitrePerHour !== undefined &&
+    !isNonNegativeFiniteNumber(data.expectedLitrePerHour)
+  ) {
     throw new Error('invalid expectedLitrePerHour');
   }
 
@@ -105,12 +107,8 @@ function assertUpdateInput(data: UpdateMachineryInput): void {
     throw new Error('invalid code');
   }
 
-  if (data.type !== undefined && !isPlainObject(data.type)) {
+  if (data.type !== undefined && !isNonEmptyString(data.type)) {
     throw new Error('invalid type');
-  }
-
-  if (data.type !== undefined && !isNonEmptyString(data.type.en)) {
-    throw new Error('type.en is required');
   }
 
   if (

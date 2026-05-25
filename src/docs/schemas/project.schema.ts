@@ -213,7 +213,7 @@ export const ProjectSchemas = {
     properties: {
       id: { type: 'string', format: 'uuid' },
       date: { type: 'string', example: '2026-05-18' },
-      openingFuelStock: { type: 'number', example: 100 },
+      refillFuelStock: { type: 'number', example: 100 },
       closingFuelStock: { type: 'number', example: 80 },
       fuelRefillQuantity: { type: 'number', example: 20 },
       machineStartTime: { type: 'string', example: '09:00' },

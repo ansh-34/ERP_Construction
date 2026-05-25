@@ -4,13 +4,14 @@ import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
 type JsonObject = Record<string, unknown>;
+type MachineryType = string | JsonObject;
 
 export interface MachineryRecord {
   id: string;
   code: string;
-  type: JsonObject;
+  type: MachineryType;
   searchText: string;
-  expectedLitrePerHour: number;
+  expectedLitrePerHour: number | null;
   projectId: string;
   domainId: string;
   adminId: string;
@@ -22,9 +23,9 @@ export interface MachineryRecord {
 
 export interface CreateMachineryInput {
   code: string;
-  type: JsonObject;
+  type: string;
   searchText: string;
-  expectedLitrePerHour: number;
+  expectedLitrePerHour?: number | null;
   projectId: string;
   domainId: string;
   adminId: string;
@@ -33,9 +34,9 @@ export interface CreateMachineryInput {
 
 export interface UpdateMachineryInput {
   code?: string;
-  type?: JsonObject;
+  type?: string;
   searchText?: string;
-  expectedLitrePerHour?: number;
+  expectedLitrePerHour?: number | null;
   status?: StatusEnum;
 }
 
@@ -53,7 +54,7 @@ const machinerySelect = Prisma.sql`
   "updatedAt"
 `;
 
-function toJsonbSql(value: JsonObject): Prisma.Sql {
+function toJsonbSql(value: MachineryType): Prisma.Sql {
   return Prisma.sql`${JSON.stringify(value)}::jsonb`;
 }
 
@@ -81,7 +82,7 @@ export const machineryRepository = {
         ${data.code},
         ${toJsonbSql(data.type)},
         ${data.searchText},
-        ${data.expectedLitrePerHour},
+        ${data.expectedLitrePerHour ?? null},
         ${data.projectId},
         ${data.domainId},
         ${data.adminId},
@@ -239,7 +240,7 @@ export const machineryRepository = {
         code: item.code,
         type: item.type,
         searchText: item.searchText,
-        expectedLitrePerHour: item.expectedLitrePerHour,
+        expectedLitrePerHour: item.expectedLitrePerHour ?? null,
         projectId: item.projectId,
         domainId: item.domainId,
         adminId: item.adminId,

@@ -8,7 +8,7 @@ export interface MachineReadingRecord {
   code: string;
   searchText: string;
   date: Date;
-  openingFuelStock: number;
+  refillFuelStock: number;
   closingFuelStock: number | null;
   fuelRefillQuantity: number | null;
   hoursRun: number;
@@ -27,7 +27,7 @@ export interface CreateMachineReadingInput {
   code: string;
   searchText: string;
   date: Date;
-  openingFuelStock: number;
+  refillFuelStock: number;
   closingFuelStock?: number | null;
   fuelRefillQuantity?: number | null;
   hoursRun: number;
@@ -51,7 +51,7 @@ const machineReadingSelect = Prisma.sql`
   "id",
   "code",
   "date",
-  "openingFuelStock",
+  "openingFuelStock" AS "refillFuelStock",
   "closingFuelStock",
   "fuelRefillQuantity",
   "hoursRun",
@@ -109,7 +109,7 @@ export const machineReadingRepository = {
         ${data.code},
         ${data.searchText},
         ${toDateSql(data.date)},
-        ${data.openingFuelStock},
+        ${data.refillFuelStock},
         ${toNumberSql(data.closingFuelStock ?? null)},
         ${toNumberSql(data.fuelRefillQuantity ?? null)},
         ${data.hoursRun},
@@ -281,12 +281,12 @@ export const machineReadingRepository = {
         code: item.code,
         searchText: item.searchText,
         date: item.date,
-        openingFuelStock: item.openingFuelStock,
-        closingFuelStock: item.closingFuelStock || null,
-        fuelRefillQuantity: item.fuelRefillQuantity || null,
+        openingFuelStock: item.refillFuelStock,
+        closingFuelStock: item.closingFuelStock ?? null,
+        fuelRefillQuantity: item.fuelRefillQuantity ?? null,
         hoursRun: item.hoursRun,
         machineStartTime: item.machineStartTime,
-        machineEndTime: item.machineEndTime || null,
+        machineEndTime: item.machineEndTime ?? null,
         projectId: item.projectId,
         domainId: item.domainId,
         adminId: item.adminId,

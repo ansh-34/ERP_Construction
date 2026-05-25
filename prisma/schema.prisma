@@ -1175,7 +1175,7 @@ model Machinery {
   code                 String
   type                 Json       @db.JsonB
   searchText           String     @default("")
-  expectedLitrePerHour Float      @default(0)
+  expectedLitrePerHour Float?
   projectId            String     @db.Uuid
   project              Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   domainId             String     @db.Uuid

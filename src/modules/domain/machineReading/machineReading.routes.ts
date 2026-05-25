@@ -4,6 +4,7 @@ import { machineReadingController } from './machineReading.controller';
 import {
   createMachineReadingBody,
   domainIdQuery,
+  endMachineReadingBody,
   idParams,
   listMachineReadingQuery,
   updateMachineReadingBody,
@@ -33,6 +34,13 @@ machineReadingRouter.put(
   validate(domainIdQuery, 'query'),
   validate(updateMachineReadingBody, 'body'),
   machineReadingController.update,
+);
+machineReadingRouter.put(
+  '/:id/end',
+  validate(idParams, 'params'),
+  validate(domainIdQuery, 'query'),
+  validate(endMachineReadingBody, 'body'),
+  machineReadingController.end,
 );
 
 export default machineReadingRouter;
