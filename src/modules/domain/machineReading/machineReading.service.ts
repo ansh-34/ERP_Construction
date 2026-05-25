@@ -14,7 +14,7 @@ import {
 
 export interface CreateMachineReadingInput {
   date: string;
-  openingFuelStock: number;
+  refillFuelStock?: number | string;
   fuelRefillQuantity?: number;
   machineStartTime: string;
   projectId: string;
@@ -30,11 +30,32 @@ export interface UpdateMachineReadingInput {
   status?: StatusEnum;
 }
 
+export interface EndMachineReadingInput {
+  machineEndTime: string;
+}
+
 function buildMachineReadingSearchText(...values: unknown[]): string {
   return values
     .filter((value) => value !== undefined && value !== null)
     .join(' ')
     .toLowerCase();
+}
+
+function parseOptionalNumber(
+  value: number | string | undefined,
+  field: string,
+): number {
+  if (value === undefined || value === '') {
+    return 0;
+  }
+
+  const numericValue = typeof value === 'number' ? value : Number(value);
+
+  if (!isNonNegativeFiniteNumber(numericValue)) {
+    throw new Error(`invalid ${field}`);
+  }
+
+  return numericValue;
 }
 
 function parseDate(value: string, field: string): Date {
@@ -96,9 +117,7 @@ function assertCreateInput(data: CreateMachineReadingInput): void {
     throw new Error('invalid date');
   }
 
-  if (!isNonNegativeFiniteNumber(data.openingFuelStock)) {
-    throw new Error('invalid openingFuelStock');
-  }
+  parseOptionalNumber(data.refillFuelStock, 'refillFuelStock');
 
   if (
     data.fuelRefillQuantity !== undefined &&
@@ -146,10 +165,15 @@ function assertUpdateInput(data: UpdateMachineReadingInput): void {
 }
 
 function buildCreatePayload(data: CreateMachineReadingInput) {
+  const refillFuelStock = parseOptionalNumber(
+    data.refillFuelStock,
+    'refillFuelStock',
+  );
+
   return {
     date: parseDate(data.date, 'date'),
     searchText: buildMachineReadingSearchText(data.date),
-    openingFuelStock: data.openingFuelStock,
+    refillFuelStock,
     closingFuelStock: null,
     fuelRefillQuantity: data.fuelRefillQuantity ?? null,
     hoursRun: 0,
@@ -159,6 +183,21 @@ function buildCreatePayload(data: CreateMachineReadingInput) {
     domainId: data.domainId,
     adminId: data.adminId,
     status: data.status,
+  };
+}
+
+function buildEndPayload(
+  existingMachineReading: MachineReadingRecord,
+  data: EndMachineReadingInput,
+): RepositoryUpdateMachineReadingInput {
+  const machineEndTime = parseTime(data.machineEndTime, 'machineEndTime');
+
+  return {
+    machineEndTime,
+    hoursRun: calculateHoursRun(
+      existingMachineReading.machineStartTime,
+      machineEndTime,
+    ),
   };
 }
 
@@ -303,6 +342,46 @@ export const machineReadingService = {
         id,
         domainId,
         buildUpdatePayload(existingMachineReading, data),
+        adminId,
+      );
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  end: async (
+    id: string,
+    domainId: string,
+    adminId: string,
+    data: EndMachineReadingInput,
+  ): Promise<MachineReadingRecord | null> => {
+    if (!isNonEmptyString(id) || !isNonEmptyString(domainId)) {
+      throw new Error('invalid ids');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
+    if (!isNonEmptyString(data.machineEndTime)) {
+      throw new Error('invalid machineEndTime');
+    }
+
+    try {
+      const existingMachineReading = await machineReadingRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
+
+      if (!existingMachineReading) {
+        throw new Error('not found');
+      }
+
+      return await machineReadingRepository.update(
+        id,
+        domainId,
+        buildEndPayload(existingMachineReading, data),
         adminId,
       );
     } catch (error: unknown) {
