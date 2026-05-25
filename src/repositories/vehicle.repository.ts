@@ -88,11 +88,33 @@ export const VehicleRepository = {
     return prisma.vehicle.create({ data });
   },
 
-  listByDomain(domainId: string, limit: number, offset: number) {
+  listByDomain(
+    domainId: string,
+    limit: number,
+    offset: number,
+    filter?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string },
+  ) {
+    const searchKey = filter?.searchKey?.trim() || '';
+    const where = {
+      domainId,
+      isDeleted: false,
+      ...(filter?.status && { status: filter.status }),
+      ...(searchKey && {
+        OR: [
+          {
+            numberPlate: { contains: searchKey, mode: 'insensitive' as const },
+          },
+          {
+            vehicleType: { contains: searchKey, mode: 'insensitive' as const },
+          },
+        ],
+      }),
+    };
+
     return prisma.$transaction([
-      prisma.vehicle.count({ where: { domainId, isDeleted: false } }),
+      prisma.vehicle.count({ where }),
       prisma.vehicle.findMany({
-        where: { domainId, isDeleted: false },
+        where,
         include: {
           loadCapacityUom: true,
           // Latest journey schedule — shows current loading info

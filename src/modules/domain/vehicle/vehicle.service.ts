@@ -55,13 +55,23 @@ export const VehicleService = {
     });
   },
 
-  async listVehicles(domainId: string, query: PaginationQuery) {
+  async listVehicles(
+    domainId: string,
+    query: PaginationQuery & {
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+    },
+  ) {
     const { offset, limit } = normalizePagination(query);
 
     const [totalCount, rawVehicles] = await VehicleRepository.listByDomain(
       domainId,
       limit,
       offset,
+      {
+        status: query.status,
+        searchKey: query.searchKey,
+      },
     );
 
     // Flatten arrays into single objects for frontend convenience

@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { paginationQuerySchema } from '../../common/common.validator.js';
+import {
+  paginationQuerySchema,
+  statusFilterSchema,
+} from '../../common/common.validator.js';
 
 export const createVehicleBodySchema = z.object({
   numberPlate: z.string().min(1),
@@ -9,6 +12,10 @@ export const createVehicleBodySchema = z.object({
   alertLoadThreshold: z.number().nonnegative(),
 });
 
-export const listVehiclesQuerySchema = paginationQuerySchema;
+export const listVehiclesQuerySchema = paginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+  });
 
 export type CreateVehicleData = z.infer<typeof createVehicleBodySchema>;

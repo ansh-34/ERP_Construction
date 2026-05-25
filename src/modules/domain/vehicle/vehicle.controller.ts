@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
-import type { PaginationQuery } from '../../../utils/pagination.js';
 import { VehicleService } from './vehicle.service.js';
 
 export const getVehicleStats = async (req: Request, res: Response) => {
@@ -65,7 +64,7 @@ export const listVehicles = async (req: Request, res: Response) => {
   try {
     const { vehicles, pagination } = await VehicleService.listVehicles(
       req.user!.domainId,
-      req.query as PaginationQuery,
+      req.query as any,
     );
 
     return res.status(HttpStatus.OK).json({
