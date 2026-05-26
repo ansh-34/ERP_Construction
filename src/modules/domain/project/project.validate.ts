@@ -98,11 +98,10 @@ export const submitProjectTaskBody = z.object({
   images: z
     .array(
       z.object({
-        imageId: z.string().trim().min(1).optional(),
-        imageUrl: z
+        imageId: z
           .string()
           .trim()
-          .min(1, { message: 'Image url is required' }),
+          .uuid({ message: 'Valid image id is required' }),
         description: singleLineDescription.nullable().optional(),
       }),
     )

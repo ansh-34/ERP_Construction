@@ -102,6 +102,17 @@ function calculateHoursRun(startTime: Date, endTime: Date): number {
   return Number((durationInMilliseconds / 3_600_000).toFixed(2));
 }
 
+function calculateActualLitrePerHour(
+  fuelConsumed: number,
+  hoursRun: number,
+): number {
+  if (hoursRun <= 0) {
+    return 0;
+  }
+
+  return Number((fuelConsumed / hoursRun).toFixed(2));
+}
+
 function assertStatus(status: StatusEnum | undefined): void {
   if (
     status !== undefined &&
@@ -251,11 +262,46 @@ export const machineReadingService = {
         code = generateCode('MACHINE_READING');
       }
 
-      return await machineReadingRepository.create({
+      const machineReading = await machineReadingRepository.create({
         ...buildCreatePayload(data),
         code,
         searchText: buildMachineReadingSearchText(code, data.date),
       });
+
+      if (machineReading.fuelRefillQuantity !== null) {
+        const previousMachineReading =
+          await machineReadingRepository.findLatestUnfinalizedBefore(
+            machineReading.projectId,
+            machineReading.domainId,
+            machineReading.adminId,
+            machineReading.createdAt,
+          );
+
+        if (previousMachineReading) {
+          const hoursRun = calculateHoursRun(
+            previousMachineReading.machineStartTime,
+            machineReading.machineStartTime,
+          );
+          const fuelConsumed = machineReading.fuelRefillQuantity;
+
+          await machineReadingRepository.update(
+            previousMachineReading.id,
+            previousMachineReading.domainId,
+            {
+              fuelConsumed,
+              actualLitrePerHour: calculateActualLitrePerHour(
+                fuelConsumed,
+                hoursRun,
+              ),
+              machineEndTime: machineReading.machineStartTime,
+              hoursRun,
+            },
+            previousMachineReading.adminId,
+          );
+        }
+      }
+
+      return machineReading;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

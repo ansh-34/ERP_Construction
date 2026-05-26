@@ -8,7 +8,7 @@ const singleLineDescription = z
   });
 
 const taskSubmissionImageSchema = z.object({
-  imageUrl: z.string().trim().min(1, { message: 'Image url is required' }),
+  imageId: z.string().trim().uuid({ message: 'Valid image id is required' }),
   description: singleLineDescription.nullable().optional(),
 });
 

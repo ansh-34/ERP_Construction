@@ -11,6 +11,8 @@ export interface MachineReadingRecord {
   refillFuelStock: number;
   closingFuelStock: number | null;
   fuelRefillQuantity: number | null;
+  fuelConsumed: number | null;
+  actualLitrePerHour: number | null;
   hoursRun: number;
   machineStartTime: Date;
   machineEndTime: Date | null;
@@ -30,6 +32,8 @@ export interface CreateMachineReadingInput {
   refillFuelStock: number;
   closingFuelStock?: number | null;
   fuelRefillQuantity?: number | null;
+  fuelConsumed?: number | null;
+  actualLitrePerHour?: number | null;
   hoursRun: number;
   machineStartTime: Date;
   machineEndTime?: Date | null;
@@ -42,6 +46,8 @@ export interface CreateMachineReadingInput {
 export interface UpdateMachineReadingInput {
   closingFuelStock?: number;
   fuelRefillQuantity?: number | null;
+  fuelConsumed?: number | null;
+  actualLitrePerHour?: number | null;
   machineEndTime?: Date | null;
   hoursRun?: number;
   status?: StatusEnum;
@@ -54,6 +60,8 @@ const machineReadingSelect = Prisma.sql`
   "openingFuelStock" AS "refillFuelStock",
   "closingFuelStock",
   "fuelRefillQuantity",
+  "fuelConsumed",
+  "actualLitrePerHour",
   "hoursRun",
   "machineStartTime",
   "machineEndTime",
@@ -93,6 +101,8 @@ export const machineReadingRepository = {
         "openingFuelStock",
         "closingFuelStock",
         "fuelRefillQuantity",
+        "fuelConsumed",
+        "actualLitrePerHour",
         "hoursRun",
         "machineStartTime",
         "machineEndTime",
@@ -112,6 +122,8 @@ export const machineReadingRepository = {
         ${data.refillFuelStock},
         ${toNumberSql(data.closingFuelStock ?? null)},
         ${toNumberSql(data.fuelRefillQuantity ?? null)},
+        ${toNumberSql(data.fuelConsumed ?? null)},
+        ${toNumberSql(data.actualLitrePerHour ?? null)},
         ${data.hoursRun},
         ${toDateSql(data.machineStartTime)},
         ${toDateSql(data.machineEndTime ?? null)},
@@ -214,6 +226,28 @@ export const machineReadingRepository = {
     return result[0] ?? null;
   },
 
+  findLatestUnfinalizedBefore: async (
+    projectId: string,
+    domainId: string,
+    adminId: string,
+    beforeCreatedAt: Date,
+  ): Promise<MachineReadingRecord | null> => {
+    const result = await prisma.$queryRaw<MachineReadingRecord[]>(Prisma.sql`
+      SELECT ${machineReadingSelect}
+      FROM "MachineReading"
+      WHERE "projectId" = ${projectId}
+        AND "domainId" = ${domainId}
+        AND "adminId" = ${adminId}
+        AND "isDeleted" = false
+        AND "fuelConsumed" IS NULL
+        AND "createdAt" < ${beforeCreatedAt}
+      ORDER BY "createdAt" DESC
+      LIMIT 1
+    `);
+
+    return result[0] ?? null;
+  },
+
   update: async (
     id: string,
     domainId: string,
@@ -232,6 +266,20 @@ export const machineReadingRepository = {
       assignments.unshift(
         Prisma.sql`"fuelRefillQuantity" = ${toNumberSql(
           data.fuelRefillQuantity,
+        )}`,
+      );
+    }
+
+    if (data.fuelConsumed !== undefined) {
+      assignments.unshift(
+        Prisma.sql`"fuelConsumed" = ${toNumberSql(data.fuelConsumed)}`,
+      );
+    }
+
+    if (data.actualLitrePerHour !== undefined) {
+      assignments.unshift(
+        Prisma.sql`"actualLitrePerHour" = ${toNumberSql(
+          data.actualLitrePerHour,
         )}`,
       );
     }
@@ -284,6 +332,8 @@ export const machineReadingRepository = {
         openingFuelStock: item.refillFuelStock,
         closingFuelStock: item.closingFuelStock ?? null,
         fuelRefillQuantity: item.fuelRefillQuantity ?? null,
+        fuelConsumed: item.fuelConsumed ?? null,
+        actualLitrePerHour: item.actualLitrePerHour ?? null,
         hoursRun: item.hoursRun,
         machineStartTime: item.machineStartTime,
         machineEndTime: item.machineEndTime ?? null,
