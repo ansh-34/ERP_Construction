@@ -239,6 +239,23 @@ export const ProductGradeStdRateService = {
     const limit = parseInt(query.limit ?? '10');
     const skip = (page - 1) * limit;
 
+    // Scenario 3 validation check: if both productId and gradeId (or productGradeId) are passed
+    if (query.productId && (query.gradeId || query.productGradeId)) {
+      const gId = query.gradeId || query.productGradeId;
+      const grade = await prisma.productGrades.findFirst({
+        where: { id: gId, productId: query.productId, isDeleted: false },
+      });
+      if (!grade) {
+        return {
+          data: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        };
+      }
+    }
+
     const where = {
       domainId,
       isDeleted: false,
@@ -261,6 +278,10 @@ export const ProductGradeStdRateService = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          product: true,
+          productGrade: true,
+        },
       }),
       prisma.productGradeStdRates.count({ where }),
     ]);
@@ -273,6 +294,26 @@ export const ProductGradeStdRateService = {
         stdRate.stdRateType,
         langCode,
       ),
+      product: stdRate.product
+        ? {
+            id: stdRate.product.id,
+            code: stdRate.product.code,
+            displayName: ProductGradeStdRateService.localizeName(
+              stdRate.product.displayName,
+              langCode,
+            ),
+          }
+        : null,
+      productGrade: stdRate.productGrade
+        ? {
+            id: stdRate.productGrade.id,
+            gradeCode: stdRate.productGrade.gradeCode,
+            gradeDisplayName: ProductGradeStdRateService.localizeName(
+              stdRate.productGrade.gradeDisplayName,
+              langCode,
+            ),
+          }
+        : null,
     }));
 
     return {

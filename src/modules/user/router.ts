@@ -36,9 +36,9 @@ const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
   .merge(statusFilterSchema)
   .extend({
     searchKey: z.string().optional(),
-    productId: z.string().optional(),
-    gradeId: z.string().optional(),
-    productGradeId: z.string().optional(),
+    productId: z.string().uuid().optional().or(z.literal('')),
+    gradeId: z.string().uuid().optional().or(z.literal('')),
+    productGradeId: z.string().uuid().optional().or(z.literal('')),
   });
 
 const userRouter = Router();
