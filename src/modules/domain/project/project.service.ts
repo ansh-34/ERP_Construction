@@ -5,6 +5,7 @@ import {
   projectTaskDelayRepository,
   projectTaskImageRepository,
   projectTaskRepository,
+  mediaRepository,
   UserRepository,
   type ProjectRecord,
   type ProjectStageRecord,
@@ -71,8 +72,7 @@ type NormalizedApprovalState = 'APPROVED' | 'REJECTED';
 type SubmissionApprovalState = 'PENDING' | NormalizedApprovalState;
 
 type TaskSubmissionImageInput = {
-  imageId?: string;
-  imageUrl: string;
+  imageId: string;
   description?: string | null;
 };
 
@@ -181,8 +181,8 @@ function normalizeTaskSubmission(
 
 function assertTaskSubmissionImages(images: TaskSubmissionImageInput[]): void {
   for (const image of images) {
-    if (!isNonEmptyString(image.imageUrl)) {
-      throw new Error('invalid imageUrl');
+    if (!isNonEmptyString(image.imageId)) {
+      throw new Error('invalid imageId');
     }
 
     if (image.description !== undefined && image.description !== null) {
@@ -857,10 +857,20 @@ export const projectService = {
       );
 
       const createdImages = await Promise.all(
-        images.map((image) =>
-          projectTaskImageRepository.create({
-            imageId: image.imageId ?? null,
-            imageUrl: image.imageUrl,
+        images.map(async (image) => {
+          const media = await mediaRepository.findById(
+            image.imageId,
+            domainId,
+            resolvedAdminId,
+          );
+
+          if (!media) {
+            throw new Error('image not found');
+          }
+
+          return projectTaskImageRepository.create({
+            imageId: media.id,
+            imageUrl: media.url,
             ...(image.description !== undefined && {
               description: image.description,
             }),
@@ -869,8 +879,8 @@ export const projectService = {
             projectId: updatedTask.projectId,
             domainId,
             adminId: resolvedAdminId,
-          }),
-        ),
+          });
+        }),
       );
 
       return normalizeTaskSubmission(updatedTask, language, createdImages);

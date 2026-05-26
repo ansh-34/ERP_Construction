@@ -11,7 +11,7 @@ export const userTaskSubmissionController = {
         actualEndDate?: string;
         taskProgress?: number;
         images?: {
-          imageUrl: string;
+          imageId: string;
           description?: string | null;
         }[];
         // notes?: string;

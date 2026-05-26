@@ -29,6 +29,7 @@ import projectUserRoleRouter from './projectUserRole/projectUserRole.router.js';
 import grnRouter from './grn/grn.router.js';
 import { vendorProductPriceRouter } from './vendorProductPrice/vendorProductPrice.router.js';
 import invoiceRouter from './invoice/invoice.router.js';
+import reportRouter from './report/report.routes';
 import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
 import moduleRouter from './module/module.router';
@@ -72,6 +73,7 @@ domainRouter.use('/project-user-roles', projectUserRoleRouter);
 domainRouter.use('/grn', grnRouter);
 domainRouter.use('/vendor-product-prices', vendorProductPriceRouter());
 domainRouter.use('/invoices', invoiceRouter);
+domainRouter.use('/report', reportRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);
 

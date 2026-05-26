@@ -209,8 +209,7 @@ export const projectController = {
           actualEndDate?: string;
           taskProgress?: number;
           images?: {
-            imageId?: string;
-            imageUrl: string;
+            imageId: string;
             description?: string | null;
           }[];
         };
