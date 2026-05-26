@@ -28,16 +28,23 @@ export const createProductUom = async (req: Request, res: Response) => {
 export const listProductUoms = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
-    const result = await ProductUomService.findAll(
-      req.user!.domainId,
-      req.params.productId,
-      req.query as any,
-      language as string,
-    );
+    const { data, total, page, limit, totalPages } =
+      await ProductUomService.findAll(
+        req.user!.domainId,
+        req.params.productId,
+        req.query as any,
+        language as string,
+      );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_UOM.RETRIEVED,
-      data: result,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      data,
     });
   } catch (error) {
     const message =
@@ -50,15 +57,22 @@ export const listProductUoms = async (req: Request, res: Response) => {
 export const listAllDomainProductUoms = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;
-    const result = await ProductUomService.findAllDomainProductUoms(
-      req.user!.domainId,
-      req.query as any,
-      language as string,
-    );
+    const { data, total, page, limit, totalPages } =
+      await ProductUomService.findAllDomainProductUoms(
+        req.user!.domainId,
+        req.query as any,
+        language as string,
+      );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_UOM.RETRIEVED,
-      data: result,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      data,
     });
   } catch (error) {
     const message =

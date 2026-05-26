@@ -23,6 +23,23 @@ import moduleRouter from './module/module.router.js';
 import inventoryRouter from './inventory/inventory.router.js';
 import invoiceRouter from './invoice/invoice.router.js';
 import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
+import { listAllProductGrades } from './productGrade/productGrade.controller.js';
+import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
+import { validate } from '../../middlewares/validate.js';
+import { z } from 'zod';
+import {
+  pageBasedPaginationQuerySchema,
+  statusFilterSchema,
+} from '../common/common.validator.js';
+
+const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+    productId: z.string().uuid().optional().or(z.literal('')),
+    gradeId: z.string().uuid().optional().or(z.literal('')),
+    productGradeId: z.string().uuid().optional().or(z.literal('')),
+  });
 
 const userRouter = Router();
 
@@ -50,5 +67,17 @@ userRouter.use('/invoices', invoiceRouter);
 userRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 userRouter.use('/modules', moduleRouter);
 userRouter.use('/module-permissions', modulePermissionRouter);
+
+// New flat query APIs
+userRouter.get(
+  '/grades',
+  validate(listAllGradesAndRatesQuerySchema, 'query'),
+  listAllProductGrades,
+);
+userRouter.get(
+  '/std-rates',
+  validate(listAllGradesAndRatesQuerySchema, 'query'),
+  listAllProductGradeStdRates,
+);
 
 export default userRouter;

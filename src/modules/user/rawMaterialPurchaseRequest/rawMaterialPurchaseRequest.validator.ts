@@ -9,8 +9,7 @@ export const createRawMaterialPurchaseRequestBodySchema = z.object({
   projectId: z.string().uuid(),
   requiredBy: z.string().datetime(),
   reason: z.string().optional(),
-  brand: z.string().min(1).optional(),
-  requisitionRequestDocumentUrl: z.string().url().optional(),
+  documentId: z.string().uuid().optional(),
   items: z
     .array(
       z.object({
@@ -18,6 +17,7 @@ export const createRawMaterialPurchaseRequestBodySchema = z.object({
         productGradeId: z.string().uuid(),
         quantity: z.number().positive(),
         uomId: z.string().uuid(),
+        brand: z.string().min(1).optional(),
       }),
     )
     .min(1, 'At least one item is required'),
@@ -31,7 +31,7 @@ export const updateRawMaterialPurchaseRequestBodySchema = z.object({
   quantity: z.number().positive().optional(),
   uomId: z.string().uuid().optional(),
   brand: z.string().min(1).optional(),
-  requisitionRequestDocumentUrl: z.string().url().optional(),
+  documentId: z.string().uuid().optional(),
   requiredBy: z.string().datetime().optional(),
   reason: z.string().min(1).optional(),
   projectId: z.string().uuid().optional(),

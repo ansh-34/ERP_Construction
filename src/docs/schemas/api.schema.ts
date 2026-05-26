@@ -19,6 +19,7 @@ import { ProjectSchemas } from './project.schema.js';
 import { GrnSchemas } from './grn.schema.js';
 import { LogsSchemas } from './logs.schema.js';
 import { InvoiceSchemas } from './invoice.schema.js';
+import { LocationSchemas } from './location.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -42,4 +43,5 @@ export const ApiSchemas = {
   ...GrnSchemas,
   ...LogsSchemas,
   ...InvoiceSchemas,
+  ...LocationSchemas,
 };

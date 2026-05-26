@@ -4,11 +4,10 @@ export const RawMaterialPurchaseRequestSchemas = {
     required: ['type', 'requiredBy', 'reason', 'projectId', 'items'],
     properties: {
       type: { type: 'string', enum: ['IMPORT', 'LOCAL'], example: 'LOCAL' },
-      brand: { type: 'string', example: 'UltraTech' },
-      requisitionRequestDocumentUrl: {
+      documentId: {
         type: 'string',
-        format: 'uri',
-        example: 'https://storage.example.com/docs/req-2026-001.pdf',
+        format: 'uuid',
+        example: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
       },
       requiredBy: {
         type: 'string',
@@ -48,6 +47,7 @@ export const RawMaterialPurchaseRequestSchemas = {
               format: 'uuid',
               example: '7f8e9d0c-1b2a-3c4d-5e6f-7a8b9c0d1e2f',
             },
+            brand: { type: 'string', example: 'UltraTech' },
           },
         },
       },
@@ -63,7 +63,7 @@ export const RawMaterialPurchaseRequestSchemas = {
       uomId: { type: 'string', format: 'uuid' },
       vendor: { type: 'string' },
       brand: { type: 'string' },
-      requisitionRequestDocumentUrl: { type: 'string', format: 'uri' },
+      documentId: { type: 'string', format: 'uuid' },
       requiredBy: { type: 'string', format: 'date-time' },
       reason: { type: 'string' },
       projectId: { type: 'string', format: 'uuid' },
@@ -92,8 +92,17 @@ export const RawMaterialPurchaseRequestSchemas = {
     properties: {
       code: { type: 'string', example: 'RMPR-DOMA-1716382000000' },
       type: { type: 'string', example: 'LOCAL' },
-      brand: { type: 'string', example: 'UltraTech' },
-      requisitionRequestDocumentUrl: { type: 'string', nullable: true },
+      documentId: { type: 'string', format: 'uuid', nullable: true },
+      documentUrl: { type: 'string', nullable: true },
+      document: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string' },
+          url: { type: 'string' },
+        },
+      },
       requiredBy: {
         type: 'string',
         format: 'date-time',
@@ -135,6 +144,7 @@ export const RawMaterialPurchaseRequestSchemas = {
             productGradeId: { type: 'string', format: 'uuid' },
             quantity: { type: 'number', example: 500 },
             uomId: { type: 'string', format: 'uuid' },
+            brand: { type: 'string', example: 'UltraTech' },
             status: { type: 'string', example: 'ACTIVE' },
             isDeleted: { type: 'boolean', example: false },
           },

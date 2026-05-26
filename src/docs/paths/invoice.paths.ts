@@ -46,10 +46,10 @@ const listResponse = {
   },
 };
 
-export const InvoicePaths = {
-  '/api/domain/invoices': {
+const buildInvoicePaths = (basePath: string, tags: string[]) => ({
+  [`${basePath}`]: {
     get: {
-      tags: ['Invoices'],
+      tags,
       summary: 'List invoices',
       description: 'Get a paginated list of invoices with filters.',
       security: [{ bearerAuth: [] }],
@@ -87,9 +87,9 @@ export const InvoicePaths = {
       },
     },
   },
-  '/api/domain/invoices/{id}': {
+  [`${basePath}/{id}`]: {
     get: {
-      tags: ['Invoices'],
+      tags,
       summary: 'Get invoice by ID',
       description: 'Fetch details of a single invoice.',
       security: [{ bearerAuth: [] }],
@@ -120,7 +120,7 @@ export const InvoicePaths = {
       },
     },
     delete: {
-      tags: ['Invoices'],
+      tags,
       summary: 'Delete invoice',
       description: 'Soft-delete an invoice.',
       security: [{ bearerAuth: [] }],
@@ -155,9 +155,9 @@ export const InvoicePaths = {
       },
     },
   },
-  '/api/domain/invoices/{id}/items': {
+  [`${basePath}/{id}/items`]: {
     get: {
-      tags: ['Invoices'],
+      tags,
       summary: 'List invoice items',
       description: 'Get all line items of an invoice.',
       security: [{ bearerAuth: [] }],
@@ -191,9 +191,9 @@ export const InvoicePaths = {
       },
     },
   },
-  '/api/domain/invoices/po/{poId}': {
+  [`${basePath}/po/{poId}`]: {
     post: {
-      tags: ['Invoices'],
+      tags,
       summary: 'Generate invoices from Purchase Order',
       description:
         'Generate invoices for a purchase order by assigning vendors from pricing rules.',
@@ -240,4 +240,9 @@ export const InvoicePaths = {
       },
     },
   },
+});
+
+export const InvoicePaths = {
+  ...buildInvoicePaths('/api/domain/invoices', ['Invoices']),
+  ...buildInvoicePaths('/api/user/invoices', ['User Invoices']),
 };

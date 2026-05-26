@@ -1,9 +1,9 @@
 import { errors } from './responses.js';
 
-export const InventoryPaths = {
-  '/api/domain/inventory/stats': {
+const buildInventoryPaths = (basePath: string, tags: string[]) => ({
+  [`${basePath}/stats`]: {
     get: {
-      tags: ['Inventory'],
+      tags,
       summary: 'Inventory stats',
       description:
         'Returns total items, active/inactive counts, total quantity, low stock count, out of stock count, and unique product count.',
@@ -21,9 +21,9 @@ export const InventoryPaths = {
       },
     },
   },
-  '/api/domain/inventory': {
+  [`${basePath}`]: {
     get: {
-      tags: ['Inventory'],
+      tags,
       summary: 'List inventory items',
       description:
         'Returns paginated list. Each entry includes enriched product (with productType and _count), product grade (with std rates), and UOM (with conversionRate).',
@@ -59,7 +59,7 @@ export const InventoryPaths = {
       },
     },
     post: {
-      tags: ['Inventory'],
+      tags,
       summary: 'Create inventory entry',
       description:
         'Creates a new inventory record. Response includes enriched product, product grade (with std rates), and UOM (with conversion rate).',
@@ -95,9 +95,9 @@ export const InventoryPaths = {
       },
     },
   },
-  '/api/domain/inventory/{id}/reorder': {
+  [`${basePath}/{id}/reorder`]: {
     put: {
-      tags: ['Inventory'],
+      tags,
       summary: 'Update reorder level',
       description: 'Updates the reorder level for an inventory entry.',
       security: [{ bearerAuth: [] }],
@@ -137,9 +137,9 @@ export const InventoryPaths = {
       },
     },
   },
-  '/api/domain/inventory/{id}': {
+  [`${basePath}/{id}`]: {
     delete: {
-      tags: ['Inventory'],
+      tags,
       summary: 'Delete inventory entry',
       description: 'Soft deletes an inventory entry.',
       security: [{ bearerAuth: [] }],
@@ -174,4 +174,9 @@ export const InventoryPaths = {
       },
     },
   },
+});
+
+export const InventoryPaths = {
+  ...buildInventoryPaths('/api/domain/inventory', ['Inventory']),
+  ...buildInventoryPaths('/api/user/inventory', ['User Inventory']),
 };

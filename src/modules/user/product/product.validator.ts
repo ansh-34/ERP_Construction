@@ -66,7 +66,6 @@ export const createProductBodySchema = z.object({
   status: z
     .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
     .default('ACTIVE'),
-  uom: z.array(z.string().uuid()).optional(),
   uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),
   standardRates: z.array(standardRateItemSchema).optional(),
@@ -78,7 +77,6 @@ export const updateProductBodySchema = z.object({
   productType: z.enum(['RAW_MATERIAL', 'FINISHED_PRODUCT']).optional(),
   status: statusFilterSchema.shape.status.optional(),
   uom: z.array(z.string().uuid()).optional(),
-  uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),
   standardRates: z.array(standardRateItemSchema).optional(),
 });
@@ -92,8 +90,7 @@ export const bulkUpdateStdRatesBodySchema = z.object({
 });
 
 export const bulkUpdateUomsBodySchema = z.object({
-  uom: z.array(z.string().uuid()).optional(),
-  uoms: uomsSchema.optional(),
+  uom: z.array(z.string().uuid()),
 });
 
 export const bulkDeleteBodySchema = z.object({

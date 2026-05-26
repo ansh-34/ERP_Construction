@@ -83,6 +83,7 @@ export const ProductGradeService = {
       domainId,
       isDeleted: false,
       ...(query.status && { status: query.status }),
+      ...(query.productId && { productId: query.productId }),
       ...(query.searchKey && {
         searchText: {
           contains: query.searchKey.trim(),
@@ -100,6 +101,7 @@ export const ProductGradeService = {
           id: true,
           gradeCode: true,
           gradeDisplayName: true,
+          productId: true,
           product: {
             select: {
               id: true,
@@ -119,6 +121,7 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         langCode,
       ),
+      productId: grade.productId,
       product: grade.product
         ? {
             id: grade.product.id,
@@ -178,6 +181,7 @@ export const ProductGradeService = {
           id: true,
           gradeCode: true,
           gradeDisplayName: true,
+          productId: true,
           product: {
             select: {
               id: true,
@@ -197,6 +201,7 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         langCode,
       ),
+      productId: grade.productId,
       product: grade.product
         ? {
             id: grade.product.id,

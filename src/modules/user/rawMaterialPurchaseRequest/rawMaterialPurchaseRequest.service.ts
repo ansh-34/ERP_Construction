@@ -6,7 +6,6 @@ import {
   PurchaseRequestType,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
-
 const editableStatuses: ApprovalStatus[] = [
   ApprovalStatus.PENDING,
   ApprovalStatus.REJECTED,
@@ -19,6 +18,7 @@ const ensureRelationsBelongToDomain = async (
     productGradeId?: string;
     uomId?: string;
     projectId?: string;
+    documentId?: string;
   },
 ) => {
   if (data.productId) {
@@ -53,6 +53,17 @@ const ensureRelationsBelongToDomain = async (
     });
     if (!project) throw new Error('Project not found');
   }
+
+  if (data.documentId) {
+    const media = await prisma.media.findFirst({
+      where: {
+        id: data.documentId,
+        domainId,
+        isDeleted: false,
+      },
+    });
+    if (!media) throw new Error('Document media not found');
+  }
 };
 
 export const RawMaterialPurchaseRequestService = {
@@ -76,19 +87,20 @@ export const RawMaterialPurchaseRequestService = {
       projectId: string;
       requiredBy: string;
       reason?: string;
-      brand?: string;
-      requisitionRequestDocumentUrl?: string;
+      documentId?: string;
       items: {
         productId: string;
         productGradeId: string;
         quantity: number;
         uomId: string;
+        brand?: string;
       }[];
     },
   ) {
-    // Validate project
+    // Validate project & document media
     await ensureRelationsBelongToDomain(domainId, {
       projectId: data.projectId,
+      documentId: data.documentId,
     });
 
     // Validate all items
@@ -118,8 +130,8 @@ export const RawMaterialPurchaseRequestService = {
             productGradeId: item.productGradeId,
             quantity: item.quantity,
             uomId: item.uomId,
-            brand: data.brand,
-            requisitionRequestDocumentUrl: data.requisitionRequestDocumentUrl,
+            brand: item.brand,
+            documentId: data.documentId,
             requiredBy: new Date(data.requiredBy),
             reason: data.reason || 'No reason provided',
             projectId: data.projectId,
@@ -128,6 +140,9 @@ export const RawMaterialPurchaseRequestService = {
             approvalStatus: ApprovalStatus.PENDING,
             status: 'ACTIVE',
             isDeleted: false,
+          },
+          include: {
+            document: true,
           },
         });
 
@@ -140,8 +155,15 @@ export const RawMaterialPurchaseRequestService = {
         code: first.code,
         type: first.type,
         date: first.date,
-        brand: first.brand,
-        requisitionRequestDocumentUrl: first.requisitionRequestDocumentUrl,
+        documentId: first.documentId,
+        documentUrl: first.document?.url || null,
+        document: first.document
+          ? {
+              id: first.document.id,
+              name: first.document.name,
+              url: first.document.url,
+            }
+          : null,
         requestedBy: first.requestedBy,
         requiredBy: first.requiredBy,
         reason: first.reason,
@@ -160,6 +182,7 @@ export const RawMaterialPurchaseRequestService = {
           productGradeId: r.productGradeId,
           quantity: r.quantity,
           uomId: r.uomId,
+          brand: r.brand,
           status: r.status,
           isDeleted: r.isDeleted,
         })),
@@ -241,6 +264,7 @@ export const RawMaterialPurchaseRequestService = {
         requestedUser: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
+        document: true,
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -252,8 +276,15 @@ export const RawMaterialPurchaseRequestService = {
           code: row.code,
           type: row.type,
           date: row.date,
-          brand: row.brand,
-          requisitionRequestDocumentUrl: row.requisitionRequestDocumentUrl,
+          documentId: row.documentId,
+          documentUrl: row.document?.url || null,
+          document: row.document
+            ? {
+                id: row.document.id,
+                name: row.document.name,
+                url: row.document.url,
+              }
+            : null,
           requestedBy: row.requestedBy,
           requestedUser: row.requestedUser,
           requiredBy: row.requiredBy,
@@ -281,6 +312,7 @@ export const RawMaterialPurchaseRequestService = {
         quantity: row.quantity,
         uomId: row.uomId,
         uom: row.uom,
+        brand: row.brand,
         status: row.status,
         isDeleted: row.isDeleted,
       });
@@ -308,12 +340,16 @@ export const RawMaterialPurchaseRequestService = {
         requestedUser: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
+        document: true,
       },
     });
     if (!target) {
       throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND);
     }
-    return target;
+    return {
+      ...target,
+      documentUrl: target.document?.url || null,
+    };
   },
 
   async getRequestByCode(domainId: string, code: string) {
@@ -326,6 +362,7 @@ export const RawMaterialPurchaseRequestService = {
         requestedUser: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
+        document: true,
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -339,8 +376,15 @@ export const RawMaterialPurchaseRequestService = {
       code: firstRow.code,
       type: firstRow.type,
       date: firstRow.date,
-      brand: firstRow.brand,
-      requisitionRequestDocumentUrl: firstRow.requisitionRequestDocumentUrl,
+      documentId: firstRow.documentId,
+      documentUrl: firstRow.document?.url || null,
+      document: firstRow.document
+        ? {
+            id: firstRow.document.id,
+            name: firstRow.document.name,
+            url: firstRow.document.url,
+          }
+        : null,
       requestedBy: firstRow.requestedBy,
       requestedUser: firstRow.requestedUser,
       requiredBy: firstRow.requiredBy,
@@ -365,6 +409,7 @@ export const RawMaterialPurchaseRequestService = {
         quantity: row.quantity,
         uomId: row.uomId,
         uom: row.uom,
+        brand: row.brand,
         status: row.status,
         isDeleted: row.isDeleted,
       })),
@@ -390,11 +435,18 @@ export const RawMaterialPurchaseRequestService = {
       productGradeId: data.productGradeId,
       uomId: data.uomId,
       projectId: data.projectId,
+      documentId: data.documentId,
     };
     await ensureRelationsBelongToDomain(domainId, relationData);
 
-    const { productId, productGradeId, quantity, uomId, ...sharedFields } =
-      data;
+    const {
+      productId,
+      productGradeId,
+      quantity,
+      uomId,
+      brand,
+      ...sharedFields
+    } = data;
 
     if (sharedFields.requiredBy) {
       sharedFields.requiredBy = new Date(sharedFields.requiredBy);
@@ -406,6 +458,7 @@ export const RawMaterialPurchaseRequestService = {
       if (productGradeId) specificUpdate.productGradeId = productGradeId;
       if (quantity) specificUpdate.quantity = quantity;
       if (uomId) specificUpdate.uomId = uomId;
+      if (brand !== undefined) specificUpdate.brand = brand;
       if (data.status) specificUpdate.status = data.status;
 
       Object.assign(specificUpdate, sharedFields);
@@ -491,6 +544,7 @@ export const RawMaterialPurchaseRequestService = {
       productGradeId: data.productGradeId,
       uomId: data.uomId,
       projectId: data.projectId,
+      documentId: data.documentId,
     };
     await ensureRelationsBelongToDomain(domainId, relationData);
 
@@ -499,6 +553,7 @@ export const RawMaterialPurchaseRequestService = {
       productGradeId,
       quantity,
       uomId,
+      brand,
       ...sharedFields
     } = data;
 
@@ -512,6 +567,7 @@ export const RawMaterialPurchaseRequestService = {
       if (productGradeId) specificUpdate.productGradeId = productGradeId;
       if (quantity) specificUpdate.quantity = quantity;
       if (uomId) specificUpdate.uomId = uomId;
+      if (brand !== undefined) specificUpdate.brand = brand;
       if (data.status) specificUpdate.status = data.status;
 
       Object.assign(specificUpdate, sharedFields);

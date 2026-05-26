@@ -1,50 +1,114 @@
 import { errors } from './responses.js';
 
+const moduleResponse = {
+  200: {
+    description: 'Modules retrieved',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Modules retrieved' },
+            pagination: {
+              type: 'object',
+              properties: {
+                currentCount: { type: 'integer' },
+                totalCount: { type: 'integer' },
+                offset: { type: 'integer' },
+                limit: { type: 'integer' },
+              },
+            },
+            data: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'object' },
+                  code: { type: 'string' },
+                  status: { type: 'string' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  ...errors,
+};
+
+const moduleDetailResponse = {
+  200: {
+    description: 'Module retrieved',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Module retrieved' },
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                name: { type: 'object' },
+                code: { type: 'string' },
+                status: { type: 'string' },
+                createdAt: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  ...errors,
+};
+
+const buildModuleGetPaths = (basePath: string, tags: string[]) => ({
+  [`${basePath}`]: {
+    get: {
+      tags,
+      summary: 'List modules',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100 },
+        },
+      ],
+      responses: moduleResponse,
+    },
+  },
+  [`${basePath}/{id}`]: {
+    get: {
+      tags,
+      summary: 'Get module by ID',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+      ],
+      responses: moduleDetailResponse,
+    },
+  },
+});
+
 export const ModulePaths = {
   '/api/superAdmin/modules': {
     get: {
       tags: ['Modules'],
       summary: 'List modules',
       security: [{ bearerAuth: [] }],
-      responses: {
-        200: {
-          description: 'Modules retrieved',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Modules retrieved' },
-                  pagination: {
-                    type: 'object',
-                    properties: {
-                      currentCount: { type: 'integer' },
-                      totalCount: { type: 'integer' },
-                      offset: { type: 'integer' },
-                      limit: { type: 'integer' },
-                    },
-                  },
-                  data: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string', format: 'uuid' },
-                        name: { type: 'object' },
-                        code: { type: 'string' },
-                        status: { type: 'string' },
-                        createdAt: { type: 'string', format: 'date-time' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        ...errors,
-      },
+      responses: moduleResponse,
     },
     post: {
       tags: ['Modules'],
@@ -148,4 +212,6 @@ export const ModulePaths = {
       },
     },
   },
+  ...buildModuleGetPaths('/api/domain/modules', ['Domain Modules']),
+  ...buildModuleGetPaths('/api/user/modules', ['User Modules']),
 };
