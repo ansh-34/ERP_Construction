@@ -33,6 +33,23 @@ import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
 import moduleRouter from './module/module.router';
 import modulePermissionRouter from './modulePermission/modulePermission.router';
+import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
+import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
+import { validate } from '../../middlewares/validate.js';
+import { z } from 'zod';
+import {
+  pageBasedPaginationQuerySchema,
+  statusFilterSchema,
+} from '../common/common.validator.js';
+
+const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+    productId: z.string().optional(),
+    gradeId: z.string().optional(),
+    productGradeId: z.string().optional(),
+  });
 
 const domainRouter = Router();
 
@@ -74,5 +91,17 @@ domainRouter.use('/vendor-product-prices', vendorProductPriceRouter());
 domainRouter.use('/invoices', invoiceRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);
+
+// New flat query APIs
+domainRouter.get(
+  '/grades',
+  validate(listAllGradesAndRatesQuerySchema, 'query'),
+  listAllDomainProductGrades,
+);
+domainRouter.get(
+  '/std-rates',
+  validate(listAllGradesAndRatesQuerySchema, 'query'),
+  listAllProductGradeStdRates,
+);
 
 export default domainRouter;

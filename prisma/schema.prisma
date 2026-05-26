@@ -774,7 +774,8 @@ model RawMaterialPurchaseRequest {
   uomId                         String              @db.Uuid
   uom                           Uom                 @relation(fields: [uomId], references: [id])
   brand                         String?
-  requisitionRequestDocumentUrl String?
+  documentId                    String?             @db.Uuid
+  document                      Media?              @relation(fields: [documentId], references: [id])
   requestedBy                   String              @db.Uuid
   requestedUser                 User                @relation("RequestedByUser", fields: [requestedBy], references: [id])
   requiredBy                    DateTime
@@ -1070,8 +1071,9 @@ model Media {
   isDeleted         Boolean            @default(false)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  admins            Admin[]
-  projectTaskImages ProjectTaskImage[]
+  admins                      Admin[]
+  projectTaskImages           ProjectTaskImage[]
+  rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
 
   @@index([domainId])
   @@index([adminId])

@@ -74,7 +74,6 @@ export const ProductGradeStdRateService = {
     if (!product || product.productGrades.length === 0) {
       throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
     }
-    const grade = product.productGrades[0];
 
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -105,38 +104,16 @@ export const ProductGradeStdRateService = {
 
     const normalizedData = data.map((stdRate: any) => ({
       ...stdRate,
+      productId: stdRate.productId,
+      productGradeId: stdRate.productGradeId,
       stdRateType: ProductGradeStdRateService.localizeName(
         stdRate.stdRateType,
         langCode,
       ),
     }));
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { productGrades, ...productData } = product;
-    const gradeData = grade;
-
-    const localizedProduct = {
-      ...productData,
-      displayName: ProductGradeStdRateService.localizeName(
-        product.displayName,
-        langCode,
-      ),
-    };
-
-    const localizedGrade = {
-      ...gradeData,
-      gradeDisplayName: ProductGradeStdRateService.localizeName(
-        grade.gradeDisplayName,
-        langCode,
-      ),
-      productGradeStdRates: normalizedData,
-    };
-
     return {
-      data: {
-        ...localizedProduct,
-        productGrade: localizedGrade,
-      },
+      data: normalizedData,
       total,
       page,
       limit,
@@ -245,6 +222,66 @@ export const ProductGradeStdRateService = {
         },
       },
     });
+  },
+
+  async findAllInDomain(
+    domainId: string,
+    query: {
+      page?: string;
+      limit?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      [key: string]: any;
+    },
+    langCode: string,
+  ) {
+    const page = parseInt(query.page ?? '1');
+    const limit = parseInt(query.limit ?? '10');
+    const skip = (page - 1) * limit;
+
+    const where = {
+      domainId,
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+      ...(query.productId && { productId: query.productId }),
+      ...((query.gradeId || query.productGradeId) && {
+        productGradeId: query.gradeId || query.productGradeId,
+      }),
+      ...(query.searchKey && {
+        searchText: {
+          contains: query.searchKey.trim(),
+          mode: Prisma.QueryMode.insensitive,
+        },
+      }),
+    };
+
+    const [data, total] = await Promise.all([
+      prisma.productGradeStdRates.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.productGradeStdRates.count({ where }),
+    ]);
+
+    const normalizedData = data.map((stdRate: any) => ({
+      ...stdRate,
+      productId: stdRate.productId,
+      productGradeId: stdRate.productGradeId,
+      stdRateType: ProductGradeStdRateService.localizeName(
+        stdRate.stdRateType,
+        langCode,
+      ),
+    }));
+
+    return {
+      data: normalizedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   },
 
   async softDelete(

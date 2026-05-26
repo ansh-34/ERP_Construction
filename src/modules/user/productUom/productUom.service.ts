@@ -76,15 +76,15 @@ export const ProductUomService = {
     domainId: string,
     productId: string,
     query: {
-      page?: string;
-      limit?: string;
+      page?: number | string;
+      limit?: number | string;
       status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,
   ) {
-    const page = parseInt(query.page ?? '1');
-    const limit = parseInt(query.limit ?? '10');
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
 
     const where = {
@@ -99,21 +99,28 @@ export const ProductUomService = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { uom: true },
+        include: { uom: true, product: true },
       }),
       prisma.productUom.count({ where }),
     ]);
 
-    const normalizedData = data.map((productUom: any) => ({
-      ...productUom,
-      uom: {
-        ...productUom.uom,
-        displayName: ProductUomService.localizeName(
-          productUom.uom.displayName,
-          langCode,
-        ),
-      },
-    }));
+    const normalizedData = data.map((productUom: any) => {
+      const { uom, product, ...junction } = productUom;
+      return {
+        ...uom,
+        displayName: ProductUomService.localizeName(uom.displayName, langCode),
+        productId: junction.productId,
+        product: product
+          ? {
+              ...product,
+              displayName: ProductUomService.localizeName(
+                product.displayName,
+                langCode,
+              ),
+            }
+          : product,
+      };
+    });
 
     return {
       data: normalizedData,
@@ -127,15 +134,15 @@ export const ProductUomService = {
   async findAllDomainProductUoms(
     domainId: string,
     query: {
-      page?: string;
-      limit?: string;
+      page?: number | string;
+      limit?: number | string;
       status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
     langCode: string,
   ) {
-    const page = parseInt(query.page ?? '1');
-    const limit = parseInt(query.limit ?? '10');
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
 
     const where = {
@@ -158,25 +165,23 @@ export const ProductUomService = {
       prisma.productUom.count({ where }),
     ]);
 
-    const normalizedData = data.map((productUom: any) => ({
-      ...productUom,
-      uom: {
-        ...productUom.uom,
-        displayName: ProductUomService.localizeName(
-          productUom.uom.displayName,
-          langCode,
-        ),
-      },
-      product: productUom.product
-        ? {
-            ...productUom.product,
-            displayName: ProductUomService.localizeName(
-              productUom.product.displayName,
-              langCode,
-            ),
-          }
-        : productUom.product,
-    }));
+    const normalizedData = data.map((productUom: any) => {
+      const { uom, product, ...junction } = productUom;
+      return {
+        ...uom,
+        displayName: ProductUomService.localizeName(uom.displayName, langCode),
+        productId: junction.productId,
+        product: product
+          ? {
+              ...product,
+              displayName: ProductUomService.localizeName(
+                product.displayName,
+                langCode,
+              ),
+            }
+          : product,
+      };
+    });
 
     return {
       data: normalizedData,

@@ -136,3 +136,31 @@ export const deleteProductGradeStdRate = async (
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const listAllProductGradeStdRates = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { language = 'en' } = req.headers;
+    const result = await ProductGradeStdRateService.findAllInDomain(
+      req.user!.domainId,
+      req.query as any,
+      language as string,
+    );
+    const { data, ...pagination } = result as any;
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT_GRADE_STD_RATE.RETRIEVED,
+      pagination,
+      data,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PRODUCT_GRADE_STD_RATE.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

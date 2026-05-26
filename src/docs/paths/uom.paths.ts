@@ -7,13 +7,13 @@ const languageHeader = {
   description: 'Language code for localized response (e.g. en, hi, ar)',
 };
 
-export const UomPaths = {
-  '/api/domain/uoms': {
+const buildUomPaths = (basePath: string, tags: string[]) => ({
+  [`${basePath}`]: {
     get: {
-      tags: ['UOMs'],
+      tags,
       summary: 'List UOMs',
       description:
-        'Retrieve a paginated list of units of measurement for the current domain. The `displayName` field is localized based on the `language` header.',
+        'Retrieve a paginated list of units of measurement. The `displayName` field is localized based on the `language` header.',
       security: [{ bearerAuth: [] }],
       parameters: [
         languageHeader,
@@ -106,7 +106,7 @@ export const UomPaths = {
       },
     },
     post: {
-      tags: ['UOMs'],
+      tags,
       summary: 'Create UOM',
       description:
         'Create a new unit of measurement. The `displayName` accepts a JSON object with language codes as keys (e.g. `{ "en": "Kilogram", "hi": "किलोग्राम" }`). English (`en`) is required. The `code` is auto-generated from the English name.',
@@ -166,9 +166,9 @@ export const UomPaths = {
       },
     },
   },
-  '/api/domain/uoms/{id}': {
+  [`${basePath}/{id}`]: {
     get: {
-      tags: ['UOMs'],
+      tags,
       summary: 'Get UOM by ID',
       description:
         'Retrieve a single UOM by ID. When `language` header is provided, the `displayName` is resolved to that language.',
@@ -220,7 +220,7 @@ export const UomPaths = {
       },
     },
     put: {
-      tags: ['UOMs'],
+      tags,
       summary: 'Update UOM',
       description:
         'Update UOM fields. The `displayName` field accepts localized JSON (en required when provided). If `code` is provided, duplicates are checked.',
@@ -287,7 +287,7 @@ export const UomPaths = {
       },
     },
     delete: {
-      tags: ['UOMs'],
+      tags,
       summary: 'Delete UOM',
       description:
         'Soft-delete a UOM by setting isDeleted=true and status=INACTIVE.',
@@ -329,4 +329,9 @@ export const UomPaths = {
       },
     },
   },
+});
+
+export const UomPaths = {
+  ...buildUomPaths('/api/domain/uoms', ['UOMs']),
+  ...buildUomPaths('/api/user/uoms', ['User UOMs']),
 };

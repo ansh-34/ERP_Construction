@@ -25,6 +25,7 @@ import { listAllDomainProductGrades } from '../productGrade/productGrade.control
 import { productUomRouter } from '../productUom/productUom.router.js';
 import { listAllDomainProductUoms } from '../productUom/productUom.controller.js';
 import { listProductUomQuerySchema } from '../productUom/productUom.validation.js';
+import { listAllProductGradeStdRates } from '../productGradeStdRate/productGradeStdRate.controller.js';
 
 const router = Router();
 
@@ -45,6 +46,12 @@ router.get(
   // authorize('product', 'read'),
   validate(listProductsQuerySchema, 'query'),
   listAllDomainProductGrades,
+);
+router.get(
+  '/grades/std-rates',
+  // authorize('product', 'read'),
+  validate(listProductsQuerySchema, 'query'),
+  listAllProductGradeStdRates,
 );
 router.get(
   '/uoms',

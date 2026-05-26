@@ -55,10 +55,10 @@ const listResponse = {
   },
 };
 
-export const RawMaterialPurchaseRequestPaths = {
-  '/api/domain/rmpr': {
+const buildRmprPaths = (basePath: string, tags: string[]) => ({
+  [`${basePath}`]: {
     post: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Create purchase request',
       description: 'Create a new raw material purchase request for a project.',
       security: [{ bearerAuth: [] }],
@@ -99,7 +99,7 @@ export const RawMaterialPurchaseRequestPaths = {
       },
     },
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'List purchase requests',
       description:
         'Retrieve a paginated list of raw material purchase requests with filtering by status, type, approval status, product, and project.',
@@ -143,9 +143,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/approval': {
+  [`${basePath}/approval`]: {
     put: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Approve or reject requests',
       description:
         'Approve or reject one or more raw material purchase requests by their group code.',
@@ -182,9 +182,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/code/{code}': {
+  [`${basePath}/code/{code}`]: {
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Get grouped request by code',
       description:
         'Retrieve a grouped raw material purchase request by its unique code, including all product line items.',
@@ -224,7 +224,7 @@ export const RawMaterialPurchaseRequestPaths = {
       },
     },
     delete: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Delete requests by code',
       description:
         'Soft-delete all raw material purchase requests associated with a group code.',
@@ -263,9 +263,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/code/{code}/product/{productId}': {
+  [`${basePath}/code/{code}/product/{productId}`]: {
     put: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Update request product by code',
       description:
         'Update a specific product line item in a grouped raw material purchase request.',
@@ -322,9 +322,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/{id}': {
+  [`${basePath}/{id}`]: {
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Get request by ID',
       description: 'Retrieve a single raw material purchase request by ID.',
       security: [{ bearerAuth: [] }],
@@ -362,7 +362,7 @@ export const RawMaterialPurchaseRequestPaths = {
       },
     },
     put: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Update request',
       description: 'Update a raw material purchase request.',
       security: [{ bearerAuth: [] }],
@@ -410,7 +410,7 @@ export const RawMaterialPurchaseRequestPaths = {
       },
     },
     delete: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Delete request',
       description: 'Soft-delete a raw material purchase request.',
       security: [{ bearerAuth: [] }],
@@ -447,9 +447,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/po': {
+  [`${basePath}/po`]: {
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'List purchase orders',
       description:
         'Retrieve a paginated list of purchase orders generated from RMPR approval.',
@@ -510,9 +510,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/po/{poId}': {
+  [`${basePath}/po/{poId}`]: {
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'Get purchase order by ID',
       description:
         'Retrieve a single purchase order by its ID, with product line items nested inside.',
@@ -564,9 +564,9 @@ export const RawMaterialPurchaseRequestPaths = {
     },
   },
 
-  '/api/domain/rmpr/po/{poId}/products': {
+  [`${basePath}/po/{poId}/products`]: {
     get: {
-      tags: ['Raw Material Purchase Requests'],
+      tags,
       summary: 'List products in a purchase order',
       description:
         'Retrieve the product line items belonging to a purchase order.',
@@ -607,4 +607,9 @@ export const RawMaterialPurchaseRequestPaths = {
       },
     },
   },
+});
+
+export const RawMaterialPurchaseRequestPaths = {
+  ...buildRmprPaths('/api/domain/rmpr', ['Raw Material Purchase Requests']),
+  ...buildRmprPaths('/api/user/rmpr', ['User Raw Material Purchase Requests']),
 };

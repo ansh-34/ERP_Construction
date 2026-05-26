@@ -191,24 +191,89 @@ export const ProductService = {
     langCode: string,
   ) {
     const { offset, limit } = normalizePagination(query);
+    const searchKey = query.searchKey?.trim() || '';
 
-    const [totalCount, products] = await ProductRepository.listByDomain(
+    const where = {
       domainId,
-      limit,
-      offset,
-      {
-        status: (query as any)?.status,
-        searchKey: (query as any)?.searchKey,
-      },
-    );
+      isDeleted: false,
+      ...(query.status && { status: query.status }),
+      ...(searchKey && {
+        searchText: {
+          contains: searchKey,
+          mode: 'insensitive',
+        },
+      }),
+    };
+
+    const [totalCount, products] = await prisma.$transaction([
+      prisma.product.count({ where: where as any }),
+      prisma.product.findMany({
+        where: where as any,
+        include: {
+          _count: {
+            select: {
+              productGrades: { where: { isDeleted: false } },
+              productUoms: { where: { isDeleted: false } },
+            },
+          },
+          inventories: {
+            where: { isDeleted: false },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              quantity: true,
+              reorderLevel: true,
+              status: true,
+              createdAt: true,
+              productId: true,
+              productGradeId: true,
+              uomId: true,
+              productGrade: {
+                select: { id: true, gradeDisplayName: true, gradeCode: true },
+              },
+              uom: {
+                select: { id: true, displayName: true, code: true },
+              },
+            },
+          },
+        },
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     const localizedProducts = products.map((product: any) => {
-      const { _count, ...rest } = product;
+      const { _count, inventories, ...rest } = product;
       return {
         ...rest,
         displayName: ProductService.localizeName(product.displayName, langCode),
         gradesCount: _count?.productGrades || 0,
         uomsCount: _count?.productUoms || 0,
+        inventories: (inventories || []).map((inv: any) => ({
+          ...inv,
+          productId: inv.productId,
+          productGradeId: inv.productGradeId,
+          uomId: inv.uomId,
+          productGrade: inv.productGrade
+            ? {
+                ...inv.productGrade,
+                gradeDisplayName: ProductService.localizeName(
+                  inv.productGrade.gradeDisplayName,
+                  langCode,
+                ),
+              }
+            : inv.productGrade,
+          uom: inv.uom
+            ? {
+                ...inv.uom,
+                displayName: ProductService.localizeName(
+                  inv.uom.displayName,
+                  langCode,
+                ),
+              }
+            : inv.uom,
+        })),
       };
     });
 
