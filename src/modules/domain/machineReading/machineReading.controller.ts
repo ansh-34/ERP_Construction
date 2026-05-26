@@ -13,14 +13,16 @@ export const machineReadingController = {
       //   'en';
       const {
         date,
-        openingFuelStock,
+        currentMachineReading,
+        refillFuelStock,
         fuelRefillQuantity,
         machineStartTime,
         projectId,
         status,
       } = req.body as {
         date?: string;
-        openingFuelStock?: number;
+        currentMachineReading?: number | string;
+        refillFuelStock?: number | string;
         fuelRefillQuantity?: number;
         machineStartTime?: string;
         projectId?: string;
@@ -32,7 +34,7 @@ export const machineReadingController = {
 
       const machineReading = await machineReadingService.create({
         date: date ?? '',
-        openingFuelStock: openingFuelStock ?? 0,
+        refillFuelStock: refillFuelStock ?? currentMachineReading,
         ...(fuelRefillQuantity !== undefined && { fuelRefillQuantity }),
         machineStartTime: machineStartTime ?? '',
         projectId: projectId ?? '',
@@ -96,7 +98,7 @@ export const machineReadingController = {
       const { domainId } = req.query as { domainId?: string };
       const machineReading = await machineReadingService.getById(
         id ?? '',
-        domainId ?? '',
+        domainId ?? req.user!.domainId,
         req.user!.adminId,
       );
 
@@ -131,7 +133,7 @@ export const machineReadingController = {
 
       const updatedMachineReading = await machineReadingService.update(
         id ?? '',
-        domainId ?? '',
+        domainId ?? req.user!.domainId,
         req.user!.adminId,
         {
           closingFuelStock: closingFuelStock ?? 0,
@@ -154,6 +156,40 @@ export const machineReadingController = {
         error instanceof Error
           ? error.message
           : 'Failed to update machine reading';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  end: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { id } = req.params as { id?: string };
+      const { domainId } = req.query as { domainId?: string };
+      const { machineEndTime } = req.body as {
+        machineEndTime?: string;
+      };
+
+      const updatedMachineReading = await machineReadingService.end(
+        id ?? '',
+        domainId ?? req.user!.domainId,
+        req.user!.adminId,
+        {
+          machineEndTime: machineEndTime ?? '',
+        },
+      );
+
+      if (!updatedMachineReading) {
+        return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
+      }
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Machine reading ended successfully',
+        data: updatedMachineReading,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to end machine reading';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

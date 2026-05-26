@@ -14,7 +14,7 @@ export const machineryController = {
       const { code, type, expectedLitrePerHour, projectId, status } =
         req.body as {
           code?: string;
-          type?: Record<string, unknown>;
+          type?: string;
           expectedLitrePerHour?: number;
           projectId?: string;
           status?: StatusEnum;
@@ -26,8 +26,8 @@ export const machineryController = {
       const machinery = await machineryService.create(
         {
           code: code ?? '',
-          type: type ?? {},
-          expectedLitrePerHour: expectedLitrePerHour ?? 0,
+          type: type ?? '',
+          ...(expectedLitrePerHour !== undefined && { expectedLitrePerHour }),
           projectId: projectId ?? '',
           domainId,
           adminId,
@@ -118,7 +118,7 @@ export const machineryController = {
         'en';
       const { code, type, expectedLitrePerHour, status } = req.body as {
         code?: string;
-        type?: Record<string, unknown>;
+        type?: string;
         expectedLitrePerHour?: number;
         status?: StatusEnum;
       };

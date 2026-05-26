@@ -5,6 +5,10 @@ import {
   createProjectBody,
   domainIdQuery,
   idParams,
+  listProjectTaskSubmissionQuery,
+  projectTaskDelayActionBody,
+  projectTaskSubmissionActionBody,
+  submitProjectTaskBody,
   updateProjectBody,
 } from './project.validate';
 
@@ -19,6 +23,26 @@ projectRouter.get(
   '/',
   validate(domainIdQuery, 'query'),
   projectController.getAll,
+);
+projectRouter.post(
+  '/tasks/submission',
+  validate(submitProjectTaskBody, 'body'),
+  projectController.submitTask,
+);
+projectRouter.get(
+  '/tasks/submission',
+  validate(listProjectTaskSubmissionQuery, 'query'),
+  projectController.getTaskSubmissions,
+);
+projectRouter.put(
+  '/tasks/submission/action',
+  validate(projectTaskSubmissionActionBody, 'body'),
+  projectController.actionTaskSubmission,
+);
+projectRouter.put(
+  '/tasks/delay/action',
+  validate(projectTaskDelayActionBody, 'body'),
+  projectController.actionTaskDelay,
 );
 projectRouter.get(
   '/:id',
