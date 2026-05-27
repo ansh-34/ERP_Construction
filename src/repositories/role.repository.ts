@@ -11,6 +11,20 @@ export const RoleRepository = {
   findActiveByIdAndDomain(id: string, domainId: string) {
     return prisma.role.findFirst({
       where: { id, domainId, isDeleted: false },
+      include: {
+        roleModulePermissions: {
+          include: {
+            module: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                status: true,
+              },
+            },
+          },
+        },
+      },
     });
   },
 

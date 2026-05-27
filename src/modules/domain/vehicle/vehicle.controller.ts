@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { VehicleService } from './vehicle.service.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const getVehicleStats = async (req: Request, res: Response) => {
   try {
@@ -96,6 +97,56 @@ export const deleteVehicle = async (req: Request, res: Response) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.VEHICLE.DELETE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+// GET /vehicles/analytics
+export const getVehicleAnalytics = async (req: Request, res: Response) => {
+  try {
+    const domainId = req.user!.domainId;
+
+    const [
+      vehiclesTotal,
+      vehiclesActive,
+      vehiclesInactive,
+      vehicleCapacitySum,
+    ] = await Promise.all([
+      prisma.vehicle.count({
+        where: { domainId, isDeleted: false },
+      }),
+      prisma.vehicle.count({
+        where: { domainId, isDeleted: false, status: 'ACTIVE' },
+      }),
+      prisma.vehicle.count({
+        where: { domainId, isDeleted: false, status: 'INACTIVE' },
+      }),
+      prisma.vehicle.aggregate({
+        where: { domainId, isDeleted: false },
+        _sum: { loadCapacity: true },
+      }),
+    ]);
+
+    const totalCapacity = vehicleCapacitySum._sum.loadCapacity ?? 0;
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Vehicle analytics retrieved successfully',
+      data: {
+        vehicles: {
+          total: vehiclesTotal,
+          active: vehiclesActive,
+          inactive: vehiclesInactive,
+          totalCapacity,
+        },
+      },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to retrieve vehicle analytics';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

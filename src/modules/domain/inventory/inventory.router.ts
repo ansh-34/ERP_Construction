@@ -7,6 +7,7 @@ import {
   createInventoryEntry,
   updateReorderLevel,
   deleteInventoryEntry,
+  getInventoryAnalytics,
 } from './inventory.controller.js';
 import {
   createInventoryBodySchema,
@@ -16,6 +17,9 @@ import {
 } from './inventory.validator.js';
 
 const router = Router();
+
+// analytics
+router.get('/analytics', getInventoryAnalytics);
 
 // aggregate statistics
 router.get('/stats', /* authorize('inventory', 'read'), */ getInventoryStats);

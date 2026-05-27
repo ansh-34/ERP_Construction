@@ -2,12 +2,12 @@ import { Messages } from '../../../constants/index.js';
 import {
   ModuleRepository,
   PermissionRepository,
-  RoleModulePermissionRepository,
   RoleRepository,
   UserRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const RoleService = {
   localizeName(value: any, langCode: string) {
@@ -57,44 +57,72 @@ export const RoleService = {
   async assignPermissions(
     domainId: string,
     roleId: string,
-    data: { moduleId: string; permissions: string[] },
+    data:
+      | { moduleId: string; permissions: string[] }
+      | { moduleId: string; permissions: string[] }[],
   ) {
-    const { moduleId, permissions } = data;
+    const items = Array.isArray(data) ? data : [data];
 
-    if (!moduleId || !permissions || !Array.isArray(permissions)) {
+    if (items.length === 0) {
       throw new Error(Messages.ROLE.MODULE_ID_PERMISSIONS_REQUIRED);
+    }
+
+    for (const item of items) {
+      const { moduleId, permissions } = item;
+      if (!moduleId || !permissions || !Array.isArray(permissions)) {
+        throw new Error(Messages.ROLE.MODULE_ID_PERMISSIONS_REQUIRED);
+      }
     }
 
     const validPermissions = await PermissionRepository.listActiveCodes();
     const validCodes = validPermissions.map((p) => p.code);
-    const invalid = (permissions as string[]).filter(
-      (p) => !validCodes.includes(p),
-    );
 
-    if (invalid.length) {
-      throw new Error(
-        `${Messages.ROLE.INVALID_PERMISSIONS_PREFIX}: ${invalid.join(', ')}`,
+    for (const item of items) {
+      const { permissions } = item;
+      const invalid = (permissions as string[]).filter(
+        (p) => !validCodes.includes(p),
       );
+      if (invalid.length) {
+        throw new Error(
+          `${Messages.ROLE.INVALID_PERMISSIONS_PREFIX}: ${invalid.join(', ')}`,
+        );
+      }
     }
 
     const role = await RoleRepository.findActiveByIdAndDomain(roleId, domainId);
-
     if (!role) {
       throw new Error(Messages.COMMON.FORBIDDEN);
     }
 
-    const mod = await ModuleRepository.findActiveById(moduleId);
-
-    if (!mod) {
-      throw new Error(Messages.MODULE.INVALID_ID);
+    for (const item of items) {
+      const mod = await ModuleRepository.findActiveById(item.moduleId);
+      if (!mod) {
+        throw new Error(Messages.MODULE.INVALID_ID);
+      }
     }
 
-    return RoleModulePermissionRepository.upsert({
-      roleId: role.id,
-      moduleId: mod.id,
-      permissions,
-      domainId,
-    });
+    const results = await prisma.$transaction(
+      items.map((item) =>
+        prisma.roleModulePermission.upsert({
+          where: {
+            roleId_moduleId_domainId: {
+              roleId: role.id,
+              moduleId: item.moduleId,
+              domainId,
+            },
+          },
+          update: { permissions: item.permissions },
+          create: {
+            roleId: role.id,
+            moduleId: item.moduleId,
+            permissions: item.permissions,
+            domainId,
+          },
+        }),
+      ),
+    );
+
+    return Array.isArray(data) ? results : results[0];
   },
 
   async listRoles(
@@ -156,8 +184,21 @@ export const RoleService = {
       throw new Error(Messages.ROLE.NOT_FOUND);
     }
 
-    if (language) {
-      role.name = RoleService.localizeName(role.name, language);
+    const langCode = language || 'en';
+    role.name = RoleService.localizeName(role.name, langCode);
+
+    if (role.roleModulePermissions) {
+      role.roleModulePermissions = role.roleModulePermissions.map(
+        (rmp: any) => ({
+          ...rmp,
+          module: rmp.module
+            ? {
+                ...rmp.module,
+                name: RoleService.localizeName(rmp.module.name, langCode),
+              }
+            : rmp.module,
+        }),
+      );
     }
 
     return role;

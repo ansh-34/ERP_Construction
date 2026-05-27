@@ -30,10 +30,14 @@ export const updateRoleBodySchema = z.object({
 
 export const assignPermissionsParamsSchema = roleIdParamSchema;
 
-export const assignPermissionsBodySchema = z.object({
+const singlePermissionSchema = z.object({
   moduleId: z.string().min(1),
   permissions: z.array(z.string().min(1)).min(1),
 });
+
+export const assignPermissionsBodySchema = z
+  .array(singlePermissionSchema)
+  .min(1);
 
 export const listRolesQuerySchema = paginationQuerySchema
   .merge(statusFilterSchema)

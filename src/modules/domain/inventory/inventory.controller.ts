@@ -3,6 +3,7 @@ import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { InventoryService } from './inventory.service.js';
+import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 // GET /inventory/stats
 export const getInventoryStats = async (req: Request, res: Response) => {
@@ -105,6 +106,65 @@ export const deleteInventoryEntry = async (req: Request, res: Response) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.INVENTORY.DELETE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+// GET /inventory/analytics
+export const getInventoryAnalytics = async (req: Request, res: Response) => {
+  try {
+    const domainId = req.user!.domainId;
+
+    const [
+      rawMaterials,
+      finishedProducts,
+      pendingRequests,
+      lowStock,
+      openPOs,
+      payments,
+    ] = await Promise.all([
+      prisma.product.count({
+        where: { domainId, productType: 'RAW_MATERIAL', isDeleted: false },
+      }),
+      prisma.product.count({
+        where: { domainId, productType: 'FINISHED_PRODUCT', isDeleted: false },
+      }),
+      prisma.rawMaterialPurchaseRequest.count({
+        where: { domainId, approvalStatus: 'PENDING', isDeleted: false },
+      }),
+      prisma.inventory.count({
+        where: {
+          domainId,
+          isDeleted: false,
+          quantity: { lte: prisma.inventory.fields.reorderLevel as any },
+        },
+      }),
+      prisma.purchaseOrder.count({
+        where: { domainId, orderStatus: 'PENDING_VENDOR', isDeleted: false },
+      }),
+      prisma.invoice.count({
+        where: { domainId, paymentStatus: 'PAID', isDeleted: false },
+      }),
+    ]);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Inventory analytics retrieved successfully',
+      data: {
+        rawMaterials,
+        finishedProducts,
+        pendingRequests,
+        lowStock,
+        openPOs,
+        payments,
+      },
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to retrieve inventory analytics';
     const statusCode = resolveHttpStatus(message);
     return res.status(statusCode).json({ success: false, message });
   }

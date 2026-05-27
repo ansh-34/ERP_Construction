@@ -7,6 +7,7 @@ import {
   createVehicle,
   listVehicles,
   deleteVehicle,
+  getVehicleAnalytics,
 } from './vehicle.controller.js';
 import {
   createVehicleBodySchema,
@@ -15,6 +16,9 @@ import {
 import { idParamSchema } from '../../common/common.validator.js';
 
 const router = Router();
+
+// analytics
+router.get('/analytics', getVehicleAnalytics);
 
 // stats
 router.get('/stats', /* authorize('vehicle', 'read'), */ getVehicleStats);
