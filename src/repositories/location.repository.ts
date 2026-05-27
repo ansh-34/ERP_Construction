@@ -70,6 +70,8 @@ export const locationRepository = {
     domainId: string,
     adminId?: string,
     searchKey?: string,
+    limit?: number,
+    offset?: number,
   ): Promise<LocationRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -91,7 +93,38 @@ export const locationRepository = {
       FROM "Location"
       WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
+      ${limit !== undefined ? Prisma.sql`LIMIT ${limit}` : Prisma.empty}
+      ${offset !== undefined ? Prisma.sql`OFFSET ${offset}` : Prisma.empty}
     `);
+  },
+
+  countMany: async (
+    domainId: string,
+    adminId?: string,
+    searchKey?: string,
+  ): Promise<number> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    const result = await prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+      SELECT COUNT(*) AS "count"
+      FROM "Location"
+      WHERE ${Prisma.join(filters, ' AND ')}
+    `);
+
+    return Number(result[0]?.count ?? 0);
   },
 
   findById: async (

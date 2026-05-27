@@ -41,6 +41,8 @@ export const updateLocationBody = z
 
 export const listLocationQuery = z.object({
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().regex(/^\d+$/).optional(),
+  limit: z.string().trim().regex(/^\d+$/).optional(),
 });
 
 export const idParams = z.object({

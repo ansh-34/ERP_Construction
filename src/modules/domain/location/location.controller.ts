@@ -52,19 +52,26 @@ export const locationController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { domainId, searchKey } = req.query as {
+      const { domainId, searchKey, offset, limit } = req.query as {
         domainId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
-      const locations = await locationService.getAll(
+      const { locations, pagination } = await locationService.getAll(
         domainId ?? '',
         req.user!.adminId,
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Locations fetched successfully',
+        pagination: {
+          currentCount: locations.length,
+          ...pagination,
+        },
         data: locations,
       });
     } catch (error: unknown) {
