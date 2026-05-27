@@ -101,6 +101,9 @@ export const ProductGradeService = {
           id: true,
           gradeCode: true,
           gradeDisplayName: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
           productId: true,
           product: {
             select: {
@@ -121,6 +124,9 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         langCode,
       ),
+      status: grade.status,
+      createdAt: grade.createdAt,
+      updatedAt: grade.updatedAt,
       productId: grade.productId,
       product: grade.product
         ? {
@@ -181,6 +187,9 @@ export const ProductGradeService = {
           id: true,
           gradeCode: true,
           gradeDisplayName: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
           productId: true,
           product: {
             select: {
@@ -201,6 +210,9 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         langCode,
       ),
+      status: grade.status,
+      createdAt: grade.createdAt,
+      updatedAt: grade.updatedAt,
       productId: grade.productId,
       product: grade.product
         ? {
@@ -271,6 +283,9 @@ export const ProductGradeService = {
           id: true,
           gradeCode: true,
           gradeDisplayName: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
           productGradeStdRates: {
             where: { isDeleted: false },
             select: {
@@ -291,6 +306,9 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         langCode,
       ),
+      status: grade.status,
+      createdAt: grade.createdAt,
+      updatedAt: grade.updatedAt,
       productGradeStdRates: (grade.productGradeStdRates || []).map(
         (stdRate: any) => ({
           id: stdRate.id,
