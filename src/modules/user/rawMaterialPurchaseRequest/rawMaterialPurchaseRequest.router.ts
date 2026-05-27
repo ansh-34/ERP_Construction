@@ -79,28 +79,6 @@ router.put(
   updateRawMaterialPurchaseRequestByCodeAndProduct,
 );
 
-router.get(
-  '/:id',
-  authorize('RMPR', 'READ'),
-  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
-  getRawMaterialPurchaseRequestById,
-);
-
-router.put(
-  '/:id',
-  authorize('RMPR', 'UPDATE'),
-  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
-  validate(updateRawMaterialPurchaseRequestBodySchema, 'body'),
-  updateRawMaterialPurchaseRequest,
-);
-
-router.delete(
-  '/:id',
-  authorize('RMPR', 'DELETE'),
-  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
-  deleteRawMaterialPurchaseRequest,
-);
-
 // --- Purchase Order Routes ---
 
 router.get(
@@ -138,6 +116,30 @@ router.get(
   authorize('POP', 'READ'),
   validate(poIdParamsSchema, 'params'),
   listPoProducts,
+);
+
+// --- Raw Material Purchase Request Routes by ID ---
+
+router.get(
+  '/:id',
+  authorize('RMPR', 'READ'),
+  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
+  getRawMaterialPurchaseRequestById,
+);
+
+router.put(
+  '/:id',
+  authorize('RMPR', 'UPDATE'),
+  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
+  validate(updateRawMaterialPurchaseRequestBodySchema, 'body'),
+  updateRawMaterialPurchaseRequest,
+);
+
+router.delete(
+  '/:id',
+  authorize('RMPR', 'DELETE'),
+  validate(rawMaterialPurchaseRequestIdParamsSchema, 'params'),
+  deleteRawMaterialPurchaseRequest,
 );
 
 // router.put(
