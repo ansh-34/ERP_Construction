@@ -43,9 +43,11 @@ export const createDispatch = async (req: Request, res: Response) => {
 
 export const listDispatches = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { dispatches, pagination } = await DispatchService.listDispatches(
       req.user!.domainId,
       req.query as PaginationQuery,
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

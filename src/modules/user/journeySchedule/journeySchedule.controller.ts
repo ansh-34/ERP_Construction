@@ -47,10 +47,12 @@ export const createJourneySchedule = async (req: Request, res: Response) => {
 
 export const listJourneySchedules = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { schedules, pagination } =
       await JourneyScheduleService.listJourneySchedules(
         req.user!.domainId,
         req.query as PaginationQuery,
+        language,
       );
 
     return res.status(HttpStatus.OK).json({

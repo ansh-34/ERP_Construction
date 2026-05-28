@@ -3,6 +3,7 @@ import { GrnRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const GrnService = {
   async generateCode(): Promise<string> {
@@ -103,6 +104,7 @@ export const GrnService = {
       projectId?: string;
       [key: string]: any;
     },
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
 
@@ -119,7 +121,7 @@ export const GrnService = {
     );
 
     return {
-      grns,
+      grns: translateResponse(grns, langCode),
       pagination: { totalCount, offset, limit },
     };
   },

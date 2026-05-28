@@ -9,7 +9,7 @@ export const ModulePermissionService = {
       moduleId?: string;
       permissionId?: string;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
 
@@ -27,11 +27,15 @@ export const ModulePermissionService = {
       ...mp,
       module: {
         ...mp.module,
-        name: mp.module.name[langCode] || mp.module.name.en || '',
+        name: langCode
+          ? mp.module.name[langCode] || mp.module.name.en || ''
+          : mp.module.name,
       },
       permission: {
         ...mp.permission,
-        name: mp.permission.name[langCode] || mp.permission.name.en || '',
+        name: langCode
+          ? mp.permission.name[langCode] || mp.permission.name.en || ''
+          : mp.permission.name,
       },
     }));
 

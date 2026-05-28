@@ -35,10 +35,12 @@ export const listRawMaterialPurchaseRequests = async (
   res: Response,
 ) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { requests, pagination } =
       await RawMaterialPurchaseRequestService.listRequests(
         req.user!.domainId,
         req.query as PaginationQuery,
+        language,
       );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -242,10 +244,12 @@ export const approveOrRejectRawMaterialPurchaseRequests = async (
 
 export const listPurchaseOrders = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { purchaseOrders, pagination } =
       await RawMaterialPurchaseRequestService.listPurchaseOrders(
         req.user!.domainId,
         req.query as PaginationQuery,
+        language,
       );
     return res.status(HttpStatus.OK).json({
       success: true,

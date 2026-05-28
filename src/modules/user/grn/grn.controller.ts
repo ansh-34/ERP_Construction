@@ -27,9 +27,11 @@ export const createGrn = async (req: Request, res: Response) => {
 
 export const listGrns = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { grns, pagination } = await GrnService.listGrns(
       req.user!.domainId as string,
       req.query as PaginationQuery,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

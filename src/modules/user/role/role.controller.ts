@@ -49,14 +49,14 @@ export const assignPermissions = async (req: Request, res: Response) => {
 
 export const listRoles = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { roles, pagination } = await RoleService.listRoles(
       req.user!.domainId,
       req.query as PaginationQuery & {
         status?: 'ACTIVE' | 'INACTIVE';
         searchKey?: string;
       },
-      language as string,
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

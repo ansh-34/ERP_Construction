@@ -63,9 +63,11 @@ export const createVehicle = async (req: Request, res: Response) => {
 
 export const listVehicles = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { vehicles, pagination } = await VehicleService.listVehicles(
       req.user!.domainId,
       req.query as any,
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

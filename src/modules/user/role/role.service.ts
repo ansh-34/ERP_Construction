@@ -131,7 +131,7 @@ export const RoleService = {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
 
@@ -147,14 +147,18 @@ export const RoleService = {
 
     const localizedRoles = roles.map((role: any) => ({
       ...role,
-      name: RoleService.localizeName(role.name, langCode),
+      name: langCode
+        ? RoleService.localizeName(role.name, langCode)
+        : role.name,
       roleModulePermissions: (role.roleModulePermissions || []).map(
         (rmp: any) => ({
           ...rmp,
           module: rmp.module
             ? {
                 ...rmp.module,
-                name: RoleService.localizeName(rmp.module.name, langCode),
+                name: langCode
+                  ? RoleService.localizeName(rmp.module.name, langCode)
+                  : rmp.module.name,
               }
             : rmp.module,
         }),

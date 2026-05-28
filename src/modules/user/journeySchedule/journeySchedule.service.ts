@@ -5,6 +5,7 @@ import {
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const JourneyScheduleService = {
   async getStats(domainId: string) {
@@ -122,14 +123,18 @@ export const JourneyScheduleService = {
     });
   },
 
-  async listJourneySchedules(domainId: string, query: PaginationQuery) {
+  async listJourneySchedules(
+    domainId: string,
+    query: PaginationQuery,
+    langCode?: string,
+  ) {
     const { offset, limit } = normalizePagination(query);
 
     const [totalCount, schedules] =
       await JourneyScheduleRepository.listByDomain(domainId, limit, offset);
 
     return {
-      schedules,
+      schedules: translateResponse(schedules, langCode),
       pagination: {
         totalCount,
         offset,

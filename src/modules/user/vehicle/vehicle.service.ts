@@ -2,6 +2,7 @@ import { Messages } from '../../../constants/index.js';
 import { VehicleRepository } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const VehicleService = {
   async getStats(domainId: string) {
@@ -61,6 +62,7 @@ export const VehicleService = {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
     },
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
 
@@ -84,7 +86,7 @@ export const VehicleService = {
     );
 
     return {
-      vehicles,
+      vehicles: translateResponse(vehicles, langCode),
       pagination: {
         totalCount,
         offset,

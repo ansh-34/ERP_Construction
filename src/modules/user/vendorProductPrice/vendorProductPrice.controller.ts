@@ -27,9 +27,11 @@ export const createVendorProductPrice = async (req: Request, res: Response) => {
 
 export const listVendorProductPrices = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { data, pagination } = await VendorProductPriceService.findAll(
       req.user!.domainId,
       req.query,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

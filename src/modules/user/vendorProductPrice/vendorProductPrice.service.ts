@@ -3,6 +3,7 @@ import XLSX from 'xlsx';
 import { Messages } from '../../../constants/index.js';
 import { vendorProductPriceRepository } from '../../../repositories/index.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const VendorProductPriceService = {
   async create(
@@ -50,6 +51,7 @@ export const VendorProductPriceService = {
       searchKey?: string;
       [key: string]: any;
     },
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -66,7 +68,7 @@ export const VendorProductPriceService = {
     );
 
     return {
-      data,
+      data: translateResponse(data, langCode),
       pagination: {
         total: totalCount,
         page,

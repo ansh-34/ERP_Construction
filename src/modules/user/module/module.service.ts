@@ -9,7 +9,7 @@ export const ModuleService = {
       limit: number;
       searchKey?: string;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination({
       offset: query.offset,
@@ -30,7 +30,7 @@ export const ModuleService = {
 
     const normalizedModules = modules.map((mod: any) => ({
       id: mod.id,
-      name: mod.name[langCode] || mod.name.en || '',
+      name: langCode ? mod.name[langCode] || mod.name.en || '' : mod.name,
       code: mod.code,
       status: mod.status,
     }));

@@ -25,9 +25,11 @@ export const getInventoryStats = async (req: Request, res: Response) => {
 // GET /inventory
 export const listInventory = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { items, pagination } = await InventoryService.listInventory(
       req.user!.domainId,
       req.query as PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

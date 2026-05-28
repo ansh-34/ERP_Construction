@@ -2,6 +2,7 @@ import { Messages } from '../../../constants/index.js';
 import { InventoryRepository } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { translateResponse } from '../../../utils/translation.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 const isUniqueConstraintError = (error: unknown) =>
@@ -56,6 +57,7 @@ export const InventoryService = {
   async listInventory(
     domainId: string,
     query: PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
 
@@ -67,7 +69,7 @@ export const InventoryService = {
     );
 
     return {
-      items,
+      items: translateResponse(items, langCode),
       pagination: {
         totalCount,
         offset,

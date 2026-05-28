@@ -6,6 +6,7 @@ import {
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const DispatchService = {
   async getStats(domainId: string) {
@@ -120,7 +121,11 @@ export const DispatchService = {
     });
   },
 
-  async listDispatches(domainId: string, query: PaginationQuery) {
+  async listDispatches(
+    domainId: string,
+    query: PaginationQuery,
+    langCode?: string,
+  ) {
     const { offset, limit } = normalizePagination(query);
 
     const [totalCount, dispatches] = await DispatchRepository.listByDomain(
@@ -130,7 +135,7 @@ export const DispatchService = {
     );
 
     return {
-      dispatches,
+      dispatches: translateResponse(dispatches, langCode),
       pagination: {
         totalCount,
         offset,
