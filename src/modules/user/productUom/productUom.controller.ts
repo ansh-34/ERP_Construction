@@ -27,13 +27,13 @@ export const createProductUom = async (req: Request, res: Response) => {
 
 export const listProductUoms = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { data, total, page, limit, totalPages } =
       await ProductUomService.findAll(
         req.user!.domainId,
         req.params.productId,
         req.query as any,
-        language as string,
+        language,
       );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -56,12 +56,12 @@ export const listProductUoms = async (req: Request, res: Response) => {
 
 export const listAllDomainProductUoms = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { data, total, page, limit, totalPages } =
       await ProductUomService.findAllDomainProductUoms(
         req.user!.domainId,
         req.query as any,
-        language as string,
+        language,
       );
     return res.status(HttpStatus.OK).json({
       success: true,

@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  idParamSchema,
   paginationQuerySchema,
 } from '../../common/common.validator.js';
 
@@ -50,7 +49,11 @@ export const listRawMaterialPurchaseRequestsQuerySchema =
     isDeleted: z.coerce.boolean().optional().default(false),
   });
 
-export const rawMaterialPurchaseRequestIdParamsSchema = idParamSchema;
+export const rawMaterialPurchaseRequestIdParamsSchema = z.object({
+  id: z.string().uuid({
+    message: 'Invalid raw material purchase request ID format. Must be a UUID',
+  }),
+});
 
 export const rawMaterialPurchaseRequestCodeParamsSchema = z.object({
   code: z.string().min(1),

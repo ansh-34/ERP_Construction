@@ -73,7 +73,7 @@ export const ProductGradeService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -120,10 +120,9 @@ export const ProductGradeService = {
     const normalizedData = data.map((grade: any) => ({
       id: grade.id,
       gradeCode: grade.gradeCode,
-      gradeDisplayName: ProductGradeService.localizeName(
-        grade.gradeDisplayName,
-        langCode,
-      ),
+      gradeDisplayName: langCode
+        ? ProductGradeService.localizeName(grade.gradeDisplayName, langCode)
+        : grade.gradeDisplayName,
       status: grade.status,
       createdAt: grade.createdAt,
       updatedAt: grade.updatedAt,
@@ -132,10 +131,12 @@ export const ProductGradeService = {
         ? {
             id: grade.product.id,
             code: grade.product.code,
-            displayName: ProductGradeService.localizeName(
-              grade.product.displayName,
-              langCode,
-            ),
+            displayName: langCode
+              ? ProductGradeService.localizeName(
+                  grade.product.displayName,
+                  langCode,
+                )
+              : grade.product.displayName,
           }
         : undefined,
     }));
@@ -159,7 +160,7 @@ export const ProductGradeService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -206,10 +207,9 @@ export const ProductGradeService = {
     const normalizedData = data.map((grade: any) => ({
       id: grade.id,
       gradeCode: grade.gradeCode,
-      gradeDisplayName: ProductGradeService.localizeName(
-        grade.gradeDisplayName,
-        langCode,
-      ),
+      gradeDisplayName: langCode
+        ? ProductGradeService.localizeName(grade.gradeDisplayName, langCode)
+        : grade.gradeDisplayName,
       status: grade.status,
       createdAt: grade.createdAt,
       updatedAt: grade.updatedAt,
@@ -218,10 +218,12 @@ export const ProductGradeService = {
         ? {
             id: grade.product.id,
             code: grade.product.code,
-            displayName: ProductGradeService.localizeName(
-              grade.product.displayName,
-              langCode,
-            ),
+            displayName: langCode
+              ? ProductGradeService.localizeName(
+                  grade.product.displayName,
+                  langCode,
+                )
+              : grade.product.displayName,
           }
         : undefined,
     }));
@@ -245,7 +247,7 @@ export const ProductGradeService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -302,20 +304,18 @@ export const ProductGradeService = {
     const normalizedGrades = data.map((grade: any) => ({
       id: grade.id,
       gradeCode: grade.gradeCode,
-      gradeDisplayName: ProductGradeService.localizeName(
-        grade.gradeDisplayName,
-        langCode,
-      ),
+      gradeDisplayName: langCode
+        ? ProductGradeService.localizeName(grade.gradeDisplayName, langCode)
+        : grade.gradeDisplayName,
       status: grade.status,
       createdAt: grade.createdAt,
       updatedAt: grade.updatedAt,
       productGradeStdRates: (grade.productGradeStdRates || []).map(
         (stdRate: any) => ({
           id: stdRate.id,
-          stdRateType: ProductGradeService.localizeName(
-            stdRate.stdRateType,
-            langCode,
-          ),
+          stdRateType: langCode
+            ? ProductGradeService.localizeName(stdRate.stdRateType, langCode)
+            : stdRate.stdRateType,
           stdRateValue: stdRate.stdRateValue,
         }),
       ),
@@ -325,10 +325,9 @@ export const ProductGradeService = {
       product: {
         id: product.id,
         code: product.code,
-        displayName: ProductGradeService.localizeName(
-          product.displayName,
-          langCode,
-        ),
+        displayName: langCode
+          ? ProductGradeService.localizeName(product.displayName, langCode)
+          : product.displayName,
       },
       grades: {
         data: normalizedGrades,

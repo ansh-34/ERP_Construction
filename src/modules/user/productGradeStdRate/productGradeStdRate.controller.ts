@@ -31,13 +31,13 @@ export const createProductGradeStdRate = async (
 
 export const listProductGradeStdRates = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const result = await ProductGradeStdRateService.findAll(
       req.user!.domainId,
       req.params.productId,
       req.params.gradeId,
       req.query as any,
-      language as string,
+      language,
     );
     const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
@@ -142,11 +142,11 @@ export const listAllProductGradeStdRates = async (
   res: Response,
 ) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const result = await ProductGradeStdRateService.findAllInDomain(
       req.user!.domainId,
       req.query as any,
-      language as string,
+      language,
     );
     const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
