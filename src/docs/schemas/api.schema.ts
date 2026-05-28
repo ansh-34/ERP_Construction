@@ -13,13 +13,13 @@ import { DispatchSchemas } from './dispatch.schema.js';
 import { AppErrorSchemas } from './appError.schema.js';
 import { ProductSchemas } from './product.schema.js';
 import { UomSchemas } from './uom.schema.js';
-import { ProjectUserRoleSchemas } from './projectUserRole.schema.js';
 import { RawMaterialPurchaseRequestSchemas } from './rawMaterialPurchaseRequest.schema.js';
 import { ProjectSchemas } from './project.schema.js';
 import { GrnSchemas } from './grn.schema.js';
 import { LogsSchemas } from './logs.schema.js';
 import { InvoiceSchemas } from './invoice.schema.js';
 import { LocationSchemas } from './location.schema.js';
+import { VendorProductPriceSchemas } from './vendorProductPrice.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -37,11 +37,11 @@ export const ApiSchemas = {
   ...AppErrorSchemas,
   ...ProductSchemas,
   ...UomSchemas,
-  ...ProjectUserRoleSchemas,
   ...RawMaterialPurchaseRequestSchemas,
   ...ProjectSchemas,
   ...GrnSchemas,
   ...LogsSchemas,
   ...InvoiceSchemas,
   ...LocationSchemas,
+  ...VendorProductPriceSchemas,
 };

@@ -15,13 +15,13 @@ import { ModuleDependencyPaths } from './moduleDependency.paths.js';
 import { ModulePermissionPaths } from './modulePermission.paths.js';
 import { ProductPaths } from './product.paths.js';
 import { UomPaths } from './uom.paths.js';
-import { ProjectUserRolePaths } from './projectUserRole.paths.js';
 import { RawMaterialPurchaseRequestPaths } from './rawMaterialPurchaseRequest.paths.js';
 import { ProjectPaths } from './project.paths.js';
 import { GrnPaths } from './grn.paths.js';
 import { LogsPaths } from './logs.paths.js';
 import { InvoicePaths } from './invoice.paths.js';
 import { LocationPaths } from './location.paths.js';
+import { VendorProductPricePaths } from './vendorProductPrice.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -41,11 +41,11 @@ export const ApiPaths = {
   ...ModulePermissionPaths,
   ...ProductPaths,
   ...UomPaths,
-  ...ProjectUserRolePaths,
   ...RawMaterialPurchaseRequestPaths,
   ...ProjectPaths,
   ...GrnPaths,
   ...LogsPaths,
   ...InvoicePaths,
   ...LocationPaths,
+  ...VendorProductPricePaths,
 };

@@ -173,7 +173,6 @@ model Domain {
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  projectUserRoles            ProjectUserRole[]
   purchaseOrders              PurchaseOrder[]
   vendorProductPricings       VendorProductPricing[]
   purchaseOrderProducts       PurchaseOrderProduct[]
@@ -217,7 +216,6 @@ model User {
   updatedAt DateTime   @updatedAt
 
   rawMaterialPurchaseRequestsRequested RawMaterialPurchaseRequest[] @relation("RequestedByUser")
-  projectUserRoles                     ProjectUserRole[]
   projectUserAssignments               ProjectUserAssignment[]
   projectUserDailyLogs                 ProjectUserDailyLog[]
 
@@ -310,7 +308,6 @@ model Role {
 
   users                 User[]
   roleModulePermissions RoleModulePermission[]
-  projectUserRoles      ProjectUserRole[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -1112,7 +1109,6 @@ model Project {
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  projectUserRoles            ProjectUserRole[]
   grns                        Grn[]
   grnProducts                 GrnProduct[]
   purchaseOrders              PurchaseOrder[]
@@ -1379,28 +1375,6 @@ model ProjectUserDailyLog {
   @@index([adminId])
 }
 
-model ProjectUserRole {
-  id        String     @id @default(uuid()) @db.Uuid
-  projectId String     @db.Uuid
-  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId    String     @db.Uuid
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roleId    String     @db.Uuid
-  role      Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  domainId  String     @db.Uuid
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  @@unique([userId, roleId, projectId, domainId, isDeleted])
-  @@index([createdAt, domainId])
-  @@index([createdAt, domainId, userId])
-  @@index([createdAt, domainId, roleId])
-  @@index([createdAt, domainId, projectId])
-}
-
 model DbAnalytics {
   id              String   @id @default(uuid()) @db.Uuid
   date            DateTime @unique @db.Date
@@ -1417,5 +1391,5 @@ model DbAnalytics {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@map("db_analytics")
+  @@map("dbAnalytics")
 }

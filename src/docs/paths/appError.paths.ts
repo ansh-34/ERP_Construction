@@ -113,3 +113,7 @@ export const AppErrorPaths = {
     },
   },
 };
+
+Object.assign(AppErrorPaths, {
+  '/api/user/app-errors': AppErrorPaths['/api/domain/app-errors'],
+});
