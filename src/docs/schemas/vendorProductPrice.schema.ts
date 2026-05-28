@@ -4,14 +4,31 @@ export const VendorProductPriceSchemas = {
     required: ['vendorName', 'productId', 'productGradeId', 'uomId', 'price'],
     properties: {
       vendorName: { type: 'string', example: 'Vendor A' },
-      productId: { type: 'string', format: 'uuid', example: '7f8e9d0c-1b2a-3c4d-5e6f-7a8b9c0d1e2f' },
-      productGradeId: { type: 'string', format: 'uuid', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' },
-      uomId: { type: 'string', format: 'uuid', example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0' },
+      productId: {
+        type: 'string',
+        format: 'uuid',
+        example: '7f8e9d0c-1b2a-3c4d-5e6f-7a8b9c0d1e2f',
+      },
+      productGradeId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+      },
+      uomId: {
+        type: 'string',
+        format: 'uuid',
+        example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0',
+      },
       price: { type: 'number', minimum: 0, example: 150.5 },
       productCode: { type: 'string', example: 'PRD-01' },
       productGradeCode: { type: 'string', example: 'GRD-A' },
       uomCode: { type: 'string', example: 'KG' },
-      status: { type: 'string', enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'], default: 'ACTIVE', example: 'ACTIVE' },
+      status: {
+        type: 'string',
+        enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
+        default: 'ACTIVE',
+        example: 'ACTIVE',
+      },
     },
   },
   UpdateVendorProductPriceBody: {
@@ -25,13 +42,20 @@ export const VendorProductPriceSchemas = {
       productCode: { type: 'string' },
       productGradeCode: { type: 'string' },
       uomCode: { type: 'string' },
-      status: { type: 'string', enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'] },
+      status: {
+        type: 'string',
+        enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
+      },
     },
   },
   VendorProductPriceObject: {
     type: 'object',
     properties: {
-      id: { type: 'string', format: 'uuid', example: 'b6f5d4c3-b2a1-3c4d-5e6f-7a8b9c0d1e2f' },
+      id: {
+        type: 'string',
+        format: 'uuid',
+        example: 'b6f5d4c3-b2a1-3c4d-5e6f-7a8b9c0d1e2f',
+      },
       vendorName: { type: 'string', example: 'Vendor A' },
       productId: { type: 'string', format: 'uuid' },
       productGradeId: { type: 'string', format: 'uuid' },

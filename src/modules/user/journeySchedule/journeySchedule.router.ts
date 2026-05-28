@@ -16,11 +16,7 @@ import {
 const router = Router();
 
 // stats
-router.get(
-  '/stats',
-  authorize('JOURNEY', 'READ'),
-  getJourneyScheduleStats,
-);
+router.get('/stats', authorize('JOURNEY', 'READ'), getJourneyScheduleStats);
 
 // list
 router.get(

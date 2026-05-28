@@ -23,7 +23,10 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         {
           in: 'query',
           name: 'status',
-          schema: { type: 'string', enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'] },
+          schema: {
+            type: 'string',
+            enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
+          },
           description: 'Filter by status',
         },
       ],
@@ -36,7 +39,10 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Vendor product prices retrieved' },
+                  message: {
+                    type: 'string',
+                    example: 'Vendor product prices retrieved',
+                  },
                   pagination: {
                     type: 'object',
                     properties: {
@@ -47,7 +53,9 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                   },
                   data: {
                     type: 'array',
-                    items: { $ref: '#/components/schemas/VendorProductPriceObject' },
+                    items: {
+                      $ref: '#/components/schemas/VendorProductPriceObject',
+                    },
                   },
                 },
               },
@@ -66,7 +74,9 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/CreateVendorProductPriceBody' },
+            schema: {
+              $ref: '#/components/schemas/CreateVendorProductPriceBody',
+            },
           },
         },
       },
@@ -79,8 +89,14 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Vendor product price mapping created successfully' },
-                  data: { $ref: '#/components/schemas/VendorProductPriceObject' },
+                  message: {
+                    type: 'string',
+                    example:
+                      'Vendor product price mapping created successfully',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/VendorProductPriceObject',
+                  },
                 },
               },
             },
@@ -142,7 +158,10 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Import completed successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Import completed successfully',
+                  },
                   data: {
                     type: 'object',
                     properties: {
@@ -183,8 +202,13 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Vendor product price retrieved' },
-                  data: { $ref: '#/components/schemas/VendorProductPriceObject' },
+                  message: {
+                    type: 'string',
+                    example: 'Vendor product price retrieved',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/VendorProductPriceObject',
+                  },
                 },
               },
             },
@@ -211,7 +235,9 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/UpdateVendorProductPriceBody' },
+            schema: {
+              $ref: '#/components/schemas/UpdateVendorProductPriceBody',
+            },
           },
         },
       },
@@ -224,8 +250,13 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Vendor product price updated successfully' },
-                  data: { $ref: '#/components/schemas/VendorProductPriceObject' },
+                  message: {
+                    type: 'string',
+                    example: 'Vendor product price updated successfully',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/VendorProductPriceObject',
+                  },
                 },
               },
             },
@@ -257,7 +288,10 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Vendor product price deleted successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Vendor product price deleted successfully',
+                  },
                   data: { type: 'object', nullable: true, example: null },
                 },
               },
@@ -271,6 +305,10 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
 });
 
 export const VendorProductPricePaths = {
-  ...buildVendorProductPricePaths('/api/domain/vendor-product-prices', ['Vendor Product Prices']),
-  ...buildVendorProductPricePaths('/api/user/vendor-product-prices', ['User Vendor Product Prices']),
+  ...buildVendorProductPricePaths('/api/domain/vendor-product-prices', [
+    'Vendor Product Prices',
+  ]),
+  ...buildVendorProductPricePaths('/api/user/vendor-product-prices', [
+    'User Vendor Product Prices',
+  ]),
 };
