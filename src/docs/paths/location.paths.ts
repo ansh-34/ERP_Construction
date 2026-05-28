@@ -21,6 +21,18 @@ export const LocationPaths = {
           schema: { type: 'string' },
           description: 'Search key for filtering',
         },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0, default: 0 },
+          description: 'Number of records to skip',
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, default: 10 },
+          description: 'Maximum records to return',
+        },
       ],
       responses: {
         200: {
@@ -31,6 +43,15 @@ export const LocationPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer', example: 10 },
+                      totalCount: { type: 'integer', example: 42 },
+                      offset: { type: 'integer', example: 0 },
+                      limit: { type: 'integer', example: 10 },
+                    },
+                  },
                   data: {
                     type: 'array',
                     items: { $ref: '#/components/schemas/LocationObject' },
@@ -208,6 +229,18 @@ export const LocationPaths = {
           schema: { type: 'string' },
           description: 'Search key for filtering',
         },
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0, default: 0 },
+          description: 'Number of records to skip',
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, default: 10 },
+          description: 'Maximum records to return',
+        },
       ],
       responses: {
         200: {
@@ -218,6 +251,15 @@ export const LocationPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer', example: 10 },
+                      totalCount: { type: 'integer', example: 42 },
+                      offset: { type: 'integer', example: 0 },
+                      limit: { type: 'integer', example: 10 },
+                    },
+                  },
                   data: {
                     type: 'array',
                     items: { $ref: '#/components/schemas/LocationObject' },

@@ -24,6 +24,7 @@ projectRouter.get(
   validate(domainIdQuery, 'query'),
   projectController.getAll,
 );
+projectRouter.get('/analytics', projectController.getAnalytics);
 projectRouter.post(
   '/tasks/submission',
   validate(submitProjectTaskBody, 'body'),

@@ -106,6 +106,26 @@ export const projectController = {
     }
   },
 
+  getAnalytics: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const analytics = await projectService.getAnalytics(
+        req.user!.domainId,
+        req.user!.adminId,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project analytics fetched successfully',
+        data: analytics,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project analytics';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language =

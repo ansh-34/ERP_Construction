@@ -1,6 +1,7 @@
 import { locationRepository, type LocationRecord } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import { isNonEmptyString, isPlainObject } from '@/utils/validation';
 
 export interface CreateLocationInput {
@@ -23,6 +24,15 @@ export interface UpdateLocationInput {
 
 type LocalizedLocationRecord = Omit<LocationRecord, 'name'> & {
   name: string;
+};
+
+type LocationListResult = {
+  locations: LocalizedLocationRecord[];
+  pagination: {
+    totalCount: number;
+    offset: number;
+    limit: number;
+  };
 };
 
 function getLocalizedText(
@@ -179,8 +189,9 @@ export const locationService = {
     domainId: string,
     adminId: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedLocationRecord[]> => {
+  ): Promise<LocationListResult> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -190,12 +201,28 @@ export const locationService = {
     }
 
     try {
-      const locations = await locationRepository.findMany(
-        domainId,
-        adminId,
-        searchKey,
-      );
-      return locations.map((location) => normalizeLocation(location, language));
+      const { offset, limit } = normalizePagination(paginationQuery);
+      const [totalCount, locations] = await Promise.all([
+        locationRepository.countMany(domainId, adminId, searchKey),
+        locationRepository.findMany(
+          domainId,
+          adminId,
+          searchKey,
+          limit,
+          offset,
+        ),
+      ]);
+
+      return {
+        locations: locations.map((location) =>
+          normalizeLocation(location, language),
+        ),
+        pagination: {
+          totalCount,
+          offset,
+          limit,
+        },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
