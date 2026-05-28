@@ -16,7 +16,12 @@ export const ModuleService = {
     dependencyModules?: { moduleId: string; permissionIds: string[] }[];
     modulePermissionIds?: string[];
   }) {
-    const { name, code: customCode, dependencyModules = [], modulePermissionIds = [] } = data;
+    const {
+      name,
+      code: customCode,
+      dependencyModules = [],
+      modulePermissionIds = [],
+    } = data;
 
     const incomingLanguageCodes: string[] = Object.keys(name);
     if (!incomingLanguageCodes.includes('en')) {
@@ -215,7 +220,10 @@ export const ModuleService = {
     };
   },
 
-  async updateModule(id: string, data: { name?: any; status?: 'ACTIVE' | 'INACTIVE' }) {
+  async updateModule(
+    id: string,
+    data: { name?: any; status?: 'ACTIVE' | 'INACTIVE' },
+  ) {
     const { name, status } = data;
     let code: string | null = null;
     let searchText: string | null = null;
