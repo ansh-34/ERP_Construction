@@ -33,8 +33,14 @@ export interface UpdateProjectStageInput {
   status?: StatusEnum;
 }
 
-type LocalizedProjectStageRecord = Omit<ProjectStageRecord, 'name'> & {
-  name: string;
+type LocalizedText = string | Record<string, unknown>;
+
+type LocalizedProjectStageRecord = Omit<
+  ProjectStageRecord,
+  'name' | 'description'
+> & {
+  name: LocalizedText;
+  description: LocalizedText | null;
 };
 
 type PaginatedProjectStages = {
@@ -57,13 +63,16 @@ function buildProjectStageSearchText(name: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (!value) {
     return null;
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue
@@ -73,7 +82,7 @@ function getLocalizedText(
 function normalizeDescription(
   value: unknown,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (value === null || value === undefined) {
     return null;
   }
@@ -177,7 +186,7 @@ function normalizeProjectStage(
 function normalizeRelationDetails(
   relation: ProjectStageRecord['project'],
   language: string | null,
-): ProjectStageRecord['project'] {
+): Record<string, unknown> | null | undefined {
   if (!relation) {
     return relation;
   }

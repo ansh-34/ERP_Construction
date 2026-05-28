@@ -52,7 +52,7 @@ export const machineryController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const { domainId, projectId, searchKey } = req.query as {
         domainId?: string;
         projectId?: string;

@@ -22,8 +22,10 @@ export interface UpdateLocationInput {
   status?: StatusEnum;
 }
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedLocationRecord = Omit<LocationRecord, 'name'> & {
-  name: string;
+  name: LocalizedText;
 };
 
 type LocationListResult = {
@@ -38,9 +40,12 @@ type LocationListResult = {
 function getLocalizedText(
   value: Record<string, unknown>,
   language: string | null,
-): string {
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+): LocalizedText {
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue

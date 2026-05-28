@@ -68,7 +68,7 @@ export const projectTaskDelayController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const { domainId, projectId, stageId, taskId, searchKey, offset, limit } =
         req.query as {
           domainId?: string;

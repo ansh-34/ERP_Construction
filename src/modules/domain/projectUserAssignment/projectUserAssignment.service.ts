@@ -80,14 +80,20 @@ function assertStatus(status: StatusEnum | undefined): void {
   }
 }
 
-function getLocalizedText(value: unknown, language: string | null): string {
+function getLocalizedText(
+  value: unknown,
+  language: string | null,
+): string | Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return typeof value === 'string' ? value : '';
   }
 
   const record = value as Record<string, unknown>;
-  const lang = language || 'en';
-  const localizedValue = record[lang] ?? record.en ?? '';
+  if (!language) {
+    return record;
+  }
+
+  const localizedValue = record[language] ?? record.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue

@@ -46,12 +46,19 @@ export interface CreateProjectInput {
   projectStages?: CreateProjectStageInProjectInput[];
 }
 
-type LocalizedProjectRecord = Omit<ProjectRecord, 'name'> & {
-  name: string;
+type LocalizedText = string | Record<string, unknown>;
+
+type LocalizedProjectRecord = Omit<ProjectRecord, 'name' | 'description'> & {
+  name: LocalizedText;
+  description: LocalizedText | null;
 };
 
-type LocalizedProjectStageRecord = Omit<ProjectStageRecord, 'name'> & {
-  name: string;
+type LocalizedProjectStageRecord = Omit<
+  ProjectStageRecord,
+  'name' | 'description'
+> & {
+  name: LocalizedText;
+  description: LocalizedText | null;
 };
 
 type LocalizedProjectWithStagesRecord = LocalizedProjectRecord & {
@@ -98,7 +105,7 @@ type LocalizedTaskSubmissionRecord = Omit<
   ProjectTaskRecord,
   'name' | 'assignee' | 'stage' | 'project' | 'domain' | 'admin'
 > & {
-  name: string;
+  name: LocalizedText;
   assignee: string | null;
   approvalState: SubmissionApprovalState;
   images?: ProjectTaskImageRecord[];
@@ -140,13 +147,16 @@ function toNumber(value: unknown): number {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (!value) {
     return null;
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue
@@ -226,7 +236,7 @@ function assertTaskSubmissionImages(images: TaskSubmissionImageInput[]): void {
 function normalizeDescription(
   value: unknown,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (value === null || value === undefined) {
     return null;
   }
@@ -388,7 +398,7 @@ function normalizeProject(
 function normalizeRelationDetails(
   relation: ProjectRecord['location'],
   language: string | null,
-): ProjectRecord['location'] {
+): Record<string, unknown> | null | undefined {
   if (!relation) {
     return relation;
   }

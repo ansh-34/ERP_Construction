@@ -64,13 +64,16 @@ function normalizeStoredDelayReason(value: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string | null {
+): string | Record<string, unknown> | null {
   if (!value || typeof value !== 'object') {
     return null;
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue
@@ -84,7 +87,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 function normalizeRelationDetails(
   relation: ProjectTaskDelayRecord['project'],
   language: string | null,
-): ProjectTaskDelayRecord['project'] {
+): Record<string, unknown> | null | undefined {
   if (!relation) {
     return relation;
   }

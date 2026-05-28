@@ -59,7 +59,7 @@ export const projectStageController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const { searchKey, offset, limit } = req.query as {
         searchKey?: string;
         offset?: string;

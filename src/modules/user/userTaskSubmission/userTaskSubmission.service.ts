@@ -9,11 +9,13 @@ import {
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isNonEmptyString } from '@/utils/validation';
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedProjectTaskRecord = Omit<
   ProjectTaskRecord,
   'name' | 'assignee'
 > & {
-  name: string;
+  name: LocalizedText;
   assignee: string | null;
 };
 
@@ -29,10 +31,10 @@ type SubmittedTaskWithImages = LocalizedProjectTaskRecord & {
 function getLocalizedText(
   value: Record<string, unknown>,
   language: string | null,
-): string {
+): LocalizedText {
   if (!value || typeof value !== 'object') return '';
-  const lang = language || 'en';
-  const text = value[lang];
+  if (!language) return value;
+  const text = value[language];
   if (typeof text === 'string') return text;
   const fallback = Object.values(value).find((v) => typeof v === 'string');
   return typeof fallback === 'string' ? fallback : '';

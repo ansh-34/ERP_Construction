@@ -185,4 +185,10 @@ export const modules = [
     },
     code: 'ROLE',
   },
+  {
+    name: {
+      en: 'User',
+    },
+    code: 'USER',
+  },
 ];

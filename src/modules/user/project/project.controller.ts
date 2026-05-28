@@ -29,7 +29,7 @@ export const createProject = async (req: Request, res: Response) => {
 
 export const listDomainProjects = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = (req.headers.language as string | undefined) || null;
     const { projects, pagination } =
       await UserProjectService.listDomainProjects(
         req.user!.domainId,
@@ -59,7 +59,7 @@ export const listDomainProjects = async (req: Request, res: Response) => {
 
 export const getMyProjects = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = (req.headers.language as string | undefined) || null;
     const { projects, pagination } = await UserProjectService.getMyProjects(
       req.user!.domainId,
       req.user!.adminId,
@@ -89,7 +89,7 @@ export const getMyProjects = async (req: Request, res: Response) => {
 
 export const getProjectById = async (req: Request, res: Response) => {
   try {
-    const { language } = req.headers;
+    const { language = 'en' } = req.headers;
     const project = await UserProjectService.getProjectById(
       req.user!.domainId,
       req.user!.adminId,
