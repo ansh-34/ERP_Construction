@@ -9,12 +9,13 @@ import { normalizePagination } from '../../../utils/pagination.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const UserProjectService = {
-  localizeName(value: any, langCode: string) {
+  localizeName(value: any, langCode: string | null | undefined) {
     if (!value || typeof value !== 'object') return '';
+    if (!langCode) return value;
     return value[langCode] || value.en || '';
   },
 
-  localizeDescription(value: unknown, langCode: string) {
+  localizeDescription(value: unknown, langCode: string | null | undefined) {
     if (value === null || value === undefined) return null;
 
     if (typeof value === 'object' && !Array.isArray(value)) {
@@ -36,7 +37,7 @@ export const UserProjectService = {
     return value;
   },
 
-  localizeProject(project: any, langCode: string) {
+  localizeProject(project: any, langCode: string | null | undefined) {
     const projectData = { ...project };
     delete projectData.location;
     delete projectData.domain;
@@ -52,7 +53,7 @@ export const UserProjectService = {
     };
   },
 
-  localizeProjectStage(stage: any, langCode: string) {
+  localizeProjectStage(stage: any, langCode: string | null | undefined) {
     const stageData = { ...stage };
     delete stageData.project;
     delete stageData.domain;

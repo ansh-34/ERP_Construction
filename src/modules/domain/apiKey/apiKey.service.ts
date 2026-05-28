@@ -19,17 +19,19 @@ export interface UpdateApiKeyInput {
   description?: Record<string, unknown>;
 }
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedApiKeyPublicRecord = Omit<
   ApiKeyPublicRecord,
   'name' | 'description'
 > & {
-  name: string;
-  description: string;
+  name: LocalizedText;
+  description: LocalizedText;
 };
 
 type LocalizedApiKeyRecord = Omit<ApiKeyRecord, 'name' | 'description'> & {
-  name: string;
-  description: string;
+  name: LocalizedText;
+  description: LocalizedText;
 };
 
 function buildApiKeySearchText(name: Record<string, unknown>): string {
@@ -39,13 +41,16 @@ function buildApiKeySearchText(name: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string {
+): LocalizedText {
   if (!value) {
     return '';
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue
@@ -55,7 +60,10 @@ function getLocalizedText(
 function normalizeApiKeyRecord<T extends ApiKeyPublicRecord | ApiKeyRecord>(
   apiKey: T,
   language: string | null,
-): Omit<T, 'name' | 'description'> & { name: string; description: string } {
+): Omit<T, 'name' | 'description'> & {
+  name: LocalizedText;
+  description: LocalizedText;
+} {
   return {
     ...apiKey,
     name: getLocalizedText(apiKey.name, language),

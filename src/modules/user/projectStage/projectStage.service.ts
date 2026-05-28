@@ -31,11 +31,14 @@ export interface UpdateProjectStageInput {
   status?: StatusEnum;
 }
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedProjectStageRecord = Omit<
   ProjectStageRecord,
-  'name' | 'project' | 'domain' | 'admin'
+  'name' | 'description' | 'project' | 'domain' | 'admin'
 > & {
-  name: string;
+  name: LocalizedText;
+  description: LocalizedText | null;
 };
 
 type PaginatedProjectStages = {
@@ -58,13 +61,16 @@ function buildProjectStageSearchText(name: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (!value) {
     return null;
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue
@@ -74,7 +80,7 @@ function getLocalizedText(
 function normalizeDescription(
   value: unknown,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (value === null || value === undefined) {
     return null;
   }

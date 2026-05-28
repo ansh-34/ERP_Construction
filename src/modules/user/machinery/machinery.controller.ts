@@ -1,33 +1,34 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
 import { StatusEnum } from '@constants/index';
-import { locationService } from './location.service';
 import { resolveHttpStatus } from '@/utils/httpError';
+import { machineryService } from './machinery.service';
 
-export const locationController = {
+export const machineryController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const { name, code, type, parentLocationId, status } = req.body as {
-        name?: Record<string, unknown>;
-        code?: string;
-        type?: string;
-        parentLocationId?: string | null;
-        status?: StatusEnum;
-      };
+      const { code, type, expectedLitrePerHour, projectId, status } =
+        req.body as {
+          code?: string;
+          type?: string;
+          expectedLitrePerHour?: number;
+          projectId?: string;
+          status?: StatusEnum;
+        };
 
       const domainId = req.user!.domainId;
       const adminId = req.user!.adminId;
 
-      const location = await locationService.create(
+      const machinery = await machineryService.create(
         {
-          name: name ?? {},
-          ...(code !== undefined && { code }),
+          code: code ?? '',
           type: type ?? '',
-          ...(parentLocationId !== undefined && { parentLocationId }),
+          ...(expectedLitrePerHour !== undefined && { expectedLitrePerHour }),
+          projectId: projectId ?? '',
           domainId,
           adminId,
           status: status ?? StatusEnum.ACTIVE,
@@ -36,12 +37,12 @@ export const locationController = {
       );
 
       return res.status(HttpStatus.CREATED).json({
-        message: 'Location created successfully',
-        data: location,
+        message: 'Machinery created successfully',
+        data: machinery,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to create location';
+        error instanceof Error ? error.message : 'Failed to create machinery';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -52,31 +53,26 @@ export const locationController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { domainId, searchKey, offset, limit } = req.query as {
-        domainId?: string;
+      const { projectId, searchKey } = req.query as {
+        projectId?: string;
         searchKey?: string;
-        offset?: string;
-        limit?: string;
       };
-      const { locations, pagination } = await locationService.getAll(
-        domainId ?? '',
+
+      const machineries = await machineryService.getAll(
+        req.user!.domainId,
         req.user!.adminId,
+        projectId,
         searchKey,
-        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
-        message: 'Locations fetched successfully',
-        pagination: {
-          currentCount: locations.length,
-          ...pagination,
-        },
-        data: locations,
+        message: 'Machineries fetched successfully',
+        data: machineries,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch locations';
+        error instanceof Error ? error.message : 'Failed to fetch machineries';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -88,25 +84,24 @@ export const locationController = {
         (req.headers.language as string) ||
         'en';
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
-      const location = await locationService.getById(
+      const machinery = await machineryService.getById(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
         language,
       );
 
-      if (!location) {
+      if (!machinery) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location fetched successfully',
-        data: location,
+        message: 'Machinery fetched successfully',
+        data: machinery,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to fetch location';
+        error instanceof Error ? error.message : 'Failed to fetch machinery';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -114,44 +109,43 @@ export const locationController = {
   update: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
-      const { name, code, type, parentLocationId, status } = req.body as {
-        name?: Record<string, unknown>;
-        code?: string;
-        type?: string;
-        parentLocationId?: string | null;
-        status?: StatusEnum;
-      };
-
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         'en';
-      const updatedLocation = await locationService.update(
+      const { code, type, expectedLitrePerHour, status } = req.body as {
+        code?: string;
+        type?: string;
+        expectedLitrePerHour?: number;
+        status?: StatusEnum;
+      };
+
+      const updatedMachinery = await machineryService.update(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
         {
-          ...(name !== undefined && { name }),
           ...(code !== undefined && { code }),
           ...(type !== undefined && { type }),
-          ...(parentLocationId !== undefined && { parentLocationId }),
+          ...(expectedLitrePerHour !== undefined && {
+            expectedLitrePerHour,
+          }),
           ...(status !== undefined && { status }),
         },
         language,
       );
 
-      if (!updatedLocation) {
+      if (!updatedMachinery) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location updated successfully',
-        data: updatedLocation,
+        message: 'Machinery updated successfully',
+        data: updatedMachinery,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to update location';
+        error instanceof Error ? error.message : 'Failed to update machinery';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
@@ -159,24 +153,23 @@ export const locationController = {
   delete: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { id } = req.params as { id?: string };
-      const { domainId } = req.query as { domainId?: string };
-      const deletedLocation = await locationService.softDelete(
+      const deletedMachinery = await machineryService.softDelete(
         id ?? '',
-        domainId ?? '',
+        req.user!.domainId,
         req.user!.adminId,
       );
 
-      if (!deletedLocation) {
+      if (!deletedMachinery) {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'not found' });
       }
 
       return res.status(HttpStatus.OK).json({
-        message: 'Location deleted successfully',
-        data: deletedLocation,
+        message: 'Machinery deleted successfully',
+        data: deletedMachinery,
       });
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : 'Failed to delete location';
+        error instanceof Error ? error.message : 'Failed to delete machinery';
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },

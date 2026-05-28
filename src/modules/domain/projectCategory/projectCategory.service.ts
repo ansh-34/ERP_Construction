@@ -21,8 +21,10 @@ export interface UpdateProjectCategoryInput {
   status?: StatusEnum;
 }
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedProjectCategoryRecord = Omit<ProjectCategoryRecord, 'name'> & {
-  name: string;
+  name: LocalizedText;
 };
 
 function buildProjectCategoryCode(name: Record<string, unknown>): string {
@@ -36,13 +38,16 @@ function buildProjectCategorySearchText(name: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown> | null,
   language: string | null,
-): string | null {
+): LocalizedText | null {
   if (!value) {
     return null;
   }
 
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue

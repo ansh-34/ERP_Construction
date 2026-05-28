@@ -50,7 +50,7 @@ export const projectUserDailyLogController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const {
         projectId,
         userId,

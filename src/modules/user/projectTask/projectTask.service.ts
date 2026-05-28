@@ -51,6 +51,8 @@ export interface UpdateProjectTaskInput {
   status?: StatusEnum;
 }
 
+type LocalizedText = string | Record<string, unknown>;
+
 type LocalizedProjectTaskRecord = Omit<
   ProjectTaskRecord,
   | 'name'
@@ -61,7 +63,7 @@ type LocalizedProjectTaskRecord = Omit<
   | 'admin'
   | 'assigneeDetails'
 > & {
-  name: string;
+  name: LocalizedText;
   assignee: string | null;
 };
 
@@ -85,9 +87,12 @@ function buildProjectTaskSearchText(name: Record<string, unknown>): string {
 function getLocalizedText(
   value: Record<string, unknown>,
   language: string | null,
-): string {
-  const langCode = language || 'en';
-  const localizedValue = value[langCode] ?? value.en ?? '';
+): LocalizedText {
+  if (!language) {
+    return value;
+  }
+
+  const localizedValue = value[language] ?? value.en ?? '';
 
   return typeof localizedValue === 'string'
     ? localizedValue

@@ -76,7 +76,7 @@ export const projectController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const { domainId, searchKey, offset, limit } = req.query as {
         domainId?: string;
         searchKey?: string;
@@ -268,7 +268,7 @@ export const projectController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const {
         projectId,
         stageId,

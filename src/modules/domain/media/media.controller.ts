@@ -57,7 +57,7 @@ export const mediaController = {
       const language =
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
-        'en';
+        null;
       const { domainId, searchKey } = req.query as {
         domainId?: string;
         searchKey?: string;
