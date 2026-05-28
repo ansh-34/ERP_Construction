@@ -48,6 +48,7 @@ export const ProjectSchemas = {
       expectedEndDate: dateField,
       actualStartDate: dateField,
       actualEndDate: dateField,
+      totalDelayInDays: { type: 'number', example: 13 },
       locationId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
       status: activeStatus,
@@ -57,6 +58,35 @@ export const ProjectSchemas = {
       },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  ProjectAnalyticsObject: {
+    type: 'object',
+    properties: {
+      projectCounts: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 20 },
+          inProgress: { type: 'integer', example: 8 },
+          completed: { type: 'integer', example: 5 },
+        },
+      },
+      budget: {
+        type: 'object',
+        properties: {
+          total: { type: 'number', example: 1000000 },
+          spent: { type: 'number', example: 450000 },
+        },
+      },
+      inProgressProjectAnalytics: {
+        type: 'object',
+        properties: {
+          taskDelayCount: { type: 'integer', example: 12 },
+          taskDelayDuration: { type: 'number', example: 35 },
+          taskSubmissionCount: { type: 'integer', example: 40 },
+          taskApprovalCount: { type: 'integer', example: 25 },
+        },
+      },
     },
   },
   CreateProjectBody: {
@@ -113,6 +143,7 @@ export const ProjectSchemas = {
       expectedEndDate: dateField,
       actualStartDate: dateField,
       actualEndDate: dateField,
+      totalDelayInDays: { type: 'number', example: 5 },
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
       status: activeStatus,

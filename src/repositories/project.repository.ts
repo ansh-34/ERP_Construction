@@ -19,6 +19,7 @@ export interface ProjectRecord {
   actualStartDate: Date | null;
   actualEndDate: Date | null;
   progress?: number;
+  totalDelayInDays?: number;
   locationId: string;
   domainId: string;
   adminId: string;
@@ -109,6 +110,14 @@ const projectListSelect = Prisma.sql`
       GROUP BY ps."id"
     ) stage_progress
   ), 0) AS "progress",
+  COALESCE((
+    SELECT SUM(pt."totalDelayInDays")::float
+    FROM "ProjectTask" pt
+    WHERE pt."projectId" = p."id"
+      AND pt."domainId" = p."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "totalDelayInDays",
   jsonb_build_object(
     'locationId', l."id",
     'name', l."name",
@@ -157,6 +166,14 @@ const projectDetailSelect = Prisma.sql`
       GROUP BY ps."id"
     ) stage_progress
   ), 0) AS "progress",
+  COALESCE((
+    SELECT SUM(pt."totalDelayInDays")::float
+    FROM "ProjectTask" pt
+    WHERE pt."projectId" = p."id"
+      AND pt."domainId" = p."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "totalDelayInDays",
   p."locationId",
   p."domainId",
   p."adminId",

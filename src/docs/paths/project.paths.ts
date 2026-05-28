@@ -223,6 +223,17 @@ const crudPaths = ({
 });
 
 export const ProjectPaths = {
+  '/api/domain/projects/analytics': {
+    get: {
+      tags: ['Domain Projects'],
+      summary: 'Get project analytics',
+      security: [{ bearerAuth: [] }],
+      responses: itemResponse(
+        'ProjectAnalyticsObject',
+        'Project analytics retrieved',
+      ),
+    },
+  },
   ...crudPaths({
     basePath: '/api/domain/projects',
     tag: 'Domain Projects',

@@ -16,6 +16,7 @@ export interface ProjectStageRecord {
   expectedEndDate: Date | null;
   actualStartDate: Date | null;
   actualEndDate: Date | null;
+  totalDelayInDays?: number;
   projectId: string | null;
   domainId: string;
   adminId: string;
@@ -92,6 +93,14 @@ const projectStageListSelect = Prisma.sql`
       AND pt."isDeleted" = false
       AND pt."status" = ${StatusEnum.ACTIVE}
   ), 0) AS "progress",
+  COALESCE((
+    SELECT SUM(pt."totalDelayInDays")::float
+    FROM "ProjectTask" pt
+    WHERE pt."stageId" = ps."id"
+      AND pt."domainId" = ps."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "totalDelayInDays",
   CASE
     WHEN p."id" IS NULL THEN NULL
     ELSE jsonb_build_object(
@@ -113,6 +122,14 @@ const projectStageListSelect = Prisma.sql`
             AND project_stages."status" = ${StatusEnum.ACTIVE}
           GROUP BY project_stages."id"
         ) stage_progress
+      ), 0),
+      'totalDelayInDays', COALESCE((
+        SELECT SUM(pt."totalDelayInDays")::float
+        FROM "ProjectTask" pt
+        WHERE pt."projectId" = p."id"
+          AND pt."domainId" = p."domainId"
+          AND pt."isDeleted" = false
+          AND pt."status" = ${StatusEnum.ACTIVE}
       ), 0)
     )
   END AS "project",
@@ -149,6 +166,14 @@ const projectStageDetailSelect = Prisma.sql`
       AND pt."isDeleted" = false
       AND pt."status" = ${StatusEnum.ACTIVE}
   ), 0) AS "progress",
+  COALESCE((
+    SELECT SUM(pt."totalDelayInDays")::float
+    FROM "ProjectTask" pt
+    WHERE pt."stageId" = ps."id"
+      AND pt."domainId" = ps."domainId"
+      AND pt."isDeleted" = false
+      AND pt."status" = ${StatusEnum.ACTIVE}
+  ), 0) AS "totalDelayInDays",
   ps."projectId",
   ps."domainId",
   ps."adminId",
@@ -176,6 +201,14 @@ const projectStageDetailSelect = Prisma.sql`
             AND project_stages."status" = ${StatusEnum.ACTIVE}
           GROUP BY project_stages."id"
         ) stage_progress
+      ), 0),
+      'totalDelayInDays', COALESCE((
+        SELECT SUM(pt."totalDelayInDays")::float
+        FROM "ProjectTask" pt
+        WHERE pt."projectId" = p."id"
+          AND pt."domainId" = p."domainId"
+          AND pt."isDeleted" = false
+          AND pt."status" = ${StatusEnum.ACTIVE}
       ), 0),
       'locationId', p."locationId",
       'location', CASE

@@ -67,6 +67,24 @@ type PaginatedProjects = {
   };
 };
 
+type ProjectAnalytics = {
+  projectCounts: {
+    total: number;
+    inProgress: number;
+    completed: number;
+  };
+  budget: {
+    total: number;
+    spent: number;
+  };
+  inProgressProjectAnalytics: {
+    taskDelayCount: number;
+    taskDelayDuration: number;
+    taskSubmissionCount: number;
+    taskApprovalCount: number;
+  };
+};
+
 type ApprovalAction = 'APPROVED' | 'REJECTED' | 'APPROVAL' | 'REJECTION';
 type NormalizedApprovalState = 'APPROVED' | 'REJECTED';
 type SubmissionApprovalState = 'PENDING' | NormalizedApprovalState;
@@ -109,6 +127,14 @@ function buildProjectStageCode(name: Record<string, unknown>): string {
 
 function buildProjectStageSearchText(name: Record<string, unknown>): string {
   return Object.values(name).join(' ').toLowerCase();
+}
+
+function toNumber(value: unknown): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+
+  return Number(value);
 }
 
 function getLocalizedText(
@@ -668,6 +694,125 @@ export const projectService = {
           totalCount: projects.length,
           offset,
           limit,
+        },
+      };
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getAnalytics: async (
+    domainId: string,
+    adminId: string,
+  ): Promise<ProjectAnalytics> => {
+    if (!isNonEmptyString(domainId)) {
+      throw new Error('invalid domainId');
+    }
+
+    if (!isNonEmptyString(adminId)) {
+      throw new Error('invalid adminId');
+    }
+
+    try {
+      const resolvedAdminId = await resolveAdminId(domainId, adminId);
+      const baseProjectWhere = {
+        domainId,
+        adminId: resolvedAdminId,
+        isDeleted: false,
+      };
+      const inProgressProjectWhere = {
+        ...baseProjectWhere,
+        actualStartDate: { not: null },
+        actualEndDate: null,
+      };
+      const completedProjectWhere = {
+        ...baseProjectWhere,
+        actualEndDate: { not: null },
+      };
+      const inProgressProjectRelationWhere = {
+        domainId,
+        adminId: resolvedAdminId,
+        isDeleted: false,
+        actualStartDate: { not: null },
+        actualEndDate: null,
+      };
+
+      const [
+        totalProjects,
+        inProgressProjects,
+        completedProjects,
+        budgetAggregate,
+        taskDelayCount,
+        taskDelayDurationAggregate,
+        taskSubmissionCount,
+        taskApprovalCount,
+      ] = await Promise.all([
+        prisma.project.count({ where: baseProjectWhere }),
+        prisma.project.count({ where: inProgressProjectWhere }),
+        prisma.project.count({ where: completedProjectWhere }),
+        prisma.project.aggregate({
+          where: baseProjectWhere,
+          _sum: {
+            budget: true,
+            spent: true,
+          },
+        }),
+        prisma.projectTaskDelay.count({
+          where: {
+            domainId,
+            adminId: resolvedAdminId,
+            isDeleted: false,
+            project: inProgressProjectRelationWhere,
+          },
+        }),
+        prisma.projectTaskDelay.aggregate({
+          where: {
+            domainId,
+            adminId: resolvedAdminId,
+            isDeleted: false,
+            project: inProgressProjectRelationWhere,
+          },
+          _sum: {
+            requestedDelayInDays: true,
+          },
+        }),
+        prisma.projectTask.count({
+          where: {
+            domainId,
+            adminId: resolvedAdminId,
+            isDeleted: false,
+            taskStatus: { in: ['COMPLETED', 'APPROVED', 'REJECTED'] },
+            project: inProgressProjectRelationWhere,
+          },
+        }),
+        prisma.projectTask.count({
+          where: {
+            domainId,
+            adminId: resolvedAdminId,
+            isDeleted: false,
+            taskStatus: 'APPROVED',
+            project: inProgressProjectRelationWhere,
+          },
+        }),
+      ]);
+
+      return {
+        projectCounts: {
+          total: totalProjects,
+          inProgress: inProgressProjects,
+          completed: completedProjects,
+        },
+        budget: {
+          total: toNumber(budgetAggregate._sum.budget),
+          spent: toNumber(budgetAggregate._sum.spent),
+        },
+        inProgressProjectAnalytics: {
+          taskDelayCount,
+          taskDelayDuration: toNumber(
+            taskDelayDurationAggregate._sum.requestedDelayInDays,
+          ),
+          taskSubmissionCount,
+          taskApprovalCount,
         },
       };
     } catch (error: unknown) {
