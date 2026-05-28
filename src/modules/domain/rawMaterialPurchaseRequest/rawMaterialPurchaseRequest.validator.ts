@@ -1,7 +1,5 @@
 import { z } from 'zod';
-import {
-  paginationQuerySchema,
-} from '../../common/common.validator.js';
+import { paginationQuerySchema } from '../../common/common.validator.js';
 
 export const createRawMaterialPurchaseRequestBodySchema = z.object({
   type: z.enum(['IMPORT', 'LOCAL']),
