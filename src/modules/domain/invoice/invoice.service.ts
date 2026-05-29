@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import { invoiceRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 export const InvoiceService = {
   generateInvoiceCode(domainId: string): string {
@@ -55,13 +56,21 @@ export const InvoiceService = {
     return invoiceRepository.softDelete(id);
   },
 
-  async listInvoiceItems(domainId: string, invoiceId: string) {
+  async listInvoiceItems(
+    domainId: string,
+    invoiceId: string,
+    langCode?: string,
+  ) {
     const invoice = await invoiceRepository.findByIdAndDomain(
       invoiceId,
       domainId,
     );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
-    return invoiceRepository.listItemsByInvoice(invoiceId, domainId);
+    const items = await invoiceRepository.listItemsByInvoice(
+      invoiceId,
+      domainId,
+    );
+    return translateResponse(items, langCode);
   },
 
   async generateFromPurchaseOrder(

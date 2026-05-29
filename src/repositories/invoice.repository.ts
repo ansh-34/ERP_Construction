@@ -1,5 +1,15 @@
-import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
+import { Prisma } from '../infra/database/prisma/generated/prisma/client/client.js';
 import prisma from '../infra/database/prisma/prisma.client.js';
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+  }
+  return JSON.stringify(value ?? '');
+};
 
 export const invoiceRepository = {
   async create(
@@ -386,7 +396,7 @@ export const invoiceRepository = {
               invoiceId: invoice.id,
               productId: item.pricing.productId,
               productGradeId: item.pricing.productGradeId,
-              description: `${item.poProduct.productName}${item.poProduct.productGradeName ? ' - ' + item.poProduct.productGradeName : ''}`,
+              description: `${toDisplayString(item.poProduct.productName)}${item.poProduct.productGradeName ? ' - ' + toDisplayString(item.poProduct.productGradeName) : ''}`,
               quantity: item.poProduct.quantity,
               uomId: item.pricing.uomId,
               taxAmount: itemTax,

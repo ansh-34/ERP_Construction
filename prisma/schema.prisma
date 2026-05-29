@@ -831,8 +831,8 @@ model PurchaseOrderProduct {
   purchaseOrderId  String        @db.Uuid
   purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
   orderCode        String
-  productName      String
-  productGradeName String
+  productName      Json
+  productGradeName Json?
   quantity         Float
   tax              Float         @default(0)
   uomId            String        @db.Uuid

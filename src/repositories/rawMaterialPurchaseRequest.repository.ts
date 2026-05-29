@@ -2,16 +2,6 @@ import prisma from '@/infra/database/prisma/prisma.client';
 
 const asPrisma = prisma as any;
 
-const toDisplayString = (value: unknown): string => {
-  if (typeof value === 'string') return value;
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    if (typeof record.en === 'string') return record.en;
-    if (typeof record.name === 'string') return record.name;
-  }
-  return JSON.stringify(value ?? '');
-};
-
 export const RawMaterialPurchaseRequestRepository = {
   async create(data: any) {
     return prisma.rawMaterialPurchaseRequest.create({ data });
@@ -163,9 +153,9 @@ export const RawMaterialPurchaseRequestRepository = {
           data: {
             purchaseOrderId: po.id,
             orderCode: po.code,
-            productName: toDisplayString(req.product.displayName),
+            productName: req.product.displayName as any,
             productGradeName: req.productGrade
-              ? toDisplayString(req.productGrade.gradeDisplayName)
+              ? (req.productGrade.gradeDisplayName as any)
               : undefined,
             quantity: req.quantity,
             uomId: req.uomId,
