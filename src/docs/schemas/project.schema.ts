@@ -219,6 +219,22 @@ export const ProjectSchemas = {
       status: activeStatus,
     },
   },
+  ProjectTaskImageInput: {
+    type: 'object',
+    required: ['imageId'],
+    properties: {
+      imageId: {
+        type: 'string',
+        format: 'uuid',
+        description: 'Media ID uploaded through media API.',
+      },
+      description: {
+        type: 'string',
+        nullable: true,
+        example: 'Before work photo',
+      },
+    },
+  },
   CreateDomainProjectTaskBody: {
     type: 'object',
     required: ['name', 'stageId', 'projectId', 'domainId'],
@@ -248,6 +264,10 @@ export const ProjectSchemas = {
       projectId: { type: 'string', format: 'uuid' },
       domainId: { type: 'string', format: 'uuid' },
       status: activeStatus,
+      images: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ProjectTaskImageInput' },
+      },
     },
   },
   CreateProjectTaskBody: {
@@ -278,6 +298,34 @@ export const ProjectSchemas = {
       stageId: { type: 'string', format: 'uuid' },
       projectId: { type: 'string', format: 'uuid' },
       status: activeStatus,
+    },
+  },
+  DomainUpdateProjectTaskBody: {
+    type: 'object',
+    properties: {
+      name: localizedObject,
+      assignee: { type: 'string', format: 'uuid', nullable: true },
+      plannedStartDate: dateField,
+      plannedEndDate: dateField,
+      actualStartDate: dateField,
+      actualEndDate: dateField,
+      taskStatus,
+      taskProgress: { type: 'number', minimum: 0, maximum: 100, example: 40 },
+      totalDelayInDays: { type: 'number', minimum: 0, example: 2 },
+      requiredApproval: { type: 'boolean', nullable: true, example: true },
+      lastApprovedDeadline: dateField,
+      projectBatchCode: {
+        type: 'string',
+        nullable: true,
+        example: 'BATCH-001',
+      },
+      status: activeStatus,
+      images: {
+        type: 'array',
+        description:
+          'Optional images to append to the task. Existing images are not removed.',
+        items: { $ref: '#/components/schemas/ProjectTaskImageInput' },
+      },
     },
   },
   UpdateProjectTaskBody: {

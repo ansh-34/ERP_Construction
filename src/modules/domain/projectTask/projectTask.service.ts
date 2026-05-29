@@ -1,8 +1,11 @@
 import {
+  mediaRepository,
   projectRepository,
+  projectTaskImageRepository,
   projectStageRepository,
   projectTaskRepository,
   UserRepository,
+  type ProjectTaskImageRecord,
   type ProjectTaskRecord,
   type UpdateProjectTaskInput as RepositoryUpdateProjectTaskInput,
 } from '@repositories/index';
@@ -14,6 +17,11 @@ import {
   isNonNegativeFiniteNumber,
   isPlainObject,
 } from '@/utils/validation';
+
+interface ProjectTaskImageInput {
+  imageId: string;
+  description?: string | null;
+}
 
 export interface CreateProjectTaskInput {
   name: Record<string, unknown>;
@@ -32,6 +40,7 @@ export interface CreateProjectTaskInput {
   projectId: string;
   domainId: string;
   adminId: string;
+  images?: ProjectTaskImageInput[];
   status: StatusEnum;
 }
 
@@ -48,6 +57,7 @@ export interface UpdateProjectTaskInput {
   requiredApproval?: boolean | null;
   lastApprovedDeadline?: string | null;
   projectBatchCode?: string | null;
+  images?: ProjectTaskImageInput[];
   status?: StatusEnum;
 }
 
@@ -59,6 +69,7 @@ type LocalizedProjectTaskRecord = Omit<
 > & {
   name: LocalizedText;
   assignee: string | null;
+  images?: ProjectTaskImageRecord[];
 };
 
 type PaginatedProjectTasks = {
@@ -108,6 +119,7 @@ function getAssigneeUserId(
 function normalizeProjectTask(
   task: ProjectTaskRecord,
   language: string | null,
+  images?: ProjectTaskImageRecord[],
 ): LocalizedProjectTaskRecord {
   return {
     ...task,
@@ -118,6 +130,7 @@ function normalizeProjectTask(
     domain: normalizeRelationDetails(task.domain, language),
     admin: normalizeRelationDetails(task.admin, language),
     assigneeDetails: normalizeRelationDetails(task.assigneeDetails, language),
+    ...(images !== undefined && { images }),
   };
 }
 
@@ -221,6 +234,7 @@ function assertCreateInput(data: CreateProjectTaskInput): void {
   }
 
   assertStatus(data.status);
+  assertProjectTaskImages(data.images);
 }
 
 function assertUpdateInput(data: UpdateProjectTaskInput): void {
@@ -264,6 +278,31 @@ function assertUpdateInput(data: UpdateProjectTaskInput): void {
   }
 
   assertStatus(data.status);
+  assertProjectTaskImages(data.images);
+}
+
+function assertProjectTaskImages(
+  images: ProjectTaskImageInput[] | undefined,
+): void {
+  if (images === undefined) {
+    return;
+  }
+
+  for (const image of images) {
+    if (!isNonEmptyString(image.imageId)) {
+      throw new Error('invalid imageId');
+    }
+
+    if (image.description !== undefined && image.description !== null) {
+      if (!isNonEmptyString(image.description)) {
+        throw new Error('description is required');
+      }
+
+      if (/[\r\n]/.test(image.description)) {
+        throw new Error('description must be single-line');
+      }
+    }
+  }
 }
 
 async function assertAssigneeExists(
@@ -347,6 +386,38 @@ function buildUpdatePayload(
   };
 }
 
+async function createProjectTaskImages(
+  task: ProjectTaskRecord,
+  images: ProjectTaskImageInput[] = [],
+): Promise<ProjectTaskImageRecord[]> {
+  return Promise.all(
+    images.map(async (image) => {
+      const media = await mediaRepository.findById(
+        image.imageId,
+        task.domainId,
+        task.adminId,
+      );
+
+      if (!media) {
+        throw new Error('not found');
+      }
+
+      return projectTaskImageRepository.create({
+        imageId: media.id,
+        imageUrl: media.url,
+        ...(image.description !== undefined && {
+          description: image.description,
+        }),
+        taskId: task.id,
+        stageId: task.stageId,
+        projectId: task.projectId,
+        domainId: task.domainId,
+        adminId: task.adminId,
+      });
+    }),
+  );
+}
+
 export const projectTaskService = {
   create: async (
     data: CreateProjectTaskInput,
@@ -392,13 +463,14 @@ export const projectTaskService = {
       }
 
       const task = await projectTaskRepository.create(createPayload);
+      const images = await createProjectTaskImages(task, data.images);
       await projectStageRepository.recalculateProgress(
         task.stageId,
         data.domainId,
         data.adminId,
       );
 
-      return normalizeProjectTask(task, language);
+      return normalizeProjectTask(task, language, images);
     } catch (error: unknown) {
       console.error('[ProjectTaskService.create]', error);
       throw normalizePrismaError(error);
@@ -520,14 +592,16 @@ export const projectTaskService = {
       );
 
       if (task) {
+        const images = await createProjectTaskImages(task, data.images);
         await projectStageRepository.recalculateProgress(
           task.stageId,
           domainId,
           adminId,
         );
+        return normalizeProjectTask(task, language, images);
       }
 
-      return task ? normalizeProjectTask(task, language) : null;
+      return null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

@@ -11,6 +11,16 @@ const progressPercentage = nonNegativeNumber.max(100, {
 });
 const optionalDate = z.string().trim().min(1).nullable().optional();
 const nonEmptyOptionalString = z.string().trim().min(1).nullable().optional();
+const singleLineDescription = z
+  .string()
+  .trim()
+  .refine((value) => !/[\r\n]/.test(value), {
+    message: 'Description must be single-line',
+  });
+const projectTaskImageSchema = z.object({
+  imageId: z.string().trim().uuid({ message: 'Valid image id is required' }),
+  description: singleLineDescription.nullable().optional(),
+});
 
 export const createProjectTaskBody = z.object({
   name: jsonObject,
@@ -28,6 +38,7 @@ export const createProjectTaskBody = z.object({
   stageId: z.string().trim().min(1, { message: 'Stage id is required' }),
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  images: z.array(projectTaskImageSchema).optional(),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
@@ -45,6 +56,7 @@ export const updateProjectTaskBody = z
     requiredApproval: z.boolean().nullable().optional(),
     lastApprovedDeadline: optionalDate,
     projectBatchCode: nonEmptyOptionalString,
+    images: z.array(projectTaskImageSchema).optional(),
     status: z.nativeEnum(StatusEnum).optional(),
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {

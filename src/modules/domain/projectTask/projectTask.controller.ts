@@ -26,6 +26,7 @@ export const projectTaskController = {
         projectBatchCode,
         stageId,
         projectId,
+        images,
         status,
       } = req.body as {
         name?: Record<string, unknown>;
@@ -42,6 +43,10 @@ export const projectTaskController = {
         projectBatchCode?: string | null;
         stageId?: string;
         projectId?: string;
+        images?: {
+          imageId: string;
+          description?: string | null;
+        }[];
         status?: StatusEnum;
       };
 
@@ -66,6 +71,7 @@ export const projectTaskController = {
           projectId: projectId ?? '',
           domainId,
           adminId,
+          ...(images !== undefined && { images }),
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -178,6 +184,7 @@ export const projectTaskController = {
         requiredApproval,
         lastApprovedDeadline,
         projectBatchCode,
+        images,
         status,
       } = req.body as {
         name?: Record<string, unknown>;
@@ -192,6 +199,10 @@ export const projectTaskController = {
         requiredApproval?: boolean | null;
         lastApprovedDeadline?: string | null;
         projectBatchCode?: string | null;
+        images?: {
+          imageId: string;
+          description?: string | null;
+        }[];
         status?: StatusEnum;
       };
 
@@ -212,6 +223,7 @@ export const projectTaskController = {
           ...(requiredApproval !== undefined && { requiredApproval }),
           ...(lastApprovedDeadline !== undefined && { lastApprovedDeadline }),
           ...(projectBatchCode !== undefined && { projectBatchCode }),
+          ...(images !== undefined && { images }),
           ...(status !== undefined && { status }),
         },
         language,

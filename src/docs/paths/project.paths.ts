@@ -337,7 +337,7 @@ export const ProjectPaths = {
     tag: 'Domain Project Tasks',
     objectSchema: 'ProjectTaskObject',
     createSchema: 'CreateDomainProjectTaskBody',
-    updateSchema: 'UpdateProjectTaskBody',
+    updateSchema: 'DomainUpdateProjectTaskBody',
     entityName: 'Project tasks',
     listParameters: [domainIdQuery, projectIdQuery, stageIdQuery, searchQuery],
     detailParameters: [domainIdQuery],
