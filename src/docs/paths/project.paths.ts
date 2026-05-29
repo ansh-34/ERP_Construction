@@ -765,10 +765,7 @@ export const ProjectPaths = {
           },
         },
       },
-      responses: itemResponse(
-        'MachineReadingObject',
-        'Machine reading ended',
-      ),
+      responses: itemResponse('MachineReadingObject', 'Machine reading ended'),
     },
   },
   '/api/user/task-submission/{id}/submit': {
