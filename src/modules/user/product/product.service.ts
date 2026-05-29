@@ -188,7 +188,7 @@ export const ProductService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const { offset, limit } = normalizePagination(query);
     const searchKey = query.searchKey?.trim() || '';
@@ -247,7 +247,9 @@ export const ProductService = {
       const { _count, inventories, ...rest } = product;
       return {
         ...rest,
-        displayName: ProductService.localizeName(product.displayName, langCode),
+        displayName: langCode
+          ? ProductService.localizeName(product.displayName, langCode)
+          : product.displayName,
         gradesCount: _count?.productGrades || 0,
         uomsCount: _count?.productUoms || 0,
         inventories: (inventories || []).map((inv: any) => ({
@@ -258,19 +260,20 @@ export const ProductService = {
           productGrade: inv.productGrade
             ? {
                 ...inv.productGrade,
-                gradeDisplayName: ProductService.localizeName(
-                  inv.productGrade.gradeDisplayName,
-                  langCode,
-                ),
+                gradeDisplayName: langCode
+                  ? ProductService.localizeName(
+                      inv.productGrade.gradeDisplayName,
+                      langCode,
+                    )
+                  : inv.productGrade.gradeDisplayName,
               }
             : inv.productGrade,
           uom: inv.uom
             ? {
                 ...inv.uom,
-                displayName: ProductService.localizeName(
-                  inv.uom.displayName,
-                  langCode,
-                ),
+                displayName: langCode
+                  ? ProductService.localizeName(inv.uom.displayName, langCode)
+                  : inv.uom.displayName,
               }
             : inv.uom,
         })),

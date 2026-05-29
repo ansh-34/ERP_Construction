@@ -149,3 +149,9 @@ export const VehiclePaths = {
     },
   },
 };
+
+Object.assign(VehiclePaths, {
+  '/api/user/vehicles/stats': VehiclePaths['/api/domain/vehicles/stats'],
+  '/api/user/vehicles': VehiclePaths['/api/domain/vehicles'],
+  '/api/user/vehicles/{id}': VehiclePaths['/api/domain/vehicles/{id}'],
+});

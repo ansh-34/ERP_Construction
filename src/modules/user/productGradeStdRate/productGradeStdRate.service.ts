@@ -60,7 +60,7 @@ export const ProductGradeStdRateService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const product = await prisma.product.findFirst({
       where: { id: productId, domainId, isDeleted: false },
@@ -106,10 +106,9 @@ export const ProductGradeStdRateService = {
       ...stdRate,
       productId: stdRate.productId,
       productGradeId: stdRate.productGradeId,
-      stdRateType: ProductGradeStdRateService.localizeName(
-        stdRate.stdRateType,
-        langCode,
-      ),
+      stdRateType: langCode
+        ? ProductGradeStdRateService.localizeName(stdRate.stdRateType, langCode)
+        : stdRate.stdRateType,
     }));
 
     return {
@@ -233,7 +232,7 @@ export const ProductGradeStdRateService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -290,28 +289,31 @@ export const ProductGradeStdRateService = {
       ...stdRate,
       productId: stdRate.productId,
       productGradeId: stdRate.productGradeId,
-      stdRateType: ProductGradeStdRateService.localizeName(
-        stdRate.stdRateType,
-        langCode,
-      ),
+      stdRateType: langCode
+        ? ProductGradeStdRateService.localizeName(stdRate.stdRateType, langCode)
+        : stdRate.stdRateType,
       product: stdRate.product
         ? {
             id: stdRate.product.id,
             code: stdRate.product.code,
-            displayName: ProductGradeStdRateService.localizeName(
-              stdRate.product.displayName,
-              langCode,
-            ),
+            displayName: langCode
+              ? ProductGradeStdRateService.localizeName(
+                  stdRate.product.displayName,
+                  langCode,
+                )
+              : stdRate.product.displayName,
           }
         : null,
       productGrade: stdRate.productGrade
         ? {
             id: stdRate.productGrade.id,
             gradeCode: stdRate.productGrade.gradeCode,
-            gradeDisplayName: ProductGradeStdRateService.localizeName(
-              stdRate.productGrade.gradeDisplayName,
-              langCode,
-            ),
+            gradeDisplayName: langCode
+              ? ProductGradeStdRateService.localizeName(
+                  stdRate.productGrade.gradeDisplayName,
+                  langCode,
+                )
+              : stdRate.productGrade.gradeDisplayName,
           }
         : null,
     }));

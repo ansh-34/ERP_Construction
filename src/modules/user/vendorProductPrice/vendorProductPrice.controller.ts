@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import fs from 'fs';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { VendorProductPriceService } from './vendorProductPrice.service.js';
@@ -26,9 +27,11 @@ export const createVendorProductPrice = async (req: Request, res: Response) => {
 
 export const listVendorProductPrices = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { data, pagination } = await VendorProductPriceService.findAll(
       req.user!.domainId,
       req.query,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -125,8 +128,17 @@ export const importVendorProductPrices = async (
       });
     }
 
+    let filePath = req.file.path;
+    if (!filePath && req.file.buffer) {
+      if (!fs.existsSync('exports')) {
+        fs.mkdirSync('exports', { recursive: true });
+      }
+      filePath = `exports/import-${Date.now()}.xlsx`;
+      fs.writeFileSync(filePath, req.file.buffer);
+    }
+
     const result = await VendorProductPriceService.importExcel(
-      req.file.path,
+      filePath!,
       req.user!.domainId,
     );
 

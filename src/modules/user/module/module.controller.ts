@@ -5,10 +5,10 @@ import { ModuleService } from './module.service.js';
 
 export const listModules = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { modules, pagination } = await ModuleService.listModules(
       req.query as any,
-      language as string,
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

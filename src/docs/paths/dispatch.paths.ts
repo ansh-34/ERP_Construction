@@ -90,3 +90,8 @@ export const DispatchPaths = {
     },
   },
 };
+
+Object.assign(DispatchPaths, {
+  '/api/user/dispatch/stats': DispatchPaths['/api/domain/dispatch/stats'],
+  '/api/user/dispatch': DispatchPaths['/api/domain/dispatch'],
+});

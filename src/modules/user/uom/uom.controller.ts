@@ -26,11 +26,11 @@ export const createUom = async (req: Request, res: Response) => {
 
 export const listUoms = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { data: uoms, pagination } = await UomService.findAll(
       req.user!.domainId,
       req.query,
-      language as string,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

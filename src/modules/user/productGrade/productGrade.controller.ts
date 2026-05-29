@@ -27,11 +27,11 @@ export const createProductGrade = async (req: Request, res: Response) => {
 
 export const listAllProductGrades = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const result = await ProductGradeService.findAllInDomain(
       req.user!.domainId,
       req.query as any,
-      language as string,
+      language,
     );
     const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({
@@ -55,12 +55,12 @@ export const listProductGradesWithStdRates = async (
   res: Response,
 ) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const result = await ProductGradeService.findAllWithStdRates(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
-      language as string,
+      language,
     );
     const { product, grades } = result;
     const { data, ...pagination } = grades as any;
@@ -83,12 +83,12 @@ export const listProductGradesWithStdRates = async (
 
 export const listProductGrades = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const result = await ProductGradeService.findAll(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
-      language as string,
+      language,
     );
     const { data, ...pagination } = result as any;
     return res.status(HttpStatus.OK).json({

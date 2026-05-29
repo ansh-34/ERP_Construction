@@ -6,9 +6,11 @@ import { InvoiceService } from './invoice.service.js';
 
 export const listInvoices = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { invoices, pagination } = await InvoiceService.listInvoices(
       req.user!.domainId,
       req.query as PaginationQuery,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -64,9 +66,11 @@ export const deleteInvoice = async (req: Request, res: Response) => {
 
 export const listInvoiceItems = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const items = await InvoiceService.listInvoiceItems(
       req.user!.domainId,
       req.params.id,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

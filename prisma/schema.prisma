@@ -173,7 +173,6 @@ model Domain {
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  projectUserRoles            ProjectUserRole[]
   purchaseOrders              PurchaseOrder[]
   vendorProductPricings       VendorProductPricing[]
   purchaseOrderProducts       PurchaseOrderProduct[]
@@ -217,7 +216,6 @@ model User {
   updatedAt DateTime   @updatedAt
 
   rawMaterialPurchaseRequestsRequested RawMaterialPurchaseRequest[] @relation("RequestedByUser")
-  projectUserRoles                     ProjectUserRole[]
   projectUserAssignments               ProjectUserAssignment[]
   projectUserDailyLogs                 ProjectUserDailyLog[]
 
@@ -310,7 +308,6 @@ model Role {
 
   users                 User[]
   roleModulePermissions RoleModulePermission[]
-  projectUserRoles      ProjectUserRole[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -762,36 +759,36 @@ enum PaymentStatus {
 }
 
 model RawMaterialPurchaseRequest {
-  id                            String              @id @default(uuid()) @db.Uuid
-  code                          String
-  type                          PurchaseRequestType
-  date                          DateTime            @default(now())
-  productId                     String              @db.Uuid
-  product                       Product             @relation(fields: [productId], references: [id])
-  productGradeId                String              @db.Uuid
-  productGrade                  ProductGrades       @relation(fields: [productGradeId], references: [id])
-  quantity                      Float
-  uomId                         String              @db.Uuid
-  uom                           Uom                 @relation(fields: [uomId], references: [id])
-  brand                         String?
-  documentId                    String?             @db.Uuid
-  document                      Media?              @relation(fields: [documentId], references: [id])
-  requestedBy                   String              @db.Uuid
-  requestedUser                 User                @relation("RequestedByUser", fields: [requestedBy], references: [id])
-  requiredBy                    DateTime
-  reason                        String?
-  approvalStatus                ApprovalStatus      @default(PENDING)
-  approvedAt                    DateTime?
-  projectId                     String              @db.Uuid
-  project                       Project             @relation(fields: [projectId], references: [id])
-  domainId                      String              @db.Uuid
-  domain                        Domain              @relation(fields: [domainId], references: [id])
-  status                        StatusEnum          @default(ACTIVE)
-  isDeleted                     Boolean             @default(false)
-  createdAt                     DateTime            @default(now())
-  updatedAt                     DateTime            @updatedAt
-  purchaseOrderId               String?             @db.Uuid
-  purchaseOrder                 PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
+  id              String              @id @default(uuid()) @db.Uuid
+  code            String
+  type            PurchaseRequestType
+  date            DateTime            @default(now())
+  productId       String              @db.Uuid
+  product         Product             @relation(fields: [productId], references: [id])
+  productGradeId  String              @db.Uuid
+  productGrade    ProductGrades       @relation(fields: [productGradeId], references: [id])
+  quantity        Float
+  uomId           String              @db.Uuid
+  uom             Uom                 @relation(fields: [uomId], references: [id])
+  brand           String?
+  documentId      String?             @db.Uuid
+  document        Media?              @relation(fields: [documentId], references: [id])
+  requestedBy     String              @db.Uuid
+  requestedUser   User                @relation("RequestedByUser", fields: [requestedBy], references: [id])
+  requiredBy      DateTime
+  reason          String?
+  approvalStatus  ApprovalStatus      @default(PENDING)
+  approvedAt      DateTime?
+  projectId       String              @db.Uuid
+  project         Project             @relation(fields: [projectId], references: [id])
+  domainId        String              @db.Uuid
+  domain          Domain              @relation(fields: [domainId], references: [id])
+  status          StatusEnum          @default(ACTIVE)
+  isDeleted       Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  purchaseOrderId String?             @db.Uuid
+  purchaseOrder   PurchaseOrder?      @relation(fields: [purchaseOrderId], references: [id])
 
   @@index([code, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -955,7 +952,7 @@ model GrnProduct {
   grnId     String     @db.Uuid
   grn       Grn        @relation(fields: [grnId], references: [id])
   grnCode   String
-  date      DateTime 
+  date      DateTime
   vendor    String
   material  String
   quantity  Float
@@ -1058,19 +1055,19 @@ model Location {
 }
 
 model Media {
-  id                String             @id @default(uuid()) @db.Uuid
-  name              String
-  type              String
-  url               String             @unique
-  searchText        String             @default("")
-  domainId          String             @db.Uuid
-  domain            Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId           String             @db.Uuid
-  admin             Admin              @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
-  status            StatusEnum         @default(ACTIVE)
-  isDeleted         Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                          String                       @id @default(uuid()) @db.Uuid
+  name                        String
+  type                        String
+  url                         String                       @unique
+  searchText                  String                       @default("")
+  domainId                    String                       @db.Uuid
+  domain                      Domain                       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId                     String                       @db.Uuid
+  admin                       Admin                        @relation("AdminMediaFiles", fields: [adminId], references: [id], onDelete: Restrict)
+  status                      StatusEnum                   @default(ACTIVE)
+  isDeleted                   Boolean                      @default(false)
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
   admins                      Admin[]
   projectTaskImages           ProjectTaskImage[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
@@ -1112,7 +1109,6 @@ model Project {
   machineries                 Machinery[]
   machineReadings             MachineReading[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  projectUserRoles            ProjectUserRole[]
   grns                        Grn[]
   grnProducts                 GrnProduct[]
   purchaseOrders              PurchaseOrder[]
@@ -1301,7 +1297,7 @@ model MachineReading {
   openingFuelStock   Float
   closingFuelStock   Float?
   fuelRefillQuantity Float?
-  fuelConsumed        Float?
+  fuelConsumed       Float?
   actualLitrePerHour Float?
   hoursRun           Float      @default(0)
   machineStartTime   DateTime   @db.Time(0)
@@ -1379,28 +1375,6 @@ model ProjectUserDailyLog {
   @@index([adminId])
 }
 
-model ProjectUserRole {
-  id        String     @id @default(uuid()) @db.Uuid
-  projectId String     @db.Uuid
-  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId    String     @db.Uuid
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roleId    String     @db.Uuid
-  role      Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  domainId  String     @db.Uuid
-  domain    Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  @@unique([userId, roleId, projectId, domainId, isDeleted])
-  @@index([createdAt, domainId])
-  @@index([createdAt, domainId, userId])
-  @@index([createdAt, domainId, roleId])
-  @@index([createdAt, domainId, projectId])
-}
-
 model DbAnalytics {
   id              String   @id @default(uuid()) @db.Uuid
   date            DateTime @unique @db.Date
@@ -1417,5 +1391,5 @@ model DbAnalytics {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@map("db_analytics")
+  @@map("dbAnalytics")
 }

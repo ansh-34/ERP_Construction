@@ -6,6 +6,7 @@ import {
   PurchaseRequestType,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { translateResponse } from '../../../utils/translation.js';
 const editableStatuses: ApprovalStatus[] = [
   ApprovalStatus.PENDING,
   ApprovalStatus.REJECTED,
@@ -205,6 +206,7 @@ export const RawMaterialPurchaseRequestService = {
       isDeleted?: boolean;
       [key: string]: any;
     },
+    langCode?: string,
   ) {
     if (query.domainId && query.domainId !== authDomainId) {
       throw new Error('domainId does not match authenticated domain');
@@ -321,7 +323,7 @@ export const RawMaterialPurchaseRequestService = {
     const requests = codes.map((code) => groupedMap.get(code)).filter(Boolean);
 
     return {
-      requests,
+      requests: translateResponse(requests, langCode),
       pagination: {
         totalCount,
         offset,
@@ -655,6 +657,7 @@ export const RawMaterialPurchaseRequestService = {
       domainId?: string;
       isDeleted?: boolean;
     },
+    langCode?: string,
   ) {
     if (query.domainId && query.domainId !== authDomainId) {
       throw new Error('domainId does not match authenticated domain');
@@ -676,7 +679,7 @@ export const RawMaterialPurchaseRequestService = {
       );
 
     return {
-      purchaseOrders,
+      purchaseOrders: translateResponse(purchaseOrders, langCode),
       pagination: {
         totalCount,
         offset,

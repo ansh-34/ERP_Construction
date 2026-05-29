@@ -26,11 +26,11 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const listProducts = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { products, pagination } = await ProductService.listProducts(
       req.user!.domainId,
       req.query as PaginationQuery,
-      language as string,
+      language,
     );
 
     return res.status(HttpStatus.OK).json({

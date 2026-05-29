@@ -27,6 +27,11 @@ import moduleRouter from './module/module.router.js';
 import inventoryRouter from './inventory/inventory.router.js';
 import invoiceRouter from './invoice/invoice.router.js';
 import rawMaterialPurchaseRequestRouter from './rawMaterialPurchaseRequest/rawMaterialPurchaseRequest.router.js';
+import appErrorRouter from './appError/appError.router.js';
+import dispatchRouter from './dispatch/dispatch.router.js';
+import journeyScheduleRouter from './journeySchedule/journeySchedule.router.js';
+import vehicleRouter from './vehicle/vehicle.router.js';
+import roleRouter from './role/role.router.js';
 import { listAllProductGrades } from './productGrade/productGrade.controller.js';
 import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
 import { validate } from '../../middlewares/validate.js';
@@ -75,6 +80,11 @@ userRouter.use('/invoices', invoiceRouter);
 userRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 userRouter.use('/modules', moduleRouter);
 userRouter.use('/module-permissions', modulePermissionRouter);
+userRouter.use('/app-errors', appErrorRouter);
+userRouter.use('/vehicles', vehicleRouter);
+userRouter.use('/journey-schedules', journeyScheduleRouter);
+userRouter.use('/dispatch', dispatchRouter);
+userRouter.use('/roles', roleRouter);
 
 // New flat query APIs
 userRouter.get(

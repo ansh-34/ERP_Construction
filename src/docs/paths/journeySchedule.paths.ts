@@ -134,3 +134,12 @@ export const JourneySchedulePaths = {
     },
   },
 };
+
+Object.assign(JourneySchedulePaths, {
+  '/api/user/journey-schedules/stats':
+    JourneySchedulePaths['/api/domain/journey-schedules/stats'],
+  '/api/user/journey-schedules':
+    JourneySchedulePaths['/api/domain/journey-schedules'],
+  '/api/user/journey-schedules/{id}':
+    JourneySchedulePaths['/api/domain/journey-schedules/{id}'],
+});

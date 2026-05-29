@@ -37,7 +37,6 @@ export * from './uom.repository.js';
 export * from './admin.repository.js';
 export * from './adminCurrency.repository.js';
 export * from './adminLanguage.repository.js';
-export * from './projectUserRole.repository.js';
 export * from './grn.repository.js';
 export * from './vendorProductPrice.repository.js';
 export * from './invoice.repository.js';

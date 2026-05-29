@@ -68,7 +68,7 @@ export const UomService = {
       searchKey?: string;
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = parseInt(query.page ?? '1');
     const limit = parseInt(query.limit ?? '10');
@@ -102,16 +102,17 @@ export const UomService = {
       const baseUom = baseUomRaw
         ? {
             ...baseUomRaw,
-            displayName: UomService.localizeName(
-              baseUomRaw.displayName,
-              langCode,
-            ),
+            displayName: langCode
+              ? UomService.localizeName(baseUomRaw.displayName, langCode)
+              : baseUomRaw.displayName,
           }
         : null;
 
       return {
         ...uom,
-        displayName: UomService.localizeName(uom.displayName, langCode),
+        displayName: langCode
+          ? UomService.localizeName(uom.displayName, langCode)
+          : uom.displayName,
         baseUom,
       };
     });
@@ -224,6 +225,19 @@ export const UomService = {
     if (!existing) {
       throw new Error(Messages.UOM.NOT_FOUND);
     }
+
+    const dependentUom = await prisma.uom.findFirst({
+      where: {
+        baseUomId: id,
+        isDeleted: false,
+      },
+    });
+    if (dependentUom) {
+      throw new Error(
+        'please update all the uom where this uom act as baseUom',
+      );
+    }
+
     return uomRepository.softDelete(id);
   },
 };

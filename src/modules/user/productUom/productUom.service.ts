@@ -81,7 +81,7 @@ export const ProductUomService = {
       status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 10));
@@ -108,15 +108,16 @@ export const ProductUomService = {
       const { uom, product, ...junction } = productUom;
       return {
         ...uom,
-        displayName: ProductUomService.localizeName(uom.displayName, langCode),
+        displayName: langCode
+          ? ProductUomService.localizeName(uom.displayName, langCode)
+          : uom.displayName,
         productId: junction.productId,
         product: product
           ? {
               ...product,
-              displayName: ProductUomService.localizeName(
-                product.displayName,
-                langCode,
-              ),
+              displayName: langCode
+                ? ProductUomService.localizeName(product.displayName, langCode)
+                : product.displayName,
             }
           : product,
       };
@@ -139,7 +140,7 @@ export const ProductUomService = {
       status?: 'ACTIVE' | 'INACTIVE';
       [key: string]: any;
     },
-    langCode: string,
+    langCode?: string,
   ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 10));
@@ -169,15 +170,16 @@ export const ProductUomService = {
       const { uom, product, ...junction } = productUom;
       return {
         ...uom,
-        displayName: ProductUomService.localizeName(uom.displayName, langCode),
+        displayName: langCode
+          ? ProductUomService.localizeName(uom.displayName, langCode)
+          : uom.displayName,
         productId: junction.productId,
         product: product
           ? {
               ...product,
-              displayName: ProductUomService.localizeName(
-                product.displayName,
-                langCode,
-              ),
+              displayName: langCode
+                ? ProductUomService.localizeName(product.displayName, langCode)
+                : product.displayName,
             }
           : product,
       };

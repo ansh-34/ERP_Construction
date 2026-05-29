@@ -483,3 +483,11 @@ export const RolePaths = {
     },
   },
 };
+
+Object.assign(RolePaths, {
+  '/api/user/roles': RolePaths['/api/domain/roles'],
+  '/api/user/roles/{id}': RolePaths['/api/domain/roles/{id}'],
+  '/api/user/roles/{roleId}/permissions':
+    RolePaths['/api/domain/roles/{roleId}/permissions'],
+  '/api/user/roles/{id}/role': RolePaths['/api/domain/roles/{id}/role'],
+});

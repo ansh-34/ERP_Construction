@@ -6,7 +6,7 @@ import { ModulePermissionService } from './modulePermission.service.js';
 
 export const listModulePermissions = async (req: Request, res: Response) => {
   try {
-    const { language = 'en' } = req.headers;
+    const language = req.headers.language as string | undefined;
     const { modulePermissions, pagination } =
       await ModulePermissionService.listModulePermissions(
         req.query as PaginationQuery & {

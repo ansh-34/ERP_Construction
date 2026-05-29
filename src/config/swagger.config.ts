@@ -52,6 +52,8 @@ export const swaggerSpec = {
     { name: 'Domain Currency' },
     { name: 'User Currency' },
     { name: 'Logs' },
+    { name: 'Vendor Product Prices' },
+    { name: 'User Vendor Product Prices' },
   ],
   paths: {
     ...ApiPaths,
