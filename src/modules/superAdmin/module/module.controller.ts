@@ -8,6 +8,7 @@ export const createModule = async (req: Request, res: Response) => {
     const mod = await ModuleService.createModule(
       req.body as {
         name: any;
+        code?: string;
         dependencyModules?: { moduleId: string; permissionIds: string[] }[];
         modulePermissionIds?: string[];
       },

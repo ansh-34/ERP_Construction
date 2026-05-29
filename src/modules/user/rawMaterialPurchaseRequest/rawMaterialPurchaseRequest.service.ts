@@ -747,7 +747,7 @@ export const RawMaterialPurchaseRequestService = {
   //   );
   // },
 
-  async listPoProducts(domainId: string, poId: string) {
+  async listPoProducts(domainId: string, poId: string, langCode?: string) {
     const po = await RawMaterialPurchaseRequestRepository.getPurchaseOrderById(
       poId,
       domainId,
@@ -756,7 +756,11 @@ export const RawMaterialPurchaseRequestService = {
       throw new Error(Messages.PURCHASE_ORDER.NOT_FOUND);
     }
 
-    return RawMaterialPurchaseRequestRepository.listPoProducts(poId, domainId);
+    const products = await RawMaterialPurchaseRequestRepository.listPoProducts(
+      poId,
+      domainId,
+    );
+    return translateResponse(products, langCode);
   },
 
   // async updatePoProduct(domainId: string, poId: string, productId: string, data: any) {

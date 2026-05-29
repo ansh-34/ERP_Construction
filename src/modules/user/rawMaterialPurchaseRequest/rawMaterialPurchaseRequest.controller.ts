@@ -335,9 +335,11 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
 
 export const listPoProducts = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const products = await RawMaterialPurchaseRequestService.listPoProducts(
       req.user!.domainId,
       req.params.poId,
+      language,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
