@@ -415,4 +415,73 @@ export const UserPaths = {
       },
     },
   },
+
+  '/api/user/users': {
+    get: {
+      tags: ['User Users'],
+      summary: 'List users in the authenticated user domain',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'offset',
+          schema: { type: 'integer', minimum: 0, default: 0 },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Users retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Users retrieved' },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        name: { type: 'string' },
+                        email: { type: 'string', format: 'email' },
+                        phone: { type: 'string', nullable: true },
+                        skills: {
+                          type: 'array',
+                          items: { type: 'string' },
+                        },
+                        minDayCharge: {
+                          type: 'number',
+                          nullable: true,
+                        },
+                        status: { type: 'string', example: 'active' },
+                        isEmailVerified: { type: 'boolean' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
 };

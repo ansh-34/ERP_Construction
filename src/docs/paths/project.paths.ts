@@ -682,6 +682,95 @@ export const ProjectPaths = {
       ),
     },
   },
+  ...crudPaths({
+    basePath: '/api/user/machineries',
+    tag: 'User Machinery',
+    objectSchema: 'MachineryObject',
+    createSchema: 'CreateMachineryBody',
+    updateSchema: 'UpdateMachineryBody',
+    entityName: 'User machinery',
+    listParameters: [projectIdQuery, searchQuery],
+  }),
+  '/api/user/machine-reading': {
+    get: {
+      tags: ['User Machine Reading'],
+      summary: 'List user machine readings',
+      security: [{ bearerAuth: [] }],
+      parameters: [languageHeader, projectIdQuery, searchQuery],
+      responses: listResponse(
+        'MachineReadingObject',
+        'Machine readings retrieved',
+      ),
+    },
+    post: {
+      tags: ['User Machine Reading'],
+      summary: 'Create user machine reading',
+      security: [{ bearerAuth: [] }],
+      parameters: [languageHeader],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/CreateMachineReadingBody' },
+          },
+        },
+      },
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading created',
+      ),
+    },
+  },
+  '/api/user/machine-reading/{id}': {
+    get: {
+      tags: ['User Machine Reading'],
+      summary: 'Get user machine reading by ID',
+      security: [{ bearerAuth: [] }],
+      parameters: [languageHeader, idParam('Machine reading ID')],
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading retrieved',
+      ),
+    },
+    put: {
+      tags: ['User Machine Reading'],
+      summary: 'Update user machine reading',
+      security: [{ bearerAuth: [] }],
+      parameters: [languageHeader, idParam('Machine reading ID')],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UpdateMachineReadingBody' },
+          },
+        },
+      },
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading updated',
+      ),
+    },
+  },
+  '/api/user/machine-reading/{id}/end': {
+    put: {
+      tags: ['User Machine Reading'],
+      summary: 'End user machine reading',
+      security: [{ bearerAuth: [] }],
+      parameters: [languageHeader, idParam('Machine reading ID')],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/EndMachineReadingBody' },
+          },
+        },
+      },
+      responses: itemResponse(
+        'MachineReadingObject',
+        'Machine reading ended',
+      ),
+    },
+  },
   '/api/user/task-submission/{id}/submit': {
     put: {
       tags: ['User Task Submission'],

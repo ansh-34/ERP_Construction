@@ -622,18 +622,69 @@ export const ProjectSchemas = {
       status: activeStatus,
     },
   },
+  CreateMachineryBody: {
+    type: 'object',
+    required: ['code', 'type', 'projectId'],
+    properties: {
+      code: { type: 'string', example: 'MCH-001' },
+      type: { type: 'string', example: 'Excavator' },
+      expectedLitrePerHour: { type: 'number', minimum: 0, example: 12 },
+      projectId: { type: 'string', format: 'uuid' },
+      status: activeStatus,
+    },
+  },
+  UpdateMachineryBody: {
+    type: 'object',
+    properties: {
+      code: { type: 'string', example: 'MCH-001' },
+      type: { type: 'string', example: 'Excavator' },
+      expectedLitrePerHour: { type: 'number', minimum: 0, example: 12 },
+      status: activeStatus,
+    },
+  },
   MachineReadingObject: {
     type: 'object',
     properties: {
       id: { type: 'string', format: 'uuid' },
       date: { type: 'string', example: '2026-05-18' },
       refillFuelStock: { type: 'number', example: 100 },
+      currentMachineReading: { type: 'number', example: 1500 },
       closingFuelStock: { type: 'number', example: 80 },
       fuelRefillQuantity: { type: 'number', example: 20 },
       machineStartTime: { type: 'string', example: '09:00' },
       machineEndTime: { type: 'string', example: '18:00' },
       projectId: { type: 'string', format: 'uuid' },
       status: { type: 'string', example: 'ACTIVE' },
+    },
+  },
+  CreateMachineReadingBody: {
+    type: 'object',
+    required: ['date', 'machineStartTime', 'projectId'],
+    properties: {
+      date: { type: 'string', example: '2026-05-18' },
+      refillFuelStock: { type: 'number', minimum: 0, example: 100 },
+      currentMachineReading: { type: 'number', minimum: 0, example: 1500 },
+      fuelRefillQuantity: { type: 'number', minimum: 0, example: 20 },
+      machineStartTime: { type: 'string', example: '09:00' },
+      projectId: { type: 'string', format: 'uuid' },
+      status: activeStatus,
+    },
+  },
+  UpdateMachineReadingBody: {
+    type: 'object',
+    required: ['closingFuelStock', 'machineEndTime'],
+    properties: {
+      closingFuelStock: { type: 'number', minimum: 0, example: 80 },
+      fuelRefillQuantity: { type: 'number', minimum: 0, example: 20 },
+      machineEndTime: { type: 'string', example: '18:00' },
+      status: activeStatus,
+    },
+  },
+  EndMachineReadingBody: {
+    type: 'object',
+    required: ['machineEndTime'],
+    properties: {
+      machineEndTime: { type: 'string', example: '18:00' },
     },
   },
   CurrencyObject: {

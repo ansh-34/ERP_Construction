@@ -22,6 +22,7 @@ import { GrnPaths } from './grn.paths.js';
 import { LogsPaths } from './logs.paths.js';
 import { InvoicePaths } from './invoice.paths.js';
 import { LocationPaths } from './location.paths.js';
+import { MediaPaths } from './media.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -48,4 +49,5 @@ export const ApiPaths = {
   ...LogsPaths,
   ...InvoicePaths,
   ...LocationPaths,
+  ...MediaPaths,
 };
