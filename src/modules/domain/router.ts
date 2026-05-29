@@ -33,6 +33,8 @@ import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
 import moduleRouter from './module/module.router';
 import modulePermissionRouter from './modulePermission/modulePermission.router';
+import onboardingRouter from './onboarding/onboarding.router.js';
+
 import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
 import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
 import { validate } from '../../middlewares/validate.js';
@@ -55,6 +57,7 @@ const domainRouter = Router();
 
 // Routes that don't need domain auth globally
 domainRouter.use('/auth', authRouter);
+domainRouter.use('/onboarding', onboardingRouter);
 
 // isDomain routes
 domainRouter.use(authMiddleware);
@@ -91,7 +94,6 @@ domainRouter.use('/invoices', invoiceRouter);
 domainRouter.use('/report', reportRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);
-
 // New flat query APIs
 domainRouter.get(
   '/grades',

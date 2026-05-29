@@ -12,6 +12,8 @@ export const DomainRepository = {
 
   seedWithDomainRole(data: {
     domainName: Record<string, string>;
+    nameSearchText: string;
+    organizationTypeSearchText: string;
     email: string;
     industry: IndustryEnum;
     password: string;
@@ -20,9 +22,8 @@ export const DomainRepository = {
     organizationType?: any;
     token: string;
     tokenExpiresAt: Date;
-    domainRoleId: string;
-    domainPermissions: string[];
     adminId: string;
+    onboardingStep: string;
   }) {
     return prisma.$transaction(async (tx) => {
       const domain = await tx.domain.create({
@@ -36,24 +37,10 @@ export const DomainRepository = {
           password: data.password,
           isEmailVerified: false,
           adminId: data.adminId,
+          nameSearchText: data.nameSearchText,
+          organizationTypeSearchText: data.organizationTypeSearchText,
+          onboardingStep: data.onboardingStep,
         },
-      });
-
-      const admin = await tx.admin.create({
-        data: {
-          name: data.domainName.en,
-          email: data.email,
-          phone: data.phone || null,
-          phoneCode: data.phoneCode || null,
-          password: data.password,
-          isEmailVerified: false,
-          onboardingStep: 'EMAIL_VERIFICATION',
-        },
-      });
-
-      await tx.domain.update({
-        where: { id: domain.id },
-        data: { adminId: admin.id },
       });
 
       await tx.token.create({
@@ -66,30 +53,7 @@ export const DomainRepository = {
         },
       });
 
-      const domainRole = await tx.role.create({
-        data: {
-          id: data.domainRoleId,
-          name: { en: 'domain' },
-          code: 'domain',
-          level: 1,
-          domainId: domain.id,
-        },
-      });
-
-      const modules = await tx.module.findMany({ where: { isDeleted: false } });
-
-      if (modules.length) {
-        await tx.roleModulePermission.createMany({
-          data: modules.map((mod) => ({
-            roleId: domainRole.id,
-            moduleId: mod.id,
-            permissions: data.domainPermissions,
-            domainId: domain.id,
-          })),
-        });
-      }
-
-      return { domain: { ...domain, adminId: admin.id }, domainRole, admin };
+      return { domain };
     });
   },
 

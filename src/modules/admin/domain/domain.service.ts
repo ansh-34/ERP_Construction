@@ -4,7 +4,6 @@ import type { IndustryEnum } from '../../../infra/database/prisma/generated/pris
 import { Messages } from '../../../constants/index';
 import {
   DomainRepository,
-  TokenRepository,
   AdminRepository,
 } from '../../../repositories/index.js';
 import { sendMail } from '../../../services/mail.services';
@@ -44,24 +43,31 @@ export const DomainService = {
 
     const normalizedIndustry = normalizeIndustryInput(industry);
 
-    const existingDomain = await DomainRepository.findActiveByEmail(email);
+    const [existingDomain, admin] = await Promise.all([
+      DomainRepository.findActiveByEmail(email),
+      AdminRepository.findActiveById(adminId),
+    ]);
 
     if (existingDomain) {
       throw new Error(Messages.DOMAIN.OWNER_EMAIL_ALREADY_EXISTS);
     }
 
-    const admin = await AdminRepository.findActiveById(adminId);
     if (!admin) {
       throw new Error('Assigned Admin not found');
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const domainRoleId = crypto.randomUUID();
     const rawToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const nameSearchText = Object.values(domainName).join(' ').toLowerCase();
+    const organizationTypeSearchText = Object.values(organizationType || {})
+      .join(' ')
+      .toLowerCase();
 
     const result = await DomainRepository.seedWithDomainRole({
       domainName,
+      nameSearchText,
+      organizationTypeSearchText,
       email,
       industry: normalizedIndustry,
       phone,
@@ -70,9 +76,8 @@ export const DomainService = {
       password: hashedPassword,
       token: rawToken,
       tokenExpiresAt,
-      domainRoleId,
-      domainPermissions: ['read', 'write', 'update', 'delete'],
       adminId,
+      onboardingStep: 'EMAIL_VERIFICATION',
     });
 
     const verificationLink = `${baseUrl}/verify/token?token=${rawToken}&context=domain-onboarding&email=${encodeURIComponent(email)}&speciality=${normalizedIndustry}`;
@@ -98,49 +103,6 @@ export const DomainService = {
       ...(variables.NODE_ENV === 'development'
         ? { link: verificationLink }
         : {}),
-    };
-  },
-
-  async verifyDomainToken(
-    data: { email: string; token: string },
-    langCode: string = 'en',
-  ) {
-    const { email, token: rawToken } = data;
-
-    if (!email || !rawToken) {
-      throw new Error(Messages.AUTH.EMAIL_TOKEN_REQUIRED);
-    }
-
-    const tokenRecord =
-      await TokenRepository.findLatestActiveByEmailTokenAndPurpose(
-        email,
-        rawToken,
-        'DOMAIN_EMAIL_VERIFICATION',
-      );
-
-    if (!tokenRecord || new Date() > tokenRecord.tokenExpirationTime) {
-      throw new Error(Messages.AUTH.INVALID_OR_EXPIRED_VERIFICATION_LINK);
-    }
-
-    const domain = await DomainRepository.findActiveByEmail(email);
-
-    if (!domain) {
-      throw new Error(Messages.DOMAIN.NOT_FOUND);
-    }
-
-    if (domain.isEmailVerified) {
-      throw new Error(Messages.DOMAIN.ALREADY_VERIFIED);
-    }
-
-    await DomainRepository.verifyAndDeleteToken(domain.id, tokenRecord.id);
-
-    return {
-      domain: {
-        id: domain.id,
-        name: (domain.name as any)[langCode] || (domain.name as any)?.en || '',
-        email: domain.email,
-        industry: domain.industry,
-      },
     };
   },
 

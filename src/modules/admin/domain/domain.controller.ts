@@ -29,32 +29,6 @@ export const seedDomain = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyDomainToken = async (req: Request, res: Response) => {
-  try {
-    const { language = 'en' } = req.headers;
-    const result = await DomainService.verifyDomainToken(
-      {
-        email: req.query.email as string,
-        token: req.query.token as string,
-      },
-      language as string,
-    );
-
-    return res.status(HttpStatus.OK).json({
-      success: true,
-      message: Messages.AUTH.VERIFY_DOMAIN_SUCCESS,
-      data: result,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : Messages.AUTH.VERIFICATION_FAILED;
-    const statusCode = resolveHttpStatus(message);
-    return res.status(statusCode).json({ success: false, message });
-  }
-};
-
 export const listDomains = async (req: Request, res: Response) => {
   try {
     const adminId = req.user!.userId;
