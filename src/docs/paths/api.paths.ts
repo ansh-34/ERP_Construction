@@ -23,6 +23,11 @@ import { InvoicePaths } from './invoice.paths.js';
 import { LocationPaths } from './location.paths.js';
 import { MediaPaths } from './media.paths.js';
 import { VendorProductPricePaths } from './vendorProductPrice.paths.js';
+import { MaintenanceLogPaths } from './maintenanceLog.paths.js';
+import { MaintenanceReportPaths } from './maintenanceReport.paths.js';
+import { MaintenanceSchedulePaths } from './maintenanceSchedule.paths.js';
+import { MovementLogPaths } from './movementLog.paths.js';
+import { MovementReportPaths } from './movementReport.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -50,4 +55,9 @@ export const ApiPaths = {
   ...LocationPaths,
   ...MediaPaths,
   ...VendorProductPricePaths,
+  ...MaintenanceLogPaths,
+  ...MaintenanceReportPaths,
+  ...MaintenanceSchedulePaths,
+  ...MovementLogPaths,
+  ...MovementReportPaths,
 };

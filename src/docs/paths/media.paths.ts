@@ -66,6 +66,27 @@ const mediaListResponse = (message: string) => ({
   ...errors,
 });
 
+const mediaCreateResponse = (message: string) => ({
+  201: {
+    description: message,
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          properties: {
+            message: { type: 'string', example: message },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/MediaObject' },
+            },
+          },
+        },
+      },
+    },
+  },
+  ...errors,
+});
+
 const buildMediaPaths = ({
   basePath,
   tag,
@@ -102,7 +123,7 @@ const buildMediaPaths = ({
           },
         },
       },
-      responses: mediaItemResponse('Media created successfully', 201),
+      responses: mediaCreateResponse('Media created successfully'),
     },
   },
   [`${basePath}/{id}`]: {

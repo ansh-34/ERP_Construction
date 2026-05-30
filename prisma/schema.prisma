@@ -86,6 +86,9 @@ model Admin {
   locations              Location[]
   machineries            Machinery[]
   machineReadings        MachineReading[]
+  maintenanceSchedules   MaintenanceSchedule[]
+  maintenanceLogs        MaintenanceLog[]
+  movementLogs           MovementLog[]
   mediaFiles             Media[]                 @relation("AdminMediaFiles")
   users                  User[]
 
@@ -172,6 +175,9 @@ model Domain {
   projectUserDailyLogs        ProjectUserDailyLog[]
   machineries                 Machinery[]
   machineReadings             MachineReading[]
+  maintenanceSchedules        MaintenanceSchedule[]
+  maintenanceLogs             MaintenanceLog[]
+  movementLogs                MovementLog[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   purchaseOrders              PurchaseOrder[]
   vendorProductPricings       VendorProductPricing[]
@@ -560,8 +566,11 @@ model Vehicle {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  journeySchedules VehicleJourneySchedule[]
-  dispatches       DispatchVehicle[]
+  journeySchedules     VehicleJourneySchedule[]
+  dispatches           DispatchVehicle[]
+  maintenanceSchedules MaintenanceSchedule[]
+  maintenanceLogs      MaintenanceLog[]
+  movementLogs         MovementLog[]
 
   @@unique([numberPlate, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -756,6 +765,28 @@ enum PaymentStatus {
   UNPAID
   PARTIALLY_PAID
   PAID
+}
+
+enum MaintenanceAssetType {
+  VEHICLE
+  MACHINERY
+}
+
+enum MaintenanceScheduleStatus {
+  SCHEDULED
+  OVERDUE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MovementType {
+  WAREHOUSE
+  WAREHOUSE_TO_SITE
+  SITE_TO_WAREHOUSE
+  PROJECT_SITE
+  SITE_TO_SITE
+  OTHER
 }
 
 model RawMaterialPurchaseRequest {
@@ -1108,6 +1139,7 @@ model Project {
   projectUserDailyLogs        ProjectUserDailyLog[]
   machineries                 Machinery[]
   machineReadings             MachineReading[]
+  movementLogs                MovementLog[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   grns                        Grn[]
   grnProducts                 GrnProduct[]
@@ -1283,10 +1315,146 @@ model Machinery {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
+  maintenanceSchedules MaintenanceSchedule[]
+  maintenanceLogs      MaintenanceLog[]
+  movementLogs         MovementLog[]
+
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, projectId])
   @@index([adminId])
+}
+
+model MaintenanceSchedule {
+  id String @id @default(uuid()) @db.Uuid
+
+  code       String
+  title      Json   @db.JsonB
+  searchText String @default("")
+
+  assetType   MaintenanceAssetType
+  vehicleId   String?              @db.Uuid
+  machineryId String?              @db.Uuid
+
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  machinery Machinery? @relation(fields: [machineryId], references: [id], onDelete: Cascade)
+
+  nextDueDate DateTime
+
+  scheduleStatus MaintenanceScheduleStatus @default(SCHEDULED)
+
+  domainId String @db.Uuid
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  adminId String @db.Uuid
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  maintenanceLogs MaintenanceLog[]
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, assetType])
+  @@index([vehicleId])
+  @@index([machineryId])
+  @@index([nextDueDate])
+  @@index([scheduleStatus])
+}
+
+model MaintenanceLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  code        String
+  date        DateTime @db.Date
+  description Json     @db.JsonB
+  searchText  String   @default("")
+
+  assetType   MaintenanceAssetType
+  vehicleId   String?              @db.Uuid
+  machineryId String?              @db.Uuid
+
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  machinery Machinery? @relation(fields: [machineryId], references: [id], onDelete: Cascade)
+
+  maintenanceScheduleId String?              @db.Uuid
+  maintenanceSchedule   MaintenanceSchedule? @relation(fields: [maintenanceScheduleId], references: [id], onDelete: SetNull)
+
+  expenseAmount Decimal @default(0) @db.Decimal(15, 2)
+  meterReading  Float?
+
+  domainId String @db.Uuid
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  adminId String @db.Uuid
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, assetType])
+  @@index([vehicleId])
+  @@index([machineryId])
+  @@index([maintenanceScheduleId])
+  @@index([date])
+}
+
+model MovementLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  code         String
+  movementType MovementType
+  searchText   String       @default("")
+
+  assetType   MaintenanceAssetType
+  vehicleId   String?              @db.Uuid
+  machineryId String?              @db.Uuid
+
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  machinery Machinery? @relation(fields: [machineryId], references: [id], onDelete: Cascade)
+
+  projectId String?  @db.Uuid
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  fromLocation String?
+  toLocation   String?
+
+  startDateTime DateTime
+  endDateTime   DateTime
+  hours         Float    @default(0)
+
+  startMeterReading Float?
+  endMeterReading   Float?
+  meterUsage        Float?
+  notes             String?
+
+  domainId String @db.Uuid
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  adminId String @db.Uuid
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, assetType])
+  @@index([movementType])
+  @@index([vehicleId])
+  @@index([machineryId])
+  @@index([projectId])
+  @@index([startDateTime])
+  @@index([endDateTime])
 }
 
 model MachineReading {

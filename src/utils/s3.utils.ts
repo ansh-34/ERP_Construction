@@ -5,6 +5,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import variables from '@/config/variables.config';
+import { randomUUID } from 'crypto';
 
 const s3Client = new S3Client({
   region: variables.AWS_REGION,
@@ -73,7 +74,7 @@ export const uploadToS3 = async (
 ): Promise<string> => {
   const bucket = assertS3Bucket();
   const safeFolder = safeFolderPath(folder);
-  const key = `${safeFolder}/${Date.now()}-${safeFileName(file.originalname)}`;
+  const key = `${safeFolder}/${Date.now()}-${randomUUID()}-${safeFileName(file.originalname)}`;
 
   await s3Client.send(
     new PutObjectCommand({

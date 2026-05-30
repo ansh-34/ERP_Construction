@@ -20,12 +20,15 @@ export const MediaSchemas = {
   },
   CreateMediaBody: {
     type: 'object',
-    required: ['file'],
+    required: ['files'],
     properties: {
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'File to upload.',
+      files: {
+        type: 'array',
+        items: {
+          type: 'string',
+          format: 'binary',
+        },
+        description: 'Images to upload. Send one or more files.',
       },
       name: {
         type: 'string',
@@ -41,12 +44,15 @@ export const MediaSchemas = {
   },
   CreateUserMediaBody: {
     type: 'object',
-    required: ['file'],
+    required: ['files'],
     properties: {
-      file: {
-        type: 'string',
-        format: 'binary',
-        description: 'File to upload.',
+      files: {
+        type: 'array',
+        items: {
+          type: 'string',
+          format: 'binary',
+        },
+        description: 'Images to upload. Send one or more files.',
       },
       name: {
         type: 'string',

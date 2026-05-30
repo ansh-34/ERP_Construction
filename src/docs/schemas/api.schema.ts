@@ -21,6 +21,11 @@ import { InvoiceSchemas } from './invoice.schema.js';
 import { LocationSchemas } from './location.schema.js';
 import { MediaSchemas } from './media.schema.js';
 import { VendorProductPriceSchemas } from './vendorProductPrice.schema.js';
+import { MaintenanceLogSchemas } from './maintenanceLog.schema.js';
+import { MaintenanceReportSchemas } from './maintenanceReport.schema.js';
+import { MaintenanceScheduleSchemas } from './maintenanceSchedule.schema.js';
+import { MovementLogSchemas } from './movementLog.schema.js';
+import { MovementReportSchemas } from './movementReport.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -46,4 +51,9 @@ export const ApiSchemas = {
   ...LocationSchemas,
   ...MediaSchemas,
   ...VendorProductPriceSchemas,
+  ...MaintenanceLogSchemas,
+  ...MaintenanceReportSchemas,
+  ...MaintenanceScheduleSchemas,
+  ...MovementLogSchemas,
+  ...MovementReportSchemas,
 };

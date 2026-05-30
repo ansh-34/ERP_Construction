@@ -13,7 +13,10 @@ const mediaRouter = Router();
 
 mediaRouter.post(
   '/',
-  upload.single('file'),
+  upload.fields([
+    { name: 'files', maxCount: 20 },
+    { name: 'file', maxCount: 1 },
+  ]),
   validate(createMediaBody, 'body'),
   mediaController.create,
 );

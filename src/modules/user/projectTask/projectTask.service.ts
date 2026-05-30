@@ -348,6 +348,11 @@ export const projectTaskService = {
       );
 
       if (!project) {
+        console.error('[user/projectTask.create] Project not found', {
+          projectId: data.projectId,
+          domainId: data.domainId,
+          adminId: data.adminId,
+        });
         throw new Error('not found');
       }
 
@@ -358,6 +363,13 @@ export const projectTaskService = {
       );
 
       if (!stage || stage.projectId !== data.projectId) {
+        console.error('[user/projectTask.create] Project stage not found', {
+          stageId: data.stageId,
+          requestedProjectId: data.projectId,
+          foundStageProjectId: stage?.projectId ?? null,
+          domainId: data.domainId,
+          adminId: data.adminId,
+        });
         throw new Error('not found');
       }
 
@@ -386,6 +398,14 @@ export const projectTaskService = {
 
       return normalizeProjectTask(task, language);
     } catch (error: unknown) {
+      console.error('[user/projectTask.create] Failed to create project task', {
+        error,
+        projectId: data.projectId,
+        stageId: data.stageId,
+        assignee: data.assignee ?? null,
+        domainId: data.domainId,
+        adminId: data.adminId,
+      });
       throw normalizePrismaError(error);
     }
   },
