@@ -5,6 +5,8 @@ const MULTILINGUAL_FIELDS = new Set([
   'stdRateType',
   'organizationType',
   'delayReason',
+  'productName',
+  'productGradeName',
 ]);
 
 const SKIP_RECURSE_KEYS = new Set(['password', 'token', 'otp']);

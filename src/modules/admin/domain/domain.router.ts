@@ -3,7 +3,6 @@ import { validate } from '../../../middlewares/validate.js';
 import authMiddleware from '../../../middlewares/auth.js';
 import {
   seedDomain,
-  verifyDomainToken,
   listDomains,
   getDomainById,
   updateDomain,
@@ -11,7 +10,6 @@ import {
 } from './domain.controller.js';
 import {
   seedDomainBodySchema,
-  verifyDomainTokenQuerySchema,
   listDomainsQuerySchema,
   domainIdParamSchema,
   updateDomainBodySchema,
@@ -19,19 +17,14 @@ import {
 
 const router = Router();
 
+router.use(authMiddleware);
+
 router.post(
   '/',
   authMiddleware,
   validate(seedDomainBodySchema, 'body'),
   seedDomain,
 );
-router.get(
-  '/verify',
-  validate(verifyDomainTokenQuerySchema, 'query'),
-  verifyDomainToken,
-);
-
-router.use(authMiddleware);
 
 router.get('/', validate(listDomainsQuerySchema, 'query'), listDomains);
 

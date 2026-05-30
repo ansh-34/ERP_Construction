@@ -19,6 +19,7 @@ export const createModuleBodySchema = z.object({
       message: 'English (en) translation is required',
       path: ['en'],
     }),
+  code: z.string().optional(),
   dependencyModules: z.array(dependencyModuleSchema).optional(),
   modulePermissionIds: z.array(z.string().min(1)).optional(),
 });

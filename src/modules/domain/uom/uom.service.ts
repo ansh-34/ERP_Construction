@@ -101,11 +101,14 @@ export const UomService = {
       const baseUomRaw = uom.baseUomId ? baseUomMap.get(uom.baseUomId) : null;
       const baseUom = baseUomRaw
         ? {
-            ...baseUomRaw,
+            id: baseUomRaw.id,
             displayName: UomService.localizeName(
               baseUomRaw.displayName,
               langCode,
             ),
+            code: baseUomRaw.code,
+            conversion: baseUomRaw.conversionRate,
+            conversionRate: baseUomRaw.conversionRate,
           }
         : null;
 
@@ -138,10 +141,13 @@ export const UomService = {
       });
       if (baseUomRaw) {
         baseUom = {
-          ...baseUomRaw,
+          id: baseUomRaw.id,
           displayName: language
             ? UomService.localizeName(baseUomRaw.displayName, language)
             : baseUomRaw.displayName,
+          code: baseUomRaw.code,
+          conversion: baseUomRaw.conversionRate,
+          conversionRate: baseUomRaw.conversionRate,
         };
       }
     }

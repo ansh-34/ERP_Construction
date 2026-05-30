@@ -12,17 +12,25 @@ import { normalizePagination } from '../../../utils/pagination.js';
 export const ModuleService = {
   async createModule(data: {
     name: Record<string, string>;
+    code?: string;
     dependencyModules?: { moduleId: string; permissionIds: string[] }[];
     modulePermissionIds?: string[];
   }) {
-    const { name, dependencyModules = [], modulePermissionIds = [] } = data;
+    const {
+      name,
+      code: customCode,
+      dependencyModules = [],
+      modulePermissionIds = [],
+    } = data;
 
     const incomingLanguageCodes: string[] = Object.keys(name);
     if (!incomingLanguageCodes.includes('en')) {
       throw new Error(Messages.MODULE.NAME_EN_CODE_REQUIRED);
     }
 
-    const code = name?.en?.toString().toUpperCase().replace(/\s+/g, '_');
+    const code = customCode
+      ? customCode.toString().toUpperCase().replace(/\s+/g, '_')
+      : name?.en?.toString().toUpperCase().replace(/\s+/g, '_');
     const searchText = Object.values(name).join(' ').toLowerCase();
 
     const [
@@ -212,7 +220,10 @@ export const ModuleService = {
     };
   },
 
-  async updateModule(id: string, data: { name?: any; status?: string }) {
+  async updateModule(
+    id: string,
+    data: { name?: any; status?: 'ACTIVE' | 'INACTIVE' },
+  ) {
     const { name, status } = data;
     let code: string | null = null;
     let searchText: string | null = null;

@@ -30,11 +30,6 @@ export const seedDomainBodySchema = z.object({
   organizationType: z.any().optional(),
 });
 
-export const verifyDomainTokenQuerySchema = z.object({
-  email: z.string().email(),
-  token: z.string().min(1),
-});
-
 export const updateDomainBodySchema = z.object({
   name: z
     .record(

@@ -91,6 +91,7 @@ model Admin {
   movementLogs           MovementLog[]
   mediaFiles             Media[]                 @relation("AdminMediaFiles")
   users                  User[]
+  roles                  Role[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -125,17 +126,18 @@ model AdminCurrencies {
 }
 
 model Domain {
-  id               String       @id @default(uuid()) @db.Uuid
-  name             Json
-  searchText       String       @default("")
-  email            String
-  organizationType Json?
-  phoneCode        String?
-  phone            String?
-  mediaId          String?      @db.Uuid
-  industry         IndustryEnum
-  password         String
-  isEmailVerified  Boolean      @default(false)
+  id                         String       @id @default(uuid()) @db.Uuid
+  name                       Json
+  nameSearchText             String       @default("")
+  email                      String
+  organizationType           Json?
+  organizationTypeSearchText String       @default("")
+  phoneCode                  String?
+  phone                      String?
+  mediaId                    String?      @db.Uuid
+  industry                   IndustryEnum
+  password                   String
+  isEmailVerified            Boolean      @default(false)
 
   onboardingStatus OnboardingStatusEnum @default(PENDING)
   onboardingStep   String?
@@ -184,8 +186,8 @@ model Domain {
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
   invoiceItems                InvoiceItem[]
-  admin                       Admin?                       @relation(fields: [adminId], references: [id])
-  adminId                     String?                      @db.Uuid
+  admin                       Admin                        @relation(fields: [adminId], references: [id])
+  adminId                     String                       @db.Uuid
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -305,7 +307,9 @@ model Role {
   searchText String  @default("")
   level      Int     @default(0)
   domainId   String  @db.Uuid
+  adminId    String? @db.Uuid
 
+  admin     Admin?     @relation(fields: [adminId], references: [id])
   domain    Domain     @relation(fields: [domainId], references: [id])
   status    StatusEnum @default(ACTIVE)
   isDeleted Boolean    @default(false)
@@ -862,8 +866,8 @@ model PurchaseOrderProduct {
   purchaseOrderId  String        @db.Uuid
   purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
   orderCode        String
-  productName      String
-  productGradeName String
+  productName      Json
+  productGradeName Json?
   quantity         Float
   tax              Float         @default(0)
   uomId            String        @db.Uuid
