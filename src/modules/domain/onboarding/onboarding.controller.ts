@@ -28,3 +28,28 @@ export const verifyOnboardToken = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const onboardDomain = async (req: Request, res: Response) => {
+  try {
+    const adminId = req.user?.adminId;
+    const domainId = req.user?.domainId;
+    const { step } = req.params;
+    const result = await OnboardingService.onboardDomain(
+      req.body,
+      step as 'EMAIL_VERIFICATION',
+      domainId!,
+      adminId!,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.ONBOARDING.STEP_COMPLETED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.ONBOARDING.FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
