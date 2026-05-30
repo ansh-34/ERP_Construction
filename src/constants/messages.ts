@@ -16,6 +16,7 @@ export const Messages = Object.freeze({
     INVALID_LANGUAGES: 'Some or all languages selection are invalid',
     INVALID_CURRENCIES: 'Some or all currencies selection are invalid',
     STEP_COMPLETED: 'Step completed successfully',
+    INVALID_STEP: 'Invalid onboarding step',
   },
   AUTH: {
     LOGIN_SUCCESS: 'Login successful',
