@@ -44,6 +44,10 @@ export const OnboardingService = {
       throw new Error(Messages.DOMAIN.ALREADY_VERIFIED);
     }
 
+    if (!domain.adminId) {
+      throw new Error(Messages.ADMIN.NOT_FOUND);
+    }
+
     await Promise.all([
       DomainRepository.verifyAndDeleteToken(domain.id, tokenRecord.id),
       DomainRepository.update(domain.id, {

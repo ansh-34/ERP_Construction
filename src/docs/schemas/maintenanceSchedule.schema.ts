@@ -1,7 +1,7 @@
 const localizedObject = {
   type: 'object',
   additionalProperties: true,
-  example: { en: 'Tipper preventive service' },
+  example: { en: 'Crusher belt inspection' },
 };
 
 const activeStatus = {
@@ -13,7 +13,7 @@ const activeStatus = {
 const assetType = {
   type: 'string',
   enum: ['VEHICLE', 'MACHINERY'],
-  example: 'VEHICLE',
+  example: 'MACHINERY',
 };
 
 const scheduleStatus = {
@@ -31,7 +31,12 @@ export const MaintenanceScheduleSchemas = {
       title: localizedObject,
       assetType,
       vehicleId: { type: 'string', format: 'uuid', nullable: true },
-      machineryId: { type: 'string', format: 'uuid', nullable: true },
+      machineryId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        example: '00000000-0000-0000-0000-000000000000',
+      },
       vehicle: {
         type: 'object',
         nullable: true,
@@ -60,7 +65,12 @@ export const MaintenanceScheduleSchemas = {
       title: localizedObject,
       assetType,
       vehicleId: { type: 'string', format: 'uuid', nullable: true },
-      machineryId: { type: 'string', format: 'uuid', nullable: true },
+      machineryId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        example: '00000000-0000-0000-0000-000000000000',
+      },
       nextDueDate: { type: 'string', example: '2026-06-10' },
       scheduleStatus,
       status: activeStatus,
@@ -73,7 +83,12 @@ export const MaintenanceScheduleSchemas = {
       title: localizedObject,
       assetType,
       vehicleId: { type: 'string', format: 'uuid', nullable: true },
-      machineryId: { type: 'string', format: 'uuid', nullable: true },
+      machineryId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        example: '00000000-0000-0000-0000-000000000000',
+      },
       nextDueDate: { type: 'string', example: '2026-07-10' },
       scheduleStatus,
       status: activeStatus,
