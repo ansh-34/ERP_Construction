@@ -35,6 +35,8 @@ export const updateMachineryBody = z
 export const listMachineryQuery = z.object({
   projectId: z.string().trim().min(1).optional(),
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

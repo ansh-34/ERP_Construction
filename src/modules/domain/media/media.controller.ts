@@ -16,6 +16,14 @@ const getUploadedFiles = (req: Request): Express.Multer.File[] => {
   return [...(req.files.files ?? []), ...(req.files.file ?? [])];
 };
 
+const getUploadedNames = (names?: string | string[]): string[] => {
+  if (names === undefined) {
+    return [];
+  }
+
+  return Array.isArray(names) ? names : [names];
+};
+
 export const mediaController = {
   create: async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -26,25 +34,33 @@ export const mediaController = {
       const domainId = req.user!.domainId;
       const adminId = req.user!.adminId;
       const files = getUploadedFiles(req);
-      const { name } = req.body as {
+      const { name, names } = req.body as {
         name?: string;
+        names?: string | string[];
       };
+      const uploadedNames = getUploadedNames(names);
 
       if (files.length === 0) {
         throw new Error('invalid files');
+      }
+
+      if (uploadedNames.length > files.length) {
+        throw new Error('invalid names');
       }
 
       const uploadedUrls: string[] = [];
       const media: Awaited<ReturnType<typeof mediaService.create>>[] = [];
 
       try {
-        for (const file of files) {
+        for (const [index, file] of files.entries()) {
           const url = await uploadToS3(file, `media/${adminId}/${domainId}`);
           uploadedUrls.push(url);
           media.push(
             await mediaService.create(
               {
-                name: files.length === 1 && name ? name : file.originalname,
+                name:
+                  uploadedNames[index] ??
+                  (files.length === 1 && name ? name : file.originalname),
                 type: file.mimetype,
                 url,
                 domainId,

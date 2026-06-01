@@ -33,6 +33,17 @@ export const MediaSchemas = {
       name: {
         type: 'string',
         example: 'Site progress image',
+        description:
+          'Optional compatibility field for a single uploaded image. Use names for multiple images.',
+      },
+      names: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        example: ['Front view', 'Side view'],
+        description:
+          'Optional names paired with files by position. Missing names use the original filenames.',
       },
       domainId: {
         type: 'string',
@@ -57,6 +68,17 @@ export const MediaSchemas = {
       name: {
         type: 'string',
         example: 'User site progress image',
+        description:
+          'Optional compatibility field for a single uploaded image. Use names for multiple images.',
+      },
+      names: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+        example: ['Front view', 'Side view'],
+        description:
+          'Optional names paired with files by position. Missing names use the original filenames.',
       },
     },
   },

@@ -10,6 +10,7 @@ import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
 } from '@/utils/validation';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 
 export interface CreateMachineryInput {
   code: string;
@@ -25,6 +26,7 @@ type LocalizedText = string | Record<string, unknown>;
 
 type LocalizedMachineryRecord = Omit<MachineryRecord, 'type'> & {
   type: LocalizedText;
+  project?: (Record<string, unknown> & { name?: LocalizedText }) | null;
 };
 
 function buildMachinerySearchText(type: string): string {
@@ -57,6 +59,17 @@ function normalizeMachinery(
   return {
     ...machinery,
     type: getLocalizedText(machinery.type, language),
+    ...(machinery.project && {
+      project: {
+        ...machinery.project,
+        ...(machinery.project.name !== undefined && {
+          name: getLocalizedText(
+            machinery.project.name as string | Record<string, unknown>,
+            language,
+          ),
+        }),
+      },
+    }),
   };
 }
 
@@ -160,8 +173,12 @@ export const machineryService = {
     adminId: string,
     projectId?: string,
     searchKey?: string,
+    paginationQuery: PaginationQuery = {},
     language: string | null = null,
-  ): Promise<LocalizedMachineryRecord[]> => {
+  ): Promise<{
+    machineries: LocalizedMachineryRecord[];
+    pagination: { totalCount: number; offset: number; limit: number };
+  }> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -175,15 +192,24 @@ export const machineryService = {
     }
 
     try {
-      const machineries = await machineryRepository.findMany(
-        domainId,
-        adminId,
-        projectId,
-        searchKey,
-      );
-      return machineries.map((machinery) =>
-        normalizeMachinery(machinery, language),
-      );
+      const { offset, limit } = normalizePagination(paginationQuery);
+      const [machineries, totalCount] = await Promise.all([
+        machineryRepository.findMany(
+          domainId,
+          adminId,
+          projectId,
+          searchKey,
+          offset,
+          limit,
+        ),
+        machineryRepository.count(domainId, adminId, projectId, searchKey),
+      ]);
+      return {
+        machineries: machineries.map((machinery) =>
+          normalizeMachinery(machinery, language),
+        ),
+        pagination: { totalCount, offset, limit },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

@@ -53,21 +53,28 @@ export const machineryController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { projectId, searchKey } = req.query as {
+      const { projectId, searchKey, offset, limit } = req.query as {
         projectId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
 
-      const machineries = await machineryService.getAll(
+      const { machineries, pagination } = await machineryService.getAll(
         req.user!.domainId,
         req.user!.adminId,
         projectId,
         searchKey,
+        { offset, limit },
         language,
       );
 
       return res.status(HttpStatus.OK).json({
         message: 'Machineries fetched successfully',
+        pagination: {
+          currentCount: machineries.length,
+          ...pagination,
+        },
         data: machineries,
       });
     } catch (error: unknown) {

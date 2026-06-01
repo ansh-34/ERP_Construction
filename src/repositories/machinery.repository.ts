@@ -13,6 +13,7 @@ export interface MachineryRecord {
   searchText: string;
   expectedLitrePerHour: number | null;
   projectId: string;
+  project?: JsonObject | null;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -52,6 +53,25 @@ const machinerySelect = Prisma.sql`
   "isDeleted",
   "createdAt",
   "updatedAt"
+`;
+
+const machineryListSelect = Prisma.sql`
+  m."id",
+  m."code",
+  m."type",
+  m."expectedLitrePerHour",
+  m."projectId",
+  jsonb_build_object(
+    'id', p."id",
+    'name', p."name",
+    'code', p."code"
+  ) AS "project",
+  m."domainId",
+  m."adminId",
+  m."status",
+  m."isDeleted",
+  m."createdAt",
+  m."updatedAt"
 `;
 
 function toJsonbSql(value: MachineryType): Prisma.Sql {
@@ -102,7 +122,45 @@ export const machineryRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    offset = 0,
+    limit = 10,
   ): Promise<MachineryRecord[]> => {
+    const filters = [
+      Prisma.sql`m."domainId" = ${domainId}`,
+      Prisma.sql`m."isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`m."adminId" = ${adminId}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`m."projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`m."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    return prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
+      SELECT ${machineryListSelect}
+      FROM "Machinery" m
+      INNER JOIN "Project" p ON p."id" = m."projectId"
+      WHERE ${Prisma.join(filters, ' AND ')}
+      ORDER BY m."createdAt" DESC
+      OFFSET ${offset}
+      LIMIT ${limit}
+    `);
+  },
+
+  count: async (
+    domainId: string,
+    adminId?: string,
+    projectId?: string,
+    searchKey?: string,
+  ): Promise<number> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
       Prisma.sql`"isDeleted" = false`,
@@ -122,12 +180,13 @@ export const machineryRepository = {
       );
     }
 
-    return prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
-      SELECT ${machinerySelect}
+    const result = await prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+      SELECT COUNT(*) AS "count"
       FROM "Machinery"
       WHERE ${Prisma.join(filters, ' AND ')}
-      ORDER BY "createdAt" DESC
     `);
+
+    return Number(result[0]?.count ?? 0);
   },
 
   findById: async (

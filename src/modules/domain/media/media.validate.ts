@@ -9,6 +9,7 @@ const singleLineName = z
   });
 
 export const createMediaBody = z.object({
+  names: z.union([z.string(), z.array(z.string())]).optional(),
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   name: singleLineName.optional(),
 });

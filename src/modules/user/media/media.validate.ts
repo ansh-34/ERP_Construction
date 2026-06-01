@@ -9,6 +9,7 @@ const singleLineName = z
   });
 
 export const createMediaBody = z.object({
+  names: z.union([z.string(), z.array(z.string())]).optional(),
   name: singleLineName.optional(),
 });
 
