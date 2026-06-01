@@ -26,7 +26,6 @@ type LocalizedText = string | Record<string, unknown>;
 
 type LocalizedMachineryRecord = Omit<MachineryRecord, 'type'> & {
   type: LocalizedText;
-  project?: (Record<string, unknown> & { name?: LocalizedText }) | null;
 };
 
 function buildMachinerySearchText(type: string): string {
@@ -59,17 +58,6 @@ function normalizeMachinery(
   return {
     ...machinery,
     type: getLocalizedText(machinery.type, language),
-    ...(machinery.project && {
-      project: {
-        ...machinery.project,
-        ...(machinery.project.name !== undefined && {
-          name: getLocalizedText(
-            machinery.project.name as string | Record<string, unknown>,
-            language,
-          ),
-        }),
-      },
-    }),
   };
 }
 
@@ -194,7 +182,7 @@ export const machineryService = {
     try {
       const { offset, limit } = normalizePagination(paginationQuery);
       const [machineries, totalCount] = await Promise.all([
-        machineryRepository.findMany(
+        machineryRepository.findManyPaginated(
           domainId,
           adminId,
           projectId,

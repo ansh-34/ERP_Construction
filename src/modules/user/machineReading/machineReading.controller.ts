@@ -62,20 +62,28 @@ export const machineReadingController = {
       //   (req.body as { language?: string }).language ||
       //   (req.headers.language as string) ||
       //   'en';
-      const { projectId, searchKey } = req.query as {
+      const { projectId, searchKey, offset, limit } = req.query as {
         projectId?: string;
         searchKey?: string;
+        offset?: string;
+        limit?: string;
       };
 
-      const machineReadings = await machineReadingService.getAll(
-        req.user!.domainId,
-        req.user!.adminId,
-        projectId,
-        searchKey,
-      );
+      const { machineReadings, pagination } =
+        await machineReadingService.getAll(
+          req.user!.domainId,
+          req.user!.adminId,
+          projectId,
+          searchKey,
+          { offset, limit },
+        );
 
       return res.status(HttpStatus.OK).json({
         message: 'Machine readings fetched successfully',
+        pagination: {
+          currentCount: machineReadings.length,
+          ...pagination,
+        },
         data: machineReadings,
       });
     } catch (error: unknown) {

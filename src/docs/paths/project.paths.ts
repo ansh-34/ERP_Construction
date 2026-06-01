@@ -454,7 +454,7 @@ export const ProjectPaths = {
   ...crudPaths({
     basePath: '/api/domain/machineries',
     tag: 'Machinery',
-    objectSchema: 'MachineryObject',
+    objectSchema: 'DomainMachineryObject',
     createSchema: 'MachineryObject',
     updateSchema: 'MachineryObject',
     entityName: 'Machinery',
@@ -465,7 +465,13 @@ export const ProjectPaths = {
       tags: ['Machine Reading'],
       summary: 'List machine readings',
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, projectIdQuery, searchQuery],
+      parameters: [
+        languageHeader,
+        domainIdQuery,
+        ...paginationParams,
+        projectIdQuery,
+        searchQuery,
+      ],
       responses: listResponse(
         'MachineReadingObject',
         'Machine readings retrieved',
@@ -696,7 +702,12 @@ export const ProjectPaths = {
       tags: ['User Machine Reading'],
       summary: 'List user machine readings',
       security: [{ bearerAuth: [] }],
-      parameters: [languageHeader, projectIdQuery, searchQuery],
+      parameters: [
+        languageHeader,
+        ...paginationParams,
+        projectIdQuery,
+        searchQuery,
+      ],
       responses: listResponse(
         'MachineReadingObject',
         'Machine readings retrieved',

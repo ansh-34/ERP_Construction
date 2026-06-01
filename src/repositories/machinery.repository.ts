@@ -117,7 +117,7 @@ export const machineryRepository = {
     return result[0] as MachineryRecord;
   },
 
-  findMany: async (
+  findManyWithProjectDetails: async (
     domainId: string,
     adminId?: string,
     projectId?: string,
@@ -150,6 +150,76 @@ export const machineryRepository = {
       INNER JOIN "Project" p ON p."id" = m."projectId"
       WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY m."createdAt" DESC
+      OFFSET ${offset}
+      LIMIT ${limit}
+    `);
+  },
+
+  findMany: async (
+    domainId: string,
+    adminId?: string,
+    projectId?: string,
+    searchKey?: string,
+  ): Promise<MachineryRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    return prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
+      SELECT ${machinerySelect}
+      FROM "Machinery"
+      WHERE ${Prisma.join(filters, ' AND ')}
+      ORDER BY "createdAt" DESC
+    `);
+  },
+
+  findManyPaginated: async (
+    domainId: string,
+    adminId?: string,
+    projectId?: string,
+    searchKey?: string,
+    offset = 0,
+    limit = 10,
+  ): Promise<MachineryRecord[]> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    return prisma.$queryRaw<MachineryRecord[]>(Prisma.sql`
+      SELECT ${machinerySelect}
+      FROM "Machinery"
+      WHERE ${Prisma.join(filters, ' AND ')}
+      ORDER BY "createdAt" DESC
       OFFSET ${offset}
       LIMIT ${limit}
     `);

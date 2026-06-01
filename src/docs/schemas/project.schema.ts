@@ -666,6 +666,18 @@ export const ProjectSchemas = {
       type: localizedObject,
       expectedLitrePerHour: { type: 'number', example: 12 },
       projectId: { type: 'string', format: 'uuid' },
+      domainId: { type: 'string', format: 'uuid' },
+      status: activeStatus,
+    },
+  },
+  DomainMachineryObject: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      code: { type: 'string', example: 'MCH-001' },
+      type: localizedObject,
+      expectedLitrePerHour: { type: 'number', example: 12 },
+      projectId: { type: 'string', format: 'uuid' },
       project: {
         type: 'object',
         properties: {

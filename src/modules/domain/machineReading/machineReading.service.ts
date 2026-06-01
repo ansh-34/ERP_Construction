@@ -11,6 +11,7 @@ import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
 } from '@/utils/validation';
+import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 
 export interface CreateMachineReadingInput {
   date: string;
@@ -312,7 +313,11 @@ export const machineReadingService = {
     adminId: string,
     projectId?: string,
     searchKey?: string,
-  ): Promise<MachineReadingRecord[]> => {
+    paginationQuery: PaginationQuery = {},
+  ): Promise<{
+    machineReadings: MachineReadingRecord[];
+    pagination: { totalCount: number; offset: number; limit: number };
+  }> => {
     if (!isNonEmptyString(domainId)) {
       throw new Error('invalid domainId');
     }
@@ -326,12 +331,22 @@ export const machineReadingService = {
     }
 
     try {
-      return await machineReadingRepository.findMany(
-        domainId,
-        adminId,
-        projectId,
-        searchKey,
-      );
+      const { offset, limit } = normalizePagination(paginationQuery);
+      const [machineReadings, totalCount] = await Promise.all([
+        machineReadingRepository.findMany(
+          domainId,
+          adminId,
+          projectId,
+          searchKey,
+          offset,
+          limit,
+        ),
+        machineReadingRepository.count(domainId, adminId, projectId, searchKey),
+      ]);
+      return {
+        machineReadings,
+        pagination: { totalCount, offset, limit },
+      };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

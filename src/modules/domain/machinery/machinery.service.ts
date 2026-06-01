@@ -194,7 +194,7 @@ export const machineryService = {
     try {
       const { offset, limit } = normalizePagination(paginationQuery);
       const [machineries, totalCount] = await Promise.all([
-        machineryRepository.findMany(
+        machineryRepository.findManyWithProjectDetails(
           domainId,
           adminId,
           projectId,

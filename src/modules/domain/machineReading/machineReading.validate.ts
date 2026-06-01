@@ -41,6 +41,8 @@ export const listMachineReadingQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   projectId: z.string().trim().min(1).optional(),
   searchKey: z.string().trim().optional(),
+  offset: z.string().trim().optional(),
+  limit: z.string().trim().optional(),
 });
 
 export const domainIdQuery = z.object({

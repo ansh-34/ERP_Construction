@@ -146,6 +146,8 @@ export const machineReadingRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    offset = 0,
+    limit = 10,
   ): Promise<MachineReadingRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -171,7 +173,43 @@ export const machineReadingRepository = {
       FROM "MachineReading"
       WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
+      OFFSET ${offset}
+      LIMIT ${limit}
     `);
+  },
+
+  count: async (
+    domainId: string,
+    adminId?: string,
+    projectId?: string,
+    searchKey?: string,
+  ): Promise<number> => {
+    const filters = [
+      Prisma.sql`"domainId" = ${domainId}`,
+      Prisma.sql`"isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`"adminId" = ${adminId}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    const result = await prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+      SELECT COUNT(*) AS "count"
+      FROM "MachineReading"
+      WHERE ${Prisma.join(filters, ' AND ')}
+    `);
+
+    return Number(result[0]?.count ?? 0);
   },
 
   findById: async (
