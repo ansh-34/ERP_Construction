@@ -50,10 +50,6 @@ export const AuthService = {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
 
-    if (!domainOwner.isEmailVerified) {
-      throw new Error(Messages.AUTH.EMAIL_VERIFICATION_REQUIRED);
-    }
-
     if (domainOwner.industry !== speciality) {
       throw new Error(Messages.AUTH.INVALID_CREDENTIALS);
     }
@@ -84,35 +80,35 @@ export const AuthService = {
       'DOMAIN',
     );
 
-    // if (
-    //   domainOwner.isEmailVerified === false ||
-    //   (domainOwner.onboardingStatus === 'PENDING' &&
-    //     domainOwner.onboardingStep === 'EMAIL_VERIFICATION')
-    // ) {
-    //   await OtpRepository.invalidateAllByEmail(domainOwner.email);
-    //   const { raw, hashed } = await generateOtp();
-    //
-    //   await Promise.all([
-    //     OtpRepository.create({
-    //       otp: hashed,
-    //       email: domainOwner.email,
-    //       expiresAt: getOtpExpiry(),
-    //       domainId: domainOwner.id,
-    //     }),
-    //     sendMail(
-    //       domainOwner.email,
-    //       'Your Verification Code — Construction ERP',
-    //       forgotPasswordEmail({
-    //         recipientName:
-    //           typeof domainOwner.name === 'object' && domainOwner.name !== null
-    //             ? (domainOwner.name as Record<string, string>).en || 'User'
-    //             : String(domainOwner.name || 'User'),
-    //         otp: raw,
-    //         expiryMinutes: OTP_EXPIRY_MINUTES,
-    //       }),
-    //     ),
-    //   ]);
-    // }
+    if (
+      !domainOwner.isEmailVerified ||
+      (domainOwner.onboardingStatus === 'PENDING' &&
+        domainOwner.onboardingStep === 'EMAIL_VERIFICATION')
+    ) {
+      await OtpRepository.invalidateAllByEmail(domainOwner.email);
+      const { raw, hashed } = await generateOtp();
+
+      await Promise.all([
+        OtpRepository.create({
+          otp: hashed,
+          email: domainOwner.email,
+          expiresAt: getOtpExpiry(),
+          domainId: domainOwner.id,
+        }),
+        sendMail(
+          domainOwner.email,
+          'Your Verification Code — Construction ERP',
+          forgotPasswordEmail({
+            recipientName:
+              typeof domainOwner.name === 'object' && domainOwner.name !== null
+                ? (domainOwner.name as Record<string, string>).en || 'User'
+                : String(domainOwner.name || 'User'),
+            otp: raw,
+            expiryMinutes: OTP_EXPIRY_MINUTES,
+          }),
+        ),
+      ]);
+    }
 
     return {
       accessToken,

@@ -1,6 +1,9 @@
+import { verifyOtp } from '@/services/otp.service';
 import { Messages } from '../../../constants/index';
 import {
+  AdminRepository,
   DomainRepository,
+  OtpRepository,
   TokenRepository,
 } from '../../../repositories/index.js';
 import { seedDefaultRolesForDomain } from '@/seed/role';
@@ -66,5 +69,60 @@ export const OnboardingService = {
         industry: domain.industry,
       },
     };
+  },
+
+  async handleOtpVerification(otp: string, domainId: string, adminId: string) {
+    const [admin, domain] = await Promise.all([
+      AdminRepository.findActiveById(adminId),
+      DomainRepository.findActiveById(domainId),
+    ]);
+    if (!admin) {
+      throw new Error(Messages.ADMIN.NOT_FOUND);
+    }
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+
+    const otpRecord = await OtpRepository.findLatestActive(domain.email);
+    if (!otpRecord) {
+      throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
+    }
+
+    if (new Date() > otpRecord.expiresAt) {
+      await OtpRepository.markUsed(otpRecord.id);
+      throw new Error(Messages.PASSWORD_RESET.OTP_EXPIRED);
+    }
+
+    const isValid = await verifyOtp(otp, otpRecord.otp);
+    if (!isValid) {
+      throw new Error(Messages.PASSWORD_RESET.OTP_INVALID);
+    }
+
+    await Promise.all([
+      OtpRepository.markUsed(otpRecord.id),
+      DomainRepository.update(domain.id, {
+        onboardingStatus: 'INPROGRESS',
+        onboardingStep: 'DEFAULT_ROLE_CREATION',
+        isEmailVerified: true,
+      }),
+    ]);
+
+    return true;
+  },
+
+  async onboardDomain(
+    data: { otp?: string },
+    step: 'EMAIL_VERIFICATION',
+    domainId: string,
+    adminId: string,
+  ) {
+    switch (step) {
+      case 'EMAIL_VERIFICATION':
+        await this.handleOtpVerification(data.otp!, domainId, adminId);
+        await this.domainOnboarding(domainId, adminId);
+        break;
+      default:
+        throw new Error(Messages.ONBOARDING.INVALID_STEP);
+    }
   },
 };
