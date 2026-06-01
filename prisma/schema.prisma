@@ -182,6 +182,7 @@ model Domain {
   movementLogs                MovementLog[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   purchaseOrders              PurchaseOrder[]
+  vendors                     Vendor[]
   vendorProductPricings       VendorProductPricing[]
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
@@ -1042,6 +1043,30 @@ model VendorProductPricing {
   @@index([productId])
   @@index([productGradeId])
   @@index([domainId])
+}
+
+model Vendor {
+  id            String     @id @default(uuid()) @db.Uuid
+  code          String
+  name          String
+  email         String
+  contactPerson String?
+  phoneCode     String?
+  phone         String?
+  industry      String?
+  address       String?
+  searchText    String     @default("")
+  domainId      String     @db.Uuid
+  domain        Domain     @relation(fields: [domainId], references: [id])
+  status        StatusEnum @default(ACTIVE)
+  isDeleted     Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@unique([email, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, status])
 }
 
 model ApiKey {

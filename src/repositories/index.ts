@@ -42,4 +42,5 @@ export * from './adminCurrency.repository.js';
 export * from './adminLanguage.repository.js';
 export * from './grn.repository.js';
 export * from './vendorProductPrice.repository.js';
+export * from './vendor.repository.js';
 export * from './invoice.repository.js';

@@ -97,6 +97,12 @@ export const modules = [
   },
   {
     name: {
+      en: 'Vendor',
+    },
+    code: 'VENDOR',
+  },
+  {
+    name: {
       en: 'Invoice',
     },
     code: 'INVOICE',

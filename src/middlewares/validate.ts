@@ -33,6 +33,15 @@ export const validate =
       });
     }
 
-    Object.assign(req[property], result.data);
+    if (
+      req[property] &&
+      typeof req[property] === 'object' &&
+      !Array.isArray(req[property])
+    ) {
+      Object.keys(req[property]).forEach((key) => delete req[property][key]);
+      Object.assign(req[property], result.data);
+    } else {
+      req[property] = result.data;
+    }
     next();
   };

@@ -23,6 +23,7 @@ import { InvoicePaths } from './invoice.paths.js';
 import { LocationPaths } from './location.paths.js';
 import { MediaPaths } from './media.paths.js';
 import { VendorProductPricePaths } from './vendorProductPrice.paths.js';
+import { VendorPaths } from './vendor.paths.js';
 import { MaintenanceLogPaths } from './maintenanceLog.paths.js';
 import { MaintenanceReportPaths } from './maintenanceReport.paths.js';
 import { MaintenanceSchedulePaths } from './maintenanceSchedule.paths.js';
@@ -56,6 +57,7 @@ export const ApiPaths = {
   ...LocationPaths,
   ...MediaPaths,
   ...VendorProductPricePaths,
+  ...VendorPaths,
   ...MaintenanceLogPaths,
   ...MaintenanceReportPaths,
   ...MaintenanceSchedulePaths,
