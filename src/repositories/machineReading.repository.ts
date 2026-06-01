@@ -3,6 +3,8 @@ import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
+type RelationDetails = Record<string, unknown> | null;
+
 export interface MachineReadingRecord {
   id: string;
   code: string;
@@ -19,6 +21,9 @@ export interface MachineReadingRecord {
   projectId: string;
   domainId: string;
   adminId: string;
+  project?: RelationDetails;
+  domain?: RelationDetails;
+  admin?: RelationDetails;
   status: StatusEnum;
   isDeleted: boolean;
   createdAt: Date;
@@ -72,6 +77,42 @@ const machineReadingSelect = Prisma.sql`
   "isDeleted",
   "createdAt",
   "updatedAt"
+`;
+
+const machineReadingListSelect = Prisma.sql`
+  mr."id",
+  mr."code",
+  mr."date",
+  mr."openingFuelStock" AS "refillFuelStock",
+  mr."closingFuelStock",
+  mr."fuelRefillQuantity",
+  mr."fuelConsumed",
+  mr."actualLitrePerHour",
+  mr."hoursRun",
+  mr."machineStartTime",
+  mr."machineEndTime",
+  mr."projectId",
+  jsonb_build_object(
+    'id', p."id",
+    'name', p."name",
+    'code', p."code"
+  ) AS "project",
+  mr."domainId",
+  jsonb_build_object(
+    'id', d."id",
+    'name', d."name",
+    'email', d."email"
+  ) AS "domain",
+  mr."adminId",
+  jsonb_build_object(
+    'id', a."id",
+    'name', a."name",
+    'email', a."email"
+  ) AS "admin",
+  mr."status",
+  mr."isDeleted",
+  mr."createdAt",
+  mr."updatedAt"
 `;
 
 function toDateSql(value: Date | null | undefined): Prisma.Sql {
@@ -173,6 +214,46 @@ export const machineReadingRepository = {
       FROM "MachineReading"
       WHERE ${Prisma.join(filters, ' AND ')}
       ORDER BY "createdAt" DESC
+      OFFSET ${offset}
+      LIMIT ${limit}
+    `);
+  },
+
+  findManyWithDetails: async (
+    domainId: string,
+    adminId?: string,
+    projectId?: string,
+    searchKey?: string,
+    offset = 0,
+    limit = 10,
+  ): Promise<MachineReadingRecord[]> => {
+    const filters = [
+      Prisma.sql`mr."domainId" = ${domainId}`,
+      Prisma.sql`mr."isDeleted" = false`,
+    ];
+
+    if (adminId) {
+      filters.push(Prisma.sql`mr."adminId" = ${adminId}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`mr."projectId" = ${projectId}`);
+    }
+
+    if (searchKey) {
+      filters.push(
+        Prisma.sql`mr."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+      );
+    }
+
+    return prisma.$queryRaw<MachineReadingRecord[]>(Prisma.sql`
+      SELECT ${machineReadingListSelect}
+      FROM "MachineReading" mr
+      INNER JOIN "Project" p ON p."id" = mr."projectId"
+      INNER JOIN "Domain" d ON d."id" = mr."domainId"
+      INNER JOIN "Admin" a ON a."id" = mr."adminId"
+      WHERE ${Prisma.join(filters, ' AND ')}
+      ORDER BY mr."createdAt" DESC
       OFFSET ${offset}
       LIMIT ${limit}
     `);

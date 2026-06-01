@@ -782,4 +782,51 @@ export const ProjectSchemas = {
       updatedAt: { type: 'string', format: 'date-time' },
     },
   },
+  DomainMachineReadingObject: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      code: { type: 'string', example: 'MR-001' },
+      date: { type: 'string', format: 'date-time' },
+      refillFuelStock: { type: 'number', example: 100 },
+      closingFuelStock: { type: 'number', example: 80 },
+      fuelRefillQuantity: { type: 'number', example: 20 },
+      fuelConsumed: { type: 'number', example: 40 },
+      actualLitrePerHour: { type: 'number', example: 8 },
+      hoursRun: { type: 'number', example: 5 },
+      machineStartTime: { type: 'string', format: 'date-time' },
+      machineEndTime: { type: 'string', format: 'date-time' },
+      projectId: { type: 'string', format: 'uuid' },
+      project: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: localizedObject,
+          code: { type: 'string', example: 'PRJ-001' },
+        },
+      },
+      domainId: { type: 'string', format: 'uuid' },
+      domain: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: localizedObject,
+          email: { type: 'string', format: 'email' },
+        },
+      },
+      adminId: { type: 'string', format: 'uuid' },
+      admin: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string', example: 'Admin User' },
+          email: { type: 'string', format: 'email' },
+        },
+      },
+      status: { type: 'string', example: 'ACTIVE' },
+      isDeleted: { type: 'boolean', example: false },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+    },
+  },
 };

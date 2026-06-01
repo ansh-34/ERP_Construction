@@ -333,7 +333,7 @@ export const machineReadingService = {
     try {
       const { offset, limit } = normalizePagination(paginationQuery);
       const [machineReadings, totalCount] = await Promise.all([
-        machineReadingRepository.findMany(
+        machineReadingRepository.findManyWithDetails(
           domainId,
           adminId,
           projectId,

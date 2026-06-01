@@ -473,7 +473,7 @@ export const ProjectPaths = {
         searchQuery,
       ],
       responses: listResponse(
-        'MachineReadingObject',
+        'DomainMachineReadingObject',
         'Machine readings retrieved',
       ),
     },
