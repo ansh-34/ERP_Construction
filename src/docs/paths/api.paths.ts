@@ -28,6 +28,7 @@ import { MaintenanceReportPaths } from './maintenanceReport.paths.js';
 import { MaintenanceSchedulePaths } from './maintenanceSchedule.paths.js';
 import { MovementLogPaths } from './movementLog.paths.js';
 import { MovementReportPaths } from './movementReport.paths.js';
+import { UserMaintenanceMovementPaths } from './userMaintenanceMovement.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -60,4 +61,5 @@ export const ApiPaths = {
   ...MaintenanceSchedulePaths,
   ...MovementLogPaths,
   ...MovementReportPaths,
+  ...UserMaintenanceMovementPaths,
 };
