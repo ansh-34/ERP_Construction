@@ -23,6 +23,7 @@ export const createMachineReadingBody = z.object({
   fuelRefillQuantity: nonNegativeNumber.optional(),
   machineStartTime: timeString,
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
+  machineryId: z.string().trim().uuid({ message: 'Invalid machinery id' }),
   status: z.nativeEnum(StatusEnum).optional(),
 });
 
@@ -39,6 +40,7 @@ export const endMachineReadingBody = z.object({
 
 export const listMachineReadingQuery = z.object({
   projectId: z.string().trim().min(1).optional(),
+  machineryId: z.string().trim().uuid().optional(),
   searchKey: z.string().trim().optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),

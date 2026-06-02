@@ -19,6 +19,7 @@ export interface MachineReadingRecord {
   machineStartTime: Date;
   machineEndTime: Date | null;
   projectId: string;
+  machineryId: string | null;
   domainId: string;
   adminId: string;
   project?: RelationDetails;
@@ -43,6 +44,7 @@ export interface CreateMachineReadingInput {
   machineStartTime: Date;
   machineEndTime?: Date | null;
   projectId: string;
+  machineryId: string;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -71,6 +73,7 @@ const machineReadingSelect = Prisma.sql`
   "machineStartTime",
   "machineEndTime",
   "projectId",
+  "machineryId",
   "domainId",
   "adminId",
   "status",
@@ -92,6 +95,7 @@ const machineReadingListSelect = Prisma.sql`
   mr."machineStartTime",
   mr."machineEndTime",
   mr."projectId",
+  mr."machineryId",
   jsonb_build_object(
     'id', p."id",
     'name', p."name",
@@ -148,6 +152,7 @@ export const machineReadingRepository = {
         "machineStartTime",
         "machineEndTime",
         "projectId",
+        "machineryId",
         "domainId",
         "adminId",
         "status",
@@ -169,6 +174,7 @@ export const machineReadingRepository = {
         ${toDateSql(data.machineStartTime)},
         ${toDateSql(data.machineEndTime ?? null)},
         ${data.projectId},
+        ${data.machineryId},
         ${data.domainId},
         ${data.adminId},
         ${data.status},
@@ -186,6 +192,7 @@ export const machineReadingRepository = {
     domainId: string,
     adminId?: string,
     projectId?: string,
+    machineryId?: string,
     searchKey?: string,
     offset = 0,
     limit = 10,
@@ -201,6 +208,10 @@ export const machineReadingRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (machineryId) {
+      filters.push(Prisma.sql`"machineryId" = ${machineryId}`);
     }
 
     if (searchKey) {
@@ -223,6 +234,7 @@ export const machineReadingRepository = {
     domainId: string,
     adminId?: string,
     projectId?: string,
+    machineryId?: string,
     searchKey?: string,
     offset = 0,
     limit = 10,
@@ -238,6 +250,10 @@ export const machineReadingRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`mr."projectId" = ${projectId}`);
+    }
+
+    if (machineryId) {
+      filters.push(Prisma.sql`mr."machineryId" = ${machineryId}`);
     }
 
     if (searchKey) {
@@ -263,6 +279,7 @@ export const machineReadingRepository = {
     domainId: string,
     adminId?: string,
     projectId?: string,
+    machineryId?: string,
     searchKey?: string,
   ): Promise<number> => {
     const filters = [
@@ -276,6 +293,10 @@ export const machineReadingRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (machineryId) {
+      filters.push(Prisma.sql`"machineryId" = ${machineryId}`);
     }
 
     if (searchKey) {
@@ -347,6 +368,7 @@ export const machineReadingRepository = {
 
   findLatestUnfinalizedBefore: async (
     projectId: string,
+    machineryId: string,
     domainId: string,
     adminId: string,
     beforeCreatedAt: Date,
@@ -355,6 +377,7 @@ export const machineReadingRepository = {
       SELECT ${machineReadingSelect}
       FROM "MachineReading"
       WHERE "projectId" = ${projectId}
+        AND "machineryId" = ${machineryId}
         AND "domainId" = ${domainId}
         AND "adminId" = ${adminId}
         AND "isDeleted" = false
@@ -457,6 +480,7 @@ export const machineReadingRepository = {
         machineStartTime: item.machineStartTime,
         machineEndTime: item.machineEndTime ?? null,
         projectId: item.projectId,
+        machineryId: item.machineryId,
         domainId: item.domainId,
         adminId: item.adminId,
         status: item.status,

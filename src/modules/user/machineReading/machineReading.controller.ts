@@ -18,6 +18,7 @@ export const machineReadingController = {
         fuelRefillQuantity,
         machineStartTime,
         projectId,
+        machineryId,
         status,
       } = req.body as {
         date?: string;
@@ -26,6 +27,7 @@ export const machineReadingController = {
         fuelRefillQuantity?: number;
         machineStartTime?: string;
         projectId?: string;
+        machineryId?: string;
         status?: StatusEnum;
       };
 
@@ -38,6 +40,7 @@ export const machineReadingController = {
         ...(fuelRefillQuantity !== undefined && { fuelRefillQuantity }),
         machineStartTime: machineStartTime ?? '',
         projectId: projectId ?? '',
+        machineryId: machineryId ?? '',
         domainId,
         adminId,
         status: status ?? StatusEnum.ACTIVE,
@@ -62,18 +65,21 @@ export const machineReadingController = {
       //   (req.body as { language?: string }).language ||
       //   (req.headers.language as string) ||
       //   'en';
-      const { projectId, searchKey, offset, limit } = req.query as {
-        projectId?: string;
-        searchKey?: string;
-        offset?: string;
-        limit?: string;
-      };
+      const { projectId, machineryId, searchKey, offset, limit } =
+        req.query as {
+          projectId?: string;
+          machineryId?: string;
+          searchKey?: string;
+          offset?: string;
+          limit?: string;
+        };
 
       const { machineReadings, pagination } =
         await machineReadingService.getAll(
           req.user!.domainId,
           req.user!.adminId,
           projectId,
+          machineryId,
           searchKey,
           { offset, limit },
         );

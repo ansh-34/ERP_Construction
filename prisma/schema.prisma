@@ -1347,6 +1347,7 @@ model Machinery {
   maintenanceSchedules MaintenanceSchedule[]
   maintenanceLogs      MaintenanceLog[]
   movementLogs         MovementLog[]
+  machineReadings      MachineReading[]
 
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
@@ -1501,6 +1502,8 @@ model MachineReading {
   machineEndTime     DateTime?  @db.Time(0)
   projectId          String     @db.Uuid
   project            Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  machineryId        String?    @db.Uuid
+  machinery          Machinery? @relation(fields: [machineryId], references: [id], onDelete: Cascade)
   domainId           String     @db.Uuid
   domain             Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
   adminId            String     @db.Uuid
@@ -1513,6 +1516,7 @@ model MachineReading {
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([machineryId])
   @@index([adminId])
 }
 

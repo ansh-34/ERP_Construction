@@ -1,5 +1,6 @@
 import {
   machineReadingRepository,
+  machineryRepository,
   projectRepository,
   type MachineReadingRecord,
   type UpdateMachineReadingInput as RepositoryUpdateMachineReadingInput,
@@ -19,6 +20,7 @@ export interface CreateMachineReadingInput {
   fuelRefillQuantity?: number;
   machineStartTime: string;
   projectId: string;
+  machineryId: string;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -146,6 +148,10 @@ function assertCreateInput(data: CreateMachineReadingInput): void {
     throw new Error('invalid projectId');
   }
 
+  if (!isNonEmptyString(data.machineryId)) {
+    throw new Error('invalid machineryId');
+  }
+
   if (!isNonEmptyString(data.domainId)) {
     throw new Error('invalid domainId');
   }
@@ -192,6 +198,7 @@ function buildCreatePayload(data: CreateMachineReadingInput) {
     machineStartTime: parseTime(data.machineStartTime, 'machineStartTime'),
     machineEndTime: null,
     projectId: data.projectId,
+    machineryId: data.machineryId,
     domainId: data.domainId,
     adminId: data.adminId,
     status: data.status,
@@ -250,6 +257,16 @@ export const machineReadingService = {
         throw new Error('not found');
       }
 
+      const machinery = await machineryRepository.findById(
+        data.machineryId,
+        data.domainId,
+        data.adminId,
+      );
+
+      if (!machinery || machinery.projectId !== data.projectId) {
+        throw new Error('not found');
+      }
+
       let code = generateCode('MACHINE_READING');
 
       while (
@@ -273,6 +290,7 @@ export const machineReadingService = {
         const previousMachineReading =
           await machineReadingRepository.findLatestUnfinalizedBefore(
             machineReading.projectId,
+            machineReading.machineryId!,
             machineReading.domainId,
             machineReading.adminId,
             machineReading.createdAt,
@@ -312,6 +330,7 @@ export const machineReadingService = {
     domainId: string,
     adminId: string,
     projectId?: string,
+    machineryId?: string,
     searchKey?: string,
     paginationQuery: PaginationQuery = {},
   ): Promise<{
@@ -330,6 +349,10 @@ export const machineReadingService = {
       throw new Error('invalid projectId');
     }
 
+    if (machineryId !== undefined && !isNonEmptyString(machineryId)) {
+      throw new Error('invalid machineryId');
+    }
+
     try {
       const { offset, limit } = normalizePagination(paginationQuery);
       const [machineReadings, totalCount] = await Promise.all([
@@ -337,11 +360,18 @@ export const machineReadingService = {
           domainId,
           adminId,
           projectId,
+          machineryId,
           searchKey,
           offset,
           limit,
         ),
-        machineReadingRepository.count(domainId, adminId, projectId, searchKey),
+        machineReadingRepository.count(
+          domainId,
+          adminId,
+          projectId,
+          machineryId,
+          searchKey,
+        ),
       ]);
       return {
         machineReadings,

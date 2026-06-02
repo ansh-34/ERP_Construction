@@ -722,12 +722,13 @@ export const ProjectSchemas = {
       machineStartTime: { type: 'string', example: '09:00' },
       machineEndTime: { type: 'string', example: '18:00' },
       projectId: { type: 'string', format: 'uuid' },
+      machineryId: { type: 'string', format: 'uuid' },
       status: { type: 'string', example: 'ACTIVE' },
     },
   },
   CreateMachineReadingBody: {
     type: 'object',
-    required: ['date', 'machineStartTime', 'projectId'],
+    required: ['date', 'machineStartTime', 'projectId', 'machineryId'],
     properties: {
       date: { type: 'string', example: '2026-05-18' },
       refillFuelStock: { type: 'number', minimum: 0, example: 100 },
@@ -735,6 +736,7 @@ export const ProjectSchemas = {
       fuelRefillQuantity: { type: 'number', minimum: 0, example: 20 },
       machineStartTime: { type: 'string', example: '09:00' },
       projectId: { type: 'string', format: 'uuid' },
+      machineryId: { type: 'string', format: 'uuid' },
       status: activeStatus,
     },
   },
@@ -797,6 +799,7 @@ export const ProjectSchemas = {
       machineStartTime: { type: 'string', format: 'date-time' },
       machineEndTime: { type: 'string', format: 'date-time' },
       projectId: { type: 'string', format: 'uuid' },
+      machineryId: { type: 'string', format: 'uuid', nullable: true },
       project: {
         type: 'object',
         properties: {

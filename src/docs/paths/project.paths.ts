@@ -18,6 +18,12 @@ const projectIdQuery = {
   schema: { type: 'string', format: 'uuid' },
 };
 
+const machineryIdQuery = {
+  in: 'query' as const,
+  name: 'machineryId',
+  schema: { type: 'string', format: 'uuid' },
+};
+
 const stageIdQuery = {
   in: 'query' as const,
   name: 'stageId',
@@ -470,6 +476,7 @@ export const ProjectPaths = {
         domainIdQuery,
         ...paginationParams,
         projectIdQuery,
+        machineryIdQuery,
         searchQuery,
       ],
       responses: listResponse(
@@ -486,7 +493,7 @@ export const ProjectPaths = {
         required: true,
         content: {
           'application/json': {
-            schema: { $ref: '#/components/schemas/MachineReadingObject' },
+            schema: { $ref: '#/components/schemas/CreateMachineReadingBody' },
           },
         },
       },
@@ -706,6 +713,7 @@ export const ProjectPaths = {
         languageHeader,
         ...paginationParams,
         projectIdQuery,
+        machineryIdQuery,
         searchQuery,
       ],
       responses: listResponse(
