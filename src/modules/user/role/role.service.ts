@@ -272,30 +272,33 @@ export const RoleService = {
 
   async assignRole(
     domainId: string,
-    targetUserId: string,
-    data: { roleId: string },
+    roleId: string,
+    data: { userIds: string[] },
   ) {
-    const { roleId } = data;
+    const { userIds } = data;
 
-    if (!roleId) {
-      throw new Error(Messages.ROLE.ROLE_ID_REQUIRED);
+    const [allAreValidUsers, role] = await Promise.all([
+      UserRepository.validateUserIds(userIds, domainId),
+      RoleRepository.findActiveByIdAndDomain(roleId, domainId),
+    ]);
+
+    if (!allAreValidUsers) {
+      throw new Error(Messages.ROLE.INVALID_USER_IDS);
+    }
+    if (!role) {
+      throw new Error(Messages.ROLE.NOT_FOUND);
     }
 
-    const targetUser = await UserRepository.findActiveByIdAndDomain(
-      targetUserId,
+    const usersWithRoleCount = await UserRepository.countByRole(
+      roleId,
       domainId,
     );
 
-    if (!targetUser) {
-      throw new Error(Messages.COMMON.FORBIDDEN);
-    }
-
-    const role = await RoleRepository.findActiveByIdAndDomain(roleId, domainId);
-
-    if (!role) {
-      throw new Error(Messages.COMMON.FORBIDDEN);
-    }
-
-    return UserRepository.assignRole(targetUserId, roleId);
+    return await Promise.all([
+      UserRepository.assignRole(userIds, roleId),
+      RoleRepository.update(roleId, {
+        usersCount: usersWithRoleCount + userIds.length,
+      }),
+    ]);
   },
 };

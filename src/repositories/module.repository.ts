@@ -20,6 +20,21 @@ export const ModuleRepository = {
         });
   },
 
+  findActiveByIds(moduleIds: string[]) {
+    return prisma.module.findMany({
+      where: {
+        id: {
+          in: moduleIds,
+        },
+        isDeleted: false,
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+      },
+    });
+  },
+
   findDuplicateCode(code: string, id: string) {
     return prisma.module.findFirst({
       where: { code, isDeleted: false, id: { not: id } },

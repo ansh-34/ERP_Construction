@@ -125,6 +125,7 @@ export const Messages = Object.freeze({
     INVALID_PERMISSIONS_PREFIX: 'Invalid permissions',
     UPDATE_FAILED: 'Failed to update role',
     DELETE_FAILED: 'Failed to delete role',
+    INVALID_USER_IDS: 'One or more selected users are invalid',
   },
   MODULE: {
     CREATED: 'Module created successfully',

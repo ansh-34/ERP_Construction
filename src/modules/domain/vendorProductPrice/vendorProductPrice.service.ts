@@ -8,19 +8,15 @@ export const VendorProductPriceService = {
   async create(
     domainId: string,
     dto: {
-      vendorName: string;
+      vendorId: string;
       productId: string;
       productGradeId: string;
       uomId: string;
       price: number;
-      productCode?: string;
-      productGradeCode?: string;
-      uomCode?: string;
-      status?: 'ACTIVE' | 'INACTIVE';
     },
   ) {
     const existing = await vendorProductPriceRepository.findUnique(
-      dto.vendorName,
+      dto.vendorId,
       dto.productId,
       dto.productGradeId,
       dto.uomId,
@@ -34,7 +30,7 @@ export const VendorProductPriceService = {
     const record = await vendorProductPriceRepository.create({
       ...dto,
       domainId,
-      searchText: dto.vendorName.toLowerCase(),
+      searchText: dto.vendorId.toLowerCase(),
       isDeleted: false,
     } as any);
 

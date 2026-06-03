@@ -302,13 +302,15 @@ model Currency {
 }
 
 model Role {
-  id         String  @id @default(uuid()) @db.Uuid
-  name       Json    @db.JsonB
-  code       String?
-  searchText String  @default("")
-  level      Int     @default(0)
-  domainId   String  @db.Uuid
-  adminId    String? @db.Uuid
+  id                    String  @id @default(uuid()) @db.Uuid
+  name                  Json    @db.JsonB
+  code                  String?
+  searchText            String  @default("")
+  level                 Int     @default(0)
+  modulePermissionCount Int     @default(0)
+  usersCount            Int     @default(0)
+  domainId              String  @db.Uuid
+  adminId               String? @db.Uuid
 
   admin     Admin?     @relation(fields: [adminId], references: [id])
   domain    Domain     @relation(fields: [domainId], references: [id])
@@ -1275,7 +1277,7 @@ model ProjectTaskImage {
   imageId     String?      @db.Uuid
   image       Media?       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageUrl    String
-  description String?
+  description Json?
   taskId      String       @db.Uuid
   task        ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   stageId     String       @db.Uuid

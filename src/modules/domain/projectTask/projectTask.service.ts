@@ -119,7 +119,7 @@ function getAssigneeUserId(
 function normalizeProjectTask(
   task: ProjectTaskRecord,
   language: string | null,
-  images?: ProjectTaskImageRecord[],
+  images?: any,
 ): LocalizedProjectTaskRecord {
   return {
     ...task,
@@ -130,7 +130,14 @@ function normalizeProjectTask(
     domain: normalizeRelationDetails(task.domain, language),
     admin: normalizeRelationDetails(task.admin, language),
     assigneeDetails: normalizeRelationDetails(task.assigneeDetails, language),
-    ...(images !== undefined && { images }),
+    ...(images !== undefined && {
+      images: images.map((img: any) => ({
+        id: img.id,
+        imageId: img.imageId,
+        imageUrl: img.imageUrl,
+        description: getLocalizedText(img.description, language),
+      })),
+    }),
   };
 }
 
@@ -535,8 +542,12 @@ export const projectTaskService = {
     }
 
     try {
-      const task = await projectTaskRepository.findById(id, domainId, adminId);
-      return task ? normalizeProjectTask(task, language) : null;
+      const task: any = await projectTaskRepository.findById(
+        id,
+        domainId,
+        adminId,
+      );
+      return task ? normalizeProjectTask(task, language, task?.images) : null;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

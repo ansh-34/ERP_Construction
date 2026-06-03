@@ -275,6 +275,22 @@ const projectTaskDetailSelect = Prisma.sql`
       'status', u."status"
     )
   END AS "assigneeDetails",
+COALESCE(
+  (
+    SELECT jsonb_agg(
+      jsonb_build_object(
+        'id', pti."id",
+        'imageId', pti."imageId",
+        'imageUrl', pti."imageUrl",
+        'description', pti."description"
+      )
+    )
+    FROM "ProjectTaskImage" pti
+    WHERE pti."taskId" = pt."id"
+      AND pti."isDeleted" = false
+  ),
+  '[]'::jsonb
+) AS "images",
   pt."status",
   pt."isDeleted",
   pt."createdAt",
@@ -398,28 +414,52 @@ export const projectTaskRepository = {
     `);
   },
 
+  // findProjectIdsByAssignee: async (
+  //   domainId: string,
+  //   userId: string,
+  //   adminId?: string,
+  // ): Promise<string[]> => {
+  //   const filters = [
+  //     Prisma.sql`"domainId" = ${domainId}`,
+  //     Prisma.sql`"isDeleted" = false`,
+  //     Prisma.sql`"assignee"->>'userId' = ${userId}`,
+  //   ];
+
+  //   if (adminId) {
+  //     filters.push(Prisma.sql`"adminId" = ${adminId}`);
+  //   }
+
+  //   const result = await prisma.$queryRaw<{ projectId: string }[]>(Prisma.sql`
+  //     SELECT DISTINCT "projectId"
+  //     FROM "ProjectTask"
+  //     WHERE ${Prisma.join(filters, ' AND ')}
+  //   `);
+
+  //   return result.map((row) => row.projectId);
+  // },
+
   findProjectIdsByAssignee: async (
     domainId: string,
     userId: string,
     adminId?: string,
   ): Promise<string[]> => {
-    const filters = [
-      Prisma.sql`"domainId" = ${domainId}`,
-      Prisma.sql`"isDeleted" = false`,
-      Prisma.sql`"assignee"->>'userId' = ${userId}`,
-    ];
+    const projects = await prisma.projectTask.findMany({
+      where: {
+        domainId,
+        isDeleted: false,
+        assignee: {
+          path: ['userId'],
+          equals: userId,
+        },
+        ...(adminId && { adminId }),
+      },
+      distinct: ['projectId'],
+      select: {
+        projectId: true,
+      },
+    });
 
-    if (adminId) {
-      filters.push(Prisma.sql`"adminId" = ${adminId}`);
-    }
-
-    const result = await prisma.$queryRaw<{ projectId: string }[]>(Prisma.sql`
-      SELECT DISTINCT "projectId"
-      FROM "ProjectTask"
-      WHERE ${Prisma.join(filters, ' AND ')}
-    `);
-
-    return result.map((row) => row.projectId);
+    return projects.map((project) => project.projectId);
   },
 
   findById: async (
@@ -445,6 +485,7 @@ export const projectTaskRepository = {
       INNER JOIN "Location" l ON l."id" = p."locationId"
       INNER JOIN "Domain" d ON d."id" = pt."domainId"
       INNER JOIN "Admin" a ON a."id" = pt."adminId"
+      LEFT JOIN "ProjectTaskImage" pti ON pti."taskId" = pt."id"
       LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1

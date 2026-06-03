@@ -71,7 +71,12 @@ export const projectTaskController = {
           projectId: projectId ?? '',
           domainId,
           adminId,
-          ...(images !== undefined && { images }),
+          ...(images !== undefined && {
+            images: images.map((img) => ({
+              ...img,
+              description: img.description === '' ? null : img.description,
+            })),
+          }),
           status: status ?? StatusEnum.ACTIVE,
         },
         language,
@@ -223,7 +228,12 @@ export const projectTaskController = {
           ...(requiredApproval !== undefined && { requiredApproval }),
           ...(lastApprovedDeadline !== undefined && { lastApprovedDeadline }),
           ...(projectBatchCode !== undefined && { projectBatchCode }),
-          ...(images !== undefined && { images }),
+          ...(images !== undefined && {
+            images: images.map((img) => ({
+              ...img,
+              description: img.description === '' ? null : img.description,
+            })),
+          }),
           ...(status !== undefined && { status }),
         },
         language,
