@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { validate } from '@/middlewares/validate';
 import { reportController } from './report.controller';
 import {
+  machineSummaryExportQuerySchema,
+  machineSummaryQuerySchema,
   projectSummaryExportQuerySchema,
   projectSummaryQuerySchema,
   projectUserTaskExportQuerySchema,
@@ -9,6 +11,18 @@ import {
 } from './report.validator';
 
 const reportRouter = Router();
+
+reportRouter.get(
+  '/machine-summary/export',
+  validate(machineSummaryExportQuerySchema, 'query'),
+  reportController.exportMachineSummary,
+);
+
+reportRouter.get(
+  '/machine-summary',
+  validate(machineSummaryQuerySchema, 'query'),
+  reportController.getMachineSummary,
+);
 
 reportRouter.get(
   '/project-summary/export',
