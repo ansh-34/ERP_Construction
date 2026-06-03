@@ -1,72 +1,69 @@
 import { Request, Response } from 'express';
+import ExcelJS from 'exceljs';
 import { HttpStatus } from '@constants/httpStatus';
 import { resolveHttpStatus } from '@/utils/httpError';
-import { reportService, type SummaryExportProject } from './report.service';
+import { reportService, type ReportWorkbookWorksheet } from './report.service';
 
-function formatDate(value: Date | null): string {
-  return value ? value.toISOString().slice(0, 10) : '';
+function buildWorkbook(
+  worksheets: ReportWorkbookWorksheet[],
+): ExcelJS.Workbook {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Infoware Construction ERP';
+  workbook.created = new Date();
+
+  worksheets.forEach(({ name, columns, rows }) => {
+    const worksheet = workbook.addWorksheet(name);
+    worksheet.columns = columns.map((column) => ({
+      header: column,
+      key: column,
+      width: Math.max(15, Math.min(column.length + 5, 30)),
+    }));
+    worksheet.addRows(rows);
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: columns.length },
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1F4E78' },
+    };
+  });
+
+  return workbook;
 }
 
-function escapeCsvValue(value: unknown): string {
-  const text = value === null || value === undefined ? '' : String(value);
+async function sendWorkbook(
+  res: Response,
+  worksheets: ReportWorkbookWorksheet[],
+  filenamePrefix: string,
+): Promise<Response> {
+  const workbook = buildWorkbook(worksheets);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const date = new Date().toISOString().slice(0, 10);
 
-  if (/[",\r\n]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`;
-  }
-
-  return text;
-}
-
-function buildSummaryCsv(projects: SummaryExportProject[]): string {
-  const headers = [
-    'id',
-    'project',
-    'code',
-    'country',
-    'status',
-    'budget',
-    'spent',
-    'utilization',
-    'expectedStartDate',
-    'expectedEndDate',
-    'actualStartDate',
-    'actualEndDate',
-  ];
-
-  const rows = projects.map((project) =>
-    [
-      project.id,
-      project.project,
-      project.code,
-      project.country,
-      project.status,
-      project.budget,
-      project.spent,
-      project.utilization,
-      formatDate(project.expectedStartDate),
-      formatDate(project.expectedEndDate),
-      formatDate(project.actualStartDate),
-      formatDate(project.actualEndDate),
-    ]
-      .map(escapeCsvValue)
-      .join(','),
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${filenamePrefix}-${date}.xlsx"`,
   );
 
-  return [headers.join(','), ...rows].join('\r\n');
+  return res.status(HttpStatus.OK).send(Buffer.from(buffer));
 }
 
 export const reportController = {
-  getReport: async (req: Request, res: Response): Promise<Response> => {
+  getProjectSummary: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
-      const { reportType, country } = req.query as {
-        reportType: 'summary';
-        country?: string;
-      };
+      const { country } = req.query as { country?: string };
 
-      const report = await reportService.getReport(
+      const report = await reportService.getProjectSummary(
         req.user!.domainId,
-        reportType,
         { country },
         language,
       );
@@ -82,34 +79,78 @@ export const reportController = {
     }
   },
 
-  exportReport: async (req: Request, res: Response): Promise<Response> => {
+  exportProjectSummary: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
-      const { reportType, country } = req.query as {
-        reportType: 'summary';
-        export: 'csv';
+      const { country, projectId } = req.query as {
+        export: 'xlsx';
         country?: string;
+        projectId?: string;
       };
 
-      if (reportType !== 'summary') {
-        throw new Error('invalid reportType');
-      }
-
-      const projects = await reportService.getSummaryExportProjects(
+      const worksheets = await reportService.getProjectWorkbookWorksheets(
         req.user!.domainId,
-        { country },
+        { country, projectId },
         language,
       );
-      const csv = buildSummaryCsv(projects);
-      const date = new Date().toISOString().slice(0, 10);
 
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="summary-report-${date}.csv"`,
+      return sendWorkbook(res, worksheets, 'project-summary-report');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  getProjectUserTask: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, userId } = req.query as {
+        projectId?: string;
+        userId?: string;
+      };
+      const report = await reportService.getProjectUserTaskReport(
+        req.user!.domainId,
+        { projectId, userId },
+        language,
       );
 
-      return res.status(HttpStatus.OK).send(csv);
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportProjectUserTask: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, userId } = req.query as {
+        export: 'xlsx';
+        projectId?: string;
+        userId?: string;
+      };
+      const worksheets =
+        await reportService.getProjectUserTaskWorkbookWorksheets(
+          req.user!.domainId,
+          { projectId, userId },
+          language,
+        );
+
+      return sendWorkbook(res, worksheets, 'project-user-task-report');
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to export report';

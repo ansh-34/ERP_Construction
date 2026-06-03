@@ -1,20 +1,37 @@
 import { Router } from 'express';
 import { validate } from '@/middlewares/validate';
 import { reportController } from './report.controller';
-import { reportExportQuerySchema, reportQuerySchema } from './report.validator';
+import {
+  projectSummaryExportQuerySchema,
+  projectSummaryQuerySchema,
+  projectUserTaskExportQuerySchema,
+  projectUserTaskQuerySchema,
+} from './report.validator';
 
 const reportRouter = Router();
 
 reportRouter.get(
-  '/export',
-  validate(reportExportQuerySchema, 'query'),
-  reportController.exportReport,
+  '/project-summary/export',
+  validate(projectSummaryExportQuerySchema, 'query'),
+  reportController.exportProjectSummary,
 );
 
 reportRouter.get(
-  '/',
-  validate(reportQuerySchema, 'query'),
-  reportController.getReport,
+  '/project-summary',
+  validate(projectSummaryQuerySchema, 'query'),
+  reportController.getProjectSummary,
+);
+
+reportRouter.get(
+  '/project-user-task/export',
+  validate(projectUserTaskExportQuerySchema, 'query'),
+  reportController.exportProjectUserTask,
+);
+
+reportRouter.get(
+  '/project-user-task',
+  validate(projectUserTaskQuerySchema, 'query'),
+  reportController.getProjectUserTask,
 );
 
 export default reportRouter;

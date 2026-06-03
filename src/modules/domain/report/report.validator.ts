@@ -1,13 +1,22 @@
 import { z } from 'zod';
 
-export const reportQuerySchema = z.object({
-  reportType: z.enum(['summary']),
+export const projectSummaryQuerySchema = z.object({
   country: z.string().trim().optional(),
 });
 
-export const reportExportQuerySchema = reportQuerySchema.extend({
-  export: z.enum(['csv']),
+export const projectSummaryExportQuerySchema = projectSummaryQuerySchema.extend(
+  {
+    export: z.enum(['xlsx']),
+    projectId: z.string().trim().uuid().optional(),
+  },
+);
+
+export const projectUserTaskQuerySchema = z.object({
+  projectId: z.string().trim().uuid().optional(),
+  userId: z.string().trim().uuid().optional(),
 });
 
-export type ReportQuery = z.infer<typeof reportQuerySchema>;
-export type ReportExportQuery = z.infer<typeof reportExportQuerySchema>;
+export const projectUserTaskExportQuerySchema =
+  projectUserTaskQuerySchema.extend({
+    export: z.enum(['xlsx']),
+  });
