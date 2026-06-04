@@ -23,9 +23,10 @@ export const GrnService = {
     data: {
       wbReference?: string;
       invoiceId: string;
-      totalItems: number;
-      totalTax: number;
-      totalAmount: number;
+      totalItems?: number;
+      totalTax?: number;
+      totalAmount?: number;
+      grnProducts?: any[];
     },
   ) {
     const invoice = await prisma.invoice.findFirst({
@@ -58,28 +59,94 @@ export const GrnService = {
 
     const grnProjectId = invoice.projectId;
 
-    const grnProducts = (invoice.items || []).map((item: any) => {
-      const rate =
-        item.quantity > 0
-          ? (item.totalAmount - item.taxAmount) / item.quantity
-          : 0;
-      return {
-        material:
-          item.description || item.product?.displayName || 'Unknown Material',
-        quantity: item.quantity,
-        tax: item.taxAmount,
-        rate,
-        uomId: item.uomId,
-        projectId: invoice.projectId,
-        invoiceId: invoice.id,
-        vendor: invoice.vendorName,
-        date: currentDate,
-      };
-    });
+    const { grnProducts: inputGrnProducts, ...restData } = data;
+
+    let grnProducts;
+    if (inputGrnProducts && inputGrnProducts.length > 0) {
+      grnProducts = [];
+      for (const p of inputGrnProducts) {
+        const invoiceItem = (invoice.items || []).find(
+          (item: any) => item.productId === p.productId,
+        );
+        if (!invoiceItem) {
+          throw new Error(
+            `Product with ID ${p.productId} not found on the referenced invoice`,
+          );
+        }
+
+        const vendorPricing = await prisma.vendorProductPricing.findFirst({
+          where: {
+            vendorName: invoice.vendorName,
+            productId: p.productId,
+            productGradeId: invoiceItem.productGradeId ?? undefined,
+            uomId: invoiceItem.uomId,
+            domainId,
+            isDeleted: false,
+          },
+        });
+
+        const rate = vendorPricing
+          ? vendorPricing.price
+          : invoiceItem.quantity > 0
+            ? (invoiceItem.totalAmount - invoiceItem.taxAmount) /
+              invoiceItem.quantity
+            : 0;
+
+        const tax =
+          p.tax ??
+          (invoiceItem.quantity > 0
+            ? (invoiceItem.taxAmount / invoiceItem.quantity) * p.quantity
+            : 0);
+
+        grnProducts.push({
+          material:
+            invoiceItem.description ||
+            invoiceItem.product?.displayName ||
+            'Unknown Material',
+          quantity: p.quantity,
+          tax,
+          rate,
+          uomId: invoiceItem.uomId,
+          projectId: invoice.projectId,
+          invoiceId: invoice.id,
+          vendor: invoice.vendorName,
+          date: currentDate,
+        });
+      }
+    } else {
+      grnProducts = (invoice.items || []).map((item: any) => {
+        const rate =
+          item.quantity > 0
+            ? (item.totalAmount - item.taxAmount) / item.quantity
+            : 0;
+        return {
+          material:
+            item.description || item.product?.displayName || 'Unknown Material',
+          quantity: item.quantity,
+          tax: item.taxAmount,
+          rate,
+          uomId: item.uomId,
+          projectId: invoice.projectId,
+          invoiceId: invoice.id,
+          vendor: invoice.vendorName,
+          date: currentDate,
+        };
+      });
+    }
+
+    const totalItems = restData.totalItems ?? grnProducts.length;
+    const totalTax =
+      restData.totalTax ?? grnProducts.reduce((sum, p) => sum + p.tax, 0);
+    const totalAmount =
+      restData.totalAmount ??
+      grnProducts.reduce((sum, p) => sum + (p.quantity * p.rate + p.tax), 0);
 
     return GrnRepository.create(
       {
-        ...data,
+        ...restData,
+        totalItems,
+        totalTax,
+        totalAmount,
         code,
         domainId,
         date: currentDate,
@@ -101,6 +168,7 @@ export const GrnService = {
       searchKey?: string;
       approvalStatus?: string;
       projectId?: string;
+      invoiceId?: string;
       [key: string]: any;
     },
   ) {
@@ -115,6 +183,7 @@ export const GrnService = {
         searchKey: query.searchKey,
         approvalStatus: query.approvalStatus,
         projectId: query.projectId,
+        invoiceId: query.invoiceId,
       },
     );
 

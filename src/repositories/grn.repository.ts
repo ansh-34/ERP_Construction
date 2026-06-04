@@ -1,6 +1,16 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
 import { ApprovalStatus } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+  }
+  return JSON.stringify(value ?? '');
+};
+
 export const GrnRepository = {
   mapGrnProduct(product: any) {
     if (!product) return product;
@@ -15,6 +25,9 @@ export const GrnRepository = {
     if (!grn) return grn;
     if (grn.grnProducts && Array.isArray(grn.grnProducts)) {
       grn.grnProducts = grn.grnProducts.map(GrnRepository.mapGrnProduct);
+    }
+    if (grn && typeof grn === 'object') {
+      delete grn.productOrderCode;
     }
     return grn;
   },
@@ -43,6 +56,76 @@ export const GrnRepository = {
     });
   },
 
+  async recalculateInvoiceGrnStats(
+    tx: any,
+    invoiceId: string,
+    domainId: string,
+  ) {
+    const activeGrns = await tx.grn.findMany({
+      where: { invoiceId, domainId, isDeleted: false },
+      select: { id: true, date: true },
+    });
+
+    const totalGrns = activeGrns.length;
+    let lastGrnDate: Date | null = null;
+    if (totalGrns > 0) {
+      lastGrnDate = new Date(
+        Math.max(...activeGrns.map((g: any) => g.date.getTime())),
+      );
+    }
+
+    const grnProducts = await tx.grnProduct.findMany({
+      where: {
+        invoiceId,
+        domainId,
+        isDeleted: false,
+        grn: { isDeleted: false },
+      },
+    });
+
+    const totalItemsReceived = grnProducts.reduce(
+      (sum: number, p: any) => sum + p.quantity,
+      0,
+    );
+
+    const invoiceItems = await tx.invoiceItem.findMany({
+      where: { invoiceId, domainId },
+      include: { product: true },
+    });
+
+    const totalItems = invoiceItems.reduce(
+      (sum: number, item: any) => sum + item.quantity,
+      0,
+    );
+
+    for (const item of invoiceItems) {
+      const materialName =
+        item.description ||
+        toDisplayString(item.product?.displayName) ||
+        'Unknown Material';
+      const receivedQuantity = grnProducts
+        .filter(
+          (p: any) => p.uomId === item.uomId && p.material === materialName,
+        )
+        .reduce((sum: number, p: any) => sum + p.quantity, 0);
+
+      await tx.invoiceItem.update({
+        where: { id: item.id },
+        data: { receivedQuantity },
+      });
+    }
+
+    await tx.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        totalGrns,
+        lastGrnDate,
+        totalItems,
+        totalItemsReceived,
+      },
+    });
+  },
+
   async recalculateGrnTotals(tx: any, grnId: string, domainId: string) {
     const totals = await tx.grnProduct.aggregate({
       where: { grnId, domainId, isDeleted: false },
@@ -65,14 +148,23 @@ export const GrnRepository = {
 
     const totalTax = totals._sum.tax || 0;
 
-    await tx.grn.update({
+    const updatedGrn = await tx.grn.update({
       where: { id: grnId },
       data: {
         totalItems: totals._count._all,
         totalTax,
         totalAmount,
       },
+      select: { invoiceId: true },
     });
+
+    if (updatedGrn?.invoiceId) {
+      await GrnRepository.recalculateInvoiceGrnStats(
+        tx,
+        updatedGrn.invoiceId,
+        domainId,
+      );
+    }
   },
 
   async findByIdAndDomain(id: string, domainId: string) {
@@ -108,6 +200,7 @@ export const GrnRepository = {
       searchKey?: string;
       approvalStatus?: string;
       projectId?: string;
+      invoiceId?: string;
     },
   ) {
     const where: any = {
@@ -118,6 +211,7 @@ export const GrnRepository = {
         ? { approvalStatus: filters.approvalStatus }
         : {}),
       ...(filters.projectId ? { projectId: filters.projectId } : {}),
+      ...(filters.invoiceId ? { invoiceId: filters.invoiceId } : {}),
       ...(filters.searchKey
         ? {
             OR: [
@@ -175,10 +269,16 @@ export const GrnRepository = {
         where: { grnId: id },
         data: { isDeleted: true },
       });
-      return tx.grn.update({
+      const grn = await tx.grn.update({
         where: { id },
         data: { isDeleted: true },
       });
+      await GrnRepository.recalculateInvoiceGrnStats(
+        tx,
+        grn.invoiceId,
+        grn.domainId,
+      );
+      return grn;
     });
   },
 

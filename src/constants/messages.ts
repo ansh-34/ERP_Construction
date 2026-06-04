@@ -508,4 +508,15 @@ export const Messages = Object.freeze({
     ALREADY_GENERATED:
       'Invoices have already been generated for this purchase order',
   },
+  PAYMENT_REQUEST: {
+    CREATED: 'Payment request created successfully',
+    RETRIEVED: 'Payment request retrieved successfully',
+    UPDATED: 'Payment request updated successfully',
+    DELETED: 'Payment request deleted successfully',
+    NOT_FOUND: 'Payment request not found',
+    CREATE_FAILED: 'Failed to create payment request',
+    LIST_FAILED: 'Failed to retrieve payment requests',
+    UPDATE_FAILED: 'Failed to update payment request',
+    DELETE_FAILED: 'Failed to delete payment request',
+  },
 });

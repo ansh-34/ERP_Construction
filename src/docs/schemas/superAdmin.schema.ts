@@ -11,16 +11,27 @@ export const SuperAdminSchemas = {
     type: 'object',
     required: ['domainName', 'email', 'password', 'industry'],
     properties: {
-      domainName: { type: 'string' },
-      email: { type: 'string', format: 'email' },
-      password: { type: 'string' },
+      domainName: {
+        type: 'object',
+        properties: {
+          en: { type: 'string', example: 'Construction Corp Inc' },
+        },
+        required: ['en'],
+      },
+      email: {
+        type: 'string',
+        format: 'email',
+        example: 'owner@constructioncorp.com',
+      },
+      password: { type: 'string', example: 'Password123!' },
       industry: {
         type: 'string',
         enum: ['CONSTRUCTION', 'MANUFACTURING', 'MINING', 'PROPERTY'],
+        example: 'CONSTRUCTION',
       },
-      phone: { type: 'string' },
-      phoneCode: { type: 'string' },
-      organizationType: {},
+      phone: { type: 'string', example: '9998887777' },
+      phoneCode: { type: 'string', example: '+1' },
+      organizationType: { type: 'string', example: 'LLC' },
     },
   },
   SuperAdminLoginResponse: {
@@ -47,10 +58,15 @@ export const SuperAdminSchemas = {
             type: 'object',
             properties: {
               id: { type: 'string', format: 'uuid' },
-              name: { type: 'object', example: { en: 'My Company' } },
+              name: { type: 'string', example: 'Construction Corp Inc' },
               email: { type: 'string', format: 'email' },
               industry: { type: 'string', example: 'CONSTRUCTION' },
             },
+          },
+          link: {
+            type: 'string',
+            example:
+              'https://construction-infoware.vercel.app/verify/token?token=40c9028b556ce6d893583e056b782ed1dce9d04daf66eba3e702f19108aaf6bb&context=domain-onboarding&email=owner%40constructioncorp.com&speciality=CONSTRUCTION',
           },
         },
       },

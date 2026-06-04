@@ -158,6 +158,179 @@ export const reportController = {
     }
   },
 
+  getProductInventory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { productId, status } = req.query as {
+        productId?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+      };
+
+      const report = await reportService.getProductInventoryReport(
+        req.user!.domainId,
+        { productId, status },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportProductInventory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { productId, status } = req.query as {
+        export: 'xlsx';
+        productId?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+      };
+
+      const worksheets =
+        await reportService.getProductInventoryWorkbookWorksheets(
+          req.user!.domainId,
+          { productId, status },
+          language,
+        );
+
+      return sendWorkbook(res, worksheets, 'product-inventory-report');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  getVendorPurchaseHistory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { vendorId, projectId } = req.query as {
+        vendorId?: string;
+        projectId?: string;
+      };
+
+      const report = await reportService.getVendorPurchaseHistoryReport(
+        req.user!.domainId,
+        { vendorId, projectId },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportVendorPurchaseHistory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { vendorId, projectId } = req.query as {
+        export: 'xlsx';
+        vendorId?: string;
+        projectId?: string;
+      };
+
+      const worksheets =
+        await reportService.getVendorPurchaseHistoryWorkbookWorksheets(
+          req.user!.domainId,
+          { vendorId, projectId },
+          language,
+        );
+
+      return sendWorkbook(res, worksheets, 'vendor-purchase-history-report');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  getProductTransactionHistory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { productId, projectId, startDate, endDate } = req.query as {
+        productId?: string;
+        projectId?: string;
+        startDate?: string;
+        endDate?: string;
+      };
+
+      const report = await reportService.getProductTransactionHistoryReport(
+        req.user!.domainId,
+        { productId, projectId, startDate, endDate },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportProductTransactionHistory: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { productId, projectId, startDate, endDate } = req.query as {
+        export: 'xlsx';
+        productId?: string;
+        projectId?: string;
+        startDate?: string;
+        endDate?: string;
+      };
+
+      const worksheets =
+        await reportService.getProductTransactionHistoryWorkbookWorksheets(
+          req.user!.domainId,
+          { productId, projectId, startDate, endDate },
+          language,
+        );
+
+      return sendWorkbook(
+        res,
+        worksheets,
+        'product-transaction-history-report',
+      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
   getMachineSummary: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
