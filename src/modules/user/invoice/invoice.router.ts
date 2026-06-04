@@ -7,12 +7,14 @@ import {
   deleteInvoice,
   listInvoiceItems,
   generateInvoicesFromPO,
+  listAllInvoiceItems,
 } from './invoice.controller.js';
 import {
   listInvoicesQuerySchema,
   invoiceIdParamsSchema,
   poIdParamsSchema,
   generateInvoicesBodySchema,
+  invoiceItemsQuerySchema,
 } from './invoice.validator.js';
 
 const router = Router();
@@ -33,6 +35,20 @@ router.get(
 );
 
 router.get(
+  '/items',
+  authorize('INVOICE', 'READ'),
+  validate(invoiceItemsQuerySchema, 'query'),
+  listAllInvoiceItems,
+);
+
+router.get(
+  '/:id/items',
+  authorize('INVOICE', 'READ'),
+  validate(invoiceIdParamsSchema, 'params'),
+  listInvoiceItems,
+);
+
+router.get(
   '/:id',
   authorize('INVOICE', 'READ'),
   validate(invoiceIdParamsSchema, 'params'),
@@ -44,15 +60,6 @@ router.delete(
   authorize('INVOICE', 'DELETE'),
   validate(invoiceIdParamsSchema, 'params'),
   deleteInvoice,
-);
-
-// --- Invoice Items ---
-
-router.get(
-  '/:id/items',
-  authorize('INVOICE', 'READ'),
-  validate(invoiceIdParamsSchema, 'params'),
-  listInvoiceItems,
 );
 
 export default router;

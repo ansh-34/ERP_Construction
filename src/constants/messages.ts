@@ -458,6 +458,7 @@ export const Messages = Object.freeze({
     CANNOT_UPDATE_CANCELLED: 'Cancelled purchase orders cannot be updated',
     CANNOT_DELETE_NON_DRAFT: 'Only draft purchase orders can be deleted',
     ALREADY_CANCELLED: 'Purchase order is already cancelled',
+    PRODUCTS_RETRIEVED: 'Purchase order products retrieved successfully',
   },
   VENDOR_PRODUCT_PRICE: {
     CREATED: 'Vendor product pricing created successfully',

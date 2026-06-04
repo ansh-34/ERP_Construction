@@ -92,22 +92,9 @@ export const updatePurchaseOrderBodySchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
-// // --- Purchase Order Product Schemas ---
-
-// export const createPoProductBodySchema = z.object({
-//   productName: z.string().min(1),
-//   productGradeName: z.string().optional(),
-//   quantity: z.number().positive(),
-//   rate: z.number().min(0),
-//   tax: z.number().min(0),
-//   uomId: z.string().uuid(),
-// });
-
-// export const updatePoProductBodySchema = z.object({
-//   productName: z.string().min(1).optional(),
-//   productGradeName: z.string().optional(),
-//   quantity: z.number().positive().optional(),
-//   rate: z.number().min(0).optional(),
-//   tax: z.number().min(0).optional(),
-//   uomId: z.string().uuid().optional(),
-// });
+export const poProductsQuerySchema = z.object({
+  poId: z.string().optional(),
+  searchKey: z.string().optional(),
+  offset: z.string().optional(),
+  limit: z.string().optional(),
+});

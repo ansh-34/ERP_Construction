@@ -13,6 +13,61 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
+  async listAllPoProducts(
+    domainId: string,
+    offset: number,
+    limit: number,
+    options: {
+      filters?: {
+        purchaseOrderId?: string;
+        domainId?: string;
+        searchKey?: string;
+      };
+      select?: any;
+    },
+  ) {
+    const where: any = {
+      isDeleted: false,
+      domainId,
+      ...(options.filters && options.filters.purchaseOrderId
+        ? { purchaseOrderId: options.filters.purchaseOrderId }
+        : {}),
+      ...(options.filters && options.filters.searchKey
+        ? {
+            OR: [
+              {
+                productName: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                productCode: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          }
+        : {}),
+      ...(options.filters && options.filters.domainId
+        ? { domainId: options.filters.domainId }
+        : {}),
+    };
+    return await Promise.all([
+      prisma.purchaseOrderProduct.count({
+        where,
+      }),
+      prisma.purchaseOrderProduct.findMany({
+        where,
+        ...(options.select ? { select: options.select } : {}),
+        orderBy: { createdAt: 'asc' },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
+  },
+
   async findByIdWithDetails(id: string, domainId: string) {
     return prisma.rawMaterialPurchaseRequest.findFirst({
       where: { id, domainId, isDeleted: false },

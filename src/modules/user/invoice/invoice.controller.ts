@@ -106,3 +106,28 @@ export const generateInvoicesFromPO = async (req: Request, res: Response) => {
       .json({ success: false, message });
   }
 };
+
+export const listAllInvoiceItems = async (req: Request, res: Response) => {
+  try {
+    const language = req.headers.language as string | undefined;
+    const items = await InvoiceService.listAllInvoiceItems(
+      req.user!.domainId,
+      req.query as PaginationQuery & {
+        invoiceId?: string;
+        searchKey?: string;
+      },
+      language,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.INVOICE.ITEMS_RETRIEVED,
+      data: items,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.NOT_FOUND;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};

@@ -396,3 +396,26 @@ export const listPoProducts = async (req: Request, res: Response) => {
 //     return res.status(statusCode).json({ success: false, message });
 //   }
 // };
+
+export const listAllPoProducts = async (req: Request, res: Response) => {
+  try {
+    const language = req.headers.language as string | undefined;
+    const products = await RawMaterialPurchaseRequestService.listAllPoProducts(
+      req.user!.domainId,
+      req.query as PaginationQuery & { searchKey?: string; poId?: string },
+      language,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PURCHASE_ORDER.PRODUCTS_RETRIEVED,
+      data: products,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to retrieve purchase order products';
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

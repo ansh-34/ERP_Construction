@@ -88,4 +88,35 @@ export const InvoiceService = {
       assignments,
     );
   },
+
+  async listAllInvoiceItems(
+    domainId: string,
+    query: {
+      offset?: number | string;
+      limit?: number | string;
+      invoiceId?: string;
+      searchKey?: string;
+    },
+    langCode?: string | undefined,
+  ) {
+    const { offset, limit } = normalizePagination(query);
+    const { invoiceId, searchKey } = query;
+
+    const [totalCount, items] = await invoiceRepository.listInvoiceItems(
+      limit,
+      offset,
+      {
+        filters: {
+          invoiceId,
+          searchKey,
+          domainId,
+        },
+      },
+    );
+
+    return {
+      items: translateResponse(items, langCode),
+      pagination: { totalCount, currentCount: items.length, offset, limit },
+    };
+  },
 };
