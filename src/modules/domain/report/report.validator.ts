@@ -20,3 +20,14 @@ export const projectUserTaskExportQuerySchema =
   projectUserTaskQuerySchema.extend({
     export: z.enum(['xlsx']),
   });
+
+export const machineSummaryQuerySchema = z.object({
+  projectId: z.string().trim().uuid().optional(),
+  machineryId: z.string().trim().uuid().optional(),
+});
+
+export const machineSummaryExportQuerySchema = machineSummaryQuerySchema.extend(
+  {
+    export: z.enum(['xlsx']),
+  },
+);

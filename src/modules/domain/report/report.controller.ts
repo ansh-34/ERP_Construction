@@ -157,4 +157,53 @@ export const reportController = {
       return res.status(resolveHttpStatus(message)).json({ message });
     }
   },
+
+  getMachineSummary: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, machineryId } = req.query as {
+        projectId?: string;
+        machineryId?: string;
+      };
+      const report = await reportService.getMachineSummaryReport(
+        req.user!.domainId,
+        { projectId, machineryId },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportMachineSummary: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, machineryId } = req.query as {
+        export: 'xlsx';
+        projectId?: string;
+        machineryId?: string;
+      };
+      const worksheets = await reportService.getMachineWorkbookWorksheets(
+        req.user!.domainId,
+        { projectId, machineryId },
+        language,
+      );
+
+      return sendWorkbook(res, worksheets, 'machine-summary-report');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to export report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
 };
