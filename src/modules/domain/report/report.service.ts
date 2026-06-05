@@ -403,6 +403,32 @@ type MachineSummaryFilters = {
   machineryId?: string;
 };
 
+type MachineSummaryExportFilters = MachineSummaryFilters & {
+  vehicleId?: string;
+};
+
+type MachineIdentity = {
+  id: string;
+  code: string;
+  type: unknown;
+  project: {
+    code: string;
+    name: unknown;
+  };
+};
+
+type UserTaskSummary = {
+  userName: string;
+  userEmail: string;
+  taskCount: number;
+};
+
+type ProjectUserSummary = {
+  userName: string;
+  userEmail: string;
+  projectCount: number;
+};
+
 async function getProjectUserTaskReport(
   domainId: string,
   filters: ProjectUserTaskFilters,
@@ -509,6 +535,7 @@ async function getProjectUserTaskReport(
           code: true,
           name: true,
           assignee: true,
+          taskProgress: true,
           totalDelayInDays: true,
         },
       },
@@ -622,6 +649,7 @@ async function getProjectUserTaskReport(
         userEmail: user?.email ?? '',
         delayReason: getDelayReason(delay.delayReason, language),
         delayDays: delay.requestedDelayInDays,
+        taskProgress: delay.task.taskProgress ?? 0,
         totalDelayInDays: delay.task.totalDelayInDays ?? 0,
         approvalStatus:
           delay.requestApproved === null
@@ -638,6 +666,75 @@ async function getProjectUserTaskReport(
   });
 
   return { projectUsers, userTasks, projectTaskDelays: projectTaskDelaysRows };
+}
+
+function getTopUserTaskCounts(userTasks: any[]): UserTaskSummary[] {
+  const userTaskCounts = new Map<string, UserTaskSummary>();
+
+  userTasks.forEach((task) => {
+    const key = task.userEmail || task.userName;
+    if (!key) return;
+
+    const current = userTaskCounts.get(key) ?? {
+      userName: task.userName,
+      userEmail: task.userEmail,
+      taskCount: 0,
+    };
+
+    current.taskCount += 1;
+    userTaskCounts.set(key, current);
+  });
+
+  return [...userTaskCounts.values()]
+    .sort((a, b) => b.taskCount - a.taskCount)
+    .slice(0, 5);
+}
+
+function getTopProjectUserCounts(projectUsers: any[]): ProjectUserSummary[] {
+  const userProjects = new Map<
+    string,
+    ProjectUserSummary & { projectCodes: Set<string> }
+  >();
+
+  projectUsers.forEach((assignment) => {
+    const key = assignment.userEmail || assignment.userName;
+    if (!key) return;
+
+    const current = userProjects.get(key) ?? {
+      userName: assignment.userName,
+      userEmail: assignment.userEmail,
+      projectCount: 0,
+      projectCodes: new Set<string>(),
+    };
+
+    current.projectCodes.add(assignment.projectCode);
+    current.projectCount = current.projectCodes.size;
+    userProjects.set(key, current);
+  });
+
+  return [...userProjects.values()]
+    .map(({ projectCodes: _projectCodes, ...summary }) => summary)
+    .sort((a, b) => b.projectCount - a.projectCount)
+    .slice(0, 5);
+}
+
+async function getProjectUserTaskSummaryReport(
+  domainId: string,
+  filters: ProjectUserTaskFilters,
+  language: string | null,
+) {
+  const report = await getProjectUserTaskReport(domainId, filters, language);
+
+  return {
+    lowProgressTasks: [...report.userTasks]
+      .sort((a, b) => a.taskProgress - b.taskProgress)
+      .slice(0, 10),
+    topTaskUsers: getTopUserTaskCounts(report.userTasks),
+    topProjectUsers: getTopProjectUserCounts(report.projectUsers),
+    topTaskDelays: [...report.projectTaskDelays]
+      .sort((a, b) => b.totalDelayInDays - a.totalDelayInDays)
+      .slice(0, 5),
+  };
 }
 
 async function getProjectUserTaskWorkbookWorksheets(
@@ -704,6 +801,7 @@ async function getProjectUserTaskWorkbookWorksheets(
         'userEmail',
         'delayReason',
         'delayDays',
+        'taskProgress',
         'totalDelayInDays',
         'approvalStatus',
         'approvalTime',
@@ -824,12 +922,464 @@ async function getMachineSummaryReport(
   return { machines, machineReadings: readings };
 }
 
-async function getMachineWorkbookWorksheets(
+function machineSummaryBase(machine: MachineIdentity, language: string | null) {
+  return {
+    machineCode: machine.code,
+    machineType: getLocalizedText(machine.type, language),
+    projectCode: machine.project.code,
+    projectName: getLocalizedText(machine.project.name, language),
+  };
+}
+
+async function getMachineIdentities(
+  domainId: string,
+  machineIds: string[],
+): Promise<Map<string, MachineIdentity>> {
+  const uniqueMachineIds = [...new Set(machineIds)].filter(Boolean);
+
+  if (uniqueMachineIds.length === 0) {
+    return new Map();
+  }
+
+  const machineries = await prisma.machinery.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      id: { in: uniqueMachineIds },
+    },
+    select: {
+      id: true,
+      code: true,
+      type: true,
+      project: {
+        select: {
+          code: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return new Map(machineries.map((machine) => [machine.id, machine]));
+}
+
+async function getMachineSummaryDashboardReport(
   domainId: string,
   filters: MachineSummaryFilters,
   language: string | null,
+) {
+  const machineFilter = {
+    domainId,
+    isDeleted: false,
+    ...(filters.machineryId ? { id: filters.machineryId } : {}),
+    ...(filters.projectId ? { projectId: filters.projectId } : {}),
+  };
+
+  const machineIds = (
+    await prisma.machinery.findMany({
+      where: machineFilter,
+      select: { id: true },
+    })
+  ).map((machine) => machine.id);
+
+  if (filters.machineryId && machineIds.length === 0) {
+    throw new Error('not found');
+  }
+
+  if (machineIds.length === 0) {
+    return {
+      topWorkingHourMachines: [],
+      topMaintenanceMachines: [],
+      topMovementMachines: [],
+      upcomingSchedules: [],
+    };
+  }
+
+  const [workingHourRows, maintenanceRows, movementRows, upcomingSchedules] =
+    await Promise.all([
+      prisma.machineReading.groupBy({
+        by: ['machineryId'],
+        where: {
+          domainId,
+          isDeleted: false,
+          machineryId: { in: machineIds },
+        },
+        _sum: { hoursRun: true },
+        orderBy: { _sum: { hoursRun: 'desc' } },
+        take: 5,
+      }),
+      prisma.maintenanceLog.groupBy({
+        by: ['machineryId'],
+        where: {
+          domainId,
+          isDeleted: false,
+          assetType: 'MACHINERY',
+          machineryId: { in: machineIds },
+        },
+        _count: { machineryId: true },
+        orderBy: { _count: { machineryId: 'desc' } },
+        take: 5,
+      }),
+      prisma.movementLog.groupBy({
+        by: ['machineryId'],
+        where: {
+          domainId,
+          isDeleted: false,
+          assetType: 'MACHINERY',
+          machineryId: { in: machineIds },
+        },
+        _count: { machineryId: true },
+        orderBy: { _count: { machineryId: 'desc' } },
+        take: 5,
+      }),
+      prisma.maintenanceSchedule.findMany({
+        where: {
+          domainId,
+          isDeleted: false,
+          status: StatusEnum.ACTIVE,
+          assetType: 'MACHINERY',
+          scheduleStatus: 'SCHEDULED',
+          nextDueDate: { gte: new Date() },
+          machineryId: { in: machineIds },
+        },
+        select: {
+          code: true,
+          title: true,
+          nextDueDate: true,
+          scheduleStatus: true,
+          machinery: {
+            select: {
+              id: true,
+              code: true,
+              type: true,
+              project: {
+                select: {
+                  code: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { nextDueDate: 'asc' },
+        take: 5,
+      }),
+    ]);
+
+  const machineDetails = await getMachineIdentities(domainId, [
+    ...workingHourRows.flatMap((row) =>
+      row.machineryId ? [row.machineryId] : [],
+    ),
+    ...maintenanceRows.flatMap((row) =>
+      row.machineryId ? [row.machineryId] : [],
+    ),
+    ...movementRows.flatMap((row) =>
+      row.machineryId ? [row.machineryId] : [],
+    ),
+  ]);
+
+  return {
+    topWorkingHourMachines: workingHourRows.flatMap((row) => {
+      if (!row.machineryId) return [];
+      const machine = machineDetails.get(row.machineryId);
+      if (!machine) return [];
+
+      return [
+        {
+          ...machineSummaryBase(machine, language),
+          totalWorkingHours: roundToTwo(row._sum.hoursRun ?? 0),
+        },
+      ];
+    }),
+    topMaintenanceMachines: maintenanceRows.flatMap((row) => {
+      if (!row.machineryId) return [];
+      const machine = machineDetails.get(row.machineryId);
+      if (!machine) return [];
+
+      return [
+        {
+          ...machineSummaryBase(machine, language),
+          maintenanceCount: row._count.machineryId,
+        },
+      ];
+    }),
+    topMovementMachines: movementRows.flatMap((row) => {
+      if (!row.machineryId) return [];
+      const machine = machineDetails.get(row.machineryId);
+      if (!machine) return [];
+
+      return [
+        {
+          ...machineSummaryBase(machine, language),
+          movementCount: row._count.machineryId,
+        },
+      ];
+    }),
+    upcomingSchedules: upcomingSchedules.flatMap((schedule) => {
+      if (!schedule.machinery) return [];
+
+      return [
+        {
+          ...machineSummaryBase(schedule.machinery, language),
+          scheduleCode: schedule.code,
+          scheduleTitle: getLocalizedText(schedule.title, language),
+          nextDueDate: schedule.nextDueDate,
+          scheduleStatus: schedule.scheduleStatus,
+        },
+      ];
+    }),
+  };
+}
+
+async function getMachineWorkbookWorksheets(
+  domainId: string,
+  filters: MachineSummaryExportFilters,
+  language: string | null,
 ): Promise<ReportWorkbookWorksheet[]> {
   const report = await getMachineSummaryReport(domainId, filters, language);
+  const [vehicles, maintenanceSchedules, maintenanceLogs, movementLogs] =
+    await Promise.all([
+      prisma.vehicle.findMany({
+        where: {
+          domainId,
+          isDeleted: false,
+          ...(filters.vehicleId ? { id: filters.vehicleId } : {}),
+        },
+        select: {
+          numberPlate: true,
+          vehicleType: true,
+          loadCapacity: true,
+          loadCapacityUomId: true,
+          alertLoadThreshold: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.maintenanceSchedule.findMany({
+        where: {
+          domainId,
+          isDeleted: false,
+          ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
+          ...(filters.machineryId ? { machineryId: filters.machineryId } : {}),
+          ...(filters.projectId
+            ? {
+                machinery: {
+                  is: {
+                    projectId: filters.projectId,
+                  },
+                },
+              }
+            : {}),
+        },
+        select: {
+          code: true,
+          title: true,
+          assetType: true,
+          nextDueDate: true,
+          scheduleStatus: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          vehicle: {
+            select: {
+              numberPlate: true,
+              vehicleType: true,
+            },
+          },
+          machinery: {
+            select: {
+              code: true,
+              type: true,
+              project: {
+                select: {
+                  code: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { nextDueDate: 'asc' },
+      }),
+      prisma.maintenanceLog.findMany({
+        where: {
+          domainId,
+          isDeleted: false,
+          ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
+          ...(filters.machineryId ? { machineryId: filters.machineryId } : {}),
+          ...(filters.projectId
+            ? {
+                machinery: {
+                  is: {
+                    projectId: filters.projectId,
+                  },
+                },
+              }
+            : {}),
+        },
+        select: {
+          code: true,
+          date: true,
+          description: true,
+          assetType: true,
+          expenseAmount: true,
+          meterReading: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          vehicle: {
+            select: {
+              numberPlate: true,
+              vehicleType: true,
+            },
+          },
+          machinery: {
+            select: {
+              code: true,
+              type: true,
+            },
+          },
+          maintenanceSchedule: {
+            select: {
+              code: true,
+              title: true,
+              scheduleStatus: true,
+            },
+          },
+        },
+        orderBy: { date: 'desc' },
+      }),
+      prisma.movementLog.findMany({
+        where: {
+          domainId,
+          isDeleted: false,
+          ...(filters.vehicleId ? { vehicleId: filters.vehicleId } : {}),
+          ...(filters.machineryId ? { machineryId: filters.machineryId } : {}),
+          ...(filters.projectId ? { projectId: filters.projectId } : {}),
+        },
+        select: {
+          code: true,
+          movementType: true,
+          assetType: true,
+          fromLocation: true,
+          toLocation: true,
+          startDateTime: true,
+          endDateTime: true,
+          hours: true,
+          startMeterReading: true,
+          endMeterReading: true,
+          meterUsage: true,
+          notes: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          vehicle: {
+            select: {
+              numberPlate: true,
+              vehicleType: true,
+            },
+          },
+          machinery: {
+            select: {
+              code: true,
+              type: true,
+            },
+          },
+          project: {
+            select: {
+              code: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { startDateTime: 'desc' },
+      }),
+    ]);
+
+  const vehicleRows = vehicles.map((vehicle) => ({
+    numberPlate: vehicle.numberPlate,
+    vehicleType: vehicle.vehicleType,
+    loadCapacity: vehicle.loadCapacity,
+    loadCapacityUomId: vehicle.loadCapacityUomId,
+    alertLoadThreshold: vehicle.alertLoadThreshold,
+    status: vehicle.status,
+    createdAt: vehicle.createdAt,
+    updatedAt: vehicle.updatedAt,
+  }));
+
+  const maintenanceScheduleRows = maintenanceSchedules.map((schedule) => ({
+    scheduleCode: schedule.code,
+    scheduleTitle: getLocalizedText(schedule.title, language),
+    assetType: schedule.assetType,
+    vehicleNumberPlate: schedule.vehicle?.numberPlate ?? '',
+    vehicleType: schedule.vehicle?.vehicleType ?? '',
+    machineCode: schedule.machinery?.code ?? '',
+    machineType: schedule.machinery
+      ? getLocalizedText(schedule.machinery.type, language)
+      : '',
+    projectCode: schedule.machinery?.project.code ?? '',
+    projectName: schedule.machinery
+      ? getLocalizedText(schedule.machinery.project.name, language)
+      : '',
+    nextDueDate: schedule.nextDueDate,
+    scheduleStatus: schedule.scheduleStatus,
+    status: schedule.status,
+    createdAt: schedule.createdAt,
+    updatedAt: schedule.updatedAt,
+  }));
+
+  const maintenanceLogRows = maintenanceLogs.map((log) => ({
+    maintenanceCode: log.code,
+    date: log.date,
+    description: normalizeDescription(log.description, language),
+    assetType: log.assetType,
+    vehicleNumberPlate: log.vehicle?.numberPlate ?? '',
+    vehicleType: log.vehicle?.vehicleType ?? '',
+    machineCode: log.machinery?.code ?? '',
+    machineType: log.machinery
+      ? getLocalizedText(log.machinery.type, language)
+      : '',
+    scheduleCode: log.maintenanceSchedule?.code ?? '',
+    scheduleTitle: log.maintenanceSchedule
+      ? getLocalizedText(log.maintenanceSchedule.title, language)
+      : '',
+    scheduleStatus: log.maintenanceSchedule?.scheduleStatus ?? '',
+    expenseAmount: toNumber(log.expenseAmount),
+    meterReading: log.meterReading,
+    status: log.status,
+    createdAt: log.createdAt,
+    updatedAt: log.updatedAt,
+  }));
+
+  const movementLogRows = movementLogs.map((log) => ({
+    movementCode: log.code,
+    movementType: log.movementType,
+    assetType: log.assetType,
+    vehicleNumberPlate: log.vehicle?.numberPlate ?? '',
+    vehicleType: log.vehicle?.vehicleType ?? '',
+    machineCode: log.machinery?.code ?? '',
+    machineType: log.machinery
+      ? getLocalizedText(log.machinery.type, language)
+      : '',
+    projectCode: log.project?.code ?? '',
+    projectName: log.project
+      ? getLocalizedText(log.project.name, language)
+      : '',
+    fromLocation: log.fromLocation,
+    toLocation: log.toLocation,
+    startDateTime: log.startDateTime,
+    endDateTime: log.endDateTime,
+    hours: log.hours,
+    startMeterReading: log.startMeterReading,
+    endMeterReading: log.endMeterReading,
+    meterUsage: log.meterUsage,
+    notes: log.notes,
+    status: log.status,
+    createdAt: log.createdAt,
+    updatedAt: log.updatedAt,
+  }));
 
   return [
     worksheet(
@@ -869,6 +1419,89 @@ async function getMachineWorkbookWorksheets(
         'updatedAt',
       ],
       report.machineReadings,
+    ),
+    worksheet(
+      'Vehicles',
+      [
+        'numberPlate',
+        'vehicleType',
+        'loadCapacity',
+        'loadCapacityUomId',
+        'alertLoadThreshold',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      vehicleRows,
+    ),
+    worksheet(
+      'Maintenance Schedules',
+      [
+        'scheduleCode',
+        'scheduleTitle',
+        'assetType',
+        'vehicleNumberPlate',
+        'vehicleType',
+        'machineCode',
+        'machineType',
+        'projectCode',
+        'projectName',
+        'nextDueDate',
+        'scheduleStatus',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      maintenanceScheduleRows,
+    ),
+    worksheet(
+      'Maintenance Logs',
+      [
+        'maintenanceCode',
+        'date',
+        'description',
+        'assetType',
+        'vehicleNumberPlate',
+        'vehicleType',
+        'machineCode',
+        'machineType',
+        'scheduleCode',
+        'scheduleTitle',
+        'scheduleStatus',
+        'expenseAmount',
+        'meterReading',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      maintenanceLogRows,
+    ),
+    worksheet(
+      'Movement Logs',
+      [
+        'movementCode',
+        'movementType',
+        'assetType',
+        'vehicleNumberPlate',
+        'vehicleType',
+        'machineCode',
+        'machineType',
+        'projectCode',
+        'projectName',
+        'fromLocation',
+        'toLocation',
+        'startDateTime',
+        'endDateTime',
+        'hours',
+        'startMeterReading',
+        'endMeterReading',
+        'meterUsage',
+        'notes',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      movementLogRows,
     ),
   ];
 }
@@ -931,6 +1564,18 @@ export const reportService = {
     }
   },
 
+  getProjectUserTaskSummaryReport: async (
+    domainId: string,
+    filters: ProjectUserTaskFilters,
+    language: string | null = null,
+  ) => {
+    try {
+      return await getProjectUserTaskSummaryReport(domainId, filters, language);
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
   getProjectUserTaskWorkbookWorksheets: async (
     domainId: string,
     filters: ProjectUserTaskFilters,
@@ -959,9 +1604,25 @@ export const reportService = {
     }
   },
 
-  getMachineWorkbookWorksheets: async (
+  getMachineSummaryDashboardReport: async (
     domainId: string,
     filters: MachineSummaryFilters,
+    language: string | null = null,
+  ) => {
+    try {
+      return await getMachineSummaryDashboardReport(
+        domainId,
+        filters,
+        language,
+      );
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getMachineWorkbookWorksheets: async (
+    domainId: string,
+    filters: MachineSummaryExportFilters,
     language: string | null = null,
   ): Promise<ReportWorkbookWorksheet[]> => {
     try {

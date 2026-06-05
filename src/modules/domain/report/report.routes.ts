@@ -19,6 +19,12 @@ reportRouter.get(
 );
 
 reportRouter.get(
+  '/machine-summary/summary',
+  validate(machineSummaryQuerySchema, 'query'),
+  reportController.getMachineSummaryDashboard,
+);
+
+reportRouter.get(
   '/machine-summary',
   validate(machineSummaryQuerySchema, 'query'),
   reportController.getMachineSummary,
@@ -40,6 +46,12 @@ reportRouter.get(
   '/project-user-task/export',
   validate(projectUserTaskExportQuerySchema, 'query'),
   reportController.exportProjectUserTask,
+);
+
+reportRouter.get(
+  '/project-user-task/summary',
+  validate(projectUserTaskQuerySchema, 'query'),
+  reportController.getProjectUserTaskSummary,
 );
 
 reportRouter.get(

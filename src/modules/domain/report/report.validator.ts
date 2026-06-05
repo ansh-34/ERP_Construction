@@ -29,5 +29,6 @@ export const machineSummaryQuerySchema = z.object({
 export const machineSummaryExportQuerySchema = machineSummaryQuerySchema.extend(
   {
     export: z.enum(['xlsx']),
+    vehicleId: z.string().trim().uuid().optional(),
   },
 );

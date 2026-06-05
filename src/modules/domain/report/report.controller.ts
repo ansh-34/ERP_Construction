@@ -158,6 +158,33 @@ export const reportController = {
     }
   },
 
+  getProjectUserTaskSummary: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, userId } = req.query as {
+        projectId?: string;
+        userId?: string;
+      };
+      const report = await reportService.getProjectUserTaskSummaryReport(
+        req.user!.domainId,
+        { projectId, userId },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
   getMachineSummary: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
@@ -182,24 +209,52 @@ export const reportController = {
     }
   },
 
-  exportMachineSummary: async (
+  getMachineSummaryDashboard: async (
     req: Request,
     res: Response,
   ): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
       const { projectId, machineryId } = req.query as {
-        export: 'xlsx';
         projectId?: string;
         machineryId?: string;
       };
-      const worksheets = await reportService.getMachineWorkbookWorksheets(
+      const report = await reportService.getMachineSummaryDashboardReport(
         req.user!.domainId,
         { projectId, machineryId },
         language,
       );
 
-      return sendWorkbook(res, worksheets, 'machine-summary-report');
+      return res.status(HttpStatus.OK).json({
+        message: 'Report fetched successfully',
+        data: report,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch report';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
+  exportMachineSummary: async (
+    req: Request,
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const language = (req.headers.language as string) || 'en';
+      const { projectId, machineryId, vehicleId } = req.query as {
+        export: 'xlsx';
+        projectId?: string;
+        machineryId?: string;
+        vehicleId?: string;
+      };
+      const worksheets = await reportService.getMachineWorkbookWorksheets(
+        req.user!.domainId,
+        { projectId, machineryId, vehicleId },
+        language,
+      );
+
+      return sendWorkbook(res, worksheets, 'machine-vehicle-summary-report');
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to export report';
