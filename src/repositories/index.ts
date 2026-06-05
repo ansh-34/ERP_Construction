@@ -17,6 +17,7 @@ export * from './vehicle.repository.js';
 export * from './journeySchedule.repository.js';
 export * from './dispatch.repository.js';
 export * from './product.repository.js';
+export * from './productUom.repository.js';
 export * from './apiKey.repository.js';
 export * from './location.repository.js';
 export * from './media.repository.js';

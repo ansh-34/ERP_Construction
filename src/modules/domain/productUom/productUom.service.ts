@@ -1,6 +1,7 @@
 import { Messages } from '../../../constants/index.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
+import { productUomRepository } from '../../../repositories/index.js';
 import { normalizeStatus } from '../../../utils/validation.js';
 
 export const ProductUomService = {
@@ -25,45 +26,49 @@ export const ProductUomService = {
       });
       if (!uom) throw new Error(Messages.UOM.NOT_FOUND);
 
-      const existing = await tx.productUom.findUnique({
-        where: { productId_uomId: { productId, uomId: dto.uomId } },
-      });
+      const existing = await productUomRepository.findByProductAndUom(
+        productId,
+        dto.uomId,
+        tx,
+      );
       if (existing && !existing.isDeleted)
         throw new Error(Messages.PRODUCT_UOM.ALEADY_ASSIGNED);
 
       if (existing?.isDeleted) {
-        return tx.productUom.update({
-          where: { id: existing.id },
-          data: { isDeleted: false, status: normalizeStatus(dto.status) },
-          include: { uom: true },
-        });
+        return productUomRepository.restoreWithUom(
+          existing.id,
+          normalizeStatus(dto.status),
+          tx,
+        );
       }
 
       const status = normalizeStatus(dto.status);
       try {
-        return await tx.productUom.create({
-          data: { productId, uomId: dto.uomId, domainId, status },
-          include: { uom: true },
-        });
+        return await productUomRepository.createWithUom(
+          { productId, uomId: dto.uomId, domainId, status },
+          tx,
+        );
       } catch (error: any) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
           error.code === 'P2002'
         ) {
-          const conflicted = await tx.productUom.findUnique({
-            where: { productId_uomId: { productId, uomId: dto.uomId } },
-          });
+          const conflicted = await productUomRepository.findByProductAndUom(
+            productId,
+            dto.uomId,
+            tx,
+          );
 
           if (conflicted && !conflicted.isDeleted) {
             throw new Error(Messages.PRODUCT_UOM.ALEADY_ASSIGNED);
           }
 
           if (conflicted?.isDeleted) {
-            return tx.productUom.update({
-              where: { id: conflicted.id },
-              data: { isDeleted: false, status },
-              include: { uom: true },
-            });
+            return productUomRepository.restoreWithUom(
+              conflicted.id,
+              status,
+              tx,
+            );
           }
         }
 
@@ -93,16 +98,11 @@ export const ProductUomService = {
       isDeleted: false,
       ...(query.status && { status: query.status }),
     };
-    const [data, total] = await Promise.all([
-      prisma.productUom.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: { uom: true, product: true },
-      }),
-      prisma.productUom.count({ where }),
-    ]);
+    const [data, total] = await productUomRepository.listWithDetails(
+      where,
+      skip,
+      limit,
+    );
 
     const normalizedData = data.map((productUom: any) => {
       const { uom, product, ...junction } = productUom;
@@ -151,19 +151,11 @@ export const ProductUomService = {
       ...(query.status && { status: query.status }),
     };
 
-    const [data, total] = await Promise.all([
-      prisma.productUom.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          uom: true,
-          product: true,
-        },
-      }),
-      prisma.productUom.count({ where }),
-    ]);
+    const [data, total] = await productUomRepository.listWithDetails(
+      where,
+      skip,
+      limit,
+    );
 
     const normalizedData = data.map((productUom: any) => {
       const { uom, product, ...junction } = productUom;
@@ -198,10 +190,11 @@ export const ProductUomService = {
     id: string,
     language: string | null = null,
   ) {
-    const record: any = await prisma.productUom.findFirst({
-      where: { id, productId, domainId, isDeleted: false },
-      include: { uom: true },
-    });
+    const record: any = await productUomRepository.findByIdAndProductAndDomain(
+      id,
+      productId,
+      domainId,
+    );
     if (!record) throw new Error(Messages.PRODUCT_UOM.NOT_FOUND);
 
     if (language) {
@@ -216,9 +209,6 @@ export const ProductUomService = {
 
   async softDelete(domainId: string, productId: string, id: string) {
     await this.findOne(domainId, productId, id);
-    return prisma.productUom.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
+    return productUomRepository.softDelete(id);
   },
 };

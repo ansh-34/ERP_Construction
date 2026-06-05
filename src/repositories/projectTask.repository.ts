@@ -2,6 +2,7 @@ import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
+import type { TransactionClient } from '@/infra/database/prisma/transaction.js';
 
 type JsonObject = Record<string, unknown>;
 type RelationDetails = Record<string, unknown> | null;
@@ -310,10 +311,14 @@ function toDateSql(value: Date | null | undefined): Prisma.Sql {
 }
 
 export const projectTaskRepository = {
-  create: async (data: CreateProjectTaskInput): Promise<ProjectTaskRecord> => {
+  create: async (
+    data: CreateProjectTaskInput,
+    options: { transaction?: TransactionClient } = {},
+  ): Promise<ProjectTaskRecord> => {
     const id = randomUUID();
+    const prismaClient = options.transaction || prisma;
 
-    const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       INSERT INTO "ProjectTask" (
         "id",
         "name",
@@ -528,7 +533,9 @@ export const projectTaskRepository = {
     domainId: string,
     data: UpdateProjectTaskInput,
     adminId?: string,
+    options: { transaction?: TransactionClient } = {},
   ): Promise<ProjectTaskRecord | null> => {
+    const prismaClient = options.transaction || prisma;
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
     if (data.name !== undefined) {
@@ -623,7 +630,7 @@ export const projectTaskRepository = {
       filters.push(Prisma.sql`"adminId" = ${adminId}`);
     }
 
-    const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET ${Prisma.join(assignments)}
       WHERE ${Prisma.join(filters, ' AND ')}
@@ -637,7 +644,9 @@ export const projectTaskRepository = {
     id: string,
     domainId: string,
     adminId?: string,
+    options: { transaction?: TransactionClient } = {},
   ): Promise<ProjectTaskRecord | null> => {
+    const prismaClient = options.transaction || prisma;
     const filters = [
       Prisma.sql`"id" = ${id}`,
       Prisma.sql`"domainId" = ${domainId}`,
@@ -648,7 +657,7 @@ export const projectTaskRepository = {
       filters.push(Prisma.sql`"adminId" = ${adminId}`);
     }
 
-    const result = await prisma.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectTaskRecord[]>(Prisma.sql`
       UPDATE "ProjectTask"
       SET "isDeleted" = true, "status" = ${StatusEnum.INACTIVE}, "updatedAt" = NOW()
       WHERE ${Prisma.join(filters, ' AND ')}

@@ -1,6 +1,6 @@
 import prisma from './prisma.client.js';
 
-type TransactionClient = Parameters<
+export type TransactionClient = Parameters<
   Parameters<typeof prisma.$transaction>[0]
 >[0];
 

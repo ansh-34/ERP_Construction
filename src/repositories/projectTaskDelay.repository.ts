@@ -2,6 +2,7 @@ import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
+import type { TransactionClient } from '@/infra/database/prisma/transaction.js';
 
 type JsonObject = Record<string, unknown>;
 type RelationDetails = Record<string, unknown> | null;
@@ -383,7 +384,9 @@ export const projectTaskDelayRepository = {
     domainId: string,
     data: UpdateProjectTaskDelayInput,
     adminId?: string,
+    options: { transaction?: TransactionClient } = {},
   ): Promise<ProjectTaskDelayRecord | null> => {
+    const prismaClient = options.transaction || prisma;
     const assignments = [Prisma.sql`"updatedAt" = NOW()`];
 
     if (data.requestedDelayInDays !== undefined) {
@@ -430,12 +433,14 @@ export const projectTaskDelayRepository = {
       filters.push(Prisma.sql`"adminId" = ${adminId}`);
     }
 
-    const result = await prisma.$queryRaw<ProjectTaskDelayRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectTaskDelayRecord[]>(
+      Prisma.sql`
       UPDATE "ProjectTaskDelay"
       SET ${Prisma.join(assignments)}
       WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectTaskDelaySelect}
-    `);
+    `,
+    );
 
     return result[0] ?? null;
   },

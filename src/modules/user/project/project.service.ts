@@ -6,7 +6,7 @@ import {
   projectStageRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { transaction } from '@/infra/database/prisma/transaction.js';
 
 export const UserProjectService = {
   localizeName(value: any, langCode: string | null | undefined) {
@@ -221,7 +221,7 @@ export const UserProjectService = {
       throw new Error(Messages.USER_PROJECT.CODE_ALREADY_EXISTS);
     }
 
-    const { project } = await prisma.$transaction(async (tx: any) => {
+    const { project } = await transaction(async (tx) => {
       const createdProject = await projectRepository.create(
         {
           ...data,

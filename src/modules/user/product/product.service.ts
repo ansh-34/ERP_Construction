@@ -1,5 +1,8 @@
 import { Messages } from '../../../constants/index.js';
-import { ProductRepository } from '../../../repositories/index.js';
+import {
+  ProductRepository,
+  productUomRepository,
+} from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizeStatus } from '../../../utils/validation.js';
 
@@ -60,13 +63,14 @@ export const ProductService = {
           return item;
         });
         for (const u of normalizedUoms) {
-          await tx.productUom.create({
-            data: {
+          await productUomRepository.create(
+            {
               productId: product.id,
               uomId: u.id,
               domainId,
             },
-          });
+            tx,
+          );
         }
       }
 
@@ -564,9 +568,10 @@ export const ProductService = {
   async bulkUpdateUoms(domainId: string, productId: string, uoms: any[]) {
     await prisma.$transaction(async (tx: any) => {
       // Get existing uoms
-      const existing = await tx.productUom.findMany({
-        where: { productId, domainId },
-      });
+      const existing = await productUomRepository.findMany(
+        { productId, domainId },
+        tx,
+      );
 
       // Add new
       const existingUomIds = existing.map((e: any) => e.uomId);
@@ -578,13 +583,14 @@ export const ProductService = {
         (u: any) => !existingUomIds.includes(u.id),
       );
       for (const u of toAdd) {
-        await tx.productUom.create({
-          data: {
+        await productUomRepository.create(
+          {
             productId,
             uomId: u.id,
             domainId,
           },
-        });
+          tx,
+        );
       }
     });
   },
@@ -689,9 +695,6 @@ export const ProductService = {
     // In linking we used `uom.id` as `uomId`. If we use `uom.id` for deletion, we should match `uomId`.
     // The previous endpoints and UOM schema take `{ id: uomId }`.
     // So the incoming `ids` are actually `uomId`s.
-    await prisma.productUom.updateMany({
-      where: { uomId: { in: ids }, productId, domainId },
-      data: { isDeleted: true },
-    });
+    await productUomRepository.softDeleteByUomIds(domainId, productId, ids);
   },
 };

@@ -7,6 +7,7 @@ import {
   type UpdateProjectTaskInput as RepositoryUpdateProjectTaskInput,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
+import { transaction } from '@/infra/database/prisma/transaction.js';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
@@ -389,12 +390,18 @@ export const projectTaskService = {
         throw new Error('duplicate code');
       }
 
-      const task = await projectTaskRepository.create(createPayload);
-      await projectStageRepository.recalculateProgress(
-        task.stageId,
-        data.domainId,
-        data.adminId,
-      );
+      const task = await transaction(async (tx) => {
+        const task = await projectTaskRepository.create(createPayload, {
+          transaction: tx,
+        });
+        await projectStageRepository.recalculateProgress(
+          task.stageId,
+          data.domainId,
+          data.adminId,
+          { transaction: tx },
+        );
+        return task;
+      });
 
       return normalizeProjectTask(task, language);
     } catch (error: unknown) {
@@ -517,20 +524,26 @@ export const projectTaskService = {
         }
       }
 
-      const task = await projectTaskRepository.update(
-        id,
-        domainId,
-        updatePayload,
-        adminId,
-      );
-
-      if (task) {
-        await projectStageRepository.recalculateProgress(
-          task.stageId,
+      const task = await transaction(async (tx) => {
+        const task = await projectTaskRepository.update(
+          id,
           domainId,
+          updatePayload,
           adminId,
+          { transaction: tx },
         );
-      }
+
+        if (task) {
+          await projectStageRepository.recalculateProgress(
+            task.stageId,
+            domainId,
+            adminId,
+            { transaction: tx },
+          );
+        }
+
+        return task;
+      });
 
       return task ? normalizeProjectTask(task, language) : null;
     } catch (error: unknown) {
@@ -558,19 +571,25 @@ export const projectTaskService = {
         throw new Error('not found');
       }
 
-      const deletedTask = await projectTaskRepository.softDelete(
-        id,
-        domainId,
-        adminId,
-      );
-
-      if (deletedTask) {
-        await projectStageRepository.recalculateProgress(
-          deletedTask.stageId,
+      const deletedTask = await transaction(async (tx) => {
+        const deletedTask = await projectTaskRepository.softDelete(
+          id,
           domainId,
           adminId,
+          { transaction: tx },
         );
-      }
+
+        if (deletedTask) {
+          await projectStageRepository.recalculateProgress(
+            deletedTask.stageId,
+            domainId,
+            adminId,
+            { transaction: tx },
+          );
+        }
+
+        return deletedTask;
+      });
 
       return deletedTask;
     } catch (error: unknown) {

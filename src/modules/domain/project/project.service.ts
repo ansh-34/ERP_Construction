@@ -15,6 +15,7 @@ import {
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
+import { transaction } from '@/infra/database/prisma/transaction.js';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
@@ -609,7 +610,7 @@ export const projectService = {
         throw new Error('duplicate code');
       }
 
-      const { project } = await prisma.$transaction(async (tx: any) => {
+      const { project } = await transaction(async (tx) => {
         const createdProject = await projectRepository.create(
           {
             ...data,
@@ -989,54 +990,63 @@ export const projectService = {
       const images = data.images ?? [];
       assertTaskSubmissionImages(images);
 
-      const updatedTask = await projectTaskRepository.update(
-        task.id,
-        domainId,
-        {
-          actualEndDate,
-          taskProgress: data.taskProgress ?? 100,
-          taskStatus: 'COMPLETED',
-          requiredApproval: true,
-        },
-        resolvedAdminId,
-      );
+      const { updatedTask, createdImages } = await transaction(async (tx) => {
+        const updatedTask = await projectTaskRepository.update(
+          task.id,
+          domainId,
+          {
+            actualEndDate,
+            taskProgress: data.taskProgress ?? 100,
+            taskStatus: 'COMPLETED',
+            requiredApproval: true,
+          },
+          resolvedAdminId,
+          { transaction: tx },
+        );
 
-      if (!updatedTask) {
-        throw new Error('not found');
-      }
+        if (!updatedTask) {
+          throw new Error('not found');
+        }
 
-      await projectStageRepository.recalculateProgress(
-        updatedTask.stageId,
-        domainId,
-        resolvedAdminId,
-      );
+        await projectStageRepository.recalculateProgress(
+          updatedTask.stageId,
+          domainId,
+          resolvedAdminId,
+          { transaction: tx },
+        );
 
-      const createdImages = await Promise.all(
-        images.map(async (image) => {
-          const media = await mediaRepository.findById(
-            image.imageId,
-            domainId,
-            resolvedAdminId,
-          );
+        const createdImages = await Promise.all(
+          images.map(async (image) => {
+            const media = await mediaRepository.findById(
+              image.imageId,
+              domainId,
+              resolvedAdminId,
+            );
 
-          if (!media) {
-            throw new Error('image not found');
-          }
+            if (!media) {
+              throw new Error('image not found');
+            }
 
-          return projectTaskImageRepository.create({
-            imageId: media.id,
-            imageUrl: media.url,
-            ...(image.description !== undefined && {
-              description: image.description,
-            }),
-            taskId: updatedTask.id,
-            stageId: updatedTask.stageId,
-            projectId: updatedTask.projectId,
-            domainId,
-            adminId: resolvedAdminId,
-          });
-        }),
-      );
+            return projectTaskImageRepository.create(
+              {
+                imageId: media.id,
+                imageUrl: media.url,
+                ...(image.description !== undefined && {
+                  description: image.description,
+                }),
+                taskId: updatedTask.id,
+                stageId: updatedTask.stageId,
+                projectId: updatedTask.projectId,
+                domainId,
+                adminId: resolvedAdminId,
+              },
+              { transaction: tx },
+            );
+          }),
+        );
+
+        return { updatedTask, createdImages };
+      });
 
       return normalizeTaskSubmission(updatedTask, language, createdImages);
     } catch (error: unknown) {
@@ -1129,46 +1139,58 @@ export const projectService = {
     try {
       const resolvedAdminId = await resolveAdminId(domainId, adminId);
       const approvalState = normalizeApprovalAction(action);
-      const updatedTasks = [];
+      const updatedTasks = await transaction(async (tx) => {
+        const updatedTasks = [];
 
-      for (const id of idArray) {
-        const task = await projectTaskRepository.findById(
-          id,
-          domainId,
-          resolvedAdminId,
-        );
-
-        if (!task) {
-          throw new Error('not found');
-        }
-
-        if (task.taskStatus === 'APPROVED' || task.taskStatus === 'REJECTED') {
-          throw new Error('request already actioned');
-        }
-
-        if (task.taskStatus !== 'COMPLETED' && task.requiredApproval !== true) {
-          throw new Error('task submission not pending approval');
-        }
-
-        const updatedTask = await projectTaskRepository.update(
-          id,
-          domainId,
-          {
-            taskStatus: approvalState,
-            requiredApproval: false,
-          },
-          resolvedAdminId,
-        );
-
-        if (updatedTask) {
-          await projectStageRepository.recalculateProgress(
-            updatedTask.stageId,
+        for (const id of idArray) {
+          const task = await projectTaskRepository.findById(
+            id,
             domainId,
             resolvedAdminId,
           );
-          updatedTasks.push(normalizeTaskSubmission(updatedTask, language));
+
+          if (!task) {
+            throw new Error('not found');
+          }
+
+          if (
+            task.taskStatus === 'APPROVED' ||
+            task.taskStatus === 'REJECTED'
+          ) {
+            throw new Error('request already actioned');
+          }
+
+          if (
+            task.taskStatus !== 'COMPLETED' &&
+            task.requiredApproval !== true
+          ) {
+            throw new Error('task submission not pending approval');
+          }
+
+          const updatedTask = await projectTaskRepository.update(
+            id,
+            domainId,
+            {
+              taskStatus: approvalState,
+              requiredApproval: false,
+            },
+            resolvedAdminId,
+            { transaction: tx },
+          );
+
+          if (updatedTask) {
+            await projectStageRepository.recalculateProgress(
+              updatedTask.stageId,
+              domainId,
+              resolvedAdminId,
+              { transaction: tx },
+            );
+            updatedTasks.push(normalizeTaskSubmission(updatedTask, language));
+          }
         }
-      }
+
+        return updatedTasks;
+      });
 
       return updatedTasks;
     } catch (error: unknown) {
@@ -1191,64 +1213,70 @@ export const projectService = {
     try {
       const resolvedAdminId = await resolveAdminId(domainId, adminId);
       const approvalState = normalizeApprovalAction(action);
-      const updatedDelays = [];
+      const updatedDelays = await transaction(async (tx) => {
+        const updatedDelays = [];
 
-      for (const id of idArray) {
-        const delay = await projectTaskDelayRepository.findById(
-          id,
-          domainId,
-          resolvedAdminId,
-        );
+        for (const id of idArray) {
+          const delay = await projectTaskDelayRepository.findById(
+            id,
+            domainId,
+            resolvedAdminId,
+          );
 
-        if (!delay) {
-          throw new Error('not found');
-        }
-
-        if (delay.requestApproved !== null) {
-          throw new Error('request already actioned');
-        }
-
-        const task =
-          approvalState === 'APPROVED'
-            ? await projectTaskRepository.findById(
-                delay.taskId,
-                domainId,
-                resolvedAdminId,
-              )
-            : null;
-
-        if (approvalState === 'APPROVED' && !task) {
-          throw new Error('not found');
-        }
-
-        const taskDelayUpdate =
-          approvalState === 'APPROVED' && task
-            ? getApprovedDelayTaskUpdate(task, delay.requestedDelayInDays)
-            : null;
-
-        const updatedDelay = await projectTaskDelayRepository.update(
-          id,
-          domainId,
-          {
-            requestApproved: approvalState === 'APPROVED',
-            requestApprovalTime: new Date(),
-          },
-          resolvedAdminId,
-        );
-
-        if (updatedDelay) {
-          if (taskDelayUpdate) {
-            await projectTaskRepository.update(
-              updatedDelay.taskId,
-              domainId,
-              taskDelayUpdate,
-              resolvedAdminId,
-            );
+          if (!delay) {
+            throw new Error('not found');
           }
 
-          updatedDelays.push(updatedDelay);
+          if (delay.requestApproved !== null) {
+            throw new Error('request already actioned');
+          }
+
+          const task =
+            approvalState === 'APPROVED'
+              ? await projectTaskRepository.findById(
+                  delay.taskId,
+                  domainId,
+                  resolvedAdminId,
+                )
+              : null;
+
+          if (approvalState === 'APPROVED' && !task) {
+            throw new Error('not found');
+          }
+
+          const taskDelayUpdate =
+            approvalState === 'APPROVED' && task
+              ? getApprovedDelayTaskUpdate(task, delay.requestedDelayInDays)
+              : null;
+
+          const updatedDelay = await projectTaskDelayRepository.update(
+            id,
+            domainId,
+            {
+              requestApproved: approvalState === 'APPROVED',
+              requestApprovalTime: new Date(),
+            },
+            resolvedAdminId,
+            { transaction: tx },
+          );
+
+          if (updatedDelay) {
+            if (taskDelayUpdate) {
+              await projectTaskRepository.update(
+                updatedDelay.taskId,
+                domainId,
+                taskDelayUpdate,
+                resolvedAdminId,
+                { transaction: tx },
+              );
+            }
+
+            updatedDelays.push(updatedDelay);
+          }
         }
-      }
+
+        return updatedDelays;
+      });
 
       return updatedDelays;
     } catch (error: unknown) {

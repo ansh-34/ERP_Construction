@@ -6,6 +6,7 @@ import {
   type ProjectTaskImageRecord,
   type ProjectTaskRecord,
 } from '@repositories/index';
+import { transaction } from '@/infra/database/prisma/transaction.js';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isNonEmptyString } from '@/utils/validation';
 
@@ -127,47 +128,58 @@ export const userTaskSubmissionService = {
         requiredApproval: true,
       };
 
-      const updatedTask = await projectTaskRepository.update(
-        id,
-        domainId,
-        updatePayload,
-      );
+      const { updatedTask, createdImages } = await transaction(async (tx) => {
+        const updatedTask = await projectTaskRepository.update(
+          id,
+          domainId,
+          updatePayload,
+          undefined,
+          { transaction: tx },
+        );
 
-      if (!updatedTask) {
-        throw new Error('not found');
-      }
+        if (!updatedTask) {
+          throw new Error('not found');
+        }
 
-      await projectStageRepository.recalculateProgress(
-        updatedTask.stageId,
-        domainId,
-      );
+        await projectStageRepository.recalculateProgress(
+          updatedTask.stageId,
+          domainId,
+          undefined,
+          { transaction: tx },
+        );
 
-      const createdImages = await Promise.all(
-        images.map(async (image) => {
-          const media = await mediaRepository.findById(
-            image.imageId,
-            domainId,
-            updatedTask.adminId,
-          );
+        const createdImages = await Promise.all(
+          images.map(async (image) => {
+            const media = await mediaRepository.findById(
+              image.imageId,
+              domainId,
+              updatedTask.adminId,
+            );
 
-          if (!media) {
-            throw new Error('image not found');
-          }
+            if (!media) {
+              throw new Error('image not found');
+            }
 
-          return projectTaskImageRepository.create({
-            imageId: media.id,
-            imageUrl: media.url,
-            ...(image.description !== undefined && {
-              description: image.description,
-            }),
-            taskId: updatedTask.id,
-            stageId: updatedTask.stageId,
-            projectId: updatedTask.projectId,
-            domainId,
-            adminId: updatedTask.adminId,
-          });
-        }),
-      );
+            return projectTaskImageRepository.create(
+              {
+                imageId: media.id,
+                imageUrl: media.url,
+                ...(image.description !== undefined && {
+                  description: image.description,
+                }),
+                taskId: updatedTask.id,
+                stageId: updatedTask.stageId,
+                projectId: updatedTask.projectId,
+                domainId,
+                adminId: updatedTask.adminId,
+              },
+              { transaction: tx },
+            );
+          }),
+        );
+
+        return { updatedTask, createdImages };
+      });
 
       return {
         ...normalizeProjectTask(updatedTask, language),

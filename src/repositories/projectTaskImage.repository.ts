@@ -1,6 +1,7 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { randomUUID } from 'crypto';
+import type { TransactionClient } from '@/infra/database/prisma/transaction.js';
 
 type RelationDetails = Record<string, unknown> | null;
 
@@ -49,10 +50,13 @@ const projectTaskImageSelect = Prisma.sql`
 export const projectTaskImageRepository = {
   create: async (
     data: CreateProjectTaskImageInput,
+    options: { transaction?: TransactionClient } = {},
   ): Promise<ProjectTaskImageRecord> => {
     const id = randomUUID();
+    const prismaClient = options.transaction || prisma;
 
-    const result = await prisma.$queryRaw<ProjectTaskImageRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectTaskImageRecord[]>(
+      Prisma.sql`
       INSERT INTO "ProjectTaskImage" (
         "id",
         "imageId",
@@ -82,7 +86,8 @@ export const projectTaskImageRepository = {
         NOW()
       )
       RETURNING ${projectTaskImageSelect}
-    `);
+    `,
+    );
 
     return result[0] as ProjectTaskImageRecord;
   },

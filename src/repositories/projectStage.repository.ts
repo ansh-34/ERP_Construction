@@ -2,6 +2,7 @@ import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
 import { StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
+import type { TransactionClient } from '@/infra/database/prisma/transaction.js';
 
 type JsonObject = Record<string, unknown>;
 type RelationDetails = Record<string, unknown> | null;
@@ -253,7 +254,9 @@ export const projectStageRepository = {
     id: string,
     domainId: string,
     adminId?: string,
+    options: { transaction?: TransactionClient } = {},
   ): Promise<ProjectStageRecord | null> => {
+    const prismaClient = options.transaction || prisma;
     const filters = [
       Prisma.sql`ps."id" = ${id}`,
       Prisma.sql`ps."domainId" = ${domainId}`,
@@ -264,7 +267,8 @@ export const projectStageRepository = {
       filters.push(Prisma.sql`ps."adminId" = ${adminId}`);
     }
 
-    const result = await prisma.$queryRaw<ProjectStageRecord[]>(Prisma.sql`
+    const result = await prismaClient.$queryRaw<ProjectStageRecord[]>(
+      Prisma.sql`
       UPDATE "ProjectStage" ps
       SET
         "progress" = COALESCE((
@@ -278,7 +282,8 @@ export const projectStageRepository = {
         "updatedAt" = NOW()
       WHERE ${Prisma.join(filters, ' AND ')}
       RETURNING ${projectStageSelect}
-    `);
+    `,
+    );
 
     return result[0] ?? null;
   },
