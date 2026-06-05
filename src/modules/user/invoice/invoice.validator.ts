@@ -32,3 +32,8 @@ export const generateInvoicesBodySchema = z.object({
     )
     .min(1, 'At least one vendor assignment is required'),
 });
+
+export const invoiceItemsQuerySchema = paginationQuerySchema.extend({
+  invoiceId: z.string().optional(),
+  searchKey: z.string().optional(),
+});

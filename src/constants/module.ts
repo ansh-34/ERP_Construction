@@ -197,4 +197,10 @@ export const modules = [
     },
     code: 'USER',
   },
+  {
+    name: {
+      en: 'Payment Request',
+    },
+    code: 'PAYMENT_REQUEST',
+  },
 ];

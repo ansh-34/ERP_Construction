@@ -13,10 +13,8 @@ import {
   approveOrRejectRawMaterialPurchaseRequests,
   listPurchaseOrders,
   getPurchaseOrderById,
-  // updatePurchaseOrder,
   listPoProducts,
-  // updatePoProduct,
-  // deletePoProduct,
+  listAllPoProducts,
 } from './rawMaterialPurchaseRequest.controller.js';
 import {
   createRawMaterialPurchaseRequestBodySchema,
@@ -28,9 +26,7 @@ import {
   approveRejectBodySchema,
   listPurchaseOrdersQuerySchema,
   poIdParamsSchema,
-  // updatePurchaseOrderBodySchema,
-  // createPoProductBodySchema,
-  // updatePoProductBodySchema,
+  poProductsQuerySchema,
 } from './rawMaterialPurchaseRequest.validator.js';
 
 const router = Router();
@@ -86,6 +82,13 @@ router.get(
   authorize('PO', 'READ'),
   validate(listPurchaseOrdersQuerySchema, 'query'),
   listPurchaseOrders,
+);
+
+router.get(
+  '/po/products',
+  authorize('POP', 'READ'),
+  validate(poProductsQuerySchema, 'params'),
+  listAllPoProducts,
 );
 
 router.get(

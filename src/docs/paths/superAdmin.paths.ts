@@ -27,10 +27,10 @@ export const SuperAdminPaths = {
     },
   },
 
-  '/api/superAdmin/domain/seed': {
+  '/api/admin/domain': {
     post: {
-      tags: ['SuperAdmin'],
-      summary: 'Seed domain by superAdmin',
+      tags: ['Admin Domain'],
+      summary: 'Seed domain by Admin',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -42,7 +42,7 @@ export const SuperAdminPaths = {
       },
       responses: {
         201: {
-          description: 'Domain seeded',
+          description: 'Domain seeded successfully',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/SeedDomainResponse' },
@@ -54,9 +54,9 @@ export const SuperAdminPaths = {
     },
   },
 
-  '/api/superAdmin/domain/verify': {
+  '/api/admin/domain/verify': {
     get: {
-      tags: ['SuperAdmin'],
+      tags: ['Admin Domain'],
       summary: 'Verify seeded domain token',
       parameters: [
         {
@@ -74,7 +74,7 @@ export const SuperAdminPaths = {
       ],
       responses: {
         200: {
-          description: 'Domain verified',
+          description: 'Domain verified successfully',
           content: {
             'application/json': {
               schema: {
@@ -83,7 +83,7 @@ export const SuperAdminPaths = {
                   success: { type: 'boolean', example: true },
                   message: {
                     type: 'string',
-                    example: 'Domain verified successfully',
+                    example: 'Domain verified and activated successfully.',
                   },
                   data: {
                     type: 'object',

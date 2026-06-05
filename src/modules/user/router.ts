@@ -40,6 +40,8 @@ import vehicleRouter from './vehicle/vehicle.router.js';
 import roleRouter from './role/role.router.js';
 import { listAllProductGrades } from './productGrade/productGrade.controller.js';
 import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
+import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
+
 import { validate } from '../../middlewares/validate.js';
 import { z } from 'zod';
 import {
@@ -97,6 +99,7 @@ userRouter.use('/vehicles', vehicleRouter);
 userRouter.use('/journey-schedules', journeyScheduleRouter);
 userRouter.use('/dispatch', dispatchRouter);
 userRouter.use('/roles', roleRouter);
+userRouter.use('/payment-requests', paymentRequestRouter);
 
 // New flat query APIs
 userRouter.get(

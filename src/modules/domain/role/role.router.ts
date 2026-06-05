@@ -39,7 +39,7 @@ router.post(
   assignPermissions,
 );
 router.post(
-  '/:id/role',
+  '/:id/assign',
   validate(assignRoleParamsSchema, 'params'),
   validate(assignRoleBodySchema, 'body'),
   assignRole,

@@ -1506,6 +1506,907 @@ async function getMachineWorkbookWorksheets(
   ];
 }
 
+// ─── NEW: Product Inventory ───────────────────────────────────────────────────
+
+type ProductInventoryFilters = {
+  productId?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+};
+
+async function getProductInventoryReport(
+  domainId: string,
+  filters: ProductInventoryFilters,
+  language: string | null,
+) {
+  const allUoms = await prisma.uom.findMany({
+    where: { domainId, isDeleted: false },
+  });
+  const uomMap = new Map(allUoms.map((u) => [u.id, u]));
+
+  const products = await prisma.product.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.productId ? { id: filters.productId } : {}),
+      ...(filters.status ? { status: filters.status } : {}),
+    },
+    include: {
+      productUoms: {
+        where: { isDeleted: false },
+        include: { uom: true },
+      },
+      productGrades: {
+        where: { isDeleted: false },
+        include: {
+          productGradeStdRates: {
+            where: { isDeleted: false },
+          },
+        },
+      },
+      inventories: {
+        where: { isDeleted: false },
+        include: { uom: true, productGrade: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const formattedProducts = products.map((product) => {
+    const uoms = product.productUoms.map((pu) => {
+      const baseUom = pu.uom.baseUomId ? uomMap.get(pu.uom.baseUomId) : null;
+      return {
+        code: pu.uom.code,
+        name: getLocalizedText(pu.uom.displayName, language),
+        conversionRate: pu.uom.conversionRate,
+        baseUomName: baseUom
+          ? getLocalizedText(baseUom.displayName, language)
+          : 'N/A',
+        createdAt: pu.uom.createdAt,
+        updatedAt: pu.uom.updatedAt,
+      };
+    });
+
+    const grades = product.productGrades.map((grade) => {
+      const stdRates = grade.productGradeStdRates.map((rate) => ({
+        type: getLocalizedText(rate.stdRateType, language),
+        value: rate.stdRateValue,
+        alertThreshold: rate.alertThresold,
+      }));
+
+      return {
+        code: grade.gradeCode,
+        name: getLocalizedText(grade.gradeDisplayName, language),
+        createdAt: grade.createdAt,
+        updatedAt: grade.updatedAt,
+        stdRates,
+      };
+    });
+
+    const inventory = product.inventories.map((inv) => ({
+      gradeCode: inv.productGrade.gradeCode,
+      gradeName: getLocalizedText(inv.productGrade.gradeDisplayName, language),
+      quantity: inv.quantity,
+      uomCode: inv.uom.code,
+      reorderLevel: inv.reorderLevel,
+      lowStock: inv.quantity <= inv.reorderLevel,
+      createdAt: inv.createdAt,
+      updatedAt: inv.updatedAt,
+    }));
+
+    const totalQuantity = inventory.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+
+    return {
+      id: product.id,
+      code: product.code,
+      displayName: getLocalizedText(product.displayName, language),
+      productType: product.productType,
+      status: product.status,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      uoms,
+      grades,
+      inventory,
+      totalQuantity,
+    };
+  });
+
+  const totalProducts = formattedProducts.length;
+  const totalInventoryQuantity = formattedProducts.reduce(
+    (sum, p) => sum + p.totalQuantity,
+    0,
+  );
+  const lowStockCount = formattedProducts.reduce(
+    (sum, p) => sum + p.inventory.filter((inv) => inv.lowStock).length,
+    0,
+  );
+
+  const allLowStockItems = formattedProducts.flatMap((p) =>
+    p.inventory
+      .filter((inv) => inv.lowStock)
+      .map((inv) => ({
+        productCode: p.code,
+        productName: p.displayName,
+        gradeCode: inv.gradeCode,
+        gradeName: inv.gradeName,
+        quantity: inv.quantity,
+        reorderLevel: inv.reorderLevel,
+        uomCode: inv.uomCode,
+      })),
+  );
+
+  const lowStockTop5 = allLowStockItems
+    .sort((a, b) => a.quantity - b.quantity)
+    .slice(0, 5);
+
+  return {
+    analytics: {
+      totalProducts,
+      totalInventoryQuantity: roundToTwo(totalInventoryQuantity),
+      lowStockCount,
+      lowStock: lowStockTop5,
+    },
+    products: formattedProducts,
+  };
+}
+
+async function getProductInventoryWorkbookWorksheets(
+  domainId: string,
+  filters: ProductInventoryFilters,
+  language: string | null,
+): Promise<ReportWorkbookWorksheet[]> {
+  const report = await getProductInventoryReport(domainId, filters, language);
+
+  const productRows = report.products.map((p) => ({
+    productCode: p.code,
+    productName: p.displayName,
+    productType: p.productType,
+    status: p.status,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  }));
+
+  const uomRows = report.products.flatMap((p) =>
+    p.uoms.map((u) => ({
+      productCode: p.code,
+      productName: p.displayName,
+      uomCode: u.code,
+      uomName: u.name,
+      baseUomName: u.baseUomName,
+      conversionRate: u.conversionRate,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+    })),
+  );
+
+  const gradeRows = report.products.flatMap((p) =>
+    p.grades.flatMap((g) => {
+      if (g.stdRates.length === 0) {
+        return [
+          {
+            productCode: p.code,
+            productName: p.displayName,
+            gradeCode: g.code,
+            gradeName: g.name,
+            stdRateType: 'N/A',
+            stdRateValue: 0,
+            alertThreshold: 0,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          },
+        ];
+      }
+      return g.stdRates.map((rate) => ({
+        productCode: p.code,
+        productName: p.displayName,
+        gradeCode: g.code,
+        gradeName: g.name,
+        stdRateType: rate.type,
+        stdRateValue: rate.value,
+        alertThreshold: rate.alertThreshold,
+        createdAt: g.createdAt,
+        updatedAt: g.updatedAt,
+      }));
+    }),
+  );
+
+  const inventoryRows = report.products.flatMap((p) =>
+    p.inventory.map((inv) => ({
+      productCode: p.code,
+      productName: p.displayName,
+      gradeCode: inv.gradeCode,
+      gradeName: inv.gradeName,
+      quantity: inv.quantity,
+      uomCode: inv.uomCode,
+      reorderLevel: inv.reorderLevel,
+      lowStock: inv.lowStock ? 'Yes' : 'No',
+      createdAt: inv.createdAt,
+      updatedAt: inv.updatedAt,
+    })),
+  );
+
+  return [
+    worksheet(
+      'Products',
+      [
+        'productCode',
+        'productName',
+        'productType',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      productRows,
+    ),
+    worksheet(
+      'Product UOMs',
+      [
+        'productCode',
+        'productName',
+        'uomCode',
+        'uomName',
+        'baseUomName',
+        'conversionRate',
+        'createdAt',
+        'updatedAt',
+      ],
+      uomRows,
+    ),
+    worksheet(
+      'Product Grades & Rates',
+      [
+        'productCode',
+        'productName',
+        'gradeCode',
+        'gradeName',
+        'stdRateType',
+        'stdRateValue',
+        'alertThreshold',
+        'createdAt',
+        'updatedAt',
+      ],
+      gradeRows,
+    ),
+    worksheet(
+      'Inventory Status',
+      [
+        'productCode',
+        'productName',
+        'gradeCode',
+        'gradeName',
+        'quantity',
+        'uomCode',
+        'reorderLevel',
+        'lowStock',
+        'createdAt',
+        'updatedAt',
+      ],
+      inventoryRows,
+    ),
+  ];
+}
+
+// ─── NEW: Vendor Purchase History ─────────────────────────────────────────────
+
+type VendorPurchaseHistoryFilters = {
+  vendorId?: string;
+  projectId?: string;
+};
+
+async function getVendorPurchaseHistoryReport(
+  domainId: string,
+  filters: VendorPurchaseHistoryFilters,
+  language: string | null,
+) {
+  const vendors = await prisma.vendor.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.vendorId ? { id: filters.vendorId } : {}),
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  const invoices = await prisma.invoice.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.projectId ? { projectId: filters.projectId } : {}),
+    },
+    include: {
+      project: { select: { code: true, name: true } },
+    },
+    orderBy: { invoiceDate: 'desc' },
+  });
+
+  const grns = await prisma.grn.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.projectId ? { projectId: filters.projectId } : {}),
+    },
+    include: {
+      project: { select: { code: true, name: true } },
+    },
+    orderBy: { date: 'desc' },
+  });
+
+  const vendorGroups = new Map<
+    string,
+    {
+      vendorCode: string;
+      vendorName: string;
+      vendorEmail: string;
+      contactPerson: string;
+      phone: string;
+      address: string;
+      invoices: typeof invoices;
+      grns: typeof grns;
+    }
+  >();
+
+  vendors.forEach((v) => {
+    const normalizedKey = v.name.toLowerCase().trim();
+    vendorGroups.set(normalizedKey, {
+      vendorCode: v.code,
+      vendorName: v.name,
+      vendorEmail: v.email,
+      contactPerson: v.contactPerson || 'N/A',
+      phone: `${v.phoneCode || ''} ${v.phone || ''}`.trim() || 'N/A',
+      address: v.address || 'N/A',
+      invoices: [],
+      grns: [],
+    });
+  });
+
+  const getOrCreateGroup = (vName: string) => {
+    const key = vName.trim();
+    const normalizedKey = key.toLowerCase();
+    if (!vendorGroups.has(normalizedKey)) {
+      vendorGroups.set(normalizedKey, {
+        vendorCode: 'N/A',
+        vendorName: key,
+        vendorEmail: 'N/A',
+        contactPerson: 'N/A',
+        phone: 'N/A',
+        address: 'N/A',
+        invoices: [],
+        grns: [],
+      });
+    }
+    return vendorGroups.get(normalizedKey)!;
+  };
+
+  invoices.forEach((inv) => {
+    const group = getOrCreateGroup(inv.vendorName);
+    group.invoices.push(inv);
+  });
+
+  grns.forEach((grn) => {
+    const group = getOrCreateGroup(grn.vendorName);
+    group.grns.push(grn);
+  });
+
+  let groupsArray = Array.from(vendorGroups.values());
+  if (filters.vendorId) {
+    const targetVendor = vendors.find((v) => v.id === filters.vendorId);
+    if (targetVendor) {
+      groupsArray = groupsArray.filter(
+        (g) =>
+          g.vendorName.toLowerCase().trim() ===
+          targetVendor.name.toLowerCase().trim(),
+      );
+    } else {
+      groupsArray = [];
+    }
+  }
+
+  const formattedVendors = groupsArray.map((group) => {
+    const totalInvoices = group.invoices.length;
+    const totalInvoicedAmount = group.invoices.reduce(
+      (sum, inv) => sum + toNumber(inv.totalAmount),
+      0,
+    );
+
+    const totalGrns = group.grns.length;
+    const totalGrnAmount = group.grns.reduce(
+      (sum, grn) => sum + toNumber(grn.totalAmount),
+      0,
+    );
+
+    const paymentStatusSummary: Record<
+      string,
+      { count: number; amount: number }
+    > = {};
+    group.invoices.forEach((inv) => {
+      const status = inv.paymentStatus;
+      if (!paymentStatusSummary[status]) {
+        paymentStatusSummary[status] = { count: 0, amount: 0 };
+      }
+      paymentStatusSummary[status].count += 1;
+      paymentStatusSummary[status].amount += toNumber(inv.totalAmount);
+    });
+
+    return {
+      vendorCode: group.vendorCode,
+      vendorName: group.vendorName,
+      vendorEmail: group.vendorEmail,
+      contactPerson: group.contactPerson,
+      phone: group.phone,
+      address: group.address,
+      totalInvoices,
+      totalInvoicedAmount: roundToTwo(totalInvoicedAmount),
+      totalGrns,
+      totalGrnAmount: roundToTwo(totalGrnAmount),
+      paymentStatusSummary,
+      invoices: group.invoices.map((inv) => ({
+        invoiceCode: inv.invoiceCode,
+        invoiceDate: inv.invoiceDate,
+        dueDate: inv.dueDate,
+        totalAmount: toNumber(inv.totalAmount),
+        totalTax: toNumber(inv.totalTax),
+        paymentStatus: inv.paymentStatus,
+        projectCode: inv.project.code,
+        projectName: getLocalizedText(inv.project.name, language),
+      })),
+      grns: group.grns.map((grn) => ({
+        grnCode: grn.code,
+        productOrderCode: grn.productOrderCode,
+        date: grn.date,
+        wbReference: grn.wbReference,
+        totalItems: grn.totalItems,
+        totalAmount: toNumber(grn.totalAmount),
+        projectCode: grn.project ? grn.project.code : 'N/A',
+        projectName: grn.project
+          ? getLocalizedText(grn.project.name, language)
+          : 'N/A',
+      })),
+    };
+  });
+
+  const totalVendors = formattedVendors.length;
+  const totalInvoicedAmount = formattedVendors.reduce(
+    (sum, v) => sum + v.totalInvoicedAmount,
+    0,
+  );
+  const totalGrnAmount = formattedVendors.reduce(
+    (sum, v) => sum + v.totalGrnAmount,
+    0,
+  );
+
+  return {
+    analytics: {
+      totalVendors,
+      totalInvoicedAmount: roundToTwo(totalInvoicedAmount),
+      totalGrnAmount: roundToTwo(totalGrnAmount),
+    },
+    vendors: formattedVendors,
+  };
+}
+
+// ─── NEW: Product Transaction History ─────────────────────────────────────────
+
+type ProductTransactionHistoryFilters = {
+  productId?: string;
+  projectId?: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+async function getProductTransactionHistoryReport(
+  domainId: string,
+  filters: ProductTransactionHistoryFilters,
+  language: string | null,
+) {
+  const parsedStartDate = filters.startDate
+    ? new Date(filters.startDate)
+    : undefined;
+  const parsedEndDate = filters.endDate ? new Date(filters.endDate) : undefined;
+
+  const rmprs = await prisma.rawMaterialPurchaseRequest.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.productId ? { productId: filters.productId } : {}),
+      ...(filters.projectId ? { projectId: filters.projectId } : {}),
+      ...(parsedStartDate || parsedEndDate
+        ? {
+            createdAt: {
+              ...(parsedStartDate ? { gte: parsedStartDate } : {}),
+              ...(parsedEndDate ? { lte: parsedEndDate } : {}),
+            },
+          }
+        : {}),
+    },
+    include: {
+      product: true,
+      productGrade: true,
+      uom: true,
+      project: { select: { code: true, name: true } },
+      requestedUser: { select: { name: true, email: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const invoiceItems = await prisma.invoiceItem.findMany({
+    where: {
+      domainId,
+      invoice: {
+        isDeleted: false,
+        ...(filters.projectId ? { projectId: filters.projectId } : {}),
+        ...(parsedStartDate || parsedEndDate
+          ? {
+              invoiceDate: {
+                ...(parsedStartDate ? { gte: parsedStartDate } : {}),
+                ...(parsedEndDate ? { lte: parsedEndDate } : {}),
+              },
+            }
+          : {}),
+      },
+      ...(filters.productId ? { productId: filters.productId } : {}),
+    },
+    include: {
+      product: true,
+      productGrade: true,
+      uom: true,
+      invoice: {
+        include: {
+          project: { select: { code: true, name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const grnProducts = await prisma.grnProduct.findMany({
+    where: {
+      domainId,
+      isDeleted: false,
+      ...(filters.projectId ? { projectId: filters.projectId } : {}),
+      ...(parsedStartDate || parsedEndDate
+        ? {
+            date: {
+              ...(parsedStartDate ? { gte: parsedStartDate } : {}),
+              ...(parsedEndDate ? { lte: parsedEndDate } : {}),
+            },
+          }
+        : {}),
+      ...(filters.productId
+        ? {
+            invoice: {
+              items: {
+                some: {
+                  productId: filters.productId,
+                },
+              },
+            },
+          }
+        : {}),
+    },
+    include: {
+      uom: true,
+      project: { select: { code: true, name: true } },
+      grn: { select: { approvalStatus: true } },
+      invoice: {
+        include: {
+          items: {
+            where: {
+              ...(filters.productId ? { productId: filters.productId } : {}),
+            },
+            include: {
+              product: true,
+              productGrade: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { date: 'desc' },
+  });
+
+  const transactions: Record<string, any>[] = [];
+
+  rmprs.forEach((r) => {
+    transactions.push({
+      date: r.createdAt,
+      type: 'Requisition',
+      code: r.code,
+      productCode: r.product.code,
+      productName: getLocalizedText(r.product.displayName, language),
+      gradeCode: r.productGrade.gradeCode,
+      gradeName: getLocalizedText(r.productGrade.gradeDisplayName, language),
+      quantity: r.quantity,
+      uom: r.uom.code,
+      unitRate: 0,
+      totalAmount: 0,
+      projectCode: r.project.code,
+      projectName: getLocalizedText(r.project.name, language),
+      reference: r.requestedUser?.name || 'N/A',
+      status: r.approvalStatus,
+    });
+  });
+
+  invoiceItems.forEach((item) => {
+    const qty = toNumber(item.quantity);
+    const amt = toNumber(item.totalAmount);
+    transactions.push({
+      date: item.invoice.invoiceDate,
+      type: 'Invoice',
+      code: item.invoice.invoiceCode,
+      productCode: item.product.code,
+      productName: getLocalizedText(item.product.displayName, language),
+      gradeCode: item.productGrade?.gradeCode || 'N/A',
+      gradeName: item.productGrade
+        ? getLocalizedText(item.productGrade.gradeDisplayName, language)
+        : 'N/A',
+      quantity: qty,
+      uom: item.uom.code,
+      unitRate: qty > 0 ? roundToTwo(amt / qty) : 0,
+      totalAmount: amt,
+      projectCode: item.invoice.project.code,
+      projectName: getLocalizedText(item.invoice.project.name, language),
+      reference: item.invoice.vendorName,
+      status: item.invoice.paymentStatus,
+    });
+  });
+
+  const allProducts = await prisma.product.findMany({
+    where: { domainId, isDeleted: false },
+    include: {
+      productGrades: {
+        where: { isDeleted: false },
+      },
+    },
+  });
+
+  grnProducts.forEach((item) => {
+    const associatedItem = item.invoice.items.find(
+      (ii) => ii.uomId === item.uomId,
+    );
+
+    let productCode = 'N/A';
+    let productName = item.material;
+    let gradeCode = 'N/A';
+    let gradeName = 'N/A';
+    let productId = '';
+
+    if (associatedItem) {
+      productId = associatedItem.productId;
+      productName = associatedItem.product
+        ? getLocalizedText(associatedItem.product.displayName, language)
+        : item.material;
+      productCode = associatedItem.product?.code || 'N/A';
+      gradeCode = associatedItem.productGrade?.gradeCode || 'N/A';
+      gradeName = associatedItem.productGrade
+        ? getLocalizedText(
+            associatedItem.productGrade.gradeDisplayName,
+            language,
+          )
+        : 'N/A';
+    } else {
+      // Fallback matching when associated invoice item is missing
+      const materialStr = item.material.toLowerCase().trim();
+      const matchedProduct = allProducts.find(
+        (p) =>
+          p.code.toLowerCase().trim() === materialStr ||
+          getLocalizedText(p.displayName, language).toLowerCase().trim() ===
+            materialStr,
+      );
+
+      if (matchedProduct) {
+        productId = matchedProduct.id;
+        productName = getLocalizedText(matchedProduct.displayName, language);
+        productCode = matchedProduct.code;
+
+        // Try to match grade by checking if gradeCode or grade name is in material name
+        const matchedGrade =
+          matchedProduct.productGrades.find(
+            (g) =>
+              materialStr.includes(g.gradeCode.toLowerCase().trim()) ||
+              materialStr.includes(
+                getLocalizedText(g.gradeDisplayName, language)
+                  .toLowerCase()
+                  .trim(),
+              ),
+          ) || matchedProduct.productGrades[0];
+
+        if (matchedGrade) {
+          gradeCode = matchedGrade.gradeCode;
+          gradeName = getLocalizedText(matchedGrade.gradeDisplayName, language);
+        }
+      }
+    }
+
+    if (filters.productId && productId !== filters.productId) {
+      return;
+    }
+
+    transactions.push({
+      date: item.date,
+      type: 'Receipt (GRN)',
+      code: item.grnCode,
+      productCode,
+      productName,
+      gradeCode,
+      gradeName,
+      quantity: item.quantity,
+      uom: item.uom.code,
+      unitRate: item.rate,
+      totalAmount: roundToTwo(item.quantity * item.rate),
+      projectCode: item.project?.code || 'N/A',
+      projectName: item.project
+        ? getLocalizedText(item.project.name, language)
+        : 'N/A',
+      reference: item.vendor,
+      status: item.grn?.approvalStatus || 'PENDING',
+    });
+  });
+
+  transactions.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  return { transactions };
+}
+
+async function getProductTransactionHistoryWorkbookWorksheets(
+  domainId: string,
+  filters: ProductTransactionHistoryFilters,
+  language: string | null,
+): Promise<ReportWorkbookWorksheet[]> {
+  const report = await getProductTransactionHistoryReport(
+    domainId,
+    filters,
+    language,
+  );
+
+  const rows = report.transactions.map((t) => ({
+    date: t.date,
+    type: t.type,
+    code: t.code,
+    productCode: t.productCode,
+    productName: t.productName,
+    gradeCode: t.gradeCode,
+    gradeName: t.gradeName,
+    quantity: t.quantity,
+    uom: t.uom,
+    unitRate: t.unitRate,
+    totalAmount: t.totalAmount,
+    projectCode: t.projectCode,
+    projectName: t.projectName,
+    reference: t.reference,
+    status: t.status,
+  }));
+
+  return [
+    worksheet(
+      'Transactions History',
+      [
+        'date',
+        'type',
+        'code',
+        'productCode',
+        'productName',
+        'gradeCode',
+        'gradeName',
+        'quantity',
+        'uom',
+        'unitRate',
+        'totalAmount',
+        'projectCode',
+        'projectName',
+        'reference',
+        'status',
+      ],
+      rows,
+    ),
+  ];
+}
+
+// ─── NEW: Vendor Purchase History ─────────────────────────────────────────────
+
+async function getVendorPurchaseHistoryWorkbookWorksheets(
+  domainId: string,
+  filters: VendorPurchaseHistoryFilters,
+  language: string | null,
+): Promise<ReportWorkbookWorksheet[]> {
+  const report = await getVendorPurchaseHistoryReport(
+    domainId,
+    filters,
+    language,
+  );
+
+  const summaryRows = report.vendors.map((v) => ({
+    vendorCode: v.vendorCode,
+    vendorName: v.vendorName,
+    vendorEmail: v.vendorEmail,
+    contactPerson: v.contactPerson,
+    phone: v.phone,
+    totalInvoices: v.totalInvoices,
+    totalInvoicedAmount: v.totalInvoicedAmount,
+    totalGrns: v.totalGrns,
+    totalGrnAmount: v.totalGrnAmount,
+  }));
+
+  const invoiceRows = report.vendors.flatMap((v) =>
+    v.invoices.map((inv) => ({
+      vendorName: v.vendorName,
+      invoiceCode: inv.invoiceCode,
+      invoiceDate: inv.invoiceDate,
+      dueDate: inv.dueDate,
+      totalAmount: inv.totalAmount,
+      totalTax: inv.totalTax,
+      paymentStatus: inv.paymentStatus,
+      projectCode: inv.projectCode,
+      projectName: inv.projectName,
+    })),
+  );
+
+  const grnRows = report.vendors.flatMap((v) =>
+    v.grns.map((grn) => ({
+      vendorName: v.vendorName,
+      grnCode: grn.grnCode,
+      productOrderCode: grn.productOrderCode,
+      date: grn.date,
+      wbReference: grn.wbReference || 'N/A',
+      totalItems: grn.totalItems,
+      totalAmount: grn.totalAmount,
+      projectCode: grn.projectCode,
+      projectName: grn.projectName,
+    })),
+  );
+
+  return [
+    worksheet(
+      'Vendor Summary',
+      [
+        'vendorCode',
+        'vendorName',
+        'vendorEmail',
+        'contactPerson',
+        'phone',
+        'totalInvoices',
+        'totalInvoicedAmount',
+        'totalGrns',
+        'totalGrnAmount',
+      ],
+      summaryRows,
+    ),
+    worksheet(
+      'Vendor Invoices',
+      [
+        'vendorName',
+        'invoiceCode',
+        'invoiceDate',
+        'dueDate',
+        'totalAmount',
+        'totalTax',
+        'paymentStatus',
+        'projectCode',
+        'projectName',
+      ],
+      invoiceRows,
+    ),
+    worksheet(
+      'Vendor GRNs',
+      [
+        'vendorName',
+        'grnCode',
+        'productOrderCode',
+        'date',
+        'wbReference',
+        'totalItems',
+        'totalAmount',
+        'projectCode',
+        'projectName',
+      ],
+      grnRows,
+    ),
+  ];
+}
+
+// ─── NEW: Product Transaction History ─────────────────────────────────────────
+
 export const reportService = {
   getProjectSummary: async (
     domainId: string,
@@ -1627,6 +2528,94 @@ export const reportService = {
   ): Promise<ReportWorkbookWorksheet[]> => {
     try {
       return await getMachineWorkbookWorksheets(domainId, filters, language);
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getProductInventoryReport: async (
+    domainId: string,
+    filters: ProductInventoryFilters,
+    language: string | null = null,
+  ) => {
+    try {
+      return await getProductInventoryReport(domainId, filters, language);
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getProductInventoryWorkbookWorksheets: async (
+    domainId: string,
+    filters: ProductInventoryFilters,
+    language: string | null = null,
+  ): Promise<ReportWorkbookWorksheet[]> => {
+    try {
+      return await getProductInventoryWorkbookWorksheets(
+        domainId,
+        filters,
+        language,
+      );
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getVendorPurchaseHistoryReport: async (
+    domainId: string,
+    filters: VendorPurchaseHistoryFilters,
+    language: string | null = null,
+  ) => {
+    try {
+      return await getVendorPurchaseHistoryReport(domainId, filters, language);
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getVendorPurchaseHistoryWorkbookWorksheets: async (
+    domainId: string,
+    filters: VendorPurchaseHistoryFilters,
+    language: string | null = null,
+  ): Promise<ReportWorkbookWorksheet[]> => {
+    try {
+      return await getVendorPurchaseHistoryWorkbookWorksheets(
+        domainId,
+        filters,
+        language,
+      );
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getProductTransactionHistoryReport: async (
+    domainId: string,
+    filters: ProductTransactionHistoryFilters,
+    language: string | null = null,
+  ) => {
+    try {
+      return await getProductTransactionHistoryReport(
+        domainId,
+        filters,
+        language,
+      );
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getProductTransactionHistoryWorkbookWorksheets: async (
+    domainId: string,
+    filters: ProductTransactionHistoryFilters,
+    language: string | null = null,
+  ): Promise<ReportWorkbookWorksheet[]> => {
+    try {
+      return await getProductTransactionHistoryWorkbookWorksheets(
+        domainId,
+        filters,
+        language,
+      );
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

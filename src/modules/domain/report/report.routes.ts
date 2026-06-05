@@ -8,6 +8,12 @@ import {
   projectSummaryQuerySchema,
   projectUserTaskExportQuerySchema,
   projectUserTaskQuerySchema,
+  productInventoryExportQuerySchema,
+  productInventoryQuerySchema,
+  vendorPurchaseHistoryExportQuerySchema,
+  vendorPurchaseHistoryQuerySchema,
+  productTransactionHistoryExportQuerySchema,
+  productTransactionHistoryQuerySchema,
 } from './report.validator';
 
 const reportRouter = Router();
@@ -58,6 +64,42 @@ reportRouter.get(
   '/project-user-task',
   validate(projectUserTaskQuerySchema, 'query'),
   reportController.getProjectUserTask,
+);
+
+reportRouter.get(
+  '/product-inventory/export',
+  validate(productInventoryExportQuerySchema, 'query'),
+  reportController.exportProductInventory,
+);
+
+reportRouter.get(
+  '/product-inventory',
+  validate(productInventoryQuerySchema, 'query'),
+  reportController.getProductInventory,
+);
+
+reportRouter.get(
+  '/vendor-purchase-history/export',
+  validate(vendorPurchaseHistoryExportQuerySchema, 'query'),
+  reportController.exportVendorPurchaseHistory,
+);
+
+reportRouter.get(
+  '/vendor-purchase-history',
+  validate(vendorPurchaseHistoryQuerySchema, 'query'),
+  reportController.getVendorPurchaseHistory,
+);
+
+reportRouter.get(
+  '/product-transaction-history/export',
+  validate(productTransactionHistoryExportQuerySchema, 'query'),
+  reportController.exportProductTransactionHistory,
+);
+
+reportRouter.get(
+  '/product-transaction-history',
+  validate(productTransactionHistoryQuerySchema, 'query'),
+  reportController.getProductTransactionHistory,
 );
 
 export default reportRouter;

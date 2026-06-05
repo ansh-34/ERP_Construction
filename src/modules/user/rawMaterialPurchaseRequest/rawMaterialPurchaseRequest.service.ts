@@ -821,4 +821,47 @@ export const RawMaterialPurchaseRequestService = {
   //     domainId,
   //   );
   // },
+
+  async listAllPoProducts(
+    domainId: string,
+    query: {
+      offset?: number | string;
+      limit?: number | string;
+      poId?: string;
+      searchKey?: string;
+    },
+    langCode?: string,
+  ) {
+    const { offset, limit } = normalizePagination(query);
+    const { poId, searchKey } = query;
+
+    const [totalCount, products] =
+      await RawMaterialPurchaseRequestRepository.listAllPoProducts(
+        domainId,
+        limit,
+        offset,
+        {
+          filters: {
+            purchaseOrderId: poId,
+            searchKey,
+          },
+        },
+      );
+
+    console.log(
+      'Total products found:',
+      totalCount,
+      'Products returned:',
+      products,
+    );
+    return {
+      pagination: {
+        totalCount,
+        currentCount: products.length,
+        offset,
+        limit,
+      },
+      products: translateResponse(products, langCode) || [],
+    };
+  },
 };

@@ -13,12 +13,19 @@ export const grnProductSchema = z.object({
   rate: z.number().nonnegative().optional().default(0),
 });
 
+export const grnProductInputSchema = z.object({
+  productId: z.string().uuid(),
+  quantity: z.number().positive(),
+  tax: z.number().nonnegative().optional(),
+});
+
 export const createGrnBodySchema = z.object({
   wbReference: z.string().optional(),
   invoiceId: z.string().uuid(),
-  totalItems: z.number().int().nonnegative(),
+  totalItems: z.number().int().nonnegative().optional(),
   totalTax: z.number().nonnegative().optional().default(0),
-  totalAmount: z.number().nonnegative(),
+  totalAmount: z.number().nonnegative().optional(),
+  grnProducts: z.array(grnProductInputSchema).optional(),
 });
 
 export const updateGrnBodySchema = z.object({
@@ -46,6 +53,7 @@ export const listGrnsQuerySchema = paginationQuerySchema
     searchKey: z.string().optional(),
     approvalStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
     projectId: z.string().uuid().optional(),
+    invoiceId: z.string().uuid().optional(),
   });
 
 export const grnIdParamsSchema = idParamSchema;

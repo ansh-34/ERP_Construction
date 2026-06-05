@@ -32,3 +32,35 @@ export const machineSummaryExportQuerySchema = machineSummaryQuerySchema.extend(
     vehicleId: z.string().trim().uuid().optional(),
   },
 );
+
+export const productInventoryQuerySchema = z.object({
+  productId: z.string().trim().uuid().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+export const productInventoryExportQuerySchema =
+  productInventoryQuerySchema.extend({
+    export: z.enum(['xlsx']),
+  });
+
+export const vendorPurchaseHistoryQuerySchema = z.object({
+  vendorId: z.string().trim().uuid().optional(),
+  projectId: z.string().trim().uuid().optional(),
+});
+
+export const vendorPurchaseHistoryExportQuerySchema =
+  vendorPurchaseHistoryQuerySchema.extend({
+    export: z.enum(['xlsx']),
+  });
+
+export const productTransactionHistoryQuerySchema = z.object({
+  productId: z.string().trim().uuid().optional(),
+  projectId: z.string().trim().uuid().optional(),
+  startDate: z.string().trim().optional(),
+  endDate: z.string().trim().optional(),
+});
+
+export const productTransactionHistoryExportQuerySchema =
+  productTransactionHistoryQuerySchema.extend({
+    export: z.enum(['xlsx']),
+  });

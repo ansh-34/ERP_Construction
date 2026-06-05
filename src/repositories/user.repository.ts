@@ -9,6 +9,12 @@ export const UserRepository = {
     });
   },
 
+  countByRole(roleId: string, domainId: string) {
+    return prisma.user.count({
+      where: { roleId, domainId, isDeleted: false },
+    });
+  },
+
   findActiveByEmail(email: string) {
     return prisma.user.findFirst({
       where: { email, isDeleted: false },
@@ -36,6 +42,14 @@ export const UserRepository = {
     return prisma.user.findFirst({
       where: { id, domainId, isDeleted: false },
     });
+  },
+
+  validateUserIds(ids: string[], domainId: string) {
+    return prisma.user
+      .count({
+        where: { id: { in: ids }, domainId, isDeleted: false },
+      })
+      .then((count) => count === ids.length);
   },
 
   findActiveByIdWithRoleAndDomain(id: string) {
@@ -84,17 +98,12 @@ export const UserRepository = {
     });
   },
 
-  assignRole(userId: string, roleId: string) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: { roleId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: { select: { id: true, name: true, code: true } },
-        industry: true,
+  assignRole(userIds: string[], roleId: string) {
+    return prisma.user.updateMany({
+      where: {
+        id: { in: userIds },
       },
+      data: { roleId },
     });
   },
 

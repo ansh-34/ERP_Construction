@@ -187,6 +187,7 @@ model Domain {
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
   invoiceItems                InvoiceItem[]
+  paymentRequests             PaymentRequest[]
   admin                       Admin                        @relation(fields: [adminId], references: [id])
   adminId                     String                       @db.Uuid
 
@@ -225,6 +226,7 @@ model User {
   updatedAt DateTime   @updatedAt
 
   rawMaterialPurchaseRequestsRequested RawMaterialPurchaseRequest[] @relation("RequestedByUser")
+  paymentRequestsRequested             PaymentRequest[]             @relation("PaymentRequestedByUser")
   projectUserAssignments               ProjectUserAssignment[]
   projectUserDailyLogs                 ProjectUserDailyLog[]
 
@@ -302,13 +304,15 @@ model Currency {
 }
 
 model Role {
-  id         String  @id @default(uuid()) @db.Uuid
-  name       Json    @db.JsonB
-  code       String?
-  searchText String  @default("")
-  level      Int     @default(0)
-  domainId   String  @db.Uuid
-  adminId    String? @db.Uuid
+  id                    String  @id @default(uuid()) @db.Uuid
+  name                  Json    @db.JsonB
+  code                  String?
+  searchText            String  @default("")
+  level                 Int     @default(0)
+  modulePermissionCount Int     @default(0)
+  usersCount            Int     @default(0)
+  domainId              String  @db.Uuid
+  adminId               String? @db.Uuid
 
   admin     Admin?     @relation(fields: [adminId], references: [id])
   domain    Domain     @relation(fields: [domainId], references: [id])
@@ -890,26 +894,30 @@ model PurchaseOrderProduct {
 }
 
 model Invoice {
-  id              String                @id @default(uuid()) @db.Uuid
-  invoiceCode     String
-  purchaseOrderId String                @db.Uuid
-  purchaseOrder   PurchaseOrder         @relation(fields: [purchaseOrderId], references: [id])
-  vendorId        String?               @db.Uuid
-  vendor          VendorProductPricing? @relation(fields: [vendorId], references: [id])
-  vendorName      String
-  invoiceDate     DateTime              @default(now())
-  dueDate         DateTime?
-  totalAmount     Float                 @default(0)
-  totalTax        Float                 @default(0)
-  projectId       String                @db.Uuid
-  paymentStatus   PaymentStatus         @default(UNPAID)
-  project         Project               @relation(fields: [projectId], references: [id])
-  domainId        String                @db.Uuid
-  domain          Domain                @relation(fields: [domainId], references: [id])
-  status          StatusEnum            @default(ACTIVE)
-  isDeleted       Boolean               @default(false)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  id                 String                @id @default(uuid()) @db.Uuid
+  invoiceCode        String
+  purchaseOrderId    String                @db.Uuid
+  purchaseOrder      PurchaseOrder         @relation(fields: [purchaseOrderId], references: [id])
+  vendorId           String?               @db.Uuid
+  vendor             VendorProductPricing? @relation(fields: [vendorId], references: [id])
+  vendorName         String
+  invoiceDate        DateTime              @default(now())
+  dueDate            DateTime?
+  totalAmount        Float                 @default(0)
+  totalTax           Float                 @default(0)
+  projectId          String                @db.Uuid
+  paymentStatus      PaymentStatus         @default(UNPAID)
+  project            Project               @relation(fields: [projectId], references: [id])
+  domainId           String                @db.Uuid
+  domain             Domain                @relation(fields: [domainId], references: [id])
+  status             StatusEnum            @default(ACTIVE)
+  isDeleted          Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  totalGrns          Int                   @default(0)
+  lastGrnDate        DateTime?
+  totalItems         Int                   @default(0)
+  totalItemsReceived Float                 @default(0)
 
   items       InvoiceItem[]
   grns        Grn[]
@@ -923,24 +931,25 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id             String         @id @default(uuid()) @db.Uuid
-  invoiceId      String         @db.Uuid
-  invoice        Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  productId      String         @db.Uuid
-  product        Product        @relation(fields: [productId], references: [id])
-  productGradeId String?        @db.Uuid
-  productGrade   ProductGrades? @relation(fields: [productGradeId], references: [id])
-  description    String?
-  quantity       Int
-  uomId          String         @db.Uuid
-  uom            Uom            @relation(fields: [uomId], references: [id])
-  taxAmount      Float          @default(0)
-  totalAmount    Float          @default(0)
-  discount       Float?         @default(0)
-  domainId       String         @db.Uuid
-  domain         Domain         @relation(fields: [domainId], references: [id])
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id               String         @id @default(uuid()) @db.Uuid
+  invoiceId        String         @db.Uuid
+  invoice          Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId        String         @db.Uuid
+  product          Product        @relation(fields: [productId], references: [id])
+  productGradeId   String?        @db.Uuid
+  productGrade     ProductGrades? @relation(fields: [productGradeId], references: [id])
+  description      String?
+  quantity         Int
+  receivedQuantity Float          @default(0)
+  uomId            String         @db.Uuid
+  uom              Uom            @relation(fields: [uomId], references: [id])
+  taxAmount        Float          @default(0)
+  totalAmount      Float          @default(0)
+  discount         Float?         @default(0)
+  domainId         String         @db.Uuid
+  domain           Domain         @relation(fields: [domainId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([invoiceId])
   @@index([productId])
@@ -1036,6 +1045,7 @@ model VendorProductPricing {
   updatedAt        DateTime      @updatedAt
   invoices         Invoice[]
   grns             Grn[]
+  paymentRequests  PaymentRequest[]
 
   @@unique([vendorName, productId, productGradeId, uomId, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -1175,6 +1185,7 @@ model Project {
   purchaseOrders              PurchaseOrder[]
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
+  paymentRequests             PaymentRequest[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1275,7 +1286,7 @@ model ProjectTaskImage {
   imageId     String?      @db.Uuid
   image       Media?       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageUrl    String
-  description String?
+  description Json?
   taskId      String       @db.Uuid
   task        ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   stageId     String       @db.Uuid
@@ -1594,3 +1605,42 @@ model DbAnalytics {
 
   @@map("dbAnalytics")
 }
+
+enum PaymentStatusEnum {
+  PENDING
+  APPROVED
+  PAID
+}
+
+model PaymentRequest {
+  id              String               @id @default(uuid()) @db.Uuid
+  code            String
+  date            DateTime             @default(now())
+  type            String
+  vendorId        String               @db.Uuid
+  vendor          VendorProductPricing @relation(fields: [vendorId], references: [id])
+  projectId       String               @db.Uuid
+  project         Project              @relation(fields: [projectId], references: [id])
+  referenceNumber String
+  tds             Float
+  grossAmount     Float
+  netPayable      Float
+  notes           String?
+  requestedBy     String               @db.Uuid
+  requestedUser   User                 @relation("PaymentRequestedByUser", fields: [requestedBy], references: [id])
+  paymentStatus   PaymentStatusEnum    @default(PENDING)
+  domainId        String               @db.Uuid
+  domain          Domain               @relation(fields: [domainId], references: [id])
+  status          StatusEnum           @default(ACTIVE)
+  isDeleted       Boolean              @default(false)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([projectId])
+  @@index([domainId])
+  @@index([requestedBy])
+  @@index([vendorId])
+}
+

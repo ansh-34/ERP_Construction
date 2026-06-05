@@ -27,6 +27,7 @@ import { MaintenanceReportSchemas } from './maintenanceReport.schema.js';
 import { MaintenanceScheduleSchemas } from './maintenanceSchedule.schema.js';
 import { MovementLogSchemas } from './movementLog.schema.js';
 import { MovementReportSchemas } from './movementReport.schema.js';
+import { PaymentRequestSchemas } from './paymentRequest.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -58,4 +59,5 @@ export const ApiSchemas = {
   ...MaintenanceScheduleSchemas,
   ...MovementLogSchemas,
   ...MovementReportSchemas,
+  ...PaymentRequestSchemas,
 };

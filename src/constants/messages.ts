@@ -125,6 +125,7 @@ export const Messages = Object.freeze({
     INVALID_PERMISSIONS_PREFIX: 'Invalid permissions',
     UPDATE_FAILED: 'Failed to update role',
     DELETE_FAILED: 'Failed to delete role',
+    INVALID_USER_IDS: 'One or more selected users are invalid',
   },
   MODULE: {
     CREATED: 'Module created successfully',
@@ -457,6 +458,7 @@ export const Messages = Object.freeze({
     CANNOT_UPDATE_CANCELLED: 'Cancelled purchase orders cannot be updated',
     CANNOT_DELETE_NON_DRAFT: 'Only draft purchase orders can be deleted',
     ALREADY_CANCELLED: 'Purchase order is already cancelled',
+    PRODUCTS_RETRIEVED: 'Purchase order products retrieved successfully',
   },
   VENDOR_PRODUCT_PRICE: {
     CREATED: 'Vendor product pricing created successfully',
@@ -506,5 +508,16 @@ export const Messages = Object.freeze({
       'All PO products must have a vendor assigned before generating invoices',
     ALREADY_GENERATED:
       'Invoices have already been generated for this purchase order',
+  },
+  PAYMENT_REQUEST: {
+    CREATED: 'Payment request created successfully',
+    RETRIEVED: 'Payment request retrieved successfully',
+    UPDATED: 'Payment request updated successfully',
+    DELETED: 'Payment request deleted successfully',
+    NOT_FOUND: 'Payment request not found',
+    CREATE_FAILED: 'Failed to create payment request',
+    LIST_FAILED: 'Failed to retrieve payment requests',
+    UPDATE_FAILED: 'Failed to update payment request',
+    DELETE_FAILED: 'Failed to delete payment request',
   },
 });

@@ -89,10 +89,11 @@ export const invoiceRepository = {
         (sum, i) => sum + i.totalAmount,
         0,
       );
+      const totalItems = createdItems.reduce((sum, i) => sum + i.quantity, 0);
 
       const updatedInvoice = await tx.invoice.update({
         where: { id: invoice.id },
-        data: { totalTax, totalAmount },
+        data: { totalTax, totalAmount, totalItems },
         include: {
           items: {
             include: {
@@ -228,6 +229,83 @@ export const invoiceRepository = {
       },
       orderBy: { createdAt: 'asc' },
     });
+  },
+
+  listInvoiceItems(
+    limit: number,
+    offset: number,
+    options: {
+      filters?: {
+        searchKey?: string;
+        invoiceId?: string;
+        projectId?: string;
+        vendorId?: string;
+        status?: string;
+        domainId: string;
+      };
+      select?: any;
+    } = {},
+  ) {
+    const whereClause: any = {
+      ...(options.filters && {
+        ...(options.filters.searchKey && {
+          OR: [
+            {
+              product: {
+                searchText: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            },
+            {
+              product: {
+                code: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            },
+            {
+              productGrade: {
+                searchText: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            },
+            {
+              productGrade: {
+                code: {
+                  contains: options.filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          ],
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.invoiceId && {
+          invoiceId: options.filters.invoiceId,
+        }),
+        ...(options.filters.projectId && {
+          projectId: options.filters.projectId,
+        }),
+        ...(options.filters.vendorId && { vendorId: options.filters.vendorId }),
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+      }),
+    };
+
+    return prisma.$transaction([
+      prisma.invoiceItem.count({ where: whereClause }),
+      prisma.invoiceItem.findMany({
+        where: whereClause,
+        ...(options.select ? { select: options.select } : {}),
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+      }),
+    ]);
   },
 
   updateItem(id: string, data: Prisma.InvoiceItemUncheckedUpdateInput) {
@@ -373,6 +451,11 @@ export const invoiceRepository = {
           throw new Error('Purchase order does not have an associated project');
         }
 
+        const totalItems = items.reduce(
+          (sum, i) => sum + i.poProduct.quantity,
+          0,
+        );
+
         const invoice = await tx.invoice.create({
           data: {
             invoiceCode,
@@ -380,6 +463,7 @@ export const invoiceRepository = {
             vendorName,
             totalTax,
             totalAmount,
+            totalItems,
             projectId: po.projectId,
             domainId,
           },
