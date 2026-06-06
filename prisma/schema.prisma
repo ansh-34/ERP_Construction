@@ -92,6 +92,7 @@ model Admin {
   mediaFiles             Media[]                 @relation("AdminMediaFiles")
   users                  User[]
   roles                  Role[]
+  vendorProductPricings  VendorProductPricing[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -288,17 +289,18 @@ model RefreshToken {
 }
 
 model Currency {
-  id              String            @id @default(uuid()) @db.Uuid
-  name            Json
-  code            String
-  searchText      String            @default("")
-  symbol          String
-  flag            String
-  status          StatusEnum        @default(ACTIVE)
-  isDeleted       Boolean           @default(false)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  adminCurrencies AdminCurrencies[]
+  id                    String                 @id @default(uuid()) @db.Uuid
+  name                  Json
+  code                  String
+  searchText            String                 @default("")
+  symbol                String
+  flag                  String
+  status                StatusEnum             @default(ACTIVE)
+  isDeleted             Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  adminCurrencies       AdminCurrencies[]
+  vendorProductPricings VendorProductPricing[]
 
   @@map("currency")
 }
@@ -1024,30 +1026,33 @@ model GrnProduct {
 }
 
 model VendorProductPricing {
-  id               String        @id @default(uuid()) @db.Uuid
-  vendorName       String
-  productId        String        @db.Uuid
-  product          Product       @relation(fields: [productId], references: [id])
-  productGradeId   String        @db.Uuid
-  productGrade     ProductGrades @relation(fields: [productGradeId], references: [id])
-  uomId            String        @db.Uuid
-  uom              Uom           @relation(fields: [uomId], references: [id])
-  price            Float
-  productCode      String?
-  productGradeCode String?
-  uomCode          String?
-  searchText       String        @default("")
-  domainId         String        @db.Uuid
-  domain           Domain        @relation(fields: [domainId], references: [id])
-  status           StatusEnum    @default(ACTIVE)
-  isDeleted        Boolean       @default(false)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  invoices         Invoice[]
-  grns             Grn[]
-  paymentRequests  PaymentRequest[]
+  id              String           @id @default(uuid()) @db.Uuid
+  vendorId        String           @db.Uuid
+  vendor          Vendor           @relation(fields: [vendorId], references: [id])
+  productId       String           @db.Uuid
+  product         Product          @relation(fields: [productId], references: [id])
+  productGradeId  String           @db.Uuid
+  productGrade    ProductGrades    @relation(fields: [productGradeId], references: [id])
+  uomId           String           @db.Uuid
+  uom             Uom              @relation(fields: [uomId], references: [id])
+  price           Float
+  currencyId      String           @db.Uuid
+  currency        Currency         @relation(fields: [currencyId], references: [id])
+  searchText      String           @default("")
+  key             String           @default("")
+  domainId        String           @db.Uuid
+  domain          Domain           @relation(fields: [domainId], references: [id])
+  adminId         String           @db.Uuid
+  admin           Admin            @relation(fields: [adminId], references: [id])
+  status          StatusEnum       @default(ACTIVE)
+  isDeleted       Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  invoices        Invoice[]
+  grns            Grn[]
+  paymentRequests PaymentRequest[]
 
-  @@unique([vendorName, productId, productGradeId, uomId, domainId, isDeleted])
+  @@unique([key, isDeleted])
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])
   @@index([productId])
@@ -1056,22 +1061,23 @@ model VendorProductPricing {
 }
 
 model Vendor {
-  id            String     @id @default(uuid()) @db.Uuid
-  code          String
-  name          String
-  email         String
-  contactPerson String?
-  phoneCode     String?
-  phone         String?
-  industry      String?
-  address       String?
-  searchText    String     @default("")
-  domainId      String     @db.Uuid
-  domain        Domain     @relation(fields: [domainId], references: [id])
-  status        StatusEnum @default(ACTIVE)
-  isDeleted     Boolean    @default(false)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                    String                 @id @default(uuid()) @db.Uuid
+  code                  String
+  name                  String
+  email                 String
+  contactPerson         String?
+  phoneCode             String?
+  phone                 String?
+  industry              String?
+  address               String?
+  searchText            String                 @default("")
+  domainId              String                 @db.Uuid
+  domain                Domain                 @relation(fields: [domainId], references: [id])
+  status                StatusEnum             @default(ACTIVE)
+  isDeleted             Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  vendorProductPricings VendorProductPricing[]
 
   @@unique([code, domainId, isDeleted])
   @@unique([email, domainId, isDeleted])
@@ -1643,4 +1649,3 @@ model PaymentRequest {
   @@index([requestedBy])
   @@index([vendorId])
 }
-

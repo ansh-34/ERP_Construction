@@ -46,3 +46,4 @@ export * from './vendorProductPrice.repository.js';
 export * from './vendor.repository.js';
 export * from './invoice.repository.js';
 export * from './paymentRequest.repository.js';
+export * from './productGrade.repository.js';

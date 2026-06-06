@@ -18,6 +18,71 @@ export const AdminCurrencyRepository = {
     });
   },
 
+  async validateCurrencyIds(adminId: string, currencyIds: string[]) {
+    const count = await prisma.adminCurrencies.count({
+      where: {
+        adminId,
+        currencyId: { in: currencyIds },
+        isEnabled: true,
+        status: 'ACTIVE',
+        isDeleted: false,
+      },
+    });
+    return count === currencyIds.length;
+  },
+
+  async validateCurrencyCodes(adminId: string, currencyCodes: string[]) {
+    const count = await prisma.adminCurrencies.count({
+      where: {
+        adminId,
+        currency: {
+          code: { in: currencyCodes },
+        },
+        isEnabled: true,
+        status: 'ACTIVE',
+        isDeleted: false,
+      },
+    });
+    return count === currencyCodes.length;
+  },
+
+  find(
+    domainId: string,
+    options?: {
+      filters?: {
+        searchKey?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+        ids?: string[];
+        codes?: string[];
+      };
+      select?: any;
+    },
+  ) {
+    const whereClause: any = {
+      domainId,
+      isDeleted: false,
+      ...(options?.filters && {
+        ...(options.filters.searchKey && {
+          searchText: {
+            contains: options.filters.searchKey.trim(),
+            mode: 'insensitive',
+          },
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.ids && { id: { in: options.filters.ids } }),
+        ...(options.filters.codes && {
+          currency: {
+            code: { in: options.filters.codes },
+          },
+        }),
+      }),
+    };
+    return prisma.adminCurrencies.findMany({
+      where: whereClause,
+      ...(options && { select: options.select }),
+    });
+  },
+
   findFirst(
     filters: {
       adminId?: string;

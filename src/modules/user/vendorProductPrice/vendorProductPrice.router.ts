@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import { upload } from '../../../middlewares/upload.js';
 import {
@@ -13,62 +12,51 @@ import {
 } from './vendorProductPrice.controller.js';
 import {
   createVendorProductPriceBodySchema,
+  createVendorProductPriceParamsSchema,
   listVendorProductPricesQuerySchema,
   vendorProductPriceIdParamSchema,
   updateVendorProductPriceBodySchema,
 } from './vendorProductPrice.validator.js';
 
-export const vendorProductPriceRouter = (): Router => {
-  const router = Router();
+const router = Router();
 
-  router.post(
-    '/',
-    authorize('VENDOR_PRODUCT_PRICE', 'CREATE'),
-    validate(createVendorProductPriceBodySchema, 'body'),
-    createVendorProductPrice,
-  );
+router.post(
+  '/:id/product-prices',
+  validate(createVendorProductPriceParamsSchema, 'params'),
+  validate(createVendorProductPriceBodySchema, 'body'),
+  createVendorProductPrice,
+);
 
-  router.get(
-    '/',
-    authorize('VENDOR_PRODUCT_PRICE', 'READ'),
-    validate(listVendorProductPricesQuerySchema, 'query'),
-    listVendorProductPrices,
-  );
+router.get(
+  '/product-prices',
+  validate(listVendorProductPricesQuerySchema, 'query'),
+  listVendorProductPrices,
+);
 
-  router.get(
-    '/export',
-    authorize('VENDOR_PRODUCT_PRICE', 'READ'),
-    exportVendorProductPrices,
-  );
+router.get('/product-prices/export', exportVendorProductPrices);
 
-  router.post(
-    '/import',
-    authorize('VENDOR_PRODUCT_PRICE', 'CREATE'),
-    upload.single('file'),
-    importVendorProductPrices,
-  );
+router.post(
+  '/product-prices/import',
+  upload.single('file'),
+  importVendorProductPrices,
+);
 
-  router.get(
-    '/:id',
-    authorize('VENDOR_PRODUCT_PRICE', 'READ'),
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    getVendorProductPriceById,
-  );
+router.get(
+  '/product-prices/:id',
+  validate(vendorProductPriceIdParamSchema, 'params'),
+  getVendorProductPriceById,
+);
 
-  router.put(
-    '/:id',
-    authorize('VENDOR_PRODUCT_PRICE', 'UPDATE'),
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    validate(updateVendorProductPriceBodySchema, 'body'),
-    updateVendorProductPrice,
-  );
+router.put(
+  '/product-prices',
+  validate(updateVendorProductPriceBodySchema, 'body'),
+  updateVendorProductPrice,
+);
 
-  router.delete(
-    '/:id',
-    authorize('VENDOR_PRODUCT_PRICE', 'DELETE'),
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    deleteVendorProductPrice,
-  );
+router.delete(
+  '/product-prices/:id',
+  validate(vendorProductPriceIdParamSchema, 'params'),
+  deleteVendorProductPrice,
+);
 
-  return router;
-};
+export default router;

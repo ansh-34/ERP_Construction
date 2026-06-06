@@ -1,141 +1,301 @@
 import fs from 'fs';
 import XLSX from 'xlsx';
 import { Messages } from '../../../constants/index.js';
-import { vendorProductPriceRepository } from '../../../repositories/index.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
-import { translateResponse } from '../../../utils/translation.js';
+import {
+  AdminCurrencyRepository,
+  ProductGradeRepository,
+  ProductRepository,
+  uomRepository,
+  vendorProductPriceRepository,
+  vendorRepository,
+} from '../../../repositories/index.js';
+import { normalizePagination } from '@/utils/pagination.js';
 
 export const VendorProductPriceService = {
   async create(
     domainId: string,
+    adminId: string,
+    vendorId: string,
     dto: {
-      vendorName: string;
       productId: string;
       productGradeId: string;
+      currencyId: string;
       uomId: string;
       price: number;
-      productCode?: string;
-      productGradeCode?: string;
-      uomCode?: string;
-      status?: 'ACTIVE' | 'INACTIVE';
-    },
+    }[],
   ) {
-    const existing = await vendorProductPriceRepository.findUnique(
-      dto.vendorName,
-      dto.productId,
-      dto.productGradeId,
-      dto.uomId,
-      domainId,
+    const allKeys = dto.map(
+      (item) =>
+        `${vendorId}-${item.productId}-${item.productGradeId}-${item.uomId}-${item.currencyId}-${domainId}`,
     );
 
-    if (existing) {
-      throw new Error(Messages.VENDOR_PRODUCT_PRICE.ALREADY_EXISTS);
+    if (new Set(allKeys).size !== allKeys.length) {
+      throw new Error(
+        Messages.VENDOR_PRODUCT_PRICE.DUPLICATE_ENTRIES_IN_REQUEST,
+      );
     }
 
-    const record = await vendorProductPriceRepository.create({
-      ...dto,
-      domainId,
-      searchText: dto.vendorName.toLowerCase(),
-      isDeleted: false,
-    } as any);
+    const [
+      vendor,
+      validateProducts,
+      validateGrades,
+      validateUoms,
+      validateCurrencies,
+    ] = await Promise.all([
+      vendorRepository.findByIdAndDomain(vendorId, domainId),
+      ProductRepository.validateProductIds(
+        domainId,
+        dto.map((p) => p.productId),
+      ),
+      ProductGradeRepository.validateProductGradeIds(
+        domainId,
+        dto.map((p) => p.productGradeId),
+      ),
+      uomRepository.validateUomIds(
+        domainId,
+        dto.map((p) => p.uomId),
+      ),
+      AdminCurrencyRepository.validateCurrencyIds(
+        adminId,
+        dto.map((p) => p.currencyId),
+      ),
+    ]);
 
-    return record;
+    if (!vendor) {
+      throw new Error(Messages.VENDOR.NOT_FOUND);
+    }
+    if (!validateProducts) {
+      throw new Error(Messages.PRODUCT.INVALID_PRODUCT_SELECTED);
+    }
+    if (!validateGrades) {
+      throw new Error(Messages.PRODUCT_GRADE.INVALID_PRODUCT_GRADE_SELECTED);
+    }
+    if (!validateUoms) {
+      throw new Error(Messages.UOM.INVALID_UOM_SELECTED);
+    }
+    if (!validateCurrencies) {
+      throw new Error(Messages.CURRENCY.INVALID_CURRENCY_SELECTED);
+    }
+
+    const recordsToCreate = dto.map((item) => ({
+      vendorId,
+      productId: item.productId,
+      productGradeId: item.productGradeId,
+      uomId: item.uomId,
+      price: item.price,
+      currencyId: item.currencyId,
+      searchText: vendor.name.toLowerCase(),
+      key: `${vendorId}-${item.productId}-${item.productGradeId}-${item.uomId}-${item.currencyId}-${domainId}`,
+      status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE',
+    }));
+
+    return vendorProductPriceRepository.bulkUpsert(
+      domainId,
+      adminId,
+      recordsToCreate,
+    );
   },
 
   async findAll(
     domainId: string,
     query: {
-      page?: string;
+      offset?: string;
       limit?: string;
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
-      [key: string]: any;
     },
-    langCode?: string,
+    langCode: string,
   ) {
-    const page = parseInt(query.page ?? '1');
-    const limit = parseInt(query.limit ?? '10');
-    const skip = (page - 1) * limit;
+    const { offset, limit } = normalizePagination(query);
 
     const [totalCount, data] = await vendorProductPriceRepository.listByDomain(
       domainId,
       limit,
-      skip,
+      offset,
       {
-        status: query.status,
-        searchKey: query.searchKey,
+        filters: {
+          status: query.status,
+          searchKey: query.searchKey,
+        },
+        select: {
+          id: true,
+          vendorId: true,
+          productId: true,
+          currencyId: true,
+          productGradeId: true,
+          uomId: true,
+          price: true,
+          status: true,
+          product: { select: { displayName: true, code: true } },
+          productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
+          uom: { select: { displayName: true, code: true } },
+          createdAt: true,
+          updatedAt: true,
+          vendor: { select: { name: true, email: true, contactPerson: true } },
+          currency: { select: { name: true, code: true, symbol: true } },
+        },
       },
     );
 
+    const normalizeData = data.map((item: any) => ({
+      ...item,
+      product: {
+        ...item.product,
+        displayName:
+          item.product.displayName[langCode] || item.product.displayName.en,
+      },
+      productGrade: {
+        ...item.productGrade,
+        gradeDisplayName:
+          item.productGrade.gradeDisplayName[langCode] ??
+          item.productGrade.gradeDisplayName.en,
+      },
+      uom: {
+        ...item.uom,
+        displayName: item.uom.displayName[langCode] ?? item.uom.displayName.en,
+      },
+      currency: {
+        ...item.currency,
+        name: item.currency.name[langCode] ?? item.currency.name.en,
+      },
+    }));
+
     return {
-      data: translateResponse(data, langCode),
+      vendorProductPrices: normalizeData,
       pagination: {
-        total: totalCount,
-        page,
+        totalCount,
+        currentCount: data.length,
+        offset,
         limit,
       },
     };
   },
 
-  async findOne(domainId: string, id: string) {
-    const record = await vendorProductPriceRepository.findByIdAndDomain(
+  async findOne(domainId: string, id: string, langCode: string | null) {
+    const record: any = await vendorProductPriceRepository.findByIdAndDomain(
       id,
       domainId,
+      {
+        select: {
+          id: true,
+          vendorId: true,
+          productId: true,
+          currencyId: true,
+          productGradeId: true,
+          uomId: true,
+          price: true,
+          status: true,
+          product: { select: { displayName: true, code: true } },
+          productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
+          uom: { select: { displayName: true, code: true } },
+          createdAt: true,
+          updatedAt: true,
+          vendor: { select: { name: true, email: true, contactPerson: true } },
+          currency: { select: { name: true, code: true, symbol: true } },
+        },
+      },
     );
     if (!record) throw new Error(Messages.VENDOR_PRODUCT_PRICE.NOT_FOUND);
+
+    if (!langCode) return record;
+
+    record.product = {
+      ...record.product,
+      displayName:
+        record.product.displayName[langCode] || record.product.displayName.en,
+    };
+    record.productGrade = {
+      ...record.productGrade,
+      gradeDisplayName:
+        record.productGrade.gradeDisplayName[langCode] ??
+        record.productGrade.gradeDisplayName.en,
+    };
+    record.uom = {
+      ...record.uom,
+      displayName:
+        record.uom.displayName[langCode] ?? record.uom.displayName.en,
+    };
+    record.currency = {
+      ...record.currency,
+      name: record.currency.name[langCode] ?? record.currency.name.en,
+    };
     return record;
   },
 
   async update(
     domainId: string,
-    id: string,
     dto: {
-      vendorName?: string;
-      productId?: string;
-      productGradeId?: string;
+      vendorProductPriceId: string;
       uomId?: string;
       price?: number;
-      productCode?: string;
-      productGradeCode?: string;
-      uomCode?: string;
       status?: 'ACTIVE' | 'INACTIVE';
-    },
+    }[],
   ) {
-    const existing = await vendorProductPriceRepository.findByIdAndDomain(
-      id,
-      domainId,
-    );
-    if (!existing) {
-      throw new Error(Messages.VENDOR_PRODUCT_PRICE.NOT_FOUND);
-    }
+    const ids = dto.map((d) => d.vendorProductPriceId);
+    const uomIdsToValidate = dto
+      .filter((d) => d.uomId)
+      .map((d) => d.uomId!) as string[];
 
-    const vendorName = dto.vendorName || existing.vendorName;
-    const productId = dto.productId || existing.productId;
-    const productGradeId = dto.productGradeId || existing.productGradeId;
-    const uomId = dto.uomId || existing.uomId;
-
-    if (dto.vendorName || dto.productId || dto.productGradeId || dto.uomId) {
-      const duplicate = await vendorProductPriceRepository.findUnique(
-        vendorName,
-        productId,
-        productGradeId,
-        uomId,
+    if (uomIdsToValidate.length > 0) {
+      const validateUoms = await uomRepository.validateUomIds(
         domainId,
+        uomIdsToValidate,
       );
-
-      if (duplicate && duplicate.id !== id) {
-        throw new Error(Messages.VENDOR_PRODUCT_PRICE.ALREADY_EXISTS);
+      if (!validateUoms) {
+        throw new Error(Messages.UOM.INVALID_UOM_SELECTED);
       }
     }
 
-    const searchText = vendorName.toLowerCase();
+    const [recordsCount, records]: any =
+      await vendorProductPriceRepository.findAllByDomain(domainId, {
+        filters: { ids },
+      });
+    if (recordsCount !== ids.length) {
+      throw new Error(
+        Messages.VENDOR_PRODUCT_PRICE.INVALID_VENDOR_PRODUCT_PRICE_SELECTED,
+      );
+    }
 
-    const record = await vendorProductPriceRepository.update(id, {
-      ...dto,
-      searchText,
-    } as any);
+    const recordMap = new Map(
+      records.map((record: any) => [record.id, record]),
+    );
 
-    return record;
+    const updatedRecords = dto.map((item: any) => {
+      const existing: any = recordMap.get(item.vendorProductPriceId)!;
+
+      const uomId = item.uomId ?? existing.uomId;
+      const currencyId = item.currencyId ?? existing.currencyId;
+
+      return {
+        id: existing.id,
+        uomId,
+        price: item.price ?? existing.price,
+        currencyId,
+        status: item.status ?? existing.status,
+        key: `${existing.vendorId}-${existing.productId}-${existing.productGradeId}-${uomId}-${currencyId}-${domainId}`,
+      };
+    });
+
+    const keys = updatedRecords.map((r) => r.key);
+
+    if (new Set(keys).size !== keys.length) {
+      throw new Error(
+        Messages.VENDOR_PRODUCT_PRICE.DUPLICATE_ENTRIES_IN_REQUEST,
+      );
+    }
+
+    const uniqueKeysValid =
+      await vendorProductPriceRepository.validateUniqueKeys(
+        domainId,
+        keys,
+        updatedRecords.map((r) => r.id),
+      );
+
+    if (!uniqueKeysValid) {
+      throw new Error(Messages.VENDOR_PRODUCT_PRICE.UNIQUE_KEYS_VIOLATION);
+    }
+
+    return vendorProductPriceRepository.bulkUpdate(updatedRecords);
   },
 
   async softDelete(domainId: string, id: string) {
@@ -149,7 +309,7 @@ export const VendorProductPriceService = {
     return vendorProductPriceRepository.softDelete(id);
   },
 
-  async importExcel(filePath: string, domainId: string) {
+  async importExcel(filePath: string, domainId: string, adminId: string) {
     try {
       const workbook = XLSX.readFile(filePath);
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -162,35 +322,80 @@ export const VendorProductPriceService = {
         ...new Set(data.map((r) => r.productGradeCode).filter(Boolean)),
       ];
       const uomCodes = [...new Set(data.map((r) => r.uomCode).filter(Boolean))];
+      const currencyCodes = [
+        ...new Set(data.map((r) => r.currencyCode).filter(Boolean)),
+      ];
+      const vendorNames = [
+        ...new Set(data.map((r) => r.vendorName).filter(Boolean)),
+      ];
 
-      const [products, grades, uoms] = await Promise.all([
-        prisma.product.findMany({
-          where: { code: { in: productCodes }, domainId, isDeleted: false },
-        }),
-        prisma.productGrades.findMany({
-          where: { gradeCode: { in: gradeCodes }, domainId, isDeleted: false },
-        }),
-        prisma.uom.findMany({
-          where: { code: { in: uomCodes }, domainId, isDeleted: false },
-        }),
+      const [
+        validateProducts,
+        validateGrades,
+        validateUoms,
+        validateVendors,
+        validateCurrencies,
+      ] = await Promise.all([
+        ProductRepository.validateProductCodes(domainId, productCodes),
+        ProductGradeRepository.validateProductGradeCodes(domainId, gradeCodes),
+        uomRepository.validateUomCodes(domainId, uomCodes),
+        vendorRepository.validateVendorNames(domainId, vendorNames),
+        AdminCurrencyRepository.validateCurrencyCodes(adminId, currencyCodes),
       ]);
 
-      const productMap = Object.fromEntries(products.map((p) => [p.code, p]));
-      const gradeMap = Object.fromEntries(grades.map((g) => [g.gradeCode, g]));
-      const uomMap = Object.fromEntries(uoms.map((u) => [u.code, u]));
+      if (!validateProducts) {
+        throw new Error(Messages.PRODUCT.INVALID_PRODUCT_SELECTED);
+      }
+      if (!validateGrades) {
+        throw new Error(Messages.PRODUCT_GRADE.INVALID_PRODUCT_GRADE_SELECTED);
+      }
+      if (!validateUoms) {
+        throw new Error(Messages.UOM.INVALID_UOM_SELECTED);
+      }
+      if (!validateVendors) {
+        throw new Error(Messages.VENDOR.INVALID_VENDOR_SELECTED);
+      }
+      if (!validateCurrencies) {
+        throw new Error(Messages.CURRENCY.INVALID_CURRENCY_SELECTED);
+      }
+
+      const [productMap, gradeMap, uomMap, vendorMap, currencyMap] =
+        await Promise.all([
+          ProductRepository.find(domainId, {
+            filters: { codes: productCodes },
+            select: { id: true, code: true },
+          }).then((res) => new Map(res.map((r) => [r.code, r]))),
+          ProductGradeRepository.find(domainId, {
+            filters: { gradeCodes },
+            select: { id: true, code: true },
+          }).then((res) => new Map(res.map((r) => [r.gradeCode, r]))),
+          uomRepository
+            .find(domainId, {
+              filters: { codes: uomCodes },
+              select: { id: true, code: true },
+            })
+            .then((res) => new Map(res.map((r) => [r.code, r]))),
+          vendorRepository
+            .find(domainId, {
+              filters: { names: vendorNames },
+              select: { id: true, name: true },
+            })
+            .then((res) => new Map(res.map((r) => [r.name, r]))),
+          AdminCurrencyRepository.find(adminId, {
+            filters: { codes: currencyCodes },
+            select: { currencyId: true, currency: { select: { code: true } } },
+          }).then((res) => new Map(res.map((r: any) => [r.currency.code, r]))),
+        ]);
 
       const finalData = [];
       const failedRows = [];
 
       for (const row of data) {
-        if (!row.vendorName || !row.price) {
-          failedRows.push({ ...row, error: 'Missing vendorName or price' });
-          continue;
-        }
-
-        const product = productMap[row.productCode];
-        const grade = gradeMap[row.productGradeCode];
-        const uom = uomMap[row.uomCode];
+        const product = productMap.get(row.productCode);
+        const grade = gradeMap.get(row.productGradeCode);
+        const uom = uomMap.get(row.uomCode);
+        const vendor = vendorMap.get(row.vendorName);
+        const currency = currencyMap.get(row.currencyCode);
 
         if (!product) {
           failedRows.push({ ...row, error: 'Invalid productCode' });
@@ -204,22 +409,32 @@ export const VendorProductPriceService = {
           failedRows.push({ ...row, error: 'Invalid uomCode' });
           continue;
         }
+        if (!vendor) {
+          failedRows.push({ ...row, error: 'Invalid vendorName' });
+          continue;
+        }
+        if (!currency) {
+          failedRows.push({ ...row, error: 'Invalid currencyCode' });
+          continue;
+        }
         if (grade.productId !== product.id) {
           failedRows.push({ ...row, error: 'Grade mismatch for product' });
           continue;
         }
 
         finalData.push({
-          vendorName: row.vendorName,
+          vendorId: vendor.id,
           productId: product.id,
           productGradeId: grade.id,
           uomId: uom.id,
           price: parseFloat(row.price),
+          currencyId: currency.currencyId,
           productCode: row.productCode,
           productGradeCode: row.productGradeCode,
           uomCode: row.uomCode,
           searchText: row.vendorName.toLowerCase(),
           domainId,
+          adminId,
           status: 'ACTIVE' as any,
           isDeleted: false,
         });
@@ -250,10 +465,35 @@ export const VendorProductPriceService = {
   },
 
   async exportExcel(domainId: string) {
-    const data = await vendorProductPriceRepository.findAllByDomain(domainId);
+    const data: any = await vendorProductPriceRepository.findAllByDomain(
+      domainId,
+      {
+        select: {
+          vendor: {
+            select: { name: true },
+          },
+          product: {
+            select: { code: true, displayName: true },
+          },
+          productGrade: {
+            select: {
+              gradeCode: true,
+              gradeDisplayName: true,
+            },
+          },
+          uom: {
+            select: { code: true, displayName: true },
+          },
+          currency: {
+            select: { code: true, name: true },
+          },
+          price: true,
+        },
+      },
+    );
 
-    const exportData = data.map((item) => ({
-      vendorName: item.vendorName,
+    const exportData = data?.[1]?.map((item: any) => ({
+      vendorName: item.vendor.name,
       productCode: item.product.code,
       productName:
         typeof item.product.displayName === 'object' &&
@@ -273,6 +513,11 @@ export const VendorProductPriceService = {
           ? (item.uom.displayName as any).en || ''
           : '',
       price: item.price,
+      currencyCode: item.currency.code,
+      currencyName:
+        typeof item.currency.name === 'object' && item.currency.name !== null
+          ? (item.currency.name as any).en || ''
+          : '',
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);

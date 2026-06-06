@@ -8,6 +8,8 @@ export const createVendorProductPrice = async (req: Request, res: Response) => {
   try {
     const record = await VendorProductPriceService.create(
       req.user!.domainId,
+      req.user!.adminId,
+      req.params.id,
       req.body,
     );
     return res.status(HttpStatus.CREATED).json({
@@ -27,14 +29,16 @@ export const createVendorProductPrice = async (req: Request, res: Response) => {
 
 export const listVendorProductPrices = async (req: Request, res: Response) => {
   try {
-    const { data, pagination } = await VendorProductPriceService.findAll(
+    const language = req.headers.language as string | undefined;
+
+    const data = await VendorProductPriceService.findAll(
       req.user!.domainId,
       req.query,
+      language ?? 'en',
     );
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.VENDOR_PRODUCT_PRICE.RETRIEVED,
-      pagination: { ...pagination },
       data,
     });
   } catch (error) {
@@ -52,9 +56,11 @@ export const getVendorProductPriceById = async (
   res: Response,
 ) => {
   try {
+    const language = req.headers.language as string | undefined;
     const record = await VendorProductPriceService.findOne(
       req.user!.domainId,
       req.params.id,
+      language ?? null,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -75,7 +81,6 @@ export const updateVendorProductPrice = async (req: Request, res: Response) => {
   try {
     const record = await VendorProductPriceService.update(
       req.user!.domainId,
-      req.params.id,
       req.body,
     );
     return res.status(HttpStatus.OK).json({
@@ -138,6 +143,7 @@ export const importVendorProductPrices = async (
     const result = await VendorProductPriceService.importExcel(
       filePath!,
       req.user!.domainId,
+      req.user!.adminId,
     );
 
     return res.status(HttpStatus.OK).json({
@@ -164,7 +170,7 @@ export const exportVendorProductPrices = async (
       req.user!.domainId,
     );
 
-    res.download(filePath, 'vendor_product_prices.xlsx', (err) => {
+    return res.download(filePath, 'vendor_product_prices.xlsx', (err) => {
       if (err) {
         console.error('Error downloading file:', err);
       }

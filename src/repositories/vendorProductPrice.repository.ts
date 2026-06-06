@@ -1,5 +1,6 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import { randomUUID } from 'crypto';
 
 export const vendorProductPriceRepository = {
   create(data: Prisma.VendorProductPricingUncheckedCreateInput) {
@@ -36,13 +37,16 @@ export const vendorProductPriceRepository = {
     domainId: string,
     limit: number,
     offset: number,
-    filter?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string },
+    options: {
+      filters?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string };
+      select?: any;
+    } = {},
   ) {
-    const searchKey = filter?.searchKey?.trim() || '';
+    const searchKey = options.filters?.searchKey?.trim() || '';
     const where: Prisma.VendorProductPricingWhereInput = {
       domainId,
       isDeleted: false,
-      ...(filter?.status && { status: filter.status }),
+      ...(options.filters?.status && { status: options.filters.status }),
       ...(searchKey && {
         searchText: { contains: searchKey, mode: 'insensitive' as const },
       }),
@@ -55,23 +59,15 @@ export const vendorProductPriceRepository = {
         take: limit,
         skip: offset,
         orderBy: { createdAt: 'desc' },
-        include: {
-          product: { select: { displayName: true, code: true } },
-          productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
-          uom: { select: { displayName: true, code: true } },
-        },
+        ...(options.select && { select: options.select }),
       }),
     ]);
   },
 
-  findByIdAndDomain(id: string, domainId: string) {
+  findByIdAndDomain(id: string, domainId: string, options?: { select?: any }) {
     return prisma.vendorProductPricing.findFirst({
       where: { id, domainId, isDeleted: false },
-      include: {
-        product: { select: { displayName: true, code: true } },
-        productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
-        uom: { select: { displayName: true, code: true } },
-      },
+      ...(options && { select: options.select }),
     });
   },
 
@@ -86,14 +82,183 @@ export const vendorProductPriceRepository = {
     });
   },
 
-  findAllByDomain(domainId: string) {
-    return prisma.vendorProductPricing.findMany({
-      where: { domainId, isDeleted: false },
-      include: {
-        product: { select: { displayName: true, code: true } },
-        productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
-        uom: { select: { displayName: true, code: true } },
+  async findAllByDomain(
+    domainId: string,
+    options: {
+      filters?: { searchKey?: any; status?: any; key?: any; ids?: string[] };
+      select?: any;
+    } = {},
+  ) {
+    const whereClause: any = {
+      domainId,
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.searchKey && {
+          searchText: {
+            contains: options.filters.searchKey.trim(),
+            mode: Prisma.QueryMode.insensitive,
+          },
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.key && { key: options.filters.key }),
+        ...(options.filters.ids && { id: { in: options.filters.ids } }),
+      }),
+    };
+    return await Promise.all([
+      prisma.vendorProductPricing.count({ where: whereClause }),
+      prisma.vendorProductPricing.findMany({
+        where: whereClause,
+        ...(options.select && { select: options.select }),
+      }),
+    ]);
+  },
+
+  async bulkUpsert(
+    domainId: string,
+    adminId: string,
+    pricingData: {
+      vendorId: string;
+      productId: string;
+      productGradeId: string;
+      uomId: string;
+      currencyId: string;
+      price: number;
+      status: 'ACTIVE' | 'INACTIVE';
+      searchText: string;
+      key: string;
+    }[],
+  ) {
+    if (!pricingData.length) {
+      return { count: 0 };
+    }
+
+    const values = pricingData.map(
+      (item) =>
+        Prisma.sql`(
+        ${randomUUID()},
+        ${domainId},
+        ${adminId},
+        ${item.vendorId},
+        ${item.productId},
+        ${item.productGradeId},
+        ${item.uomId},
+        ${item.price},
+        ${item.currencyId},
+        ${item.status},
+        ${item.searchText},
+        ${item.key},
+        false,
+        NOW(),
+        NOW()
+      )`,
+    );
+
+    return prisma.$executeRaw`
+  INSERT INTO "VendorProductPricing" (
+    "id",
+    "domainId",
+    "adminId",
+    "vendorId",
+    "productId",
+    "productGradeId",
+    "uomId",
+    "price",
+    "currencyId",
+    "status",
+    "searchText",
+    "key",
+    "isDeleted",
+    "createdAt",
+    "updatedAt"
+  )
+  VALUES ${Prisma.join(values)}
+  ON CONFLICT (
+    "key",
+    "isDeleted"
+  )
+  DO UPDATE SET
+    "price" = EXCLUDED."price",
+    "currencyId" = EXCLUDED."currencyId",
+    "status" = EXCLUDED."status",
+    "searchText" = EXCLUDED."searchText",
+    "isDeleted" = false,
+    "updatedAt" = NOW()
+`;
+  },
+
+  async validateVendorProductPriceIds(domainId: string, ids: string[]) {
+    const count = await prisma.vendorProductPricing.count({
+      where: { domainId, id: { in: ids }, isDeleted: false },
+    });
+    return count === ids.length;
+  },
+
+  async validateUniqueKeys(
+    domainId: string,
+    keys: string[],
+    excludeIds: string[],
+  ) {
+    const count = await prisma.vendorProductPricing.count({
+      where: {
+        domainId,
+        key: {
+          in: keys,
+        },
+        id: {
+          notIn: excludeIds,
+        },
+        isDeleted: false,
       },
     });
+
+    return count === 0;
+  },
+
+  async bulkUpdate(
+    updates: {
+      id: string;
+      uomId: string;
+      currencyId: string;
+      price: number;
+      status: 'ACTIVE' | 'INACTIVE';
+      key: string;
+    }[],
+  ) {
+    if (!updates.length) {
+      return { count: 0 };
+    }
+
+    const values = updates.map(
+      (item) => Prisma.sql`(
+      ${item.id},
+      ${item.uomId},
+      ${item.price},
+      ${item.currencyId},
+      ${item.status},
+      ${item.key}
+    )`,
+    );
+
+    return prisma.$executeRaw`
+  UPDATE "VendorProductPricing" vpp
+  SET
+    "uomId" = data."uomId"::uuid,
+    "price" = data."price"::double precision,
+    "currencyId" = data."currencyId"::uuid,
+    "status" = data."status"::"StatusEnum",
+    "key" = data."key",
+    "updatedAt" = NOW()
+  FROM (
+    VALUES ${Prisma.join(values)}
+  ) AS data(
+    "id",
+    "uomId",
+    "price",
+    "currencyId",
+    "status",
+    "key"
+  )
+  WHERE vpp."id" = data."id"::uuid
+`;
   },
 };

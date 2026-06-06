@@ -1,54 +1,113 @@
 import { errors } from './responses.js';
 
-const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
-  [`${basePath}`]: {
-    get: {
-      tags,
-      summary: 'List vendor product prices',
-      description: 'Retrieve a paginated list of vendor product prices.',
+export const VendorProductPricePaths = {
+  '/api/domain/vendor/{vendorId}/product-prices': {
+    post: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Create vendor product prices',
+      description: 'Bulk create vendor product prices for a vendor.',
       security: [{ bearerAuth: [] }],
+
+      parameters: [
+        {
+          in: 'path',
+          name: 'vendorId',
+          required: true,
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+          description: 'Vendor Id',
+        },
+      ],
+
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/CreateVendorProductPriceRequest',
+            },
+          },
+        },
+      },
+
+      responses: {
+        201: {
+          description: 'Vendor product prices created successfully',
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/vendor/product-prices': {
+    get: {
+      tags: ['Vendor Product Prices'],
+      summary: 'List vendor product prices',
+      description: 'Retrieve paginated vendor product prices.',
+
+      security: [{ bearerAuth: [] }],
+
       parameters: [
         {
           in: 'query',
-          name: 'page',
-          schema: { type: 'integer', minimum: 1, default: 1 },
-          description: 'Page number',
+          name: 'offset',
+          schema: {
+            type: 'integer',
+            default: 0,
+          },
         },
         {
           in: 'query',
           name: 'limit',
-          schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-          description: 'Records per page',
+          schema: {
+            type: 'integer',
+            default: 10,
+          },
         },
         {
-          in: 'query',
-          name: 'status',
+          in: 'header',
+          name: 'language',
           schema: {
             type: 'string',
-            enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
+            example: 'hi',
           },
-          description: 'Filter by status',
+          description: 'Language code used for translated names',
         },
       ],
+
       responses: {
         200: {
-          description: 'Vendor product prices retrieved',
+          description: 'Vendor product prices retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean', example: true },
+                  success: {
+                    type: 'boolean',
+                    example: true,
+                  },
                   message: {
                     type: 'string',
-                    example: 'Vendor product prices retrieved',
+                    example: 'Vendor product prices retrieved successfully',
                   },
                   pagination: {
                     type: 'object',
                     properties: {
-                      total: { type: 'integer', example: 5 },
-                      page: { type: 'integer', example: 1 },
-                      limit: { type: 'integer', example: 10 },
+                      total: {
+                        type: 'integer',
+                        example: 100,
+                      },
+                      offset: {
+                        type: 'integer',
+                        example: 0,
+                      },
+                      limit: {
+                        type: 'integer',
+                        example: 10,
+                      },
                     },
                   },
                   data: {
@@ -65,34 +124,102 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         ...errors,
       },
     },
-    post: {
-      tags,
-      summary: 'Create vendor product price',
-      description: 'Create a new vendor product price mapping.',
+
+    put: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Update vendor product prices',
+      description: 'Bulk update vendor product prices.',
+
       security: [{ bearerAuth: [] }],
+
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/CreateVendorProductPriceBody',
+              $ref: '#/components/schemas/UpdateVendorProductPriceRequest',
             },
           },
         },
       },
+
       responses: {
-        201: {
-          description: 'Vendor product price created successfully',
+        200: {
+          description: 'Vendor product prices updated successfully',
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/vendor/product-prices/export': {
+    get: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Export vendor product prices',
+      description: 'Export vendor product prices as CSV.',
+
+      security: [{ bearerAuth: [] }],
+
+      responses: {
+        200: {
+          description: 'CSV file generated successfully',
+          content: {
+            'text/csv': {
+              schema: {
+                type: 'string',
+                format: 'binary',
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/vendor/product-prices/{vendorProductPriceId}': {
+    get: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Get vendor product price by id',
+      description: 'Retrieve vendor product price details.',
+
+      security: [{ bearerAuth: [] }],
+
+      parameters: [
+        {
+          in: 'path',
+          name: 'vendorProductPriceId',
+          required: true,
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'header',
+          name: 'language',
+          schema: {
+            type: 'string',
+            example: 'hi',
+          },
+        },
+      ],
+
+      responses: {
+        200: {
+          description: 'Vendor product price retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean', example: true },
+                  success: {
+                    type: 'boolean',
+                    example: true,
+                  },
                   message: {
                     type: 'string',
-                    example:
-                      'Vendor product price mapping created successfully',
+                    example: 'Vendor product price retrieved successfully',
                   },
                   data: {
                     $ref: '#/components/schemas/VendorProductPriceObject',
@@ -106,67 +233,118 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
       },
     },
   },
-  [`${basePath}/export`]: {
-    get: {
-      tags,
-      summary: 'Export vendor product prices',
-      description: 'Export all vendor product prices as a CSV file.',
+
+  '/api/domain/user/{vendorId}/product-prices': {
+    post: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Create vendor product prices',
+      description: 'Bulk create user product prices for a user.',
       security: [{ bearerAuth: [] }],
-      responses: {
-        200: {
-          description: 'CSV file exported successfully',
-          content: {
-            'text/csv': {
-              schema: { type: 'string' },
+
+      parameters: [
+        {
+          in: 'path',
+          name: 'vendorId',
+          required: true,
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+          description: 'Vendor Id',
+        },
+      ],
+
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/CreateVendorProductPriceRequest',
             },
           },
+        },
+      },
+
+      responses: {
+        201: {
+          description: 'User product prices created successfully',
         },
         ...errors,
       },
     },
   },
-  [`${basePath}/import`]: {
-    post: {
-      tags,
-      summary: 'Import vendor product prices',
-      description: 'Import vendor product prices from a CSV file.',
+
+  '/api/domain/user/product-prices': {
+    get: {
+      tags: ['User Product Prices'],
+      summary: 'List user product prices',
+      description: 'Retrieve paginated user product prices.',
       security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'multipart/form-data': {
-            schema: {
-              type: 'object',
-              required: ['file'],
-              properties: {
-                file: {
-                  type: 'string',
-                  format: 'binary',
-                  description: 'CSV file to import',
-                },
-              },
-            },
+
+      parameters: [
+        {
+          in: 'query',
+          name: 'offset',
+          schema: {
+            type: 'integer',
+            default: 0,
           },
         },
-      },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: {
+            type: 'integer',
+            default: 10,
+          },
+        },
+        {
+          in: 'header',
+          name: 'language',
+          schema: {
+            type: 'string',
+            example: 'hi',
+          },
+        },
+      ],
+
       responses: {
         200: {
-          description: 'Import completed successfully',
+          description: 'User product prices retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean', example: true },
+                  success: {
+                    type: 'boolean',
+                    example: true,
+                  },
                   message: {
                     type: 'string',
-                    example: 'Import completed successfully',
+                    example: 'User product prices retrieved successfully',
                   },
-                  data: {
+                  pagination: {
                     type: 'object',
                     properties: {
-                      createdCount: { type: 'integer', example: 10 },
-                      failedCount: { type: 'integer', example: 0 },
+                      total: {
+                        type: 'integer',
+                        example: 100,
+                      },
+                      offset: {
+                        type: 'integer',
+                        example: 0,
+                      },
+                      limit: {
+                        type: 'integer',
+                        example: 10,
+                      },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/UserProductPriceObject',
                     },
                   },
                 },
@@ -177,87 +355,49 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         ...errors,
       },
     },
-  },
-  [`${basePath}/{id}`]: {
-    get: {
-      tags,
-      summary: 'Get vendor product price by ID',
-      description: 'Retrieve a single vendor product price mapping by ID.',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'id',
-          required: true,
-          schema: { type: 'string', format: 'uuid' },
-          description: 'Vendor product price ID',
-        },
-      ],
-      responses: {
-        200: {
-          description: 'Vendor product price retrieved',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: {
-                    type: 'string',
-                    example: 'Vendor product price retrieved',
-                  },
-                  data: {
-                    $ref: '#/components/schemas/VendorProductPriceObject',
-                  },
-                },
-              },
-            },
-          },
-        },
-        ...errors,
-      },
-    },
+
     put: {
-      tags,
-      summary: 'Update vendor product price',
-      description: 'Update field values of a vendor product price mapping.',
+      tags: ['User Product Prices'],
+      summary: 'Update user product prices',
+      description: 'Bulk update user product prices.',
       security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'id',
-          required: true,
-          schema: { type: 'string', format: 'uuid' },
-          description: 'Vendor product price ID',
-        },
-      ],
+
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/UpdateVendorProductPriceBody',
+              $ref: '#/components/schemas/UpdateVendorProductPriceRequest',
             },
           },
         },
       },
+
       responses: {
         200: {
-          description: 'Vendor product price updated successfully',
+          description: 'User product prices updated successfully',
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/user/product-prices/export': {
+    get: {
+      tags: ['User Product Prices'],
+      summary: 'Export user product prices',
+      description: 'Export user product prices as CSV.',
+
+      security: [{ bearerAuth: [] }],
+
+      responses: {
+        200: {
+          description: 'CSV file generated successfully',
           content: {
-            'application/json': {
+            'text/csv': {
               schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: {
-                    type: 'string',
-                    example: 'Vendor product price updated successfully',
-                  },
-                  data: {
-                    $ref: '#/components/schemas/VendorProductPriceObject',
-                  },
-                },
+                type: 'string',
+                format: 'binary',
               },
             },
           },
@@ -265,34 +405,55 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
         ...errors,
       },
     },
-    delete: {
-      tags,
-      summary: 'Delete vendor product price',
-      description: 'Soft-delete a vendor product price mapping.',
+  },
+
+  '/api/domain/user/product-prices/{userProductPriceId}': {
+    get: {
+      tags: ['User Product Prices'],
+      summary: 'Get user product price by id',
+      description: 'Retrieve user product price details.',
+
       security: [{ bearerAuth: [] }],
+
       parameters: [
         {
           in: 'path',
-          name: 'id',
+          name: 'userProductPriceId',
           required: true,
-          schema: { type: 'string', format: 'uuid' },
-          description: 'Vendor product price ID',
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'header',
+          name: 'language',
+          schema: {
+            type: 'string',
+            example: 'hi',
+          },
         },
       ],
+
       responses: {
         200: {
-          description: 'Vendor product price deleted successfully',
+          description: 'User product price retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean', example: true },
+                  success: {
+                    type: 'boolean',
+                    example: true,
+                  },
                   message: {
                     type: 'string',
-                    example: 'Vendor product price deleted successfully',
+                    example: 'User product price retrieved successfully',
                   },
-                  data: { type: 'object', nullable: true, example: null },
+                  data: {
+                    $ref: '#/components/schemas/UserProductPriceObject',
+                  },
                 },
               },
             },
@@ -302,13 +463,4 @@ const buildVendorProductPricePaths = (basePath: string, tags: string[]) => ({
       },
     },
   },
-});
-
-export const VendorProductPricePaths = {
-  ...buildVendorProductPricePaths('/api/domain/vendor-product-prices', [
-    'Vendor Product Prices',
-  ]),
-  ...buildVendorProductPricePaths('/api/user/vendor-product-prices', [
-    'User Vendor Product Prices',
-  ]),
 };

@@ -1,75 +1,327 @@
 export const VendorProductPriceSchemas = {
-  CreateVendorProductPriceBody: {
-    type: 'object',
-    required: ['vendorName', 'productId', 'productGradeId', 'uomId', 'price'],
-    properties: {
-      vendorName: { type: 'string', example: 'Vendor A' },
-      productId: {
-        type: 'string',
-        format: 'uuid',
-        example: '7f8e9d0c-1b2a-3c4d-5e6f-7a8b9c0d1e2f',
-      },
-      productGradeId: {
-        type: 'string',
-        format: 'uuid',
-        example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-      },
-      uomId: {
-        type: 'string',
-        format: 'uuid',
-        example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0',
-      },
-      price: { type: 'number', minimum: 0, example: 150.5 },
-      productCode: { type: 'string', example: 'PRD-01' },
-      productGradeCode: { type: 'string', example: 'GRD-A' },
-      uomCode: { type: 'string', example: 'KG' },
-      status: {
-        type: 'string',
-        enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
-        default: 'ACTIVE',
-        example: 'ACTIVE',
+  CreateVendorProductPriceRequest: {
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['productId', 'productGradeId', 'uomId', 'price', 'currencyId'],
+      properties: {
+        productId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        productGradeId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        uomId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        currencyId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        price: {
+          type: 'number',
+          minimum: 0,
+          example: 150.5,
+        },
       },
     },
   },
-  UpdateVendorProductPriceBody: {
-    type: 'object',
-    properties: {
-      vendorName: { type: 'string', example: 'Vendor B' },
-      productId: { type: 'string', format: 'uuid' },
-      productGradeId: { type: 'string', format: 'uuid' },
-      uomId: { type: 'string', format: 'uuid' },
-      price: { type: 'number', minimum: 0, example: 160.0 },
-      productCode: { type: 'string' },
-      productGradeCode: { type: 'string' },
-      uomCode: { type: 'string' },
-      status: {
-        type: 'string',
-        enum: ['active', 'inactive', 'ACTIVE', 'INACTIVE'],
+
+  UpdateVendorProductPriceRequest: {
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['vendorProductPriceId', 'uomId', 'currencyId', 'price'],
+      properties: {
+        vendorProductPriceId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        uomId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        currencyId: {
+          type: 'string',
+          format: 'uuid',
+        },
+        price: {
+          type: 'number',
+          minimum: 0,
+          example: 150.5,
+        },
       },
     },
   },
+
   VendorProductPriceObject: {
     type: 'object',
     properties: {
       id: {
         type: 'string',
         format: 'uuid',
-        example: 'b6f5d4c3-b2a1-3c4d-5e6f-7a8b9c0d1e2f',
       },
-      vendorName: { type: 'string', example: 'Vendor A' },
-      productId: { type: 'string', format: 'uuid' },
-      productGradeId: { type: 'string', format: 'uuid' },
-      uomId: { type: 'string', format: 'uuid' },
-      price: { type: 'number', example: 150.5 },
-      productCode: { type: 'string', nullable: true, example: 'PRD-01' },
-      productGradeCode: { type: 'string', nullable: true, example: 'GRD-A' },
-      uomCode: { type: 'string', nullable: true, example: 'KG' },
-      searchText: { type: 'string', example: 'vendor a' },
-      domainId: { type: 'string', format: 'uuid' },
-      status: { type: 'string', example: 'ACTIVE' },
-      isDeleted: { type: 'boolean', example: false },
-      createdAt: { type: 'string', format: 'date-time' },
-      updatedAt: { type: 'string', format: 'date-time' },
+
+      vendorId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      productId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      productGradeId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      uomId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      currencyId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      price: {
+        type: 'number',
+        example: 150.5,
+      },
+
+      status: {
+        type: 'string',
+        example: 'ACTIVE',
+      },
+
+      product: {
+        type: 'object',
+        properties: {
+          displayName: {
+            type: 'string',
+            example: 'Ultra Cement',
+          },
+          code: {
+            type: 'string',
+            example: 'ULTRA_CEMENT',
+          },
+        },
+      },
+
+      productGrade: {
+        type: 'object',
+        properties: {
+          gradeDisplayName: {
+            type: 'string',
+            example: 'Grade A - Premium',
+          },
+          gradeCode: {
+            type: 'string',
+            example: 'GRADE_A',
+          },
+        },
+      },
+
+      uom: {
+        type: 'object',
+        properties: {
+          displayName: {
+            type: 'string',
+            example: 'Liters',
+          },
+          code: {
+            type: 'string',
+            example: 'LTR',
+          },
+        },
+      },
+
+      vendor: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          email: {
+            type: 'string',
+          },
+          contactPerson: {
+            type: 'string',
+          },
+        },
+      },
+
+      currency: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Dollar',
+          },
+          code: {
+            type: 'string',
+            example: 'DOLLAR',
+          },
+          symbol: {
+            type: 'string',
+            example: '$',
+          },
+        },
+      },
+
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+      },
+
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+      },
+    },
+  },
+};
+
+export const UserProductPriceSchemas = {
+  CreateUserProductPriceRequest: {
+    $ref: '#/components/schemas/CreateVendorProductPriceRequest',
+  },
+
+  UpdateUserProductPriceRequest: {
+    $ref: '#/components/schemas/UpdateVendorProductPriceRequest',
+  },
+
+  UserProductPriceObject: {
+    type: 'object',
+
+    properties: {
+      id: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      userId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      productId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      productGradeId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      uomId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      currencyId: {
+        type: 'string',
+        format: 'uuid',
+      },
+
+      price: {
+        type: 'number',
+        example: 150.5,
+      },
+
+      status: {
+        type: 'string',
+        example: 'ACTIVE',
+      },
+
+      product: {
+        type: 'object',
+        properties: {
+          displayName: {
+            type: 'string',
+            example: 'Ultra Cement',
+          },
+          code: {
+            type: 'string',
+            example: 'ULTRA_CEMENT',
+          },
+        },
+      },
+
+      productGrade: {
+        type: 'object',
+        properties: {
+          gradeDisplayName: {
+            type: 'string',
+            example: 'Grade A - Premium',
+          },
+          gradeCode: {
+            type: 'string',
+            example: 'GRADE_A',
+          },
+        },
+      },
+
+      uom: {
+        type: 'object',
+        properties: {
+          displayName: {
+            type: 'string',
+            example: 'Liters',
+          },
+          code: {
+            type: 'string',
+            example: 'LTR',
+          },
+        },
+      },
+
+      user: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          email: {
+            type: 'string',
+          },
+        },
+      },
+
+      currency: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            example: 'Dollar',
+          },
+          code: {
+            type: 'string',
+            example: 'DOLLAR',
+          },
+          symbol: {
+            type: 'string',
+            example: '$',
+          },
+        },
+      },
+
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+      },
+
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+      },
     },
   },
 };

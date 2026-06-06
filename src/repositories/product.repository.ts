@@ -146,6 +146,39 @@ export const ProductRepository = {
     });
   },
 
+  find(
+    domainId: string,
+    options?: {
+      filters?: {
+        searchKey?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+        ids?: string[];
+        codes?: string[];
+      };
+      select?: any;
+    },
+  ) {
+    const whereClause: any = {
+      domainId,
+      isDeleted: false,
+      ...(options?.filters && {
+        ...(options.filters.searchKey && {
+          searchText: {
+            contains: options.filters.searchKey.trim(),
+            mode: 'insensitive',
+          },
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.ids && { id: { in: options.filters.ids } }),
+        ...(options.filters.codes && { code: { in: options.filters.codes } }),
+      }),
+    };
+    return prisma.product.findMany({
+      where: whereClause,
+      ...(options && { select: options.select }),
+    });
+  },
+
   // Keep the verbose version if you need it elsewhere, or remove it
   findByIdWithDetails(id: string, domainId: string) {
     return prisma.product.findFirst({
@@ -172,5 +205,27 @@ export const ProductRepository = {
         code: (product?.code || id) + suffix,
       },
     });
+  },
+
+  async validateProductIds(domainId: string, productIds: string[]) {
+    const count = await prisma.product.count({
+      where: {
+        id: { in: productIds },
+        domainId,
+        isDeleted: false,
+      },
+    });
+    return count === productIds.length;
+  },
+
+  async validateProductCodes(domainId: string, productCodes: string[]) {
+    const count = await prisma.product.count({
+      where: {
+        code: { in: productCodes },
+        domainId,
+        isDeleted: false,
+      },
+    });
+    return count === productCodes.length;
   },
 };
