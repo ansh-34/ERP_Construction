@@ -212,6 +212,7 @@ export const Messages = Object.freeze({
     UPDATE_FAILED: 'Failed to update currency',
     DELETE_FAILED: 'Failed to delete currency',
     NAME_ALREADY_EXISTS: 'Currency with this name already exists',
+    INVALID_CURRENCY_SELECTED: 'One or more selected currencies are invalid',
   },
   PRODUCT: {
     CREATED: 'Product created successfully',
@@ -228,6 +229,7 @@ export const Messages = Object.freeze({
     GRADE_DISPLAY_NAME_EN_REQUIRED: 'gradeDisplayName in english is required',
     STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
     GRADE_CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
+    INVALID_PRODUCT_SELECTED: 'One or more selected products are invalid',
   },
   PRODUCT_GRADE: {
     CREATED: 'Product grade created successfully',
@@ -241,6 +243,8 @@ export const Messages = Object.freeze({
     DELETE_FAILED: 'Failed to delete product grade',
     CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
     GRADE_DISPLAY_NAME_EN_REQUIRED: 'gradeDisplayName in english is required',
+    INVALID_PRODUCT_GRADE_SELECTED:
+      'One or more selected product grades are invalid',
   },
   PRODUCT_GRADE_STD_RATE: {
     CREATED: 'Product grade standard rate created successfully',
@@ -367,6 +371,7 @@ export const Messages = Object.freeze({
     UPDATE_FAILED: 'Failed to update UOM',
     DELETION_FAILED: 'Failed to delete UOM',
     CODE_ALREADY_EXISTS: 'UOM with this code already exists',
+    INVALID_UOM_SELECTED: 'One or more selected UOMs are invalid',
   },
   PASSWORD_RESET: {
     OTP_SENT: 'If an account with this email exists, an OTP has been sent',
@@ -474,6 +479,12 @@ export const Messages = Object.freeze({
     IMPORT_SUCCESS: 'Vendor product pricing imported successfully',
     IMPORT_FAILED: 'Failed to import vendor product pricing',
     EXPORT_FAILED: 'Failed to export vendor product pricing',
+    INVALID_VENDOR_PRODUCT_PRICE_SELECTED:
+      'One or more selected vendor product pricing records are invalid',
+    DUPLICATE_ENTRIES_IN_REQUEST:
+      'Duplicate entries in request. Each vendor-product-grade-UOM combination must be unique.',
+    UNIQUE_KEYS_VIOLATION:
+      'One or more combination of vendor-product-grade-UOM already exists.',
   },
   VENDOR: {
     CREATED: 'Vendor created successfully',
@@ -487,6 +498,7 @@ export const Messages = Object.freeze({
     DELETE_FAILED: 'Failed to delete vendor',
     CODE_ALREADY_EXISTS: 'Vendor with this code already exists',
     EMAIL_ALREADY_EXISTS: 'Vendor with this email already exists',
+    INVALID_VENDOR_SELECTED: 'Selected vendor is invalid',
   },
   INVOICE: {
     CREATED: 'Invoice created successfully',

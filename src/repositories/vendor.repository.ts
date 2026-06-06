@@ -71,4 +71,62 @@ export const vendorRepository = {
       data: { isDeleted: true, status: 'INACTIVE' },
     });
   },
+
+  async validateVendorIds(domainId: string, vendorIds: string[]) {
+    return prisma.vendor
+      .count({
+        where: {
+          id: { in: vendorIds },
+          domainId,
+          isDeleted: false,
+        },
+      })
+      .then((count) => count === vendorIds.length);
+  },
+
+  validateVendorNames(domainId: string, names: string[]) {
+    if (names.length === 0) {
+      return true;
+    }
+    return prisma.vendor
+      .count({
+        where: { name: { in: names }, isDeleted: false, domainId },
+      })
+      .then((count) => count === names.length);
+  },
+
+  find(
+    domainId: string,
+    options?: {
+      filters?: {
+        searchKey?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+        ids?: string[];
+        names?: string[];
+      };
+      select?: any;
+    },
+  ) {
+    const whereClause: any = {
+      domainId,
+      isDeleted: false,
+      ...(options?.filters && {
+        ...(options.filters.searchKey && {
+          searchText: {
+            contains: options.filters.searchKey.trim(),
+            mode: 'insensitive',
+          },
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.ids && { id: { in: options.filters.ids } }),
+        ...(options.filters.names && {
+          name: { in: options.filters.names },
+        }),
+      }),
+    };
+    return prisma.vendor.findMany({
+      where: whereClause,
+      ...(options && { select: options.select }),
+    });
+  },
 };

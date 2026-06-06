@@ -51,6 +51,41 @@ export const uomRepository = {
     });
   },
 
+  find(
+    domainId: string,
+    options?: {
+      filters?: {
+        searchKey?: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+        ids?: string[];
+        codes?: string[];
+      };
+      select?: any;
+    },
+  ) {
+    const whereClause: any = {
+      domainId,
+      isDeleted: false,
+      ...(options?.filters && {
+        ...(options.filters.searchKey && {
+          searchText: {
+            contains: options.filters.searchKey.trim(),
+            mode: 'insensitive',
+          },
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.ids && { id: { in: options.filters.ids } }),
+        ...(options.filters.codes && {
+          code: { in: options.filters.codes },
+        }),
+      }),
+    };
+    return prisma.uom.findMany({
+      where: whereClause,
+      ...(options && { select: options.select }),
+    });
+  },
+
   update(id: string, data: Prisma.UomUncheckedUpdateInput) {
     return prisma.uom.update({ where: { id }, data });
   },
@@ -60,5 +95,19 @@ export const uomRepository = {
       where: { id },
       data: { isDeleted: true, status: 'INACTIVE' },
     });
+  },
+
+  async validateUomIds(domainId: string, ids: string[]) {
+    const count = await prisma.uom.count({
+      where: { domainId, id: { in: ids }, isDeleted: false },
+    });
+    return count === ids.length;
+  },
+
+  async validateUomCodes(domainId: string, codes: string[]) {
+    const count = await prisma.uom.count({
+      where: { domainId, code: { in: codes }, isDeleted: false },
+    });
+    return count === codes.length;
   },
 };

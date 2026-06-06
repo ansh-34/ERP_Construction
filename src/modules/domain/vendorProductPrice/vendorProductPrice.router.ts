@@ -12,50 +12,51 @@ import {
 } from './vendorProductPrice.controller.js';
 import {
   createVendorProductPriceBodySchema,
+  createVendorProductPriceParamsSchema,
   listVendorProductPricesQuerySchema,
   vendorProductPriceIdParamSchema,
   updateVendorProductPriceBodySchema,
 } from './vendorProductPrice.validator.js';
 
-// upload middleware imported from middlewares/upload (memory storage)
+const router = Router();
 
-export const vendorProductPriceRouter = (): Router => {
-  const router = Router();
+router.post(
+  '/:id/product-prices',
+  validate(createVendorProductPriceParamsSchema, 'params'),
+  validate(createVendorProductPriceBodySchema, 'body'),
+  createVendorProductPrice,
+);
 
-  router.post(
-    '/',
-    validate(createVendorProductPriceBodySchema, 'body'),
-    createVendorProductPrice,
-  );
+router.get(
+  '/product-prices',
+  validate(listVendorProductPricesQuerySchema, 'query'),
+  listVendorProductPrices,
+);
 
-  router.get(
-    '/',
-    validate(listVendorProductPricesQuerySchema, 'query'),
-    listVendorProductPrices,
-  );
+router.get('/product-prices/export', exportVendorProductPrices);
 
-  router.get('/export', exportVendorProductPrices);
+router.post(
+  '/product-prices/import',
+  upload.single('file'),
+  importVendorProductPrices,
+);
 
-  router.post('/import', upload.single('file'), importVendorProductPrices);
+router.get(
+  '/product-prices/:id',
+  validate(vendorProductPriceIdParamSchema, 'params'),
+  getVendorProductPriceById,
+);
 
-  router.get(
-    '/:id',
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    getVendorProductPriceById,
-  );
+router.put(
+  '/product-prices',
+  validate(updateVendorProductPriceBodySchema, 'body'),
+  updateVendorProductPrice,
+);
 
-  router.put(
-    '/:id',
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    validate(updateVendorProductPriceBodySchema, 'body'),
-    updateVendorProductPrice,
-  );
+router.delete(
+  '/product-prices/:id',
+  validate(vendorProductPriceIdParamSchema, 'params'),
+  deleteVendorProductPrice,
+);
 
-  router.delete(
-    '/:id',
-    validate(vendorProductPriceIdParamSchema, 'params'),
-    deleteVendorProductPrice,
-  );
-
-  return router;
-};
+export default router;
