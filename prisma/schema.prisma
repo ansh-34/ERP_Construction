@@ -1286,7 +1286,7 @@ model ProjectTaskImage {
   imageId     String?      @db.Uuid
   image       Media?       @relation(fields: [imageId], references: [id], onDelete: Restrict)
   imageUrl    String
-  description Json?
+  description String?
   taskId      String       @db.Uuid
   task        ProjectTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
   stageId     String       @db.Uuid
