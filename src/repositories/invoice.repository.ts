@@ -404,7 +404,7 @@ export const invoiceRepository = {
           );
         }
 
-        const pricing = await tx.vendorProductPricing.findFirst({
+        const pricing: any = await tx.vendorProductPricing.findFirst({
           where: {
             id: assignment.vendorProductPricingId,
             domainId,

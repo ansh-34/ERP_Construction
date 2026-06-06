@@ -101,7 +101,7 @@ domainRouter.use('/language', languageRouter);
 domainRouter.use('/currency', currencyRouter);
 domainRouter.use('/rmpr', rawMaterialPurchaseRequestRouter);
 domainRouter.use('/grn', grnRouter);
-domainRouter.use('/vendor', vendorProductPriceRouter);
+domainRouter.use('/vendors', vendorProductPriceRouter);
 domainRouter.use('/vendors', vendorRouter);
 domainRouter.use('/invoices', invoiceRouter);
 domainRouter.use('/payment-requests', paymentRequestRouter);

@@ -86,7 +86,7 @@ userRouter.use('/movement-logs', movementLogRouter);
 userRouter.use('/movement-reports', movementReportRouter);
 userRouter.use('/grn', grnRouter);
 userRouter.use('/products', productRouter);
-userRouter.use('/vendor', vendorProductPriceRouter);
+userRouter.use('/vendors', vendorProductPriceRouter);
 userRouter.use('/vendors', vendorRouter);
 userRouter.use('/uoms', uomRouter());
 userRouter.use('/inventory', inventoryRouter);
