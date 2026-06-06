@@ -1,6 +1,343 @@
 import { errors } from './responses.js';
 
 export const ReportPaths = {
+  '/api/domain/report/machine-summary': {
+    get: {
+      tags: ['Reports'],
+      summary: 'Get Machine Summary Report',
+      description:
+        'Returns machines and machine readings, optionally filtered by projectId or machineryId.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'projectId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter machines/readings by project ID',
+        },
+        {
+          in: 'query',
+          name: 'machineryId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter report for one machinery record',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Report fetched successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      machines: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            expectedLitrePerHour: {
+                              type: 'number',
+                              example: 12.5,
+                            },
+                            status: { type: 'string', example: 'ACTIVE' },
+                            createdAt: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            updatedAt: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                          },
+                        },
+                      },
+                      machineReadings: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            readingCode: {
+                              type: 'string',
+                              example: 'MR-001',
+                            },
+                            readingDate: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            openingFuelStock: {
+                              type: 'number',
+                              example: 100,
+                            },
+                            closingFuelStock: { type: 'number', example: 40 },
+                            fuelRefillQuantity: {
+                              type: 'number',
+                              example: 20,
+                            },
+                            fuelConsumed: { type: 'number', example: 80 },
+                            hoursRun: { type: 'number', example: 6.5 },
+                            expectedLitrePerHour: {
+                              type: 'number',
+                              example: 12.5,
+                            },
+                            actualLitrePerHour: {
+                              type: 'number',
+                              example: 12.3,
+                            },
+                            machineStartTime: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            machineEndTime: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            status: { type: 'string', example: 'ACTIVE' },
+                            createdAt: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            updatedAt: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/report/machine-summary/summary': {
+    get: {
+      tags: ['Reports'],
+      summary: 'Get Machine Summary Dashboard Report',
+      description:
+        'Returns top machines by working hours, maintenance count, movement count, and upcoming maintenance schedules.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'projectId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter dashboard by project ID',
+        },
+        {
+          in: 'query',
+          name: 'machineryId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter dashboard for one machinery record',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Report fetched successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      topWorkingHourMachines: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            totalWorkingHours: {
+                              type: 'number',
+                              example: 128.5,
+                            },
+                          },
+                        },
+                      },
+                      topMaintenanceMachines: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            maintenanceCount: { type: 'integer', example: 5 },
+                          },
+                        },
+                      },
+                      topMovementMachines: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            movementCount: { type: 'integer', example: 8 },
+                          },
+                        },
+                      },
+                      upcomingSchedules: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            machineCode: { type: 'string', example: 'MC-001' },
+                            machineType: {
+                              type: 'string',
+                              example: 'Excavator',
+                            },
+                            projectCode: { type: 'string', example: 'PRJ001' },
+                            projectName: {
+                              type: 'string',
+                              example: 'Bridge Construction',
+                            },
+                            scheduleCode: {
+                              type: 'string',
+                              example: 'MS-001',
+                            },
+                            scheduleTitle: {
+                              type: 'string',
+                              example: 'Monthly Maintenance',
+                            },
+                            nextDueDate: {
+                              type: 'string',
+                              format: 'date-time',
+                            },
+                            scheduleStatus: {
+                              type: 'string',
+                              example: 'SCHEDULED',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/report/machine-summary/export': {
+    get: {
+      tags: ['Reports'],
+      summary: 'Export Machine and Vehicle Summary Report',
+      description:
+        'Exports machine, machine reading, vehicle, maintenance schedule, maintenance log, and movement log worksheets as an Excel spreadsheet.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'query',
+          name: 'export',
+          required: true,
+          schema: { type: 'string', enum: ['xlsx'] },
+          description: 'Export format, must be xlsx',
+        },
+        {
+          in: 'query',
+          name: 'projectId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter machine-related worksheets by project ID',
+        },
+        {
+          in: 'query',
+          name: 'machineryId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter machine-related worksheets by machinery ID',
+        },
+        {
+          in: 'query',
+          name: 'vehicleId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter vehicle-related worksheets by vehicle ID',
+        },
+      ],
+      responses: {
+        200: {
+          description:
+            'Excel file containing machine and vehicle summary worksheets',
+          content: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
   '/api/domain/report/project-summary': {
     get: {
       tags: ['Reports'],

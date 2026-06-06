@@ -208,13 +208,81 @@ export const ProductSchemas = {
               enum: ['RAW_MATERIAL', 'FINISHED_PRODUCT'],
               example: 'RAW_MATERIAL',
             },
-            status: { type: 'string', example: 'active' },
-            _count: {
-              type: 'object',
-              properties: {
-                productGrades: { type: 'integer', example: 3 },
-                productUoms: { type: 'integer', example: 2 },
-                inventories: { type: 'integer', example: 5 },
+            searchText: { type: 'string', example: 'tmt rebars' },
+            domainId: { type: 'string', format: 'uuid' },
+            status: { type: 'string', example: 'ACTIVE' },
+            isDeleted: { type: 'boolean', example: false },
+            gradesCount: {
+              type: 'integer',
+              example: 3,
+              description: 'Count of active product grades.',
+            },
+            uomsCount: {
+              type: 'integer',
+              example: 2,
+              description: 'Count of active UOMs assigned to the product.',
+            },
+            gradeIds: {
+              type: 'array',
+              description:
+                'Active product grade IDs. Use one as productGradeId for RMPR and related APIs.',
+              items: { type: 'string', format: 'uuid' },
+              example: [
+                '175722fe-65a3-4f7d-9940-b9672c4122ba',
+                'c5998139-d145-4a50-b7d7-48dc46342348',
+              ],
+            },
+            uomIds: {
+              type: 'array',
+              description:
+                'Active UOM IDs assigned to the product. Use one as uomId for RMPR and related APIs.',
+              items: { type: 'string', format: 'uuid' },
+              example: ['c3229ef5-df0f-4ae4-a494-6864849640b2'],
+            },
+            standardRateIds: {
+              type: 'array',
+              description: 'Active standard rate IDs from the product grades.',
+              items: { type: 'string', format: 'uuid' },
+              example: ['8fbdbf4f-b112-4a5f-b3ee-63a81abc2d99'],
+            },
+            inventories: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  quantity: { type: 'number', example: 1000 },
+                  reorderLevel: { type: 'number', example: 100 },
+                  status: { type: 'string', example: 'ACTIVE' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                  productId: { type: 'string', format: 'uuid' },
+                  productGradeId: { type: 'string', format: 'uuid' },
+                  uomId: { type: 'string', format: 'uuid' },
+                  productGrade: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                      id: { type: 'string', format: 'uuid' },
+                      gradeDisplayName: {
+                        oneOf: [{ type: 'object' }, { type: 'string' }],
+                        example: 'Grade A - Premium',
+                      },
+                      gradeCode: { type: 'string', example: 'GRADE_A' },
+                    },
+                  },
+                  uom: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                      id: { type: 'string', format: 'uuid' },
+                      displayName: {
+                        oneOf: [{ type: 'object' }, { type: 'string' }],
+                        example: 'Kilogram',
+                      },
+                      code: { type: 'string', example: 'KG' },
+                    },
+                  },
+                },
               },
             },
             createdAt: { type: 'string', format: 'date-time' },

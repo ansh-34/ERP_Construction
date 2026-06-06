@@ -70,7 +70,7 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
         tags: [productsTag],
         summary: 'List products',
         description:
-          'Returns paginated list with _count of grades, UOMs, and inventories per product.',
+          'Returns paginated list with grade/UOM counts plus gradeIds, uomIds, standardRateIds, and inventories per product.',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
