@@ -220,6 +220,27 @@ export const ProductService = {
               productUoms: { where: { isDeleted: false } },
             },
           },
+          productGrades: {
+            where: { isDeleted: false },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              productGradeStdRates: {
+                where: { isDeleted: false },
+                orderBy: { createdAt: 'desc' },
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+          productUoms: {
+            where: { isDeleted: false },
+            orderBy: { createdAt: 'desc' },
+            select: {
+              uomId: true,
+            },
+          },
           inventories: {
             where: { isDeleted: false },
             orderBy: { createdAt: 'desc' },
@@ -248,7 +269,8 @@ export const ProductService = {
     ]);
 
     const localizedProducts = products.map((product: any) => {
-      const { _count, inventories, ...rest } = product;
+      const { _count, inventories, productGrades, productUoms, ...rest } =
+        product;
       return {
         ...rest,
         displayName: langCode
@@ -256,6 +278,11 @@ export const ProductService = {
           : product.displayName,
         gradesCount: _count?.productGrades || 0,
         uomsCount: _count?.productUoms || 0,
+        gradeIds: (productGrades || []).map((grade: any) => grade.id),
+        uomIds: (productUoms || []).map((productUom: any) => productUom.uomId),
+        standardRateIds: (productGrades || []).flatMap((grade: any) =>
+          (grade.productGradeStdRates || []).map((stdRate: any) => stdRate.id),
+        ),
         inventories: (inventories || []).map((inv: any) => ({
           ...inv,
           productId: inv.productId,
