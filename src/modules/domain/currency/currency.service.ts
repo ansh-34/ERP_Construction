@@ -59,6 +59,7 @@ export const CurrencyService = {
       currencies: (currencies as DomainCurrencyListItem[]).map((item) => ({
         domainRelationalId: item.id,
         name: normalizeCurrencyName(item.currency.name),
+        id: item.currency.id,
         code: item.currency.code,
         symbol: item.currency.symbol,
         flag: item.currency.flag,
@@ -102,6 +103,7 @@ export const CurrencyService = {
     }
     return {
       domainRelationalId: currency.id,
+      id: currency.currency.id,
       name: normalizeCurrencyName(currency.currency.name),
       code: currency.currency.code,
       symbol: currency.currency.symbol,

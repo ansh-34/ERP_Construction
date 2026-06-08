@@ -148,6 +148,7 @@ function normalizeProjectTask(
         imageId: img.imageId,
         imageUrl: img.imageUrl,
         description: getLocalizedText(img.description, language),
+        media: img.media,
       })),
     }),
   };

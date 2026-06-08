@@ -283,10 +283,23 @@ COALESCE(
         'id', pti."id",
         'imageId', pti."imageId",
         'imageUrl', pti."imageUrl",
-        'description', pti."description"
+        'description', pti."description",
+        'media',
+        CASE
+          WHEN m."id" IS NULL THEN NULL
+          ELSE jsonb_build_object(
+            'id', m."id",
+            'name', m."name",
+            'type', m."type",
+            'status', m."status",
+            'url', m."url"
+          )
+        END
       )
     )
     FROM "ProjectTaskImage" pti
+    LEFT JOIN "media" m
+      ON m."id" = pti."imageId"
     WHERE pti."taskId" = pt."id"
       AND pti."isDeleted" = false
   ),
@@ -491,6 +504,7 @@ export const projectTaskRepository = {
       INNER JOIN "Domain" d ON d."id" = pt."domainId"
       INNER JOIN "Admin" a ON a."id" = pt."adminId"
       LEFT JOIN "ProjectTaskImage" pti ON pti."taskId" = pt."id"
+      LEFT JOIN "media" m ON m."id" = pti."imageId"
       LEFT JOIN "User" u ON u."id" = (pt."assignee"->>'userId')::uuid
       WHERE ${Prisma.join(filters, ' AND ')}
       LIMIT 1
