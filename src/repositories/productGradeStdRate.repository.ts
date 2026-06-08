@@ -32,4 +32,9 @@ export const ProductGradeStdRateRepository = {
       ...(include ? { include } : {}),
     });
   },
+
+  updateMany(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.productGradeStdRates.updateMany(args) as Promise<any>;
+  },
 };

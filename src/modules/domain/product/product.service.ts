@@ -2,11 +2,11 @@ import { Messages } from '../../../constants/index.js';
 import {
   ProductRepository,
   productUomRepository,
+  ProductGradeRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizeStatus } from '../../../utils/validation.js';
 import { transaction } from '../../../infra/database/prisma/transaction.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const ProductService = {
   localizeName(value: any, langCode: string) {
@@ -637,7 +637,7 @@ export const ProductService = {
     if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
 
     // Fetch active grades to resolve gradeCode → gradeId
-    const activeGrades = await prisma.productGrades.findMany({
+    const activeGrades = await ProductGradeRepository.findMany({
       where: { productId, domainId, isDeleted: false },
     });
 

@@ -2,6 +2,7 @@ import { Messages } from '../../../constants/index.js';
 import {
   RawMaterialPurchaseRequestRepository,
   ProductRepository,
+  ProductGradeRepository,
   uomRepository,
   projectRepository,
   mediaRepository,
@@ -12,7 +13,6 @@ import {
   PurchaseRequestType,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { transaction } from '../../../infra/database/prisma/transaction.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { translateResponse } from '../../../utils/translation.js';
 const editableStatuses: ApprovalStatus[] = [
   ApprovalStatus.PENDING,
@@ -37,7 +37,7 @@ const ensureRelationsBelongToDomain = async (
   }
 
   if (data.productGradeId) {
-    const grade = await prisma.productGrades.findFirst({
+    const grade = await ProductGradeRepository.findFirst({
       where: {
         id: data.productGradeId,
         ...(data.productId ? { productId: data.productId } : {}),

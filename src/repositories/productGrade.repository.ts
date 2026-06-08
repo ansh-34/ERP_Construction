@@ -86,4 +86,8 @@ export const ProductGradeRepository = {
   findFirst(args: any) {
     return prisma.productGrades.findFirst(args);
   },
+
+  findMany(args: any) {
+    return prisma.productGrades.findMany(args);
+  },
 };

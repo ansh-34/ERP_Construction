@@ -2,11 +2,11 @@ import { Messages } from '../../../constants/index.js';
 import {
   InventoryRepository,
   ProductRepository,
+  ProductGradeRepository,
   uomRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 const isUniqueConstraintError = (error: unknown) =>
   typeof error === 'object' &&
@@ -84,7 +84,7 @@ export const InventoryService = {
     if (!product) throw new Error(Messages.INVENTORY.PRODUCT_NOT_FOUND);
 
     // Validate grade exists & belongs to product
-    const grade = await prisma.productGrades.findFirst({
+    const grade = await ProductGradeRepository.findFirst({
       where: {
         id: data.productGradeId,
         productId: data.productId,
