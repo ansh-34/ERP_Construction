@@ -96,9 +96,17 @@ function buildProjectTaskSearchText(name: Record<string, unknown>): string {
 }
 
 function getLocalizedText(
-  value: Record<string, unknown>,
+  value: Record<string, unknown> | string | null | undefined,
   language: string | null,
 ): LocalizedText {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
   if (!language) {
     return value;
   }
@@ -563,6 +571,12 @@ export const projectTaskService = {
       );
       return task ? normalizeProjectTask(task, language, task?.images) : null;
     } catch (error: unknown) {
+      console.error('[ProjectTaskService.update]', {
+        error,
+        name: error instanceof Error ? error.name : undefined,
+        message: error instanceof Error ? error.message : undefined,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw normalizePrismaError(error);
     }
   },

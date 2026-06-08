@@ -248,6 +248,7 @@ export const projectTaskController = {
         data: updatedProjectTask,
       });
     } catch (error: unknown) {
+      console.error('[ProjectTaskController.update]', error);
       const message =
         error instanceof Error
           ? error.message
