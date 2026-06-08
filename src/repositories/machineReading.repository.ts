@@ -23,6 +23,7 @@ export interface MachineReadingRecord {
   domainId: string;
   adminId: string;
   project?: RelationDetails;
+  machinery?: RelationDetails;
   domain?: RelationDetails;
   admin?: RelationDetails;
   status: StatusEnum;
@@ -101,6 +102,12 @@ const machineReadingListSelect = Prisma.sql`
     'name', p."name",
     'code', p."code"
   ) AS "project",
+  jsonb_build_object(
+    'id', m."id",
+    'code', m."code",
+    'type', m."type",
+    'expectedLitrePerHour', m."expectedLitrePerHour"
+  ) AS "machinery",
   mr."domainId",
   jsonb_build_object(
     'id', d."id",
@@ -266,6 +273,7 @@ export const machineReadingRepository = {
       SELECT ${machineReadingListSelect}
       FROM "MachineReading" mr
       INNER JOIN "Project" p ON p."id" = mr."projectId"
+      INNER JOIN "Machinery" m ON m."id" = mr."machineryId"
       INNER JOIN "Domain" d ON d."id" = mr."domainId"
       INNER JOIN "Admin" a ON a."id" = mr."adminId"
       WHERE ${Prisma.join(filters, ' AND ')}
