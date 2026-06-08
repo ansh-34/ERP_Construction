@@ -424,6 +424,7 @@ export const VendorProductPriceService = {
 
         finalData.push({
           vendorId: vendor.id,
+          vendorName: row.vendorName,
           productId: product.id,
           productGradeId: grade.id,
           uomId: uom.id,
