@@ -26,7 +26,13 @@ export const updateVendorProductPriceBodySchema = z.array(
   }),
 );
 
-export const listVendorProductPricesQuerySchema =
-  paginationQuerySchema.merge(statusFilterSchema);
+export const listVendorProductPricesQuerySchema = paginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+    productId: z.string().uuid().optional(),
+    productGradeId: z.string().uuid().optional(),
+    currencyId: z.string().uuid().optional(),
+  });
 
 export const vendorProductPriceIdParamSchema = idParamSchema;

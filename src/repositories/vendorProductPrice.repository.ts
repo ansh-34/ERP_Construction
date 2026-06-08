@@ -38,7 +38,13 @@ export const vendorProductPriceRepository = {
     limit: number,
     offset: number,
     options: {
-      filters?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string };
+      filters?: {
+        status?: 'ACTIVE' | 'INACTIVE';
+        searchKey?: string;
+        productId?: string;
+        productGradeId?: string;
+        currencyId?: string;
+      };
       select?: any;
     } = {},
   ) {
@@ -48,7 +54,33 @@ export const vendorProductPriceRepository = {
       isDeleted: false,
       ...(options.filters?.status && { status: options.filters.status }),
       ...(searchKey && {
-        searchText: { contains: searchKey, mode: 'insensitive' as const },
+        OR: [
+          { vendor: { name: { contains: searchKey, mode: 'insensitive' } } },
+          {
+            product: {
+              searchText: { contains: searchKey, mode: 'insensitive' },
+            },
+          },
+          {
+            productGrade: {
+              searchText: { contains: searchKey, mode: 'insensitive' },
+            },
+          },
+          {
+            currency: {
+              searchText: { contains: searchKey, mode: 'insensitive' },
+            },
+          },
+        ],
+      }),
+      ...(options.filters?.productId && {
+        productId: options.filters.productId,
+      }),
+      ...(options.filters?.productGradeId && {
+        productGradeId: options.filters.productGradeId,
+      }),
+      ...(options.filters?.currencyId && {
+        currencyId: options.filters.currencyId,
       }),
     };
 
