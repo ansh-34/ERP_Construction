@@ -1,14 +1,14 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { SuperAdminRepository } from '../../../repositories/index.js';
 
 export const SuperAdminProfileService = {
   async getProfile(userInfo: { userId: string }) {
-    const superAdmin = await prisma.superAdmin.findFirst({
-      where: { id: userInfo.userId, isDeleted: false },
-      select: {
+    const superAdmin = await SuperAdminRepository.findActiveByIdWithSelect(
+      userInfo.userId,
+      {
         id: true,
         email: true,
       },
-    });
+    );
     return {
       user: {
         id: superAdmin?.id,

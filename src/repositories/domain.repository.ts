@@ -6,6 +6,13 @@ export const DomainRepository = {
     return prisma.domain.findFirst({ where: { id, isDeleted: false } });
   },
 
+  findActiveByIdWithSelect(id: string, select?: any): Promise<any> {
+    return prisma.domain.findFirst({
+      where: { id, isDeleted: false },
+      select,
+    }) as Promise<any>;
+  },
+
   findActiveByEmail(email: string) {
     return prisma.domain.findFirst({ where: { email, isDeleted: false } });
   },

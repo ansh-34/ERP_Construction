@@ -259,8 +259,9 @@ export const GrnRepository = {
     return [total, grns.map(GrnRepository.mapGrn)] as [number, any[]];
   },
 
-  async update(id: string, data: any) {
-    return prisma.grn.update({ where: { id }, data });
+  async update(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grn.update({ where: { id }, data });
   },
 
   async softDelete(id: string) {
@@ -452,5 +453,20 @@ export const GrnRepository = {
       await GrnRepository.recalculateGrnTotals(tx, grnId, domainId);
       return GrnRepository.mapGrnProduct(product);
     });
+  },
+
+  async findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grn.findFirst(args);
+  },
+
+  async updateGrnProductRaw(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grnProduct.update({ where: { id }, data });
+  },
+
+  async createGrnProductRaw(data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grnProduct.create({ data });
   },
 };

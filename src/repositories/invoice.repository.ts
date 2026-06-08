@@ -188,8 +188,9 @@ export const invoiceRepository = {
     ]);
   },
 
-  update(id: string, data: Prisma.InvoiceUncheckedUpdateInput) {
-    return prisma.invoice.update({
+  update(id: string, data: Prisma.InvoiceUncheckedUpdateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.invoice.update({
       where: { id },
       data,
       include: {
@@ -516,5 +517,10 @@ export const invoiceRepository = {
 
       return invoices;
     });
+  },
+
+  findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.invoice.findFirst(args);
   },
 };

@@ -1,4 +1,7 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import {
+  DomainRepository,
+  RoleRepository,
+} from '../../../repositories/index.js';
 
 const roleSelect = {
   id: true,
@@ -57,24 +60,20 @@ const formatRole = <T extends { name: unknown; code: string | null }>(
 
 export const DomainProfileService = {
   async getProfile(domainId: string) {
-    const domain = await prisma.domain.findFirst({
-      where: {
-        id: domainId,
-        isDeleted: false,
-      },
-      select: domainSelect,
-    });
+    const domain = await DomainRepository.findActiveByIdWithSelect(
+      domainId,
+      domainSelect,
+    );
 
     if (!domain) {
       throw new Error('Domain profile not found');
     }
 
-    const roles = await prisma.role.findMany({
-      where: { domainId: domain.id, isDeleted: false },
-      select: roleSelect,
-      orderBy: { createdAt: 'desc' },
-    });
-    const domainRole = roles.find((role) => role.code === 'domain');
+    const roles = await RoleRepository.findActiveByDomain(
+      domain.id,
+      roleSelect,
+    );
+    const domainRole = roles.find((role: any) => role.code === 'domain');
     const formattedRoles = roles.map(formatRole);
 
     return {

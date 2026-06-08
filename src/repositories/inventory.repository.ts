@@ -143,4 +143,41 @@ export const InventoryRepository = {
       orderBy: { createdAt: 'desc' },
     });
   },
+
+  async getStatsDetailed(domainId: string) {
+    const where = { domainId, isDeleted: false };
+    const [
+      totalItems,
+      activeCount,
+      inactiveCount,
+      outOfStockCount,
+      aggregation,
+    ] = await prisma.$transaction([
+      prisma.inventory.count({ where }),
+      prisma.inventory.count({ where: { ...where, status: 'ACTIVE' } }),
+      prisma.inventory.count({ where: { ...where, status: 'INACTIVE' } }),
+      prisma.inventory.count({ where: { ...where, quantity: 0 } }),
+      prisma.inventory.aggregate({
+        where,
+        _sum: { quantity: true },
+      }),
+    ]);
+
+    return {
+      totalItems,
+      activeCount,
+      inactiveCount,
+      outOfStockCount,
+      totalQuantity: aggregation._sum.quantity ?? 0,
+    };
+  },
+
+  async countUniqueProducts(domainId: string) {
+    const result = await prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(DISTINCT "productId")::bigint AS count
+      FROM "Inventory"
+      WHERE "domainId" = ${domainId}::uuid AND "isDeleted" = false
+    `;
+    return Number(result[0].count);
+  },
 };

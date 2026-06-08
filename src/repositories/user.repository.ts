@@ -44,6 +44,17 @@ export const UserRepository = {
     });
   },
 
+  findActiveByIdAndDomainWithRelations(
+    id: string,
+    domainId: string,
+    select?: any,
+  ): Promise<any> {
+    return prisma.user.findFirst({
+      where: { id, domainId, isDeleted: false },
+      select,
+    }) as Promise<any>;
+  },
+
   validateUserIds(ids: string[], domainId: string) {
     return prisma.user
       .count({

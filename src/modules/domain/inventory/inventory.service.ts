@@ -1,5 +1,9 @@
 import { Messages } from '../../../constants/index.js';
-import { InventoryRepository } from '../../../repositories/index.js';
+import {
+  InventoryRepository,
+  ProductRepository,
+  uomRepository,
+} from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import prisma from '../../../infra/database/prisma/prisma.client.js';
@@ -13,42 +17,27 @@ const isUniqueConstraintError = (error: unknown) =>
 export const InventoryService = {
   // ─── Stats ──────────────────────────────────────────────
   async getStats(domainId: string) {
-    const where = { domainId, isDeleted: false };
-
-    const [
+    const {
       totalItems,
       activeCount,
       inactiveCount,
       outOfStockCount,
-      aggregation,
-    ] = await prisma.$transaction([
-      prisma.inventory.count({ where }),
-      prisma.inventory.count({ where: { ...where, status: 'ACTIVE' } }),
-      prisma.inventory.count({ where: { ...where, status: 'INACTIVE' } }),
-      prisma.inventory.count({ where: { ...where, quantity: 0 } }),
-      prisma.inventory.aggregate({
-        where,
-        _sum: { quantity: true },
-      }),
-    ]);
+      totalQuantity,
+    } = await InventoryRepository.getStatsDetailed(domainId);
 
     const lowStockCount = await InventoryRepository.getLowStockCount(domainId);
 
-    // Unique product count via raw SQL
-    const uniqueProducts = await prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(DISTINCT "productId")::bigint AS count
-      FROM "Inventory"
-      WHERE "domainId" = ${domainId}::uuid AND "isDeleted" = false
-    `;
+    const uniqueProductCount =
+      await InventoryRepository.countUniqueProducts(domainId);
 
     return {
       totalItems,
       activeCount,
       inactiveCount,
-      totalQuantity: aggregation._sum.quantity ?? 0,
+      totalQuantity,
       lowStockCount,
       outOfStockCount,
-      uniqueProductCount: Number(uniqueProducts[0].count),
+      uniqueProductCount,
     };
   },
 
@@ -88,9 +77,10 @@ export const InventoryService = {
     },
   ) {
     // Validate product exists & belongs to domain
-    const product = await prisma.product.findFirst({
-      where: { id: data.productId, domainId, isDeleted: false },
-    });
+    const product = await ProductRepository.findByIdAndDomain(
+      data.productId,
+      domainId,
+    );
     if (!product) throw new Error(Messages.INVENTORY.PRODUCT_NOT_FOUND);
 
     // Validate grade exists & belongs to product
@@ -105,9 +95,7 @@ export const InventoryService = {
     if (!grade) throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
 
     // Validate UOM exists & belongs to domain
-    const uom = await prisma.uom.findFirst({
-      where: { id: data.uomId, domainId, isDeleted: false },
-    });
+    const uom = await uomRepository.findByIdAndDomain(data.uomId, domainId);
     if (!uom) throw new Error(Messages.INVENTORY.UOM_NOT_FOUND);
 
     try {

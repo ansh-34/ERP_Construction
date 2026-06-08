@@ -1,4 +1,8 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import {
+  ProductGradeStdRateRepository,
+  ProductRepository,
+  ProductGradeRepository,
+} from '../../../repositories/index.js';
 import { Messages } from '../../../constants/index.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 
@@ -27,13 +31,13 @@ export const ProductGradeStdRateService = {
 
     const searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
 
-    const grade = await prisma.productGrades.findFirst({
+    const grade = await ProductGradeRepository.findFirst({
       where: { id: gradeId, productId, domainId, isDeleted: false },
     });
     if (!grade) throw new Error(Messages.PRODUCT_GRADE.NOT_FOUND);
 
-    return prisma.productGradeStdRates.create({
-      data: {
+    return ProductGradeStdRateRepository.create(
+      {
         ...dto,
         searchText,
         productId,
@@ -41,12 +45,13 @@ export const ProductGradeStdRateService = {
         domainId,
         isDeleted: false,
       } as any,
-      include: {
+      undefined,
+      {
         productGrade: {
           select: { id: true, gradeDisplayName: true, gradeCode: true },
         },
       },
-    });
+    );
   },
 
   async findAll(
@@ -62,7 +67,7 @@ export const ProductGradeStdRateService = {
     },
     langCode?: string,
   ) {
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: productId, domainId, isDeleted: false },
       include: {
         productGrades: {
@@ -93,13 +98,13 @@ export const ProductGradeStdRateService = {
       }),
     };
     const [data, total] = await Promise.all([
-      prisma.productGradeStdRates.findMany({
+      ProductGradeStdRateRepository.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.productGradeStdRates.count({ where }),
+      ProductGradeStdRateRepository.count({ where }),
     ]);
 
     const normalizedData = data.map((stdRate: any) => ({
@@ -127,7 +132,7 @@ export const ProductGradeStdRateService = {
     id: string,
     language: string | null = null,
   ) {
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: productId, domainId, isDeleted: false },
       include: {
         productGrades: {
@@ -208,19 +213,20 @@ export const ProductGradeStdRateService = {
       searchText = Object.values(dto.stdRateType).join(' ').toLowerCase();
     }
 
-    return prisma.productGradeStdRates.update({
-      where: { id },
-      data: {
+    return ProductGradeStdRateRepository.update(
+      id,
+      {
         ...dto,
         ...(searchText ? { searchText } : {}),
         updatedAt: new Date(),
       } as any,
-      include: {
+      undefined,
+      {
         productGrade: {
           select: { id: true, gradeDisplayName: true, gradeCode: true },
         },
       },
-    });
+    );
   },
 
   async findAllInDomain(
@@ -241,7 +247,7 @@ export const ProductGradeStdRateService = {
     // Scenario 3 validation check: if both productId and gradeId (or productGradeId) are passed
     if (query.productId && (query.gradeId || query.productGradeId)) {
       const gId = query.gradeId || query.productGradeId;
-      const grade = await prisma.productGrades.findFirst({
+      const grade = await ProductGradeRepository.findFirst({
         where: { id: gId, productId: query.productId, isDeleted: false },
       });
       if (!grade) {
@@ -272,7 +278,7 @@ export const ProductGradeStdRateService = {
     };
 
     const [data, total] = await Promise.all([
-      prisma.productGradeStdRates.findMany({
+      ProductGradeStdRateRepository.findMany({
         where,
         skip,
         take: limit,
@@ -282,7 +288,7 @@ export const ProductGradeStdRateService = {
           productGrade: true,
         },
       }),
-      prisma.productGradeStdRates.count({ where }),
+      ProductGradeStdRateRepository.count({ where }),
     ]);
 
     const normalizedData = data.map((stdRate: any) => ({
@@ -334,9 +340,6 @@ export const ProductGradeStdRateService = {
     id: string,
   ) {
     await this.findOne(domainId, productId, gradeId, id);
-    return prisma.productGradeStdRates.update({
-      where: { id },
-      data: { isDeleted: true },
-    });
+    return ProductGradeStdRateRepository.update(id, { isDeleted: true });
   },
 };

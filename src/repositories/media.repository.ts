@@ -175,4 +175,10 @@ export const mediaRepository = {
         : true,
     });
   },
+
+  findByIdAndDomain(id: string, domainId: string) {
+    return prisma.media.findFirst({
+      where: { id, domainId, isDeleted: false },
+    });
+  },
 };

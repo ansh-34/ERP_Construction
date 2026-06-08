@@ -1,7 +1,10 @@
 import { Messages } from '../../../constants/index.js';
-import { PaymentRequestRepository } from '../../../repositories/index.js';
+import {
+  PaymentRequestRepository,
+  projectRepository,
+  vendorProductPriceRepository,
+} from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 const ensureRelationsBelongToDomain = async (
   domainId: string,
@@ -11,16 +14,15 @@ const ensureRelationsBelongToDomain = async (
   },
 ) => {
   if (data.projectId) {
-    const project = await prisma.project.findFirst({
-      where: { id: data.projectId, domainId, isDeleted: false },
-    });
+    const project = await projectRepository.findById(data.projectId, domainId);
     if (!project) throw new Error('Project not found');
   }
 
   if (data.vendorId) {
-    const vendor = await prisma.vendorProductPricing.findFirst({
-      where: { id: data.vendorId, domainId, isDeleted: false },
-    });
+    const vendor = await vendorProductPriceRepository.findByIdAndDomain(
+      data.vendorId,
+      domainId,
+    );
     if (!vendor) throw new Error('Vendor not found');
   }
 };

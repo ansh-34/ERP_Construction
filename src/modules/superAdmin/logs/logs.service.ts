@@ -1,9 +1,9 @@
 import { ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import variables from '@/config/variables.config';
-import prisma from '@/infra/database/prisma/prisma.client';
 import { assertS3Configured, getS3Client } from '@/utils/s3Log.utils';
 import type { AnalyticsQuery } from './logs.validator';
+import { DbAnalyticsRepository } from '@/repositories/index';
 
 type AnalyticsPeriod = AnalyticsQuery['period'];
 
@@ -50,7 +50,7 @@ function formatDateOnly(date: Date): string {
 }
 
 type DbAnalyticsRow = Awaited<
-  ReturnType<typeof prisma.dbAnalytics.findMany>
+  ReturnType<typeof DbAnalyticsRepository.findManyByDateRange>
 >[number];
 
 function buildSummary(rows: DbAnalyticsRow[]) {
@@ -162,15 +162,7 @@ export const LogsService = {
     const anchor = parseAnchorDate(query.date);
     const { start, end } = getDateRange(query.period, anchor);
 
-    const rows = await prisma.dbAnalytics.findMany({
-      where: {
-        date: {
-          gte: start,
-          lte: end,
-        },
-      },
-      orderBy: { date: 'asc' },
-    });
+    const rows = await DbAnalyticsRepository.findManyByDateRange(start, end);
 
     return {
       period: query.period,

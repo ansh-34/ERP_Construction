@@ -34,6 +34,14 @@ export const RoleRepository = {
     });
   },
 
+  findActiveByDomain(domainId: string, select?: any): Promise<any> {
+    return prisma.role.findMany({
+      where: { domainId, isDeleted: false },
+      select,
+      orderBy: { createdAt: 'desc' },
+    }) as Promise<any>;
+  },
+
   findDuplicateCode(domainId: string, code: string, excludeId: string) {
     return prisma.role.findFirst({
       where: { domainId, code, isDeleted: false, NOT: { id: excludeId } },
@@ -76,8 +84,9 @@ export const RoleRepository = {
     ]);
   },
 
-  update(id: string, data: Prisma.RoleUncheckedUpdateInput) {
-    return prisma.role.update({ where: { id }, data });
+  update(id: string, data: Prisma.RoleUncheckedUpdateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.role.update({ where: { id }, data });
   },
 
   softDelete(id: string) {

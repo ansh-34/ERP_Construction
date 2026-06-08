@@ -1,4 +1,4 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { UserRepository } from '../../../repositories/index.js';
 
 const roleSelect = {
   id: true,
@@ -68,14 +68,11 @@ const getStringName = (name: unknown): string => {
 
 export const UserProfileService = {
   async getProfile(userId: string, domainId: string) {
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        domainId,
-        isDeleted: false,
-      },
-      select: userSelect,
-    });
+    const user = await UserRepository.findActiveByIdAndDomainWithRelations(
+      userId,
+      domainId,
+      userSelect,
+    );
 
     if (!user) {
       throw new Error('User profile not found');

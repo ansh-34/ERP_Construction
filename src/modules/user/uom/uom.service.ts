@@ -1,7 +1,6 @@
 import { Messages } from '../../../constants/index.js';
 import { uomRepository } from '../../../repositories/index.js';
 import { normalizeStatus } from '../../../utils/validation.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const UomService = {
   localizeName(value: any, langCode: string) {
@@ -90,9 +89,7 @@ export const UomService = {
 
     const baseUoms =
       baseUomIds.length > 0
-        ? await prisma.uom.findMany({
-            where: { id: { in: baseUomIds }, isDeleted: false },
-          })
+        ? await uomRepository.findActiveByIds(baseUomIds)
         : [];
 
     const baseUomMap = new Map(baseUoms.map((bu: any) => [bu.id, bu]));
@@ -134,9 +131,10 @@ export const UomService = {
 
     let baseUom = null;
     if (record.baseUomId) {
-      const baseUomRaw = await prisma.uom.findFirst({
-        where: { id: record.baseUomId, domainId, isDeleted: false },
-      });
+      const baseUomRaw = await uomRepository.findByIdAndDomain(
+        record.baseUomId,
+        domainId,
+      );
       if (baseUomRaw) {
         baseUom = {
           ...baseUomRaw,
@@ -226,12 +224,7 @@ export const UomService = {
       throw new Error(Messages.UOM.NOT_FOUND);
     }
 
-    const dependentUom = await prisma.uom.findFirst({
-      where: {
-        baseUomId: id,
-        isDeleted: false,
-      },
-    });
+    const dependentUom = await uomRepository.findActiveByBaseUomId(id);
     if (dependentUom) {
       throw new Error(
         'please update all the uom where this uom act as baseUom',

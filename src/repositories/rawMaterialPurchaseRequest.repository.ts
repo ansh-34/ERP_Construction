@@ -3,8 +3,12 @@ import prisma from '@/infra/database/prisma/prisma.client';
 const asPrisma = prisma as any;
 
 export const RawMaterialPurchaseRequestRepository = {
-  async create(data: any) {
-    return prisma.rawMaterialPurchaseRequest.create({ data });
+  create(data: any, tx?: any, include?: any) {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.create({
+      data,
+      ...(include ? { include } : {}),
+    });
   },
 
   async findByIdAndDomain(id: string, domainId: string) {
@@ -136,8 +140,9 @@ export const RawMaterialPurchaseRequestRepository = {
     ]);
   },
 
-  async update(id: string, data: any) {
-    return prisma.rawMaterialPurchaseRequest.update({
+  update(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.update({
       where: { id },
       data,
     });
@@ -386,4 +391,28 @@ export const RawMaterialPurchaseRequestRepository = {
   //       return product;
   //     });
   //   },
+
+  groupBy(args: any): Promise<any> {
+    return prisma.rawMaterialPurchaseRequest.groupBy(args) as Promise<any>;
+  },
+
+  findMany(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.findMany(args) as Promise<any>;
+  },
+
+  findFirst(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.findFirst(args) as Promise<any>;
+  },
+
+  count(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.count(args) as Promise<any>;
+  },
+
+  updateMany(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.rawMaterialPurchaseRequest.updateMany(args) as Promise<any>;
+  },
 };

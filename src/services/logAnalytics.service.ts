@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import prisma from '@/infra/database/prisma/prisma.client';
+import { DbAnalyticsRepository } from '@/repositories/index';
 import {
   getLogFilePath,
   getYesterday,
@@ -154,14 +154,7 @@ export async function processLogAnalyticsForDate(date: Date): Promise<boolean> {
   const stats = aggregateEntries(entries);
 
   try {
-    await prisma.dbAnalytics.upsert({
-      where: { date: analyticsDate },
-      create: {
-        date: analyticsDate,
-        ...stats,
-      },
-      update: stats,
-    });
+    await DbAnalyticsRepository.upsert(analyticsDate, stats);
   } catch (error) {
     console.error(
       `[LogAnalytics] Database save failed for ${fileName}:`,

@@ -1,13 +1,17 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
 
 export const RoleModulePermissionRepository = {
-  upsert(data: {
-    roleId: string;
-    moduleId: string;
-    permissions: string[];
-    domainId: string;
-  }) {
-    return prisma.roleModulePermission.upsert({
+  upsert(
+    data: {
+      roleId: string;
+      moduleId: string;
+      permissions: string[];
+      domainId: string;
+    },
+    tx?: any,
+  ) {
+    const client = tx || prisma;
+    return client.roleModulePermission.upsert({
       where: {
         roleId_moduleId_domainId: {
           roleId: data.roleId,
@@ -34,5 +38,15 @@ export const RoleModulePermissionRepository = {
         },
       },
     });
+  },
+
+  deleteMany(where: any, tx?: any) {
+    const client = tx || prisma;
+    return client.roleModulePermission.deleteMany({ where });
+  },
+
+  count(where: any, tx?: any) {
+    const client = tx || prisma;
+    return client.roleModulePermission.count({ where });
   },
 };
