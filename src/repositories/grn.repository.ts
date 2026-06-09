@@ -21,6 +21,33 @@ export const GrnRepository = {
     return product;
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.approvalStatus && {
+          approvalStatus: options.filters.approvalStatus,
+        }),
+      }),
+    };
+
+    return prisma.grn.count({ where: whereClause });
+  },
+
   mapGrn(grn: any) {
     if (!grn) return grn;
     if (grn.grnProducts && Array.isArray(grn.grnProducts)) {

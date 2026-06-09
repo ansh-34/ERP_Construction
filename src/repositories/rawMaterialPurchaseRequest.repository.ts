@@ -370,6 +370,50 @@ export const RawMaterialPurchaseRequestRepository = {
     });
   },
 
+  async countByOptions(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.approvalStatus && {
+          approvalStatus: options.filters.approvalStatus,
+        }),
+      }),
+    };
+
+    return prisma.rawMaterialPurchaseRequest.count({ where: whereClause });
+  },
+
+  async countPurchaseOrders(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+      }),
+    };
+
+    return prisma.purchaseOrder.count({ where: whereClause });
+  },
+
   //   async updatePoProduct(id: string, purchaseOrderId: string, domainId: string, data: any) {
   //     return asPrisma.$transaction(async (tx: any) => {
   //       const product = await tx.purchaseOrderProduct.update({

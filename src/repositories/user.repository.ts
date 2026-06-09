@@ -9,6 +9,48 @@ export const UserRepository = {
     });
   },
 
+  count(options: {
+    filters: {
+      searchKey?: string;
+      status?: StatusEnum;
+      roleIds?: string[];
+      domainId?: string;
+      adminId?: string;
+      isEmailVerified?: boolean;
+      onboardingStatus?: 'COMPLETED' | 'PENDING' | 'INPROGRESS';
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.searchKey && {
+          OR: [
+            { name: { contains: options.filters.searchKey.trim() } },
+            { email: { contains: options.filters.searchKey.trim() } },
+            { phone: { contains: options.filters.searchKey.trim() } },
+            { role: { searchText: { contains: options.filters.searchKey } } },
+            { skills: { contains: options.filters.searchKey } },
+          ],
+        }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.roleIds && {
+          roleId: { in: options.filters.roleIds },
+        }),
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(Object.prototype.hasOwnProperty.call(
+          options.filters,
+          'isEmailVerified',
+        ) && {
+          isEmailVerified: options.filters.isEmailVerified,
+        }),
+      }),
+    };
+    return prisma.user.count({
+      where: whereClause,
+    });
+  },
+
   countByRole(roleId: string, domainId: string) {
     return prisma.user.count({
       where: { roleId, domainId, isDeleted: false },

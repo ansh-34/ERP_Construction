@@ -407,4 +407,37 @@ export const maintenanceScheduleRepository = {
 
     return result[0] ?? null;
   },
+
+  find: async (options: {
+    filters?: {
+      domainId?: any;
+      status?: any;
+      fromDate?: any;
+      toDate?: any;
+    };
+    orderBy?: any;
+    select?: any;
+    limit?: any;
+    offset?: any;
+  }) => {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.fromDate && {
+          nextDueDate: { gte: options.filters.fromDate },
+        }),
+        ...(options.filters.toDate && {
+          nextDueDate: { lte: options.filters.toDate },
+        }),
+      }),
+    };
+
+    return prisma.maintenanceSchedule.findMany({
+      where: whereClause,
+      ...(options.orderBy && { orderBy: options.orderBy }),
+      ...(options.select && { select: options.select }),
+      ...(options.limit && { take: options.limit }),
+      ...(options.offset && { skip: options.offset }),
+    });
+  },
 };

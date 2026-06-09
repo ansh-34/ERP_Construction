@@ -41,6 +41,7 @@ import isDomain from '../../middlewares/isDomain.js';
 import moduleRouter from './module/module.router';
 import modulePermissionRouter from './modulePermission/modulePermission.router';
 import onboardingRouter from './onboarding/onboarding.router.js';
+import dashboardRouter from './dashboard/dashboard.router.js';
 
 import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
 import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
@@ -71,6 +72,7 @@ domainRouter.use(authMiddleware);
 domainRouter.use(isDomain);
 
 domainRouter.use('/api-keys', apiKeyRouter);
+domainRouter.use('/dashboard', dashboardRouter);
 domainRouter.use('/media', mediaRouter);
 domainRouter.use('/machineries', machineryRouter);
 domainRouter.use('/machine-reading', machineReadingRouter);

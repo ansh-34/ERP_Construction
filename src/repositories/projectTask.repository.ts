@@ -388,6 +388,33 @@ export const projectTaskRepository = {
     return result[0] as ProjectTaskRecord;
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      projectTaskStatus?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED';
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.projectTaskStatus && {
+          taskStatus: options.filters.projectTaskStatus,
+        }),
+      }),
+    };
+
+    return prisma.projectTask.count({ where: whereClause });
+  },
+
   findMany: async (
     domainId: string,
     adminId?: string,

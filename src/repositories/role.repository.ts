@@ -8,6 +8,31 @@ export const RoleRepository = {
     });
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      roleIds?: string[];
+      adminId?: string;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.roleIds && { id: { in: options.filters.roleIds } }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+      }),
+    };
+
+    return prisma.role.count({ where: whereClause });
+  },
+
   findActiveByIdAndDomain(id: string, domainId: string) {
     return prisma.role.findFirst({
       where: { id, domainId, isDeleted: false },

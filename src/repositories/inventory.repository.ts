@@ -59,6 +59,40 @@ export const InventoryRepository = {
     });
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      lowStock?: boolean;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(Object.prototype.hasOwnProperty.call(
+          options.filters,
+          'lowStock',
+        ) && {
+          quantity: {
+            ...(options.filters.lowStock
+              ? { lte: prisma.inventory.fields.reorderLevel }
+              : { gt: prisma.inventory.fields.reorderLevel }),
+          },
+        }),
+      }),
+    };
+
+    return prisma.inventory.count({ where: whereClause });
+  },
+
   listByDomain(
     domainId: string,
     limit: number,

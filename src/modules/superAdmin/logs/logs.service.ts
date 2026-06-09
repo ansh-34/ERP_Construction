@@ -165,7 +165,7 @@ export const LogsService = {
     const rows = await DbAnalyticsRepository.findManyByDateRange(start, end);
 
     const daily = await Promise.all(
-      rows.map(async (row) => {
+      rows.map(async (row: any) => {
         let downloadUrl: string | null = null;
         if (row.fileUrl) {
           try {

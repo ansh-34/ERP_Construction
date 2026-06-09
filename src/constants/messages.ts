@@ -10,6 +10,10 @@ export const Messages = Object.freeze({
     INTERNAL_SERVER_ERROR: 'Something went wrong',
     TOO_MANY_REQUESTS: 'Too many requests, try again in 15 minutes',
   },
+  DASHBOARD: {
+    RETRIEVED: 'Dashboard retrieved successfully',
+    NOT_FOUND: 'Dashboard not found',
+  },
   ONBOARDING: {
     FAILED: 'Onboarding failed',
     COMPLETED: 'Onboarding completed successfully',
