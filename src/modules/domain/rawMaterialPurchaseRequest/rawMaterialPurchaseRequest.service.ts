@@ -38,14 +38,14 @@ const ensureRelationsBelongToDomain = async (
 
   if (data.productGradeId) {
     const grade = await ProductGradeRepository.findFirst({
-      where: {
-        id: data.productGradeId,
-        ...(data.productId ? { productId: data.productId } : {}),
-        domainId,
-        isDeleted: false,
-      },
+      where: { id: data.productGradeId },
     });
     if (!grade) throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (grade.isDeleted) throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (grade.domainId !== domainId)
+      throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (data.productId && grade.productId !== data.productId)
+      throw new Error('Product grade does not belong to the specified product');
   }
 
   if (data.uomId) {

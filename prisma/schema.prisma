@@ -1606,6 +1606,7 @@ model DbAnalytics {
   mostHitCount    Int
   mostFailedApi   String?
   mostFailedCount Int      @default(0)
+  fileUrl         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -118,11 +118,18 @@ export const UserRepository = {
     });
   },
 
-  listByDomain(domainId: string, limit: number, offset: number) {
+  listByDomain(
+    domainId: string,
+    limit: number,
+    offset: number,
+    roleCode?: string,
+  ) {
+    const roleFilter = roleCode ? { role: { code: roleCode } } : {};
+    const where = { domainId, isDeleted: false, ...roleFilter };
     return prisma.$transaction([
-      prisma.user.count({ where: { domainId, isDeleted: false } }),
+      prisma.user.count({ where }),
       prisma.user.findMany({
-        where: { domainId, isDeleted: false },
+        where,
         select: {
           id: true,
           name: true,

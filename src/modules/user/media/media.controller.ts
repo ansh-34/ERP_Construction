@@ -97,8 +97,9 @@ export const mediaController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { searchKey } = req.query as {
+      const { searchKey, type } = req.query as {
         searchKey?: string;
+        type?: string;
       };
 
       const media = await mediaService.getAll(
@@ -106,6 +107,7 @@ export const mediaController = {
         req.user!.adminId,
         searchKey,
         language,
+        type,
       );
 
       return res.status(HttpStatus.OK).json({

@@ -1,0 +1,1 @@
+ALTER TABLE "dbAnalytics" ADD COLUMN IF NOT EXISTS "fileUrl" TEXT;

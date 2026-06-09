@@ -164,6 +164,30 @@ export const LogsService = {
 
     const rows = await DbAnalyticsRepository.findManyByDateRange(start, end);
 
+    const daily = await Promise.all(
+      rows.map(async (row) => {
+        let downloadUrl: string | null = null;
+        if (row.fileUrl) {
+          try {
+            downloadUrl = await getSignedUrl(
+              getS3Client(),
+              new GetObjectCommand({
+                Bucket: variables.S3_BUCKET!,
+                Key: row.fileUrl,
+              }),
+              { expiresIn: 3600 },
+            );
+          } catch {
+            // S3 not configured or key not found — leave null
+          }
+        }
+        return {
+          date: formatDateOnly(row.date),
+          downloadUrl,
+        };
+      }),
+    );
+
     return {
       period: query.period,
       dateRange: {
@@ -171,22 +195,7 @@ export const LogsService = {
         to: formatDateOnly(end),
       },
       summary: buildSummary(rows),
-      // daily: rows.map((row) => ({
-      //   id: row.id,
-      //   date: formatDateOnly(row.date),
-      //   totalRequests: row.totalRequests,
-      //   successCount: row.successCount,
-      //   failureCount: row.failureCount,
-      //   avgResponseTime: row.avgResponseTime,
-      //   maxResponseTime: row.maxResponseTime,
-      //   minResponseTime: row.minResponseTime,
-      //   mostHitApi: row.mostHitApi,
-      //   mostHitCount: row.mostHitCount,
-      //   mostFailedApi: row.mostFailedApi,
-      //   mostFailedCount: row.mostFailedCount,
-      //   createdAt: row.createdAt,
-      //   updatedAt: row.updatedAt,
-      // })),
+      daily,
     };
   },
 };

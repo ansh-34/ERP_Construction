@@ -38,6 +38,7 @@ export interface UpdateMachineryInput {
   type?: string;
   searchText?: string;
   expectedLitrePerHour?: number | null;
+  projectId?: string;
   status?: StatusEnum;
 }
 
@@ -308,6 +309,10 @@ export const machineryRepository = {
       assignments.unshift(
         Prisma.sql`"expectedLitrePerHour" = ${data.expectedLitrePerHour}`,
       );
+    }
+
+    if (data.projectId !== undefined) {
+      assignments.unshift(Prisma.sql`"projectId" = ${data.projectId}::uuid`);
     }
 
     if (data.status !== undefined) {

@@ -854,8 +854,8 @@ export const RawMaterialPurchaseRequestService = {
     const [totalCount, products] =
       await RawMaterialPurchaseRequestRepository.listAllPoProducts(
         domainId,
-        limit,
         offset,
+        limit,
         {
           filters: {
             purchaseOrderId: poId,

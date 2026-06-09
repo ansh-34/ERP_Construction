@@ -61,6 +61,7 @@ export const mediaRepository = {
     domainId: string,
     adminId: string,
     searchKey?: string,
+    type?: string,
   ): Promise<MediaRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -72,6 +73,10 @@ export const mediaRepository = {
       filters.push(
         Prisma.sql`"searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
       );
+    }
+
+    if (type) {
+      filters.push(Prisma.sql`"type" ILIKE ${`%${type}%`}`);
     }
 
     return prisma.$queryRaw<MediaRecord[]>(Prisma.sql`

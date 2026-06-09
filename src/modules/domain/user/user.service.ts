@@ -96,13 +96,17 @@ export const UserService = {
       : { message: 'Invite sent successfully' };
   },
 
-  async listUsers(domainId: string, query: PaginationQuery) {
+  async listUsers(
+    domainId: string,
+    query: PaginationQuery & { roleCode?: string },
+  ) {
     const { offset, limit } = normalizePagination(query);
 
     const [totalCount, users] = await UserRepository.listByDomain(
       domainId,
       limit,
       offset,
+      query.roleCode,
     );
 
     return {

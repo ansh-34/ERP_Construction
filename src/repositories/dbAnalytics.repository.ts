@@ -37,4 +37,11 @@ export const DbAnalyticsRepository = {
       update: stats,
     });
   },
+
+  updateFileUrl(date: Date, fileUrl: string) {
+    return prisma.dbAnalytics.update({
+      where: { date },
+      data: { fileUrl },
+    });
+  },
 };
