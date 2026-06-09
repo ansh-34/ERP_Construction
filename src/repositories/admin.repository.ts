@@ -87,8 +87,9 @@ export const AdminRepository = {
     ]);
   },
 
-  update(id: string, data: any) {
-    return prisma.admin.update({
+  update(id: string, data: any, options: { transaction?: any } = {}) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.admin.update({
       where: { id },
       data,
     });

@@ -387,8 +387,8 @@ export const VendorProductPriceService = {
               select: { id: true, name: true },
             })
             .then((res) => new Map(res.map((r) => [r.name, r]))),
-          AdminCurrencyRepository.find(adminId, {
-            filters: { codes: currencyCodes },
+          AdminCurrencyRepository.find({
+            filters: { codes: currencyCodes, adminId, isEnabled: true },
             select: { currencyId: true, currency: { select: { code: true } } },
           }).then((res) => new Map(res.map((r: any) => [r.currency.code, r]))),
         ]);

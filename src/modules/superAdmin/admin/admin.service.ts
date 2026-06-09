@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { Messages } from '../../../constants/index.js';
+import { Messages, StatusEnum } from '../../../constants/index.js';
 import {
   AdminCurrencyRepository,
   AdminLanguageRepository,
@@ -268,6 +268,9 @@ export const AdminService = {
       phone: string;
       mediaId?: string;
       isEmailVerified?: boolean;
+      status?: StatusEnum;
+      offeredLanguages?: string[];
+      offeredCurrencies?: string[];
     },
   ) {
     if (data.email) {
@@ -279,7 +282,110 @@ export const AdminService = {
       }
       data.isEmailVerified = false;
     }
-    return await AdminRepository.update(id, data);
+
+    let alreadyOfferedLanguageIds: string[] = [];
+    let alreadyOfferedCurrencyIds: string[] = [];
+    if (data.offeredLanguages) {
+      const allAreValidOfferedLanguages =
+        await LanguageRepository.validateLanguages(data.offeredLanguages);
+      if (!allAreValidOfferedLanguages) {
+        throw new Error(Messages.ADMIN.INVALID_OFFERED_LANGUAGES);
+      }
+
+      alreadyOfferedLanguageIds = await AdminLanguageRepository.find({
+        filters: {
+          adminId: id,
+        },
+        select: {
+          languageId: true,
+        },
+      }).then((languages: any) =>
+        languages.map((language: any) => language.languageId),
+      );
+    }
+
+    if (data.offeredCurrencies) {
+      const allAreValidOfferedCurrencies =
+        await CurrencyRepository.validateCurrencies(data.offeredCurrencies);
+      if (!allAreValidOfferedCurrencies) {
+        throw new Error(Messages.ADMIN.INVALID_OFFERED_CURRENCIES);
+      }
+      alreadyOfferedCurrencyIds = await AdminCurrencyRepository.find({
+        filters: {
+          adminId: id,
+        },
+        select: {
+          currencyId: true,
+        },
+      }).then((currencies: any) =>
+        currencies.map((currency: any) => currency.currencyId),
+      );
+    }
+
+    return await transaction(async (tx) => {
+      AdminRepository.update(
+        id,
+        {
+          ...(data.name && { name: data.name }),
+          ...(data.email && { email: data.email }),
+          ...(data.phoneCode && { phoneCode: data.phoneCode }),
+          ...(data.phone && { phone: data.phone }),
+          ...(data.mediaId && { mediaId: data.mediaId }),
+          ...(data.status && { status: data.status }),
+        },
+        { transaction: tx },
+      );
+
+      if (data.offeredLanguages && data.offeredLanguages.length >= 0) {
+        const idsToDelete = alreadyOfferedLanguageIds.filter((lid) => {
+          return !(data.offeredLanguages || []).includes(lid);
+        });
+        if (idsToDelete.length > 0) {
+          await AdminLanguageRepository.softDelete({
+            filters: {
+              languageIds: idsToDelete,
+              adminId: id,
+            },
+            transaction: tx,
+          });
+        }
+        const idsToCreate = data.offeredLanguages.filter((lid) => {
+          return !alreadyOfferedLanguageIds.includes(lid);
+        });
+        await AdminLanguageRepository.bulkCreate(
+          idsToCreate.map((lid) => ({
+            adminId: id,
+            languageId: lid,
+          })),
+          { transaction: tx },
+        );
+      }
+
+      if (data.offeredCurrencies && data.offeredCurrencies.length >= 0) {
+        const idsToDelete = alreadyOfferedCurrencyIds.filter((cid) => {
+          return !(data.offeredCurrencies || []).includes(cid);
+        });
+        if (idsToDelete.length > 0) {
+          await AdminCurrencyRepository.softDelete({
+            filters: {
+              currencyIds: idsToDelete,
+              adminId: id,
+            },
+            transaction: tx,
+          });
+        }
+        const idsToCreate = data.offeredCurrencies.filter((cid) => {
+          return !alreadyOfferedCurrencyIds.includes(cid);
+        });
+        await AdminCurrencyRepository.bulkCreate(
+          idsToCreate.map((cid) => ({
+            adminId: id,
+            currencyId: cid,
+          })),
+          { transaction: tx },
+        );
+      }
+    });
   },
   async deleteAdmin(id: string) {
     return await AdminRepository.softDelete(id);

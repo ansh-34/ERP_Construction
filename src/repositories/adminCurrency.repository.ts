@@ -46,20 +46,19 @@ export const AdminCurrencyRepository = {
     return count === currencyCodes.length;
   },
 
-  find(
-    domainId: string,
-    options?: {
-      filters?: {
-        searchKey?: string;
-        status?: 'ACTIVE' | 'INACTIVE';
-        ids?: string[];
-        codes?: string[];
-      };
-      select?: any;
-    },
-  ) {
+  find(options?: {
+    filters?: {
+      domainId?: string;
+      adminId?: string;
+      searchKey?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      ids?: string[];
+      codes?: string[];
+      isEnabled?: boolean;
+    };
+    select?: any;
+  }) {
     const whereClause: any = {
-      domainId,
       isDeleted: false,
       ...(options?.filters && {
         ...(options.filters.searchKey && {
@@ -75,6 +74,11 @@ export const AdminCurrencyRepository = {
             code: { in: options.filters.codes },
           },
         }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(Object.prototype.hasOwnProperty.call(
+          options.filters,
+          'isEnabled',
+        ) && { isEnabled: options.filters.isEnabled }),
       }),
     };
     return prisma.adminCurrencies.findMany({
@@ -193,9 +197,30 @@ export const AdminCurrencyRepository = {
     });
   },
 
-  softDelete(id: string) {
-    return prisma.adminCurrencies.update({
-      where: { id },
+  softDelete(options: {
+    filters: {
+      ids?: string[];
+      currencyIds?: string[];
+      adminId?: string;
+    };
+    transaction?: any;
+  }) {
+    const prismaClient = options?.transaction || prisma;
+
+    if (!options.filters || Object.keys(options.filters).length === 0) {
+      throw new Error('No filter provided to soft delete');
+    }
+
+    const whereClause: any = {
+      ...(options.filters.ids && { id: { in: options.filters.ids } }),
+      ...(options.filters.currencyIds && {
+        currencyId: { in: options.filters.currencyIds },
+      }),
+      ...(options.filters.adminId && { adminId: options.filters.adminId }),
+    };
+
+    return prismaClient.adminCurrencies.updateMany({
+      where: whereClause,
       data: { isDeleted: true },
     });
   },
