@@ -1,7 +1,7 @@
 import { errors } from './responses.js';
 
 export const VendorProductPricePaths = {
-  '/api/domain/vendor/{vendorId}/product-prices': {
+  '/api/domain/vendors/{vendorId}/product-prices': {
     post: {
       tags: ['Vendor Product Prices'],
       summary: 'Create vendor product prices',
@@ -41,7 +41,7 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/vendor/product-prices': {
+  '/api/domain/vendors/product-prices': {
     get: {
       tags: ['Vendor Product Prices'],
       summary: 'List vendor product prices',
@@ -64,6 +64,45 @@ export const VendorProductPricePaths = {
           schema: {
             type: 'integer',
             default: 10,
+          },
+        },
+        {
+          in: 'query',
+          name: 'searchKey',
+          schema: {
+            type: 'string',
+          },
+        },
+        {
+          in: 'query',
+          name: 'status',
+          schema: {
+            type: 'string',
+            enum: ['ACTIVE', 'INACTIVE'],
+          },
+        },
+        {
+          in: 'query',
+          name: 'productId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'query',
+          name: 'productGradeId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'query',
+          name: 'currencyId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
           },
         },
         {
@@ -152,7 +191,7 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/vendor/product-prices/export': {
+  '/api/domain/vendors/product-prices/export': {
     get: {
       tags: ['Vendor Product Prices'],
       summary: 'Export vendor product prices',
@@ -177,7 +216,42 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/vendor/product-prices/{vendorProductPriceId}': {
+  '/api/domain/vendors/product-prices/import': {
+    post: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Import vendor product prices',
+      description: 'Import vendor product prices from an uploaded CSV file.',
+
+      security: [{ bearerAuth: [] }],
+
+      requestBody: {
+        required: true,
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['file'],
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                },
+              },
+            },
+          },
+        },
+      },
+
+      responses: {
+        200: {
+          description: 'Vendor product prices imported successfully',
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/vendors/product-prices/{vendorProductPriceId}': {
     get: {
       tags: ['Vendor Product Prices'],
       summary: 'Get vendor product price by id',
@@ -232,9 +306,36 @@ export const VendorProductPricePaths = {
         ...errors,
       },
     },
+
+    delete: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Delete vendor product price',
+      description: 'Soft-delete a vendor product price.',
+
+      security: [{ bearerAuth: [] }],
+
+      parameters: [
+        {
+          in: 'path',
+          name: 'vendorProductPriceId',
+          required: true,
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+      ],
+
+      responses: {
+        200: {
+          description: 'Vendor product price deleted successfully',
+        },
+        ...errors,
+      },
+    },
   },
 
-  '/api/domain/user/{vendorId}/product-prices': {
+  '/api/user/vendors/{vendorId}/product-prices': {
     post: {
       tags: ['Vendor Product Prices'],
       summary: 'Create vendor product prices',
@@ -274,7 +375,7 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/user/product-prices': {
+  '/api/user/vendors/product-prices': {
     get: {
       tags: ['User Product Prices'],
       summary: 'List user product prices',
@@ -296,6 +397,45 @@ export const VendorProductPricePaths = {
           schema: {
             type: 'integer',
             default: 10,
+          },
+        },
+        {
+          in: 'query',
+          name: 'searchKey',
+          schema: {
+            type: 'string',
+          },
+        },
+        {
+          in: 'query',
+          name: 'status',
+          schema: {
+            type: 'string',
+            enum: ['ACTIVE', 'INACTIVE'],
+          },
+        },
+        {
+          in: 'query',
+          name: 'productId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'query',
+          name: 'productGradeId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+        {
+          in: 'query',
+          name: 'currencyId',
+          schema: {
+            type: 'string',
+            format: 'uuid',
           },
         },
         {
@@ -382,7 +522,7 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/user/product-prices/export': {
+  '/api/user/vendors/product-prices/export': {
     get: {
       tags: ['User Product Prices'],
       summary: 'Export user product prices',
@@ -407,7 +547,42 @@ export const VendorProductPricePaths = {
     },
   },
 
-  '/api/domain/user/product-prices/{userProductPriceId}': {
+  '/api/user/vendors/product-prices/import': {
+    post: {
+      tags: ['User Product Prices'],
+      summary: 'Import user product prices',
+      description: 'Import user product prices from an uploaded CSV file.',
+
+      security: [{ bearerAuth: [] }],
+
+      requestBody: {
+        required: true,
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['file'],
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                },
+              },
+            },
+          },
+        },
+      },
+
+      responses: {
+        200: {
+          description: 'User product prices imported successfully',
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/user/vendors/product-prices/{userProductPriceId}': {
     get: {
       tags: ['User Product Prices'],
       summary: 'Get user product price by id',
@@ -458,6 +633,33 @@ export const VendorProductPricePaths = {
               },
             },
           },
+        },
+        ...errors,
+      },
+    },
+
+    delete: {
+      tags: ['User Product Prices'],
+      summary: 'Delete user product price',
+      description: 'Soft-delete a user product price.',
+
+      security: [{ bearerAuth: [] }],
+
+      parameters: [
+        {
+          in: 'path',
+          name: 'userProductPriceId',
+          required: true,
+          schema: {
+            type: 'string',
+            format: 'uuid',
+          },
+        },
+      ],
+
+      responses: {
+        200: {
+          description: 'User product price deleted successfully',
         },
         ...errors,
       },

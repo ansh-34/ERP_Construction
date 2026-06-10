@@ -34,13 +34,9 @@ export const VendorProductPriceSchemas = {
     type: 'array',
     items: {
       type: 'object',
-      required: ['vendorProductPriceId', 'uomId', 'currencyId', 'price'],
+      required: ['vendorProductPriceId'],
       properties: {
         vendorProductPriceId: {
-          type: 'string',
-          format: 'uuid',
-        },
-        uomId: {
           type: 'string',
           format: 'uuid',
         },
@@ -52,6 +48,11 @@ export const VendorProductPriceSchemas = {
           type: 'number',
           minimum: 0,
           example: 150.5,
+        },
+        status: {
+          type: 'string',
+          enum: ['ACTIVE', 'INACTIVE'],
+          example: 'ACTIVE',
         },
       },
     },
