@@ -8,6 +8,31 @@ export const RoleRepository = {
     });
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      roleIds?: string[];
+      adminId?: string;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.roleIds && { id: { in: options.filters.roleIds } }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+      }),
+    };
+
+    return prisma.role.count({ where: whereClause });
+  },
+
   findActiveByIdAndDomain(id: string, domainId: string) {
     return prisma.role.findFirst({
       where: { id, domainId, isDeleted: false },
@@ -32,6 +57,14 @@ export const RoleRepository = {
     return prisma.role.findFirst({
       where: { domainId, code: 'domain', isDeleted: false },
     });
+  },
+
+  findActiveByDomain(domainId: string, select?: any): Promise<any> {
+    return prisma.role.findMany({
+      where: { domainId, isDeleted: false },
+      select,
+      orderBy: { createdAt: 'desc' },
+    }) as Promise<any>;
   },
 
   findDuplicateCode(domainId: string, code: string, excludeId: string) {
@@ -76,8 +109,9 @@ export const RoleRepository = {
     ]);
   },
 
-  update(id: string, data: Prisma.RoleUncheckedUpdateInput) {
-    return prisma.role.update({ where: { id }, data });
+  update(id: string, data: Prisma.RoleUncheckedUpdateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.role.update({ where: { id }, data });
   },
 
   softDelete(id: string) {

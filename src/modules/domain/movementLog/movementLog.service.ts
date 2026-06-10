@@ -195,7 +195,7 @@ export const movementLogService = {
       ) as Date;
       const endDateTime = parseDate(data.endDateTime, 'endDateTime') as Date;
 
-      return movementLogRepository.create({
+      const log = await movementLogRepository.create({
         ...data,
         searchText: buildSearchText(data),
         startDateTime,
@@ -206,6 +206,21 @@ export const movementLogService = {
           data.endMeterReading,
         ),
       });
+
+      if (
+        data.assetType === 'MACHINERY' &&
+        data.machineryId &&
+        data.projectId
+      ) {
+        await machineryRepository.update(
+          data.machineryId,
+          data.domainId,
+          { projectId: data.projectId },
+          data.adminId,
+        );
+      }
+
+      return log;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

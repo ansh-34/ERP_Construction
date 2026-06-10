@@ -21,6 +21,33 @@ export const GrnRepository = {
     return product;
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.approvalStatus && {
+          approvalStatus: options.filters.approvalStatus,
+        }),
+      }),
+    };
+
+    return prisma.grn.count({ where: whereClause });
+  },
+
   mapGrn(grn: any) {
     if (!grn) return grn;
     if (grn.grnProducts && Array.isArray(grn.grnProducts)) {
@@ -259,8 +286,9 @@ export const GrnRepository = {
     return [total, grns.map(GrnRepository.mapGrn)] as [number, any[]];
   },
 
-  async update(id: string, data: any) {
-    return prisma.grn.update({ where: { id }, data });
+  async update(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grn.update({ where: { id }, data });
   },
 
   async softDelete(id: string) {
@@ -452,5 +480,20 @@ export const GrnRepository = {
       await GrnRepository.recalculateGrnTotals(tx, grnId, domainId);
       return GrnRepository.mapGrnProduct(product);
     });
+  },
+
+  async findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grn.findFirst(args);
+  },
+
+  async updateGrnProductRaw(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grnProduct.update({ where: { id }, data });
+  },
+
+  async createGrnProductRaw(data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.grnProduct.create({ data });
   },
 };

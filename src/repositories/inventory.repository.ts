@@ -59,6 +59,40 @@ export const InventoryRepository = {
     });
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      lowStock?: boolean;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(Object.prototype.hasOwnProperty.call(
+          options.filters,
+          'lowStock',
+        ) && {
+          quantity: {
+            ...(options.filters.lowStock
+              ? { lte: prisma.inventory.fields.reorderLevel }
+              : { gt: prisma.inventory.fields.reorderLevel }),
+          },
+        }),
+      }),
+    };
+
+    return prisma.inventory.count({ where: whereClause });
+  },
+
   listByDomain(
     domainId: string,
     limit: number,
@@ -142,5 +176,42 @@ export const InventoryRepository = {
       include: inventoryIncludes,
       orderBy: { createdAt: 'desc' },
     });
+  },
+
+  async getStatsDetailed(domainId: string) {
+    const where = { domainId, isDeleted: false };
+    const [
+      totalItems,
+      activeCount,
+      inactiveCount,
+      outOfStockCount,
+      aggregation,
+    ] = await prisma.$transaction([
+      prisma.inventory.count({ where }),
+      prisma.inventory.count({ where: { ...where, status: 'ACTIVE' } }),
+      prisma.inventory.count({ where: { ...where, status: 'INACTIVE' } }),
+      prisma.inventory.count({ where: { ...where, quantity: 0 } }),
+      prisma.inventory.aggregate({
+        where,
+        _sum: { quantity: true },
+      }),
+    ]);
+
+    return {
+      totalItems,
+      activeCount,
+      inactiveCount,
+      outOfStockCount,
+      totalQuantity: aggregation._sum.quantity ?? 0,
+    };
+  },
+
+  async countUniqueProducts(domainId: string) {
+    const result = await prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(DISTINCT "productId")::bigint AS count
+      FROM "Inventory"
+      WHERE "domainId" = ${domainId}::uuid AND "isDeleted" = false
+    `;
+    return Number(result[0].count);
   },
 };

@@ -113,6 +113,29 @@ export const invoiceRepository = {
     });
   },
 
+  async count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+      }),
+    };
+
+    return prisma.invoice.count({ where: whereClause });
+  },
+
   findByIdAndDomain(id: string, domainId: string) {
     return prisma.invoice.findFirst({
       where: { id, domainId, isDeleted: false },
@@ -188,8 +211,9 @@ export const invoiceRepository = {
     ]);
   },
 
-  update(id: string, data: Prisma.InvoiceUncheckedUpdateInput) {
-    return prisma.invoice.update({
+  update(id: string, data: Prisma.InvoiceUncheckedUpdateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.invoice.update({
       where: { id },
       data,
       include: {
@@ -516,5 +540,10 @@ export const invoiceRepository = {
 
       return invoices;
     });
+  },
+
+  findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.invoice.findFirst(args);
   },
 };

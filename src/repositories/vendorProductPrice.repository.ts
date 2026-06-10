@@ -23,7 +23,9 @@ export const vendorProductPriceRepository = {
   ) {
     return prisma.vendorProductPricing.findFirst({
       where: {
-        vendorName,
+        vendor: {
+          name: vendorName,
+        },
         productId,
         productGradeId,
         uomId,
@@ -150,16 +152,16 @@ export const vendorProductPriceRepository = {
     const values = pricingData.map(
       (item) =>
         Prisma.sql`(
-        ${randomUUID()},
-        ${domainId},
-        ${adminId},
-        ${item.vendorId},
-        ${item.productId},
-        ${item.productGradeId},
-        ${item.uomId},
-        ${item.price},
-        ${item.currencyId},
-        ${item.status},
+        ${randomUUID()}::uuid,
+        ${domainId}::uuid,
+        ${adminId}::uuid,
+        ${item.vendorId}::uuid,
+        ${item.productId}::uuid,
+        ${item.productGradeId}::uuid,
+        ${item.uomId}::uuid,
+        ${item.price}::double precision,
+        ${item.currencyId}::uuid,
+        ${item.status}::"StatusEnum",
         ${item.searchText},
         ${item.key},
         false,
@@ -245,11 +247,11 @@ export const vendorProductPriceRepository = {
 
     const values = updates.map(
       (item) => Prisma.sql`(
-      ${item.id},
-      ${item.uomId},
-      ${item.price},
-      ${item.currencyId},
-      ${item.status},
+      ${item.id}::uuid,
+      ${item.uomId}::uuid,
+      ${item.price}::double precision,
+      ${item.currencyId}::uuid,
+      ${item.status}::"StatusEnum",
       ${item.key}
     )`,
     );
@@ -275,5 +277,10 @@ export const vendorProductPriceRepository = {
   )
   WHERE vpp."id" = data."id"::uuid
 `;
+  },
+
+  findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.vendorProductPricing.findFirst(args);
   },
 };

@@ -75,8 +75,9 @@ const productWithDetails = {
 } satisfies Prisma.ProductInclude;
 
 export const ProductRepository = {
-  create(data: Prisma.ProductUncheckedCreateInput) {
-    return prisma.product.create({ data });
+  create(data: Prisma.ProductUncheckedCreateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.product.create({ data });
   },
 
   findActiveByCode(domainId: string, code: string) {
@@ -187,8 +188,9 @@ export const ProductRepository = {
     });
   },
 
-  update(id: string, data: Prisma.ProductUncheckedUpdateInput) {
-    return prisma.product.update({
+  update(id: string, data: Prisma.ProductUncheckedUpdateInput, tx?: any) {
+    const client = tx || prisma;
+    return client.product.update({
       where: { id },
       data,
     });
@@ -227,5 +229,18 @@ export const ProductRepository = {
       },
     });
     return count === productCodes.length;
+  },
+
+  count(args: any): Promise<any> {
+    return prisma.product.count(args) as Promise<any>;
+  },
+
+  findMany(args: any): Promise<any> {
+    return prisma.product.findMany(args) as Promise<any>;
+  },
+
+  findFirst(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.product.findFirst(args) as Promise<any>;
   },
 };

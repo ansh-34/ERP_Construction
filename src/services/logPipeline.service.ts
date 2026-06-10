@@ -9,6 +9,7 @@ import {
   getLogFilePath,
   getYesterday,
 } from '@/utils/logFile.utils';
+import { DbAnalyticsRepository } from '@/repositories/index';
 
 export type NightlyLogJobResult = {
   fileName: string;
@@ -74,6 +75,12 @@ export async function runNightlyLogPipeline(): Promise<NightlyLogJobResult> {
         `[LogPipeline] Uploaded to S3: s3://${variables.S3_BUCKET}/${s3Key}`,
       );
 
+      try {
+        await DbAnalyticsRepository.updateFileUrl(date, s3Key);
+      } catch (err) {
+        console.error('[LogPipeline] Failed to store fileUrl in DB:', err);
+      }
+
       await fs.unlink(filePath);
       console.log(`[LogPipeline] Deleted local file: ${filePath}`);
 
@@ -120,6 +127,13 @@ export async function runLogPipelineForDate(
     }
 
     const s3Key = await uploadLogFileToS3(filePath, fileName);
+
+    try {
+      await DbAnalyticsRepository.updateFileUrl(date, s3Key);
+    } catch (err) {
+      console.error('[LogPipeline] Failed to store fileUrl in DB:', err);
+    }
+
     await fs.unlink(filePath);
 
     return {

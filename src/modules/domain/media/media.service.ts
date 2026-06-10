@@ -106,6 +106,7 @@ export const mediaService = {
     adminId: string,
     searchKey?: string,
     _language: string | null = null,
+    type?: string,
   ): Promise<MediaRecord[]> => {
     if (!isNonEmptyString(domainId) || !isNonEmptyString(adminId)) {
       throw new Error('invalid ids');
@@ -116,6 +117,7 @@ export const mediaService = {
         domainId,
         adminId,
         searchKey,
+        type,
       );
       return media;
     } catch (error: unknown) {

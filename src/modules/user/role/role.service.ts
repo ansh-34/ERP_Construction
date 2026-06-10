@@ -4,10 +4,11 @@ import {
   PermissionRepository,
   RoleRepository,
   UserRepository,
+  RoleModulePermissionRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 
 export const RoleService = {
   localizeName(value: any, langCode: string) {
@@ -101,26 +102,21 @@ export const RoleService = {
       }
     }
 
-    const results = await prisma.$transaction(
-      items.map((item) =>
-        prisma.roleModulePermission.upsert({
-          where: {
-            roleId_moduleId_domainId: {
+    const results = await transaction(async (tx: any) => {
+      return Promise.all(
+        items.map((item) =>
+          RoleModulePermissionRepository.upsert(
+            {
               roleId: role.id,
               moduleId: item.moduleId,
+              permissions: item.permissions,
               domainId,
             },
-          },
-          update: { permissions: item.permissions },
-          create: {
-            roleId: role.id,
-            moduleId: item.moduleId,
-            permissions: item.permissions,
-            domainId,
-          },
-        }),
-      ),
-    );
+            tx,
+          ),
+        ),
+      );
+    });
 
     return Array.isArray(data) ? results : results[0];
   },

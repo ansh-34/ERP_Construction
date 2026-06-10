@@ -9,4 +9,6 @@ export const inviteUserBodySchema = z.object({
   minDayCharge: z.number().finite().nonnegative().optional(),
 });
 
-export const listUsersQuerySchema = paginationQuerySchema;
+export const listUsersQuerySchema = paginationQuerySchema.extend({
+  roleCode: z.string().trim().optional(),
+});

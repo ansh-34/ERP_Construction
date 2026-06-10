@@ -121,6 +121,34 @@ export const AdminLanguageRepository = {
     ]);
   },
 
+  find(options: {
+    filters?: {
+      adminId?: string;
+      languageId?: string;
+      isDefault?: boolean;
+      isEnabled?: boolean;
+      status?: 'active' | 'inactive';
+      id?: string;
+    };
+    select?: any;
+    transaction?: any;
+  }) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.adminLanguages.findMany({
+      where: { ...options.filters, isDeleted: false },
+      select: options.select || {
+        id: true,
+        languageId: true,
+        adminId: true,
+        isDefault: true,
+        isEnabled: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  },
+
   update(id: string, data: { isEnabled?: boolean; isDefault?: boolean }) {
     return prisma.adminLanguages.update({
       where: { id },
@@ -135,9 +163,30 @@ export const AdminLanguageRepository = {
     });
   },
 
-  softDelete(id: string) {
-    return prisma.adminLanguages.update({
-      where: { id },
+  softDelete(options: {
+    filters: {
+      ids?: string[];
+      languageIds?: string[];
+      adminId?: string;
+    };
+    transaction?: any;
+  }) {
+    const prismaClient = options?.transaction || prisma;
+
+    if (!options.filters || Object.keys(options.filters).length === 0) {
+      throw new Error('No filter provided to soft delete');
+    }
+
+    const whereClause: any = {
+      ...(options.filters.ids && { id: { in: options.filters.ids } }),
+      ...(options.filters.languageIds && {
+        languageId: { in: options.filters.languageIds },
+      }),
+      ...(options.filters.adminId && { adminId: options.filters.adminId }),
+    };
+
+    return prismaClient.adminLanguages.updateMany({
+      where: whereClause,
       data: { isDeleted: true },
     });
   },
@@ -170,7 +219,10 @@ export const AdminLanguageRepository = {
         });
   },
 
-  validateAdminLanguages(data: { languageIds: string[]; adminId: string }) {
+  async validateAdminLanguages(data: {
+    languageIds: string[];
+    adminId: string;
+  }) {
     return prisma.adminLanguages
       .findMany({
         where: {

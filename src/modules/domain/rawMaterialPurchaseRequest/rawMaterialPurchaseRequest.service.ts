@@ -1,12 +1,19 @@
 import { Messages } from '../../../constants/index.js';
-import { RawMaterialPurchaseRequestRepository } from '../../../repositories/index.js';
+import {
+  RawMaterialPurchaseRequestRepository,
+  ProductRepository,
+  ProductGradeRepository,
+  uomRepository,
+  projectRepository,
+  mediaRepository,
+} from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { translateResponse } from '../../../utils/translation.js';
 import {
   ApprovalStatus,
   PurchaseRequestType,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 const editableStatuses: ApprovalStatus[] = [
   ApprovalStatus.PENDING,
   ApprovalStatus.REJECTED,
@@ -23,46 +30,39 @@ const ensureRelationsBelongToDomain = async (
   },
 ) => {
   if (data.productId) {
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: data.productId, domainId, isDeleted: false },
     });
     if (!product) throw new Error(Messages.INVENTORY.PRODUCT_NOT_FOUND);
   }
 
   if (data.productGradeId) {
-    const grade = await prisma.productGrades.findFirst({
-      where: {
-        id: data.productGradeId,
-        ...(data.productId ? { productId: data.productId } : {}),
-        domainId,
-        isDeleted: false,
-      },
+    const grade = await ProductGradeRepository.findFirst({
+      where: { id: data.productGradeId },
     });
     if (!grade) throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (grade.isDeleted) throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (grade.domainId !== domainId)
+      throw new Error(Messages.INVENTORY.GRADE_NOT_FOUND);
+    if (data.productId && grade.productId !== data.productId)
+      throw new Error('Product grade does not belong to the specified product');
   }
 
   if (data.uomId) {
-    const uom = await prisma.uom.findFirst({
-      where: { id: data.uomId, domainId, isDeleted: false },
-    });
+    const uom = await uomRepository.findByIdAndDomain(data.uomId, domainId);
     if (!uom) throw new Error(Messages.INVENTORY.UOM_NOT_FOUND);
   }
 
   if (data.projectId) {
-    const project = await prisma.project.findFirst({
-      where: { id: data.projectId, domainId, isDeleted: false },
-    });
+    const project = await projectRepository.findById(data.projectId, domainId);
     if (!project) throw new Error('Project not found');
   }
 
   if (data.documentId) {
-    const media = await prisma.media.findFirst({
-      where: {
-        id: data.documentId,
-        domainId,
-        isDeleted: false,
-      },
-    });
+    const media = await mediaRepository.findByIdAndDomain(
+      data.documentId,
+      domainId,
+    );
     if (!media) throw new Error('Document media not found');
   }
 };
@@ -117,14 +117,14 @@ export const RawMaterialPurchaseRequestService = {
     const suffix = domainId.slice(0, 4).toUpperCase();
     const code = `RMPR-${suffix}-${timestamp}`;
 
-    return prisma.$transaction(async (tx) => {
+    return transaction(async (tx: any) => {
       const createdRequests = [];
 
       for (let i = 0; i < data.items.length; i++) {
         const item = data.items[i];
 
-        const request = await tx.rawMaterialPurchaseRequest.create({
-          data: {
+        const request = await RawMaterialPurchaseRequestRepository.create(
+          {
             code,
             type: data.type,
             productId: item.productId,
@@ -142,10 +142,11 @@ export const RawMaterialPurchaseRequestService = {
             status: 'ACTIVE',
             isDeleted: false,
           },
-          include: {
+          tx,
+          {
             document: true,
           },
-        });
+        );
 
         createdRequests.push(request);
       }
@@ -233,26 +234,29 @@ export const RawMaterialPurchaseRequestService = {
     };
 
     // Count unique codes
-    const uniqueCodesCount = await prisma.rawMaterialPurchaseRequest.groupBy({
-      by: ['code'],
-      where: whereClause,
-    });
+    const uniqueCodesCount = await RawMaterialPurchaseRequestRepository.groupBy(
+      {
+        by: ['code'],
+        where: whereClause,
+      },
+    );
     const totalCount = uniqueCodesCount.length;
 
     // Get paginated unique codes sorted by code desc (newest first because code contains timestamp)
-    const distinctRequests = await prisma.rawMaterialPurchaseRequest.findMany({
-      where: whereClause,
-      distinct: ['code'],
-      select: { code: true },
-      orderBy: { code: 'desc' },
-      take: limit,
-      skip: offset,
-    });
+    const distinctRequests =
+      await RawMaterialPurchaseRequestRepository.findMany({
+        where: whereClause,
+        distinct: ['code'],
+        select: { code: true },
+        orderBy: { code: 'desc' },
+        take: limit,
+        skip: offset,
+      });
 
-    const codes = distinctRequests.map((r) => r.code);
+    const codes = distinctRequests.map((r: any) => r.code);
 
     // Fetch all details for these codes
-    const allRows = await prisma.rawMaterialPurchaseRequest.findMany({
+    const allRows = await RawMaterialPurchaseRequestRepository.findMany({
       where: {
         code: { in: codes },
         domainId: authDomainId,
@@ -319,7 +323,9 @@ export const RawMaterialPurchaseRequestService = {
       });
     }
 
-    const requests = codes.map((code) => groupedMap.get(code)).filter(Boolean);
+    const requests = codes
+      .map((code: any) => groupedMap.get(code))
+      .filter(Boolean);
 
     return {
       requests,
@@ -332,7 +338,7 @@ export const RawMaterialPurchaseRequestService = {
   },
 
   async getRequestById(domainId: string, id: string) {
-    const target = await prisma.rawMaterialPurchaseRequest.findFirst({
+    const target = await RawMaterialPurchaseRequestRepository.findFirst({
       where: { id, domainId, isDeleted: false },
       include: {
         product: true,
@@ -354,7 +360,7 @@ export const RawMaterialPurchaseRequestService = {
   },
 
   async getRequestByCode(domainId: string, code: string) {
-    const siblingRows = await prisma.rawMaterialPurchaseRequest.findMany({
+    const siblingRows = await RawMaterialPurchaseRequestRepository.findMany({
       where: { code, domainId, isDeleted: false },
       include: {
         product: true,
@@ -401,7 +407,7 @@ export const RawMaterialPurchaseRequestService = {
       updatedAt: firstRow.updatedAt,
       purchaseOrderId: firstRow.purchaseOrderId,
       purchaseOrder: firstRow.purchaseOrder,
-      items: siblingRows.map((row) => ({
+      items: siblingRows.map((row: any) => ({
         id: row.id,
         productId: row.productId,
         product: row.product,
@@ -418,7 +424,7 @@ export const RawMaterialPurchaseRequestService = {
   },
 
   async updateRequest(domainId: string, id: string, data: any) {
-    const request = await prisma.rawMaterialPurchaseRequest.findFirst({
+    const request = await RawMaterialPurchaseRequestRepository.findFirst({
       where: { id, domainId, isDeleted: false },
     });
     if (!request) {
@@ -453,7 +459,7 @@ export const RawMaterialPurchaseRequestService = {
       sharedFields.requiredBy = new Date(sharedFields.requiredBy);
     }
 
-    return prisma.$transaction(async (tx) => {
+    return transaction(async (tx: any) => {
       const specificUpdate: any = {};
       if (productId) specificUpdate.productId = productId;
       if (productGradeId) specificUpdate.productGradeId = productGradeId;
@@ -464,21 +470,25 @@ export const RawMaterialPurchaseRequestService = {
 
       Object.assign(specificUpdate, sharedFields);
 
-      const updated = await tx.rawMaterialPurchaseRequest.update({
-        where: { id },
-        data: specificUpdate,
-      });
+      const updated = await RawMaterialPurchaseRequestRepository.update(
+        id,
+        specificUpdate,
+        tx,
+      );
 
       if (Object.keys(sharedFields).length > 0) {
-        await tx.rawMaterialPurchaseRequest.updateMany({
-          where: {
-            code: request.code,
-            domainId,
-            id: { not: id },
-            isDeleted: false,
+        await RawMaterialPurchaseRequestRepository.updateMany(
+          {
+            where: {
+              code: request.code,
+              domainId,
+              id: { not: id },
+              isDeleted: false,
+            },
+            data: sharedFields,
           },
-          data: sharedFields,
-        });
+          tx,
+        );
       }
 
       return updated;
@@ -486,7 +496,7 @@ export const RawMaterialPurchaseRequestService = {
   },
 
   async deleteRequest(domainId: string, id: string) {
-    const request = await prisma.rawMaterialPurchaseRequest.findFirst({
+    const request = await RawMaterialPurchaseRequestRepository.findFirst({
       where: { id, domainId, isDeleted: false },
     });
     if (!request) {
@@ -501,7 +511,7 @@ export const RawMaterialPurchaseRequestService = {
   },
 
   async deleteRequestByCode(domainId: string, code: string) {
-    const requests = await prisma.rawMaterialPurchaseRequest.findMany({
+    const requests = await RawMaterialPurchaseRequestRepository.findMany({
       where: { code, domainId, isDeleted: false },
     });
     if (requests.length === 0) {
@@ -509,13 +519,13 @@ export const RawMaterialPurchaseRequestService = {
     }
 
     const hasApproved = requests.some(
-      (r) => r.approvalStatus === ApprovalStatus.APPROVED,
+      (r: any) => r.approvalStatus === ApprovalStatus.APPROVED,
     );
     if (hasApproved) {
       throw new Error('Approved purchase requests cannot be deleted');
     }
 
-    return prisma.rawMaterialPurchaseRequest.updateMany({
+    return RawMaterialPurchaseRequestRepository.updateMany({
       where: { code, domainId, isDeleted: false },
       data: { isDeleted: true, status: 'INACTIVE' },
     });
@@ -527,7 +537,7 @@ export const RawMaterialPurchaseRequestService = {
     productId: string,
     data: any,
   ) {
-    const request = await prisma.rawMaterialPurchaseRequest.findFirst({
+    const request = await RawMaterialPurchaseRequestRepository.findFirst({
       where: { code, productId, domainId, isDeleted: false },
     });
     if (!request) {
@@ -562,7 +572,7 @@ export const RawMaterialPurchaseRequestService = {
       sharedFields.requiredBy = new Date(sharedFields.requiredBy);
     }
 
-    return prisma.$transaction(async (tx) => {
+    return transaction(async (tx: any) => {
       const specificUpdate: any = {};
       if (newProductId) specificUpdate.productId = newProductId;
       if (productGradeId) specificUpdate.productGradeId = productGradeId;
@@ -573,21 +583,25 @@ export const RawMaterialPurchaseRequestService = {
 
       Object.assign(specificUpdate, sharedFields);
 
-      const updated = await tx.rawMaterialPurchaseRequest.update({
-        where: { id: request.id },
-        data: specificUpdate,
-      });
+      const updated = await RawMaterialPurchaseRequestRepository.update(
+        request.id,
+        specificUpdate,
+        tx,
+      );
 
       if (Object.keys(sharedFields).length > 0) {
-        await tx.rawMaterialPurchaseRequest.updateMany({
-          where: {
-            code,
-            domainId,
-            id: { not: request.id },
-            isDeleted: false,
+        await RawMaterialPurchaseRequestRepository.updateMany(
+          {
+            where: {
+              code,
+              domainId,
+              id: { not: request.id },
+              isDeleted: false,
+            },
+            data: sharedFields,
           },
-          data: sharedFields,
-        });
+          tx,
+        );
       }
 
       return updated;
@@ -599,9 +613,11 @@ export const RawMaterialPurchaseRequestService = {
     code: string,
     approvalStatus: ApprovalStatus,
   ) {
-    const siblingRequests = await prisma.rawMaterialPurchaseRequest.findMany({
-      where: { code, domainId, isDeleted: false },
-    });
+    const siblingRequests = await RawMaterialPurchaseRequestRepository.findMany(
+      {
+        where: { code, domainId, isDeleted: false },
+      },
+    );
 
     if (!siblingRequests.length) {
       throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.NOT_FOUND);
@@ -609,13 +625,13 @@ export const RawMaterialPurchaseRequestService = {
 
     if (approvalStatus === ApprovalStatus.REJECTED) {
       const anyApproved = siblingRequests.some(
-        (r) => r.approvalStatus === ApprovalStatus.APPROVED,
+        (r: any) => r.approvalStatus === ApprovalStatus.APPROVED,
       );
       if (anyApproved) {
         throw new Error('Approved purchase requests cannot be rejected');
       }
 
-      await prisma.rawMaterialPurchaseRequest.updateMany({
+      await RawMaterialPurchaseRequestRepository.updateMany({
         where: { code, domainId, isDeleted: false },
         data: {
           approvalStatus: ApprovalStatus.REJECTED,
@@ -623,13 +639,13 @@ export const RawMaterialPurchaseRequestService = {
         },
       });
 
-      return prisma.rawMaterialPurchaseRequest.findMany({
+      return RawMaterialPurchaseRequestRepository.findMany({
         where: { code, domainId },
       });
     }
 
     const anyActioned = siblingRequests.some(
-      (r) => !editableStatuses.includes(r.approvalStatus),
+      (r: any) => !editableStatuses.includes(r.approvalStatus),
     );
     if (anyActioned) {
       throw new Error(Messages.RAW_MATERIAL_PURCHASE_REQUEST.ALREADY_ACTIONED);

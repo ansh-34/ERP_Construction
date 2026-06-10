@@ -1,9 +1,9 @@
 import { ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import variables from '@/config/variables.config';
-import prisma from '@/infra/database/prisma/prisma.client';
 import { assertS3Configured, getS3Client } from '@/utils/s3Log.utils';
 import type { AnalyticsQuery } from './logs.validator';
+import { DbAnalyticsRepository } from '@/repositories/index';
 
 type AnalyticsPeriod = AnalyticsQuery['period'];
 
@@ -50,7 +50,7 @@ function formatDateOnly(date: Date): string {
 }
 
 type DbAnalyticsRow = Awaited<
-  ReturnType<typeof prisma.dbAnalytics.findMany>
+  ReturnType<typeof DbAnalyticsRepository.findManyByDateRange>
 >[number];
 
 function buildSummary(rows: DbAnalyticsRow[]) {
@@ -162,15 +162,31 @@ export const LogsService = {
     const anchor = parseAnchorDate(query.date);
     const { start, end } = getDateRange(query.period, anchor);
 
-    const rows = await prisma.dbAnalytics.findMany({
-      where: {
-        date: {
-          gte: start,
-          lte: end,
-        },
-      },
-      orderBy: { date: 'asc' },
-    });
+    const rows = await DbAnalyticsRepository.findManyByDateRange(start, end);
+
+    const daily = await Promise.all(
+      rows.map(async (row: any) => {
+        let downloadUrl: string | null = null;
+        if (row.fileUrl) {
+          try {
+            downloadUrl = await getSignedUrl(
+              getS3Client(),
+              new GetObjectCommand({
+                Bucket: variables.S3_BUCKET!,
+                Key: row.fileUrl,
+              }),
+              { expiresIn: 3600 },
+            );
+          } catch {
+            // S3 not configured or key not found — leave null
+          }
+        }
+        return {
+          date: formatDateOnly(row.date),
+          downloadUrl,
+        };
+      }),
+    );
 
     return {
       period: query.period,
@@ -179,22 +195,7 @@ export const LogsService = {
         to: formatDateOnly(end),
       },
       summary: buildSummary(rows),
-      // daily: rows.map((row) => ({
-      //   id: row.id,
-      //   date: formatDateOnly(row.date),
-      //   totalRequests: row.totalRequests,
-      //   successCount: row.successCount,
-      //   failureCount: row.failureCount,
-      //   avgResponseTime: row.avgResponseTime,
-      //   maxResponseTime: row.maxResponseTime,
-      //   minResponseTime: row.minResponseTime,
-      //   mostHitApi: row.mostHitApi,
-      //   mostHitCount: row.mostHitCount,
-      //   mostFailedApi: row.mostFailedApi,
-      //   mostFailedCount: row.mostFailedCount,
-      //   createdAt: row.createdAt,
-      //   updatedAt: row.updatedAt,
-      // })),
+      daily,
     };
   },
 };

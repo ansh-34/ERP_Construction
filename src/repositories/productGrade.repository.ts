@@ -82,4 +82,12 @@ export const ProductGradeRepository = {
       ...(options && { select: options.select }),
     });
   },
+
+  findFirst(args: any) {
+    return prisma.productGrades.findFirst(args);
+  },
+
+  findMany(args: any) {
+    return prisma.productGrades.findMany(args);
+  },
 };

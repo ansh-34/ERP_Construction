@@ -244,6 +244,61 @@ export const projectRepository = {
     return result[0] as ProjectRecord;
   },
 
+  count(options: {
+    filters: {
+      domainId?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      adminId?: string;
+      actualStartDate?: any;
+      actualEndDate?: any;
+    };
+  }) {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
+        ...(options.filters.searchKey && {
+          searchText: { contains: options.filters.searchKey },
+        }),
+        ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.actualStartDate && {
+          actualStartDate: options.filters.actualStartDate,
+        }),
+        ...(options.filters.actualEndDate && {
+          actualEndDate: options.filters.actualEndDate,
+        }),
+      }),
+    };
+
+    return prisma.project.count({ where: whereClause });
+  },
+
+  find: async (options: {
+    filters: { spent?: any; budget?: any; domainId?: any; status?: any };
+    orderBy?: any;
+    select?: any;
+    limit?: any;
+    offset?: any;
+  }) => {
+    const whereClause: any = {
+      isDeleted: false,
+      ...(options.filters && {
+        ...(options.filters.spent && { spent: options.filters.spent }),
+        ...(options.filters.budget && { budget: options.filters.budget }),
+      }),
+    };
+
+    return prisma.project.findMany({
+      where: whereClause,
+      ...(options.orderBy && { orderBy: options.orderBy }),
+      ...(options.select && { select: options.select }),
+      ...(options.limit && { take: options.limit }),
+      ...(options.offset && { skip: options.offset }),
+    });
+  },
+
   findMany: async (
     domainId: string,
     searchKey?: string,

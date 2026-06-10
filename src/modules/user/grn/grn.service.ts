@@ -1,9 +1,13 @@
 import { Messages } from '../../../constants/index.js';
-import { GrnRepository } from '../../../repositories/index.js';
+import {
+  GrnRepository,
+  invoiceRepository,
+  vendorProductPriceRepository,
+} from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { translateResponse } from '../../../utils/translation.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 
 export const GrnService = {
   async generateCode(): Promise<string> {
@@ -30,7 +34,7 @@ export const GrnService = {
       grnProducts?: any[];
     },
   ) {
-    const invoice = await prisma.invoice.findFirst({
+    const invoice = (await invoiceRepository.findFirst({
       where: { id: data.invoiceId, domainId, isDeleted: false },
       include: {
         purchaseOrder: true,
@@ -40,7 +44,7 @@ export const GrnService = {
           },
         },
       },
-    });
+    })) as any;
 
     if (!invoice) {
       throw new Error('Invoice not found');
@@ -75,7 +79,7 @@ export const GrnService = {
           );
         }
 
-        const vendorPricing = await prisma.vendorProductPricing.findFirst({
+        const vendorPricing = (await vendorProductPriceRepository.findFirst({
           where: {
             vendorName: invoice.vendorName,
             productId: p.productId,
@@ -84,7 +88,7 @@ export const GrnService = {
             domainId,
             isDeleted: false,
           },
-        });
+        })) as any;
 
         const rate = vendorPricing
           ? vendorPricing.price
@@ -137,10 +141,14 @@ export const GrnService = {
 
     const totalItems = restData.totalItems ?? grnProducts.length;
     const totalTax =
-      restData.totalTax ?? grnProducts.reduce((sum, p) => sum + p.tax, 0);
+      restData.totalTax ??
+      grnProducts.reduce((sum: number, p: any) => sum + p.tax, 0);
     const totalAmount =
       restData.totalAmount ??
-      grnProducts.reduce((sum, p) => sum + (p.quantity * p.rate + p.tax), 0);
+      grnProducts.reduce(
+        (sum: number, p: any) => sum + (p.quantity * p.rate + p.tax),
+        0,
+      );
 
     return GrnRepository.create(
       {
@@ -228,18 +236,18 @@ export const GrnService = {
 
     const { grnProducts, ...grnData } = data;
 
-    return prisma.$transaction(async (tx) => {
+    return transaction(async (tx) => {
       const updatedFields: any = { ...grnData };
 
-      const updatedGrn = await tx.grn.update({
-        where: { id },
-        data: updatedFields,
-      });
+      const updatedGrn = await GrnRepository.update(id, updatedFields, tx);
 
       if (grnProducts !== undefined) {
-        const finalInvoice = await tx.invoice.findFirst({
-          where: { id: updatedGrn.invoiceId, domainId },
-        });
+        const finalInvoice = (await invoiceRepository.findFirst(
+          {
+            where: { id: updatedGrn.invoiceId, domainId },
+          },
+          tx,
+        )) as any;
         const finalVendor = finalInvoice
           ? finalInvoice.vendorName
           : updatedGrn.vendorName;
@@ -257,17 +265,18 @@ export const GrnService = {
           };
 
           if (p.id) {
-            await tx.grnProduct.update({
-              where: { id: p.id },
-              data: {
+            await GrnRepository.updateGrnProductRaw(
+              p.id,
+              {
                 ...productData,
                 isDeleted: false,
                 status: 'ACTIVE',
               },
-            });
+              tx,
+            );
           } else {
-            await tx.grnProduct.create({
-              data: {
+            await GrnRepository.createGrnProductRaw(
+              {
                 ...productData,
                 grnId: id,
                 grnCode: updatedGrn.code,
@@ -278,24 +287,28 @@ export const GrnService = {
                 domainId,
                 status: 'ACTIVE',
               },
-            });
+              tx,
+            );
           }
         }
 
         await GrnRepository.recalculateGrnTotals(tx, id, domainId);
       }
 
-      const res = await tx.grn.findFirst({
-        where: { id },
-        include: {
-          project: true,
-          invoice: true,
-          grnProducts: {
-            where: { isDeleted: false },
-            include: { uom: true, project: true, invoice: true },
+      const res = await GrnRepository.findFirst(
+        {
+          where: { id },
+          include: {
+            project: true,
+            invoice: true,
+            grnProducts: {
+              where: { isDeleted: false },
+              include: { uom: true, project: true, invoice: true },
+            },
           },
         },
-      });
+        tx,
+      );
       return GrnRepository.mapGrn(res);
     });
   },

@@ -1,5 +1,6 @@
 import { StatusEnum } from '@constants/index';
 import prisma from '@/infra/database/prisma/prisma.client';
+import { ReportRepository } from '@/repositories/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isPlainObject } from '@/utils/validation';
 
@@ -1523,7 +1524,7 @@ async function getProductInventoryReport(
   });
   const uomMap = new Map(allUoms.map((u) => [u.id, u]));
 
-  const products = await prisma.product.findMany({
+  const products = await ReportRepository.findProducts({
     where: {
       domainId,
       isDeleted: false,
@@ -1641,12 +1642,42 @@ async function getProductInventoryReport(
     .sort((a, b) => a.quantity - b.quantity)
     .slice(0, 5);
 
+  const totalInventoryValue = formattedProducts.reduce((total, p) => {
+    const gradeRateMap = new Map(
+      p.grades.map((g) => [
+        g.code,
+        g.stdRates.length > 0 ? toNumber(g.stdRates[0].value) : 0,
+      ]),
+    );
+    const productValue = p.inventory.reduce((sum, inv) => {
+      const rate = gradeRateMap.get(inv.gradeCode) ?? 0;
+      return sum + toNumber(inv.quantity) * rate;
+    }, 0);
+    return total + productValue;
+  }, 0);
+
+  const outOfStockItems = formattedProducts.flatMap((p) =>
+    p.inventory
+      .filter((inv) => toNumber(inv.quantity) === 0)
+      .map((inv) => ({
+        productCode: p.code,
+        productName: p.displayName,
+        gradeCode: inv.gradeCode,
+        gradeName: inv.gradeName,
+        uomCode: inv.uomCode,
+        reorderLevel: inv.reorderLevel,
+      })),
+  );
+
   return {
     analytics: {
       totalProducts,
       totalInventoryQuantity: roundToTwo(totalInventoryQuantity),
+      totalInventoryValue: roundToTwo(totalInventoryValue),
       lowStockCount,
+      outOfStockCount: outOfStockItems.length,
       lowStock: lowStockTop5,
+      outOfStock: outOfStockItems,
     },
     products: formattedProducts,
   };
@@ -1800,7 +1831,7 @@ async function getVendorPurchaseHistoryReport(
   filters: VendorPurchaseHistoryFilters,
   language: string | null,
 ) {
-  const vendors = await prisma.vendor.findMany({
+  const vendors = await ReportRepository.findVendors({
     where: {
       domainId,
       isDeleted: false,
@@ -2152,7 +2183,7 @@ async function getProductTransactionHistoryReport(
     });
   });
 
-  const allProducts = await prisma.product.findMany({
+  const allProducts = await ReportRepository.findProducts({
     where: { domainId, isDeleted: false },
     include: {
       productGrades: {

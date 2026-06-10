@@ -4,6 +4,7 @@ import {
   PermissionRepository,
   RoleRepository,
   UserRepository,
+  RoleModulePermissionRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
@@ -127,54 +128,46 @@ export const RoleService = {
 
       for (const item of normalizedItems) {
         if (item.permissions.length === 0) {
-          await tx.roleModulePermission.deleteMany({
-            where: {
+          await RoleModulePermissionRepository.deleteMany(
+            {
               roleId: role.id,
               domainId,
               moduleId: item.moduleId,
             },
-          });
+            tx,
+          );
 
           continue;
         }
 
-        const result = await tx.roleModulePermission.upsert({
-          where: {
-            roleId_moduleId_domainId: {
-              roleId: role.id,
-              moduleId: item.moduleId,
-              domainId,
-            },
-          },
-          update: {
-            permissions: item.permissions,
-          },
-          create: {
+        const result = await RoleModulePermissionRepository.upsert(
+          {
             roleId: role.id,
             moduleId: item.moduleId,
-            domainId,
             permissions: item.permissions,
+            domainId,
           },
-        });
+          tx,
+        );
 
         results.push(result);
       }
 
-      const modulePermissionsCount = await tx.roleModulePermission.count({
-        where: {
+      const modulePermissionsCount = await RoleModulePermissionRepository.count(
+        {
           roleId: role.id,
           domainId,
         },
-      });
+        tx,
+      );
 
-      await tx.role.update({
-        where: {
-          id: role.id,
-        },
-        data: {
+      await RoleRepository.update(
+        role.id,
+        {
           modulePermissionCount: modulePermissionsCount,
         },
-      });
+        tx,
+      );
 
       return Array.isArray(data) ? results : (results[0] ?? null);
     });

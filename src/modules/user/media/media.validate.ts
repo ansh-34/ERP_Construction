@@ -24,6 +24,7 @@ export const updateMediaBody = z
 
 export const listMediaQuery = z.object({
   searchKey: z.string().trim().optional(),
+  type: z.string().trim().optional(),
 });
 
 export const idParams = z.object({

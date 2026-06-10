@@ -51,6 +51,18 @@ export const uomRepository = {
     });
   },
 
+  findActiveByIds(ids: string[]) {
+    return prisma.uom.findMany({
+      where: { id: { in: ids }, isDeleted: false },
+    });
+  },
+
+  findActiveByBaseUomId(baseUomId: string) {
+    return prisma.uom.findFirst({
+      where: { baseUomId, isDeleted: false },
+    });
+  },
+
   find(
     domainId: string,
     options?: {
