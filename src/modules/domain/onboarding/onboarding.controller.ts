@@ -53,3 +53,25 @@ export const onboardDomain = async (req: Request, res: Response) => {
     return res.status(statusCode).json({ success: false, message });
   }
 };
+
+export const listRoleSelection = async (req: Request, res: Response) => {
+  try {
+    const domainId = req.user?.domainId;
+    const { language = 'en' } = req.headers;
+    const roles = await OnboardingService.listRoleSelection(
+      domainId!,
+      language as string,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Role selection retrieved successfully',
+      data: roles,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.ONBOARDING.FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};

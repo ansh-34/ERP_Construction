@@ -1,12 +1,19 @@
 import { verifyOtp } from '@/services/otp.service';
 import { Messages } from '../../../constants/index';
 import {
+  AdminIndustryRoleTemplateRepository,
   AdminRepository,
   DomainRepository,
   OtpRepository,
   TokenRepository,
 } from '../../../repositories/index.js';
 import { seedDefaultRolesForDomain } from '@/seed/role';
+
+const localizeName = (name: unknown, langCode: string) => {
+  if (!name || typeof name !== 'object') return '';
+  const value = name as Record<string, string>;
+  return value[langCode] || value.en || '';
+};
 
 export const OnboardingService = {
   async domainOnboarding(domainId: string, adminId: string) {
@@ -124,5 +131,28 @@ export const OnboardingService = {
       default:
         throw new Error(Messages.ONBOARDING.INVALID_STEP);
     }
+  },
+
+  async listRoleSelection(domainId: string, langCode: string = 'en') {
+    const domain = await DomainRepository.findActiveById(domainId);
+
+    if (!domain) {
+      throw new Error(Messages.DOMAIN.NOT_FOUND);
+    }
+
+    const templates =
+      await AdminIndustryRoleTemplateRepository.listActiveByAdminAndIndustry(
+        domain.adminId,
+        domain.industry,
+      );
+
+    return templates.map((template) => ({
+      id: template.id,
+      name: localizeName(template.name, langCode),
+      code: template.code,
+      level: template.level,
+      industry: template.industry,
+      status: template.status,
+    }));
   },
 };

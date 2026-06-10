@@ -92,6 +92,7 @@ model Admin {
   mediaFiles             Media[]                 @relation("AdminMediaFiles")
   users                  User[]
   roles                  Role[]
+  adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
   vendorProductPricings  VendorProductPricing[]
 
   @@unique([email, isDeleted])
@@ -330,6 +331,27 @@ model Role {
   @@index([createdAt, isDeleted])
   @@index([createdAt, isDeleted, status])
   @@index([createdAt, isDeleted, domainId])
+}
+
+model AdminIndustryRoleTemplate {
+  id         String       @id @default(uuid()) @db.Uuid
+  name       Json         @db.JsonB
+  code       String
+  level      Int          @default(4)
+  industry   IndustryEnum
+  searchText String       @default("")
+  adminId    String       @db.Uuid
+
+  admin     Admin      @relation(fields: [adminId], references: [id])
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([adminId, industry, code, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+  @@index([adminId, industry, isDeleted])
 }
 
 model Module {
