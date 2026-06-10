@@ -536,4 +536,16 @@ export const Messages = Object.freeze({
     UPDATE_FAILED: 'Failed to update payment request',
     DELETE_FAILED: 'Failed to delete payment request',
   },
+  FUEL_LOG: {
+    CREATED: 'Fuel log created successfully',
+    RETRIEVED: 'Fuel log retrieved successfully',
+    LIST_RETRIEVED: 'Fuel logs retrieved successfully',
+    UPDATED: 'Fuel log updated successfully',
+    DELETED: 'Fuel log deleted successfully',
+    NOT_FOUND: 'Fuel log not found',
+    CREATE_FAILED: 'Failed to create fuel log',
+    LIST_FAILED: 'Failed to retrieve fuel logs',
+    UPDATE_FAILED: 'Failed to update fuel log',
+    DELETE_FAILED: 'Failed to delete fuel log',
+  },
 });
