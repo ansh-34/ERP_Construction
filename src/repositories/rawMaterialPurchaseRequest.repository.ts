@@ -437,7 +437,7 @@ export const RawMaterialPurchaseRequestRepository = {
   //   },
 
   groupBy(args: any): Promise<any> {
-    return prisma.rawMaterialPurchaseRequest.groupBy(args) as Promise<any>;
+    return (prisma.rawMaterialPurchaseRequest as any).groupBy(args);
   },
 
   findMany(args: any, tx?: any): Promise<any> {

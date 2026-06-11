@@ -1,6 +1,7 @@
 import { Router } from 'express';
 // import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
+import { upload } from '../../../middlewares/upload.js';
 import {
   getInventoryStats,
   listInventory,
@@ -8,6 +9,8 @@ import {
   updateReorderLevel,
   deleteInventoryEntry,
   getInventoryAnalytics,
+  importInventory,
+  exportInventory,
 } from './inventory.controller.js';
 import {
   createInventoryBodySchema,
@@ -23,6 +26,12 @@ router.get('/analytics', getInventoryAnalytics);
 
 // aggregate statistics
 router.get('/stats', /* authorize('inventory', 'read'), */ getInventoryStats);
+
+// export to xlsx (codes + names localized to ?lang=)
+router.get('/export', exportInventory);
+
+// import from xlsx (same format as export)
+router.post('/import', upload.single('file'), importInventory);
 
 router.get(
   '/',

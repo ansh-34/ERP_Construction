@@ -57,7 +57,7 @@ export const vendorProductPriceRepository = {
       ...(options.filters?.status && { status: options.filters.status }),
       ...(searchKey && {
         OR: [
-          { vendorName: { contains: searchKey, mode: 'insensitive' } },
+          { vendor: { name: { contains: searchKey, mode: 'insensitive' } } },
           { searchText: { contains: searchKey, mode: 'insensitive' } },
         ],
       }),

@@ -294,6 +294,13 @@ export const Messages = Object.freeze({
     PRODUCT_NOT_FOUND: 'Product not found',
     GRADE_NOT_FOUND: 'Product grade not found',
     UOM_NOT_FOUND: 'UOM not found',
+    IMPORT_SUCCESS: 'Inventory imported successfully',
+    IMPORT_FAILED: 'Failed to import inventory',
+    NO_FILE_UPLOADED: 'No file uploaded',
+    INVALID_LANGUAGE:
+      'One or more languages in the sheet do not belong to your domain',
+    NO_DOMAIN_LANGUAGES: 'No languages are configured for your domain',
+    INVALID_CURRENCY: 'Currency does not belong to your domain',
   },
   JOURNEY_SCHEDULE: {
     CREATED: 'Journey schedule created',

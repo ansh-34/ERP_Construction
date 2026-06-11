@@ -303,6 +303,7 @@ model Currency {
   updatedAt             DateTime               @updatedAt
   adminCurrencies       AdminCurrencies[]
   vendorProductPricings VendorProductPricing[]
+  inventories           Inventory[]
 
   @@map("currency")
 }
@@ -456,6 +457,9 @@ model Inventory {
   uomId          String        @db.Uuid
   uom            Uom           @relation("InventoryUom", fields: [uomId], references: [id])
   reorderLevel   Float         @default(0)
+  price          Float?
+  currencyId     String?       @db.Uuid
+  currency       Currency?     @relation(fields: [currencyId], references: [id])
   domainId       String        @db.Uuid
   domain         Domain        @relation(fields: [domainId], references: [id])
   status         StatusEnum    @default(ACTIVE)
