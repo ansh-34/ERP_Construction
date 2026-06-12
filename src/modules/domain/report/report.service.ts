@@ -1,5 +1,4 @@
 import { StatusEnum } from '@constants/index';
-import prisma from '@/infra/database/prisma/prisma.client';
 import { ReportRepository } from '@/repositories/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isPlainObject } from '@/utils/validation';
@@ -145,7 +144,7 @@ async function getSummaryExportProjects(
 ): Promise<SummaryExportProject[]> {
   const countryFilter = normalizeCountry(country);
 
-  const projects = await prisma.project.findMany({
+  const projects = await ReportRepository.findProjects({
     where: {
       domainId,
       isDeleted: false,
@@ -225,7 +224,7 @@ async function getProjectWorkbookWorksheets(
   language: string | null,
 ): Promise<ReportWorkbookWorksheet[]> {
   const countryFilter = normalizeCountry(country);
-  const projects = await prisma.project.findMany({
+  const projects = await ReportRepository.findProjects({
     where: {
       domainId,
       isDeleted: false,
@@ -418,6 +417,20 @@ type MachineIdentity = {
   };
 };
 
+type MachineWorkingHourRow = {
+  machineryId: string | null;
+  _sum: {
+    hoursRun: number | null;
+  };
+};
+
+type MachineCountRow = {
+  machineryId: string | null;
+  _count: {
+    machineryId: number;
+  };
+};
+
 type UserTaskSummary = {
   userName: string;
   userEmail: string;
@@ -435,7 +448,7 @@ async function getProjectUserTaskReport(
   filters: ProjectUserTaskFilters,
   language: string | null,
 ) {
-  const projects = await prisma.project.findMany({
+  const projects = await ReportRepository.findProjects({
     where: {
       domainId,
       isDeleted: false,
@@ -505,7 +518,7 @@ async function getProjectUserTaskReport(
     throw new Error('not found');
   }
 
-  const projectTaskDelays = await prisma.projectTaskDelay.findMany({
+  const projectTaskDelays = await ReportRepository.findProjectTaskDelays({
     where: {
       domainId,
       isDeleted: false,
@@ -556,7 +569,7 @@ async function getProjectUserTaskReport(
       ].filter((userId): userId is string => Boolean(userId)),
     ),
   ];
-  const users = await prisma.user.findMany({
+  const users = await ReportRepository.findUsers({
     where: {
       domainId,
       isDeleted: false,
@@ -820,7 +833,7 @@ async function getMachineSummaryReport(
   filters: MachineSummaryFilters,
   language: string | null,
 ) {
-  const machineries = await prisma.machinery.findMany({
+  const machineries = await ReportRepository.findMachineries({
     where: {
       domainId,
       isDeleted: false,
@@ -848,7 +861,7 @@ async function getMachineSummaryReport(
     throw new Error('not found');
   }
 
-  const machineReadings = await prisma.machineReading.findMany({
+  const machineReadings = await ReportRepository.findMachineReadings({
     where: {
       domainId,
       isDeleted: false,
@@ -942,7 +955,7 @@ async function getMachineIdentities(
     return new Map();
   }
 
-  const machineries = await prisma.machinery.findMany({
+  const machineries = await ReportRepository.findMachineries({
     where: {
       domainId,
       isDeleted: false,
@@ -977,7 +990,7 @@ async function getMachineSummaryDashboardReport(
   };
 
   const machineIds = (
-    await prisma.machinery.findMany({
+    await ReportRepository.findMachineries({
       where: machineFilter,
       select: { id: true },
     })
@@ -998,7 +1011,7 @@ async function getMachineSummaryDashboardReport(
 
   const [workingHourRows, maintenanceRows, movementRows, upcomingSchedules] =
     await Promise.all([
-      prisma.machineReading.groupBy({
+      ReportRepository.groupMachineReadings({
         by: ['machineryId'],
         where: {
           domainId,
@@ -1008,8 +1021,8 @@ async function getMachineSummaryDashboardReport(
         _sum: { hoursRun: true },
         orderBy: { _sum: { hoursRun: 'desc' } },
         take: 5,
-      }),
-      prisma.maintenanceLog.groupBy({
+      }) as Promise<MachineWorkingHourRow[]>,
+      ReportRepository.groupMaintenanceLogs({
         by: ['machineryId'],
         where: {
           domainId,
@@ -1020,8 +1033,8 @@ async function getMachineSummaryDashboardReport(
         _count: { machineryId: true },
         orderBy: { _count: { machineryId: 'desc' } },
         take: 5,
-      }),
-      prisma.movementLog.groupBy({
+      }) as Promise<MachineCountRow[]>,
+      ReportRepository.groupMovementLogs({
         by: ['machineryId'],
         where: {
           domainId,
@@ -1032,8 +1045,8 @@ async function getMachineSummaryDashboardReport(
         _count: { machineryId: true },
         orderBy: { _count: { machineryId: 'desc' } },
         take: 5,
-      }),
-      prisma.maintenanceSchedule.findMany({
+      }) as Promise<MachineCountRow[]>,
+      ReportRepository.findMaintenanceSchedules({
         where: {
           domainId,
           isDeleted: false,
@@ -1140,7 +1153,7 @@ async function getMachineWorkbookWorksheets(
   const report = await getMachineSummaryReport(domainId, filters, language);
   const [vehicles, maintenanceSchedules, maintenanceLogs, movementLogs] =
     await Promise.all([
-      prisma.vehicle.findMany({
+      ReportRepository.findVehicles({
         where: {
           domainId,
           isDeleted: false,
@@ -1158,7 +1171,7 @@ async function getMachineWorkbookWorksheets(
         },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.maintenanceSchedule.findMany({
+      ReportRepository.findMaintenanceSchedules({
         where: {
           domainId,
           isDeleted: false,
@@ -1204,7 +1217,7 @@ async function getMachineWorkbookWorksheets(
         },
         orderBy: { nextDueDate: 'asc' },
       }),
-      prisma.maintenanceLog.findMany({
+      ReportRepository.findMaintenanceLogs({
         where: {
           domainId,
           isDeleted: false,
@@ -1252,7 +1265,7 @@ async function getMachineWorkbookWorksheets(
         },
         orderBy: { date: 'desc' },
       }),
-      prisma.movementLog.findMany({
+      ReportRepository.findMovementLogs({
         where: {
           domainId,
           isDeleted: false,
@@ -1519,7 +1532,7 @@ async function getProductInventoryReport(
   filters: ProductInventoryFilters,
   language: string | null,
 ) {
-  const allUoms = await prisma.uom.findMany({
+  const allUoms = await ReportRepository.findUoms({
     where: { domainId, isDeleted: false },
   });
   const uomMap = new Map(allUoms.map((u) => [u.id, u]));
@@ -1840,7 +1853,7 @@ async function getVendorPurchaseHistoryReport(
     orderBy: { name: 'asc' },
   });
 
-  const invoices = await prisma.invoice.findMany({
+  const invoices = await ReportRepository.findInvoices({
     where: {
       domainId,
       isDeleted: false,
@@ -1852,7 +1865,7 @@ async function getVendorPurchaseHistoryReport(
     orderBy: { invoiceDate: 'desc' },
   });
 
-  const grns = await prisma.grn.findMany({
+  const grns = await ReportRepository.findGrns({
     where: {
       domainId,
       isDeleted: false,
@@ -2036,7 +2049,7 @@ async function getProductTransactionHistoryReport(
     : undefined;
   const parsedEndDate = filters.endDate ? new Date(filters.endDate) : undefined;
 
-  const rmprs = await prisma.rawMaterialPurchaseRequest.findMany({
+  const rmprs = await ReportRepository.findRawMaterialPurchaseRequests({
     where: {
       domainId,
       isDeleted: false,
@@ -2061,7 +2074,7 @@ async function getProductTransactionHistoryReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const invoiceItems = await prisma.invoiceItem.findMany({
+  const invoiceItems = await ReportRepository.findInvoiceItems({
     where: {
       domainId,
       invoice: {
@@ -2091,7 +2104,7 @@ async function getProductTransactionHistoryReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const grnProducts = await prisma.grnProduct.findMany({
+  const grnProducts = await ReportRepository.findGrnProducts({
     where: {
       domainId,
       isDeleted: false,

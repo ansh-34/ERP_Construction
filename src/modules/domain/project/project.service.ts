@@ -14,7 +14,6 @@ import {
   type ProjectTaskRecord,
 } from '@repositories/index';
 import { StatusEnum } from '@constants/index';
-import prisma from '@/infra/database/prisma/prisma.client';
 import { transaction } from '@/infra/database/prisma/transaction.js';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
@@ -758,17 +757,17 @@ export const projectService = {
         taskSubmissionCount,
         taskApprovalCount,
       ] = await Promise.all([
-        prisma.project.count({ where: baseProjectWhere }),
-        prisma.project.count({ where: inProgressProjectWhere }),
-        prisma.project.count({ where: completedProjectWhere }),
-        prisma.project.aggregate({
+        projectRepository.countProjects({ where: baseProjectWhere }),
+        projectRepository.countProjects({ where: inProgressProjectWhere }),
+        projectRepository.countProjects({ where: completedProjectWhere }),
+        projectRepository.aggregateProjects({
           where: baseProjectWhere,
           _sum: {
             budget: true,
             spent: true,
           },
         }),
-        prisma.projectTaskDelay.count({
+        projectRepository.countProjectTaskDelays({
           where: {
             domainId,
             adminId: resolvedAdminId,
@@ -776,7 +775,7 @@ export const projectService = {
             project: inProgressProjectRelationWhere,
           },
         }),
-        prisma.projectTaskDelay.aggregate({
+        projectRepository.aggregateProjectTaskDelays({
           where: {
             domainId,
             adminId: resolvedAdminId,
@@ -787,7 +786,7 @@ export const projectService = {
             requestedDelayInDays: true,
           },
         }),
-        prisma.projectTask.count({
+        projectRepository.countProjectTasks({
           where: {
             domainId,
             adminId: resolvedAdminId,
@@ -796,7 +795,7 @@ export const projectService = {
             project: inProgressProjectRelationWhere,
           },
         }),
-        prisma.projectTask.count({
+        projectRepository.countProjectTasks({
           where: {
             domainId,
             adminId: resolvedAdminId,

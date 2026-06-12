@@ -209,6 +209,36 @@ const projectDetailSelect = Prisma.sql`
 `;
 
 export const projectRepository = {
+  countProjects<T extends Prisma.ProjectCountArgs>(
+    args?: Prisma.SelectSubset<T, Prisma.ProjectCountArgs>,
+  ) {
+    return prisma.project.count(args);
+  },
+
+  aggregateProjects<T extends Prisma.ProjectAggregateArgs>(
+    args: Prisma.SelectSubset<T, Prisma.ProjectAggregateArgs>,
+  ) {
+    return prisma.project.aggregate(args);
+  },
+
+  countProjectTaskDelays<T extends Prisma.ProjectTaskDelayCountArgs>(
+    args?: Prisma.SelectSubset<T, Prisma.ProjectTaskDelayCountArgs>,
+  ) {
+    return prisma.projectTaskDelay.count(args);
+  },
+
+  aggregateProjectTaskDelays<T extends Prisma.ProjectTaskDelayAggregateArgs>(
+    args: Prisma.SelectSubset<T, Prisma.ProjectTaskDelayAggregateArgs>,
+  ) {
+    return prisma.projectTaskDelay.aggregate(args);
+  },
+
+  countProjectTasks<T extends Prisma.ProjectTaskCountArgs>(
+    args?: Prisma.SelectSubset<T, Prisma.ProjectTaskCountArgs>,
+  ) {
+    return prisma.projectTask.count(args);
+  },
+
   create: async (
     data: CreateProjectInput,
     options: { transaction?: any } = {},
