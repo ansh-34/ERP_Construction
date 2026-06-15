@@ -89,6 +89,29 @@ export const uploadToS3 = async (
   return buildS3Url(bucket, key);
 };
 
+export const uploadBufferToS3 = async (
+  buffer: Buffer,
+  folder: string,
+  fileName: string,
+  contentType: string,
+): Promise<string> => {
+  const bucket = assertS3Bucket();
+  const safeFolder = safeFolderPath(folder);
+  const key = `${safeFolder}/${Date.now()}-${randomUUID()}-${safeFileName(fileName)}`;
+
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ACL: objectAcl,
+    }),
+  );
+
+  return buildS3Url(bucket, key);
+};
+
 export const deleteFromS3 = async (url: string): Promise<void> => {
   try {
     const bucket = assertS3Bucket();

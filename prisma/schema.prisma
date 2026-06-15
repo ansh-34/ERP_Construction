@@ -12,6 +12,13 @@ enum StatusEnum {
   INACTIVE
 }
 
+enum PdfStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
 enum LangDirEnum {
   ltr
   rtl
@@ -191,6 +198,7 @@ model Domain {
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
   invoiceItems                InvoiceItem[]
+  invoiceTemplates            InvoiceTemplate[]
   paymentRequests             PaymentRequest[]
   admin                       Admin                        @relation(fields: [adminId], references: [id])
   adminId                     String                       @db.Uuid
@@ -960,6 +968,11 @@ model Invoice {
   totalItems         Int                   @default(0)
   totalItemsReceived Float                 @default(0)
 
+  pdfStatus      PdfStatus @default(PENDING)
+  pdfUrl         String?
+  pdfGeneratedAt DateTime?
+  pdfVersion     Int       @default(0)
+
   items       InvoiceItem[]
   grns        Grn[]
   grnProducts GrnProduct[]
@@ -969,6 +982,20 @@ model Invoice {
   @@index([purchaseOrderId])
   @@index([projectId])
   @@index([domainId])
+}
+
+model InvoiceTemplate {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @default("")
+  htmlContent String
+  domainId    String     @db.Uuid
+  domain      Domain     @relation(fields: [domainId], references: [id])
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([domainId, isDeleted, status])
 }
 
 model InvoiceItem {
