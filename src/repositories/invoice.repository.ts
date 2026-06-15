@@ -1,5 +1,6 @@
 import { Prisma } from '../infra/database/prisma/generated/prisma/client/client.js';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import { enqueuePdfGeneration } from '../queue/pdfQueue.js';
 
 const toDisplayString = (value: unknown): string => {
   if (typeof value === 'string') return value;
@@ -38,7 +39,7 @@ export const invoiceRepository = {
       domainId: string;
     }[],
   ) {
-    return prisma.$transaction(async (tx) => {
+    const updatedInvoice = await prisma.$transaction(async (tx) => {
       const po = await tx.purchaseOrder.findFirst({
         where: { id: data.purchaseOrderId, domainId: data.domainId },
       });
@@ -111,6 +112,12 @@ export const invoiceRepository = {
 
       return updatedInvoice;
     });
+
+    enqueuePdfGeneration(updatedInvoice.id).catch((err) => {
+      console.error(`[Queue Error] Failed to enqueue PDF generation for Invoice ${updatedInvoice.id}:`, err);
+    });
+
+    return updatedInvoice;
   },
 
   async count(options: {
@@ -371,7 +378,7 @@ export const invoiceRepository = {
       vendorProductPricingId: string;
     }[],
   ) {
-    return prisma.$transaction(async (tx) => {
+    const invoices = await prisma.$transaction(async (tx) => {
       const po = await tx.purchaseOrder.findFirst({
         where: { id: poId, domainId, isDeleted: false },
         include: {
@@ -409,7 +416,7 @@ export const invoiceRepository = {
         poProduct: (typeof po.purchaseOrderProducts)[0];
         pricing: {
           id: string;
-          vendor: { name: string };
+          vendor?: { id: string; name: string } | null;
           productId: string;
           productGradeId: string;
           uomId: string;
@@ -434,7 +441,7 @@ export const invoiceRepository = {
             domainId,
             isDeleted: false,
           },
-          include: { vendor: true },
+          include: { vendor: { select: { id: true, name: true } } },
         });
         if (!pricing) {
           throw new Error(
@@ -445,10 +452,10 @@ export const invoiceRepository = {
         resolved.push({ poProduct, pricing });
       }
 
-      // Group resolved assignments by vendorName
+      // Group resolved assignments by vendor name (from the vendor relation)
       const vendorGroups: Record<string, ResolvedAssignment[]> = {};
       for (const item of resolved) {
-        const vendor = item.pricing.vendor.name;
+        const vendor = item.pricing.vendor?.name ?? 'Unknown Vendor';
         if (!vendorGroups[vendor]) vendorGroups[vendor] = [];
         vendorGroups[vendor].push(item);
       }
@@ -539,8 +546,24 @@ export const invoiceRepository = {
         invoices.push(fullInvoice);
       }
 
+   
+      await tx.purchaseOrder.update({
+        where: { id: poId },
+        data: { orderStatus: 'INVOICED' },
+      });
+
       return invoices;
     });
+
+    for (const inv of invoices) {
+      if (inv?.id) {
+        enqueuePdfGeneration(inv.id).catch((err) => {
+          console.error(`[Queue Error] Failed to enqueue PDF generation for Invoice ${inv.id}:`, err);
+        });
+      }
+    }
+
+    return invoices;
   },
 
   findFirst(args: any, tx?: any) {

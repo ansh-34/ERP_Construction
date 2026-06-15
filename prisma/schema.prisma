@@ -49,6 +49,7 @@ enum OnboardingStatusEnum {
   COMPLETED
 }
 
+
 model Admin {
   id String @id @default(uuid()) @db.Uuid
 
@@ -968,10 +969,10 @@ model Invoice {
   totalItems         Int                   @default(0)
   totalItemsReceived Float                 @default(0)
 
-  pdfStatus      PdfStatus @default(PENDING)
-  pdfUrl         String?
-  pdfGeneratedAt DateTime?
-  pdfVersion     Int       @default(0)
+  pdfUrl             String?
+  pdfStatus          PdfStatus             @default(PENDING)
+  pdfGeneratedAt     DateTime?
+  pdfVersion         Int                   @default(0)
 
   items       InvoiceItem[]
   grns        Grn[]
@@ -1755,3 +1756,4 @@ model PaymentRequest {
   @@index([requestedBy])
   @@index([vendorId])
 }
+

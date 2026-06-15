@@ -44,6 +44,7 @@ export const vendorProductPriceRepository = {
         status?: 'ACTIVE' | 'INACTIVE';
         searchKey?: string;
         productId?: string;
+        productCode?: string;
         productGradeId?: string;
         currencyId?: string;
       };
@@ -63,6 +64,9 @@ export const vendorProductPriceRepository = {
       }),
       ...(options.filters?.productId && {
         productId: options.filters.productId,
+      }),
+      ...(options.filters?.productCode && {
+        product: { code: options.filters.productCode },
       }),
       ...(options.filters?.productGradeId && {
         productGradeId: options.filters.productGradeId,

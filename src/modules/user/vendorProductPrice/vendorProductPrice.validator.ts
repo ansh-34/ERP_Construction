@@ -26,7 +26,11 @@ export const updateVendorProductPriceBodySchema = z.array(
   }),
 );
 
-export const listVendorProductPricesQuerySchema =
-  paginationQuerySchema.merge(statusFilterSchema);
+export const listVendorProductPricesQuerySchema = paginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+    productCode: z.string().optional(),
+  });
 
 export const vendorProductPriceIdParamSchema = idParamSchema;

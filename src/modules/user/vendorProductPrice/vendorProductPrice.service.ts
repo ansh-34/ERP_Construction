@@ -103,6 +103,7 @@ export const VendorProductPriceService = {
       limit?: string;
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
+      productCode?: string;
     },
     langCode: string,
   ) {
@@ -116,6 +117,7 @@ export const VendorProductPriceService = {
         filters: {
           status: query.status,
           searchKey: query.searchKey,
+          productCode: query.productCode,
         },
         select: {
           id: true,

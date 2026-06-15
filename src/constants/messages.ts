@@ -531,6 +531,8 @@ export const Messages = Object.freeze({
       'All PO products must have a vendor assigned before generating invoices',
     ALREADY_GENERATED:
       'Invoices have already been generated for this purchase order',
+    PDF_QUEUED: 'Invoice PDF generation has been queued',
+    PDF_STATUS_RETRIEVED: 'Invoice PDF status retrieved successfully',
   },
   PAYMENT_REQUEST: {
     CREATED: 'Payment request created successfully',

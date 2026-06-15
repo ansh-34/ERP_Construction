@@ -2,6 +2,9 @@ import { Messages } from '../../../constants/index.js';
 import { invoiceRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { translateResponse } from '../../../utils/translation.js';
+import { enqueuePdfGeneration } from '../../../queue/pdfQueue.js';
+import { PdfStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
+import { getSignedDownloadUrl } from '../../../utils/s3.utils.js';
 
 export const InvoiceService = {
   generateInvoiceCode(domainId: string): string {
@@ -86,5 +89,40 @@ export const InvoiceService = {
       domainId,
       assignments,
     );
+  },
+
+  // Enqueue background PDF generation for an invoice. Idempotent: if a job is
+  // already pending/processing it returns the current status without re-queuing.
+  async requestPdf(domainId: string, id: string) {
+    const invoice: any = await invoiceRepository.findByIdAndDomain(id, domainId);
+    if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+
+    if (invoice.pdfStatus === PdfStatus.PROCESSING) {
+      return { pdfStatus: invoice.pdfStatus };
+    }
+
+    await invoiceRepository.update(id, { pdfStatus: PdfStatus.PROCESSING });
+    await enqueuePdfGeneration(id);
+
+    return { pdfStatus: PdfStatus.PROCESSING };
+  },
+
+  async getPdfStatus(domainId: string, id: string) {
+    const invoice: any = await invoiceRepository.findByIdAndDomain(id, domainId);
+    if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+
+    // Presigned download link so the PDF can be fetched back from S3 even when
+    // the bucket/object is private. Valid for 1 hour.
+    let downloadUrl: string | null = null;
+    if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
+      downloadUrl = await getSignedDownloadUrl(invoice.pdfUrl);
+    }
+
+    return {
+      pdfStatus: invoice.pdfStatus,
+      pdfUrl: invoice.pdfUrl,
+      downloadUrl,
+      pdfGeneratedAt: invoice.pdfGeneratedAt,
+    };
   },
 };

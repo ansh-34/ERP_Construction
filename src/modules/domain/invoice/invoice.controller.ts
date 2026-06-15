@@ -104,3 +104,43 @@ export const generateInvoicesFromPO = async (req: Request, res: Response) => {
       .json({ success: false, message });
   }
 };
+
+export const requestInvoicePdf = async (req: Request, res: Response) => {
+  try {
+    const result = await InvoiceService.requestPdf(
+      req.user!.domainId,
+      req.params.id,
+    );
+    return res.status(HttpStatus.ACCEPTED).json({
+      success: true,
+      message: Messages.INVOICE.PDF_QUEUED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.NOT_FOUND;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const getInvoicePdfStatus = async (req: Request, res: Response) => {
+  try {
+    const result = await InvoiceService.getPdfStatus(
+      req.user!.domainId,
+      req.params.id,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.INVOICE.PDF_STATUS_RETRIEVED,
+      data: result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.NOT_FOUND;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};

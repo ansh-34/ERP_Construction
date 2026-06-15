@@ -6,6 +6,8 @@ import {
   deleteInvoice,
   listInvoiceItems,
   generateInvoicesFromPO,
+  requestInvoicePdf,
+  getInvoicePdfStatus,
 } from './invoice.controller.js';
 import {
   listInvoicesQuerySchema,
@@ -52,6 +54,22 @@ router.get(
   // authorize('INVOICE', 'READ'),
   validate(invoiceIdParamsSchema, 'params'),
   listInvoiceItems,
+);
+
+// --- Invoice PDF ---
+
+router.post(
+  '/:id/pdf',
+  // authorize('INVOICE', 'UPDATE'),
+  validate(invoiceIdParamsSchema, 'params'),
+  requestInvoicePdf,
+);
+
+router.get(
+  '/:id/pdf',
+  // authorize('INVOICE', 'READ'),
+  validate(invoiceIdParamsSchema, 'params'),
+  getInvoicePdfStatus,
 );
 
 export default router;

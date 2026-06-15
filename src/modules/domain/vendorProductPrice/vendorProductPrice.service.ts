@@ -104,6 +104,7 @@ export const VendorProductPriceService = {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       productId?: string;
+      productCode?: string;
       productGradeId?: string;
       currencyId?: string;
     },
@@ -120,6 +121,7 @@ export const VendorProductPriceService = {
           status: query.status,
           searchKey: query.searchKey,
           productId: query.productId,
+          productCode: query.productCode,
           productGradeId: query.productGradeId,
           currencyId: query.currencyId,
         },
