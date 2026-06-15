@@ -32,6 +32,7 @@ import { MovementReportPaths } from './movementReport.paths.js';
 import { PaymentRequestPaths } from './paymentRequest.paths.js';
 import { UserMaintenanceMovementPaths } from './userMaintenanceMovement.paths.js';
 import { ReportPaths } from './report.paths.js';
+import { FuelLogPaths } from './fuelLog.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -68,4 +69,5 @@ export const ApiPaths = {
   ...PaymentRequestPaths,
   ...UserMaintenanceMovementPaths,
   ...ReportPaths,
+  ...FuelLogPaths,
 };

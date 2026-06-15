@@ -373,7 +373,7 @@ export const VendorProductPriceService = {
           }).then((res) => new Map(res.map((r) => [r.code, r]))),
           ProductGradeRepository.find(domainId, {
             filters: { gradeCodes },
-            select: { id: true, code: true },
+            select: { id: true, gradeCode: true, productId: true },
           }).then((res) => new Map(res.map((r) => [r.gradeCode, r]))),
           uomRepository
             .find(domainId, {
@@ -444,14 +444,17 @@ export const VendorProductPriceService = {
           adminId,
           status: 'ACTIVE' as any,
           isDeleted: false,
+          key: `${vendor.id}-${product.id}-${grade.id}-${uom.id}-${currency.currencyId}-${domainId}`,
         });
       }
 
       if (finalData.length > 0) {
         const chunkSize = 1000;
         for (let i = 0; i < finalData.length; i += chunkSize) {
-          await vendorProductPriceRepository.createMany(
-            finalData.slice(i, i + chunkSize),
+          await vendorProductPriceRepository.bulkUpsert(
+            domainId,
+            adminId,
+            finalData.slice(i, i + chunkSize) as any,
           );
         }
       }

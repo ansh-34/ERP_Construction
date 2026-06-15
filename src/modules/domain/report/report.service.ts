@@ -1519,7 +1519,7 @@ async function getProductInventoryReport(
   filters: ProductInventoryFilters,
   language: string | null,
 ) {
-  const allUoms = await prisma.uom.findMany({
+  const allUoms = await ReportRepository.findUoms({
     where: { domainId, isDeleted: false },
   });
   const uomMap = new Map(allUoms.map((u) => [u.id, u]));
@@ -1840,7 +1840,7 @@ async function getVendorPurchaseHistoryReport(
     orderBy: { name: 'asc' },
   });
 
-  const invoices = await prisma.invoice.findMany({
+  const invoices = await ReportRepository.findInvoices({
     where: {
       domainId,
       isDeleted: false,
@@ -1852,7 +1852,7 @@ async function getVendorPurchaseHistoryReport(
     orderBy: { invoiceDate: 'desc' },
   });
 
-  const grns = await prisma.grn.findMany({
+  const grns = await ReportRepository.findGrns({
     where: {
       domainId,
       isDeleted: false,
@@ -2036,7 +2036,7 @@ async function getProductTransactionHistoryReport(
     : undefined;
   const parsedEndDate = filters.endDate ? new Date(filters.endDate) : undefined;
 
-  const rmprs = await prisma.rawMaterialPurchaseRequest.findMany({
+  const rmprs = await ReportRepository.findRawMaterialPurchaseRequests({
     where: {
       domainId,
       isDeleted: false,
@@ -2061,7 +2061,7 @@ async function getProductTransactionHistoryReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const invoiceItems = await prisma.invoiceItem.findMany({
+  const invoiceItems = await ReportRepository.findInvoiceItems({
     where: {
       domainId,
       invoice: {
@@ -2091,7 +2091,7 @@ async function getProductTransactionHistoryReport(
     orderBy: { createdAt: 'desc' },
   });
 
-  const grnProducts = await prisma.grnProduct.findMany({
+  const grnProducts = await ReportRepository.findGrnProducts({
     where: {
       domainId,
       isDeleted: false,

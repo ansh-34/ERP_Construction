@@ -57,6 +57,8 @@ export const swaggerSpec = {
     { name: 'Payment Requests' },
     { name: 'User Payment Requests' },
     { name: 'Reports' },
+    { name: 'Fuel Logs' },
+    { name: 'User Fuel Logs' },
   ],
   paths: {
     ...ApiPaths,
