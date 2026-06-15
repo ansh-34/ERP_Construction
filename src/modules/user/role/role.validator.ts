@@ -50,7 +50,7 @@ export const roleIdParamsSchema = idParamSchema;
 export const assignRoleParamsSchema = idParamSchema;
 
 export const assignRoleBodySchema = z.object({
-  roleId: z.string().min(1),
+  userIds: z.array(z.string()).min(1),
 });
 
 export type CreateRoleData = z.infer<typeof createRoleBodySchema>;
