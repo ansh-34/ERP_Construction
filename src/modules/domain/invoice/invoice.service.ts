@@ -94,7 +94,10 @@ export const InvoiceService = {
   // Enqueue background PDF generation for an invoice. Idempotent: if a job is
   // already pending/processing it returns the current status without re-queuing.
   async requestPdf(domainId: string, id: string) {
-    const invoice: any = await invoiceRepository.findByIdAndDomain(id, domainId);
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
 
     if (invoice.pdfStatus === PdfStatus.PROCESSING) {
@@ -108,7 +111,10 @@ export const InvoiceService = {
   },
 
   async getPdfStatus(domainId: string, id: string) {
-    const invoice: any = await invoiceRepository.findByIdAndDomain(id, domainId);
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
 
     // Presigned download link so the PDF can be fetched back from S3 even when

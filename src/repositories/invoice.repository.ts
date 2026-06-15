@@ -114,7 +114,10 @@ export const invoiceRepository = {
     });
 
     enqueuePdfGeneration(updatedInvoice.id).catch((err) => {
-      console.error(`[Queue Error] Failed to enqueue PDF generation for Invoice ${updatedInvoice.id}:`, err);
+      console.error(
+        `[Queue Error] Failed to enqueue PDF generation for Invoice ${updatedInvoice.id}:`,
+        err,
+      );
     });
 
     return updatedInvoice;
@@ -546,7 +549,6 @@ export const invoiceRepository = {
         invoices.push(fullInvoice);
       }
 
-   
       await tx.purchaseOrder.update({
         where: { id: poId },
         data: { orderStatus: 'INVOICED' },
@@ -558,7 +560,10 @@ export const invoiceRepository = {
     for (const inv of invoices) {
       if (inv?.id) {
         enqueuePdfGeneration(inv.id).catch((err) => {
-          console.error(`[Queue Error] Failed to enqueue PDF generation for Invoice ${inv.id}:`, err);
+          console.error(
+            `[Queue Error] Failed to enqueue PDF generation for Invoice ${inv.id}:`,
+            err,
+          );
         });
       }
     }
