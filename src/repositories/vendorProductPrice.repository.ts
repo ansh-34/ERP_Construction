@@ -47,6 +47,7 @@ export const vendorProductPriceRepository = {
         productCode?: string;
         productGradeId?: string;
         currencyId?: string;
+        vendorId?: string;
       };
       select?: any;
     } = {},
@@ -73,6 +74,9 @@ export const vendorProductPriceRepository = {
       }),
       ...(options.filters?.currencyId && {
         currencyId: options.filters.currencyId,
+      }),
+      ...(options.filters?.vendorId && {
+        vendorId: options.filters.vendorId,
       }),
     };
 
