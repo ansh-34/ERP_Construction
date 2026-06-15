@@ -219,6 +219,20 @@ export const AdminLanguageRepository = {
         });
   },
 
+  /** Returns the language codes enabled for an admin (i.e. offered by the domain). */
+  async getEnabledLanguageCodes(adminId: string): Promise<string[]> {
+    const rows = await prisma.adminLanguages.findMany({
+      where: {
+        adminId,
+        isEnabled: true,
+        isDeleted: false,
+        language: { isDeleted: false },
+      },
+      select: { language: { select: { code: true } } },
+    });
+    return rows.map((r) => r.language.code);
+  },
+
   async validateAdminLanguages(data: {
     languageIds: string[];
     adminId: string;

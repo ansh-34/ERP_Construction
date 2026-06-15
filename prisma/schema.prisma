@@ -89,6 +89,7 @@ model Admin {
   maintenanceSchedules   MaintenanceSchedule[]
   maintenanceLogs        MaintenanceLog[]
   movementLogs           MovementLog[]
+  fuelLogs               FuelLog[]
   mediaFiles             Media[]                 @relation("AdminMediaFiles")
   users                  User[]
   roles                  Role[]
@@ -182,6 +183,7 @@ model Domain {
   maintenanceSchedules        MaintenanceSchedule[]
   maintenanceLogs             MaintenanceLog[]
   movementLogs                MovementLog[]
+  fuelLogs                    FuelLog[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   purchaseOrders              PurchaseOrder[]
   vendors                     Vendor[]
@@ -302,6 +304,7 @@ model Currency {
   updatedAt             DateTime               @updatedAt
   adminCurrencies       AdminCurrencies[]
   vendorProductPricings VendorProductPricing[]
+  inventories           Inventory[]
 
   @@map("currency")
 }
@@ -476,6 +479,9 @@ model Inventory {
   uomId          String        @db.Uuid
   uom            Uom           @relation("InventoryUom", fields: [uomId], references: [id])
   reorderLevel   Float         @default(0)
+  price          Float?
+  currencyId     String?       @db.Uuid
+  currency       Currency?     @relation(fields: [currencyId], references: [id])
   domainId       String        @db.Uuid
   domain         Domain        @relation(fields: [domainId], references: [id])
   status         StatusEnum    @default(ACTIVE)
@@ -577,6 +583,7 @@ model Uom {
   purchaseOrderProducts       PurchaseOrderProduct[]
   vendorProductPricings       VendorProductPricing[]
   invoiceItems                InvoiceItem[]
+  fuelLogs                    FuelLog[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -822,6 +829,16 @@ enum MovementType {
   OTHER
 }
 
+enum FuelType {
+  PETROL
+  DIESEL
+}
+
+enum FuelDirectionType {
+  CONSUMED
+  FILLED
+}
+
 model RawMaterialPurchaseRequest {
   id              String              @id @default(uuid()) @db.Uuid
   code            String
@@ -837,8 +854,8 @@ model RawMaterialPurchaseRequest {
   brand           String?
   documentId      String?             @db.Uuid
   document        Media?              @relation(fields: [documentId], references: [id])
-  requestedBy     String              @db.Uuid
-  requestedUser   User                @relation("RequestedByUser", fields: [requestedBy], references: [id])
+  requestedBy     String?             @db.Uuid
+  requestedUser   User?               @relation("RequestedByUser", fields: [requestedBy], references: [id])
   requiredBy      DateTime
   reason          String?
   approvalStatus  ApprovalStatus      @default(PENDING)
@@ -1214,6 +1231,7 @@ model Project {
   purchaseOrderProducts       PurchaseOrderProduct[]
   invoices                    Invoice[]
   paymentRequests             PaymentRequest[]
+  fuelLogs                    FuelLog[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1524,6 +1542,44 @@ model MovementLog {
   @@index([projectId])
   @@index([startDateTime])
   @@index([endDateTime])
+}
+
+model FuelLog {
+  id String @id @default(uuid()) @db.Uuid
+
+  fuelType          FuelType
+  equipmentUniqueId String
+  equipmentCategory MaintenanceAssetType
+  equipmentType     String
+  date              DateTime
+  fuelDirectionType FuelDirectionType
+  fuelValue         Float
+  fuelQuantity      Float
+  searchText        String            @default("")
+
+  fuelUomId String @db.Uuid
+  fuelUom   Uom    @relation(fields: [fuelUomId], references: [id])
+
+  projectId String?  @db.Uuid
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  domainId String @db.Uuid
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  adminId String @db.Uuid
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  status    StatusEnum @default(ACTIVE)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, equipmentCategory])
+  @@index([fuelType])
+  @@index([fuelDirectionType])
+  @@index([projectId])
+  @@index([date])
 }
 
 model MachineReading {

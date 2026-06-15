@@ -117,6 +117,33 @@ export const DomainRepository = {
     });
   },
 
+  // Admin's own domains, optionally narrowed by domainIds and/or fuzzy name search.
+  findAccessibleByAdmin(
+    adminId: string,
+    filters?: { domainIds?: string[]; search?: string },
+  ) {
+    const where: any = {
+      adminId,
+      isDeleted: false,
+    };
+
+    if (filters?.domainIds && filters.domainIds.length > 0) {
+      where.id = { in: filters.domainIds };
+    }
+
+    if (filters?.search) {
+      where.nameSearchText = {
+        contains: filters.search.toLowerCase(),
+      };
+    }
+
+    return prisma.domain.findMany({
+      where,
+      select: { id: true, name: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
   update(id: string, data: any) {
     return prisma.domain.update({
       where: { id },

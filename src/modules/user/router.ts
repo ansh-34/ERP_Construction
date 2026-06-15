@@ -21,6 +21,7 @@ import maintenanceScheduleRouter from './maintenanceSchedule/maintenanceSchedule
 import maintenanceLogRouter from './maintenanceLog/maintenanceLog.routes.js';
 import maintenanceReportRouter from './maintenanceReport/maintenanceReport.routes.js';
 import movementLogRouter from './movementLog/movementLog.routes.js';
+import fuelLogRouter from './fuelLog/fuelLog.routes.js';
 import movementReportRouter from './movementReport/movementReport.routes.js';
 import grnRouter from './grn/grn.router.js';
 import productRouter from './product/product.router.js';
@@ -84,6 +85,7 @@ userRouter.use('/maintenance-logs', maintenanceLogRouter);
 userRouter.use('/maintenance-reports', maintenanceReportRouter);
 userRouter.use('/movement-logs', movementLogRouter);
 userRouter.use('/movement-reports', movementReportRouter);
+userRouter.use('/fuel-logs', fuelLogRouter);
 userRouter.use('/grn', grnRouter);
 userRouter.use('/products', productRouter);
 userRouter.use('/vendors', vendorProductPriceRouter);

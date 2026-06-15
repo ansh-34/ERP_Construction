@@ -316,10 +316,18 @@ export const GrnRepository = {
         where: { id, domainId, isDeleted: false },
         include: {
           grnProducts: { where: { isDeleted: false } },
+          // Grn.vendor is a VendorProductPricing row; its vendorId is the actual
+          // Vendor, and it carries a fallback price/currency. A PO can span many
+          // vendors (one per GRN/invoice), so resolve price per line item below.
+          vendor: { select: { vendorId: true, price: true, currencyId: true } },
         },
       });
 
       if (!grn) throw new Error('GRN not found');
+
+      const grnVendorId = grn.vendor?.vendorId ?? null;
+      const fallbackPrice = grn.vendor?.price ?? null;
+      const fallbackCurrencyId = grn.vendor?.currencyId ?? null;
 
       for (const item of grn.grnProducts) {
         // Try to find product by code or en displayName matching material
@@ -374,6 +382,44 @@ export const GrnRepository = {
         }
 
         if (productId && productGradeId) {
+          // Resolve the vendor price for THIS specific line item. The GRN's
+          // vendor may price many products, so match on vendor + product +
+          // grade + uom; fall back to product + grade, then the GRN vendor row.
+          let linePrice = fallbackPrice;
+          let lineCurrencyId = fallbackCurrencyId;
+          if (grnVendorId) {
+            const vpp =
+              (await tx.vendorProductPricing.findFirst({
+                where: {
+                  vendorId: grnVendorId,
+                  productId,
+                  productGradeId,
+                  uomId: item.uomId,
+                  domainId,
+                  isDeleted: false,
+                  status: 'ACTIVE',
+                },
+                orderBy: { updatedAt: 'desc' },
+                select: { price: true, currencyId: true },
+              })) ??
+              (await tx.vendorProductPricing.findFirst({
+                where: {
+                  vendorId: grnVendorId,
+                  productId,
+                  productGradeId,
+                  domainId,
+                  isDeleted: false,
+                  status: 'ACTIVE',
+                },
+                orderBy: { updatedAt: 'desc' },
+                select: { price: true, currencyId: true },
+              }));
+            if (vpp) {
+              linePrice = vpp.price;
+              lineCurrencyId = vpp.currencyId;
+            }
+          }
+
           const existingInventory = await tx.inventory.findFirst({
             where: {
               productId,
@@ -386,7 +432,12 @@ export const GrnRepository = {
           if (existingInventory) {
             await tx.inventory.update({
               where: { id: existingInventory.id },
-              data: { quantity: { increment: item.quantity } },
+              data: {
+                quantity: { increment: item.quantity },
+                // refresh price/currency from this approved GRN's vendor price
+                price: linePrice,
+                currencyId: lineCurrencyId,
+              },
             });
           } else {
             await tx.inventory.create({
@@ -396,6 +447,8 @@ export const GrnRepository = {
                 quantity: item.quantity,
                 uomId: item.uomId,
                 reorderLevel: 0,
+                price: linePrice,
+                currencyId: lineCurrencyId,
                 domainId,
                 status: 'ACTIVE',
                 isDeleted: false,

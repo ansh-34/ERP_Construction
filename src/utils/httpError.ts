@@ -76,5 +76,14 @@ export function resolveHttpStatus(message: string): HttpStatus {
       : HttpStatus.BAD_REQUEST;
   }
 
+  // Domain-scoped validation errors (e.g. language/currency not offered by the
+  // domain, no languages configured) are client errors, not server errors.
+  if (
+    message.includes('belong to your domain') ||
+    message.includes('configured for your domain')
+  ) {
+    return HttpStatus.BAD_REQUEST;
+  }
+
   return HttpStatus.INTERNAL_SERVER_ERROR;
 }
