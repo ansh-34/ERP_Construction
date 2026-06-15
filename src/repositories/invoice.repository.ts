@@ -409,7 +409,7 @@ export const invoiceRepository = {
         poProduct: (typeof po.purchaseOrderProducts)[0];
         pricing: {
           id: string;
-          vendorName: string;
+          vendor: { name: string };
           productId: string;
           productGradeId: string;
           uomId: string;
@@ -434,6 +434,7 @@ export const invoiceRepository = {
             domainId,
             isDeleted: false,
           },
+          include: { vendor: true },
         });
         if (!pricing) {
           throw new Error(
@@ -447,7 +448,7 @@ export const invoiceRepository = {
       // Group resolved assignments by vendorName
       const vendorGroups: Record<string, ResolvedAssignment[]> = {};
       for (const item of resolved) {
-        const vendor = item.pricing.vendorName;
+        const vendor = item.pricing.vendor.name;
         if (!vendorGroups[vendor]) vendorGroups[vendor] = [];
         vendorGroups[vendor].push(item);
       }
