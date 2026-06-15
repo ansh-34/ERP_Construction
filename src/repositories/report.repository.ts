@@ -68,12 +68,6 @@ export const ReportRepository = {
     return prisma.movementLog.findMany(args);
   },
 
-  findUoms<T extends Prisma.UomFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.UomFindManyArgs>,
-  ) {
-    return prisma.uom.findMany(args);
-  },
-
   findProducts<T extends Prisma.ProductFindManyArgs>(
     args?: Prisma.SelectSubset<T, Prisma.ProductFindManyArgs>,
   ) {
@@ -84,12 +78,6 @@ export const ReportRepository = {
     args?: Prisma.SelectSubset<T, Prisma.VendorFindManyArgs>,
   ) {
     return prisma.vendor.findMany(args);
-  },
-
-  findInvoices<T extends Prisma.InvoiceFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.InvoiceFindManyArgs>,
-  ) {
-    return prisma.invoice.findMany(args);
   },
 
   findGrns<T extends Prisma.GrnFindManyArgs>(
@@ -121,12 +109,6 @@ export const ReportRepository = {
     return prisma.invoiceItem.findMany(args);
   },
 
-  findGrnProducts<T extends Prisma.GrnProductFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.GrnProductFindManyArgs>,
-  ) {
-    return prisma.grnProduct.findMany(args);
-  },
-
   findUoms<T extends Prisma.UomFindManyArgs>(
     args?: Prisma.SelectSubset<T, Prisma.UomFindManyArgs>,
   ) {
@@ -137,29 +119,6 @@ export const ReportRepository = {
     args?: Prisma.SelectSubset<T, Prisma.InvoiceFindManyArgs>,
   ) {
     return prisma.invoice.findMany(args);
-  },
-
-  findGrns<T extends Prisma.GrnFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.GrnFindManyArgs>,
-  ) {
-    return prisma.grn.findMany(args);
-  },
-
-  findRawMaterialPurchaseRequests<
-    T extends Prisma.RawMaterialPurchaseRequestFindManyArgs,
-  >(
-    args?: Prisma.SelectSubset<
-      T,
-      Prisma.RawMaterialPurchaseRequestFindManyArgs
-    >,
-  ) {
-    return prisma.rawMaterialPurchaseRequest.findMany(args);
-  },
-
-  findInvoiceItems<T extends Prisma.InvoiceItemFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.InvoiceItemFindManyArgs>,
-  ) {
-    return prisma.invoiceItem.findMany(args);
   },
 
   findGrnProducts<T extends Prisma.GrnProductFindManyArgs>(
