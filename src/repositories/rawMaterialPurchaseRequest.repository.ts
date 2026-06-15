@@ -6,7 +6,7 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
   if (!products || products.length === 0) return [];
 
   const poIds = Array.from(
-    new Set(products.map((p: any) => p.purchaseOrderId).filter(Boolean))
+    new Set(products.map((p: any) => p.purchaseOrderId).filter(Boolean)),
   ) as string[];
 
   if (poIds.length === 0) {
@@ -74,7 +74,8 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       const isPoMatch = req.purchaseOrderId === pop.purchaseOrderId;
       const isProductMatch =
         req.product &&
-        JSON.stringify(req.product.displayName) === JSON.stringify(pop.productName);
+        JSON.stringify(req.product.displayName) ===
+          JSON.stringify(pop.productName);
       const isGradeMatch = req.productGrade
         ? pop.productGradeName &&
           JSON.stringify(req.productGrade.gradeDisplayName) ===

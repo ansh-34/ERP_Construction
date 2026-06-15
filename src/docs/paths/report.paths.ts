@@ -11,7 +11,8 @@ const adminDomainScopeParams = [
       type: 'array',
       items: { type: 'string', format: 'uuid' },
     },
-    description: 'Filter report by one or more domain IDs (comma-separated or multiple parameters)',
+    description:
+      'Filter report by one or more domain IDs (comma-separated or multiple parameters)',
   },
   {
     in: 'query',
@@ -25,7 +26,11 @@ const adminDomainScopeParams = [
 const domainRefSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', format: 'uuid', example: 'd3b07384-d113-4ec6-a558-7132194685ff' },
+    id: {
+      type: 'string',
+      format: 'uuid',
+      example: 'd3b07384-d113-4ec6-a558-7132194685ff',
+    },
     name: { type: 'string', example: 'Apex Construction Ltd' },
   },
 };
@@ -1210,7 +1215,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'List Accessible Domains',
-      description: 'Returns a list of domains accessible by the logged-in administrator.',
+      description:
+        'Returns a list of domains accessible by the logged-in administrator.',
       security: [{ bearerAuth: [] }],
       parameters: [...adminDomainScopeParams],
       responses: {
@@ -1222,7 +1228,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Domains fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Domains fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: domainRefSchema,
@@ -1240,7 +1249,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Project Summary Report (Admin)',
-      description: 'Returns project summary report for accessible domains, optionally filtered by country.',
+      description:
+        'Returns project summary report for accessible domains, optionally filtered by country.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1261,7 +1271,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1280,7 +1293,10 @@ export const ReportPaths = {
                               items: {
                                 type: 'object',
                                 properties: {
-                                  project: { type: 'string', example: 'Bridge Construction' },
+                                  project: {
+                                    type: 'string',
+                                    example: 'Bridge Construction',
+                                  },
                                   country: { type: 'string', example: 'India' },
                                   budget: { type: 'number', example: 500000.0 },
                                   spent: { type: 'number', example: 200000.0 },
@@ -1335,9 +1351,10 @@ export const ReportPaths = {
         200: {
           description: 'Excel file containing project summary report',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,
@@ -1348,7 +1365,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Project User Task Report (Admin)',
-      description: 'Returns tasks assigned to users on specific projects across accessible domains.',
+      description:
+        'Returns tasks assigned to users on specific projects across accessible domains.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1376,7 +1394,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1388,18 +1409,39 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               userName: { type: 'string', example: 'John Doe' },
-                              userEmail: { type: 'string', example: 'john@example.com' },
-                              startDate: { type: 'string', format: 'date-time' },
+                              userEmail: {
+                                type: 'string',
+                                example: 'john@example.com',
+                              },
+                              startDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                               endDate: { type: 'string', format: 'date-time' },
                               dailyWorkingHours: { type: 'number', example: 8 },
                               dayCharge: { type: 'number', example: 250 },
-                              notes: { type: 'string', example: 'Assigned to Phase 1' },
+                              notes: {
+                                type: 'string',
+                                example: 'Assigned to Phase 1',
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                             },
                           },
                         },
@@ -1408,25 +1450,67 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               stageCode: { type: 'string', example: 'STG001' },
-                              stageName: { type: 'string', example: 'Foundation' },
+                              stageName: {
+                                type: 'string',
+                                example: 'Foundation',
+                              },
                               taskCode: { type: 'string', example: 'TSK001' },
-                              taskName: { type: 'string', example: 'Excavation' },
+                              taskName: {
+                                type: 'string',
+                                example: 'Excavation',
+                              },
                               userName: { type: 'string', example: 'John Doe' },
-                              userEmail: { type: 'string', example: 'john@example.com' },
-                              taskStatus: { type: 'string', example: 'IN_PROGRESS' },
+                              userEmail: {
+                                type: 'string',
+                                example: 'john@example.com',
+                              },
+                              taskStatus: {
+                                type: 'string',
+                                example: 'IN_PROGRESS',
+                              },
                               taskProgress: { type: 'number', example: 45 },
-                              requiredApproval: { type: 'boolean', example: false },
-                              approvalState: { type: 'string', example: 'APPROVED' },
-                              plannedStartDate: { type: 'string', format: 'date-time' },
-                              plannedEndDate: { type: 'string', format: 'date-time' },
-                              actualStartDate: { type: 'string', format: 'date-time' },
-                              actualEndDate: { type: 'string', format: 'date-time' },
+                              requiredApproval: {
+                                type: 'boolean',
+                                example: false,
+                              },
+                              approvalState: {
+                                type: 'string',
+                                example: 'APPROVED',
+                              },
+                              plannedStartDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              plannedEndDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              actualStartDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              actualEndDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                             },
                           },
                         },
@@ -1435,23 +1519,53 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               stageCode: { type: 'string', example: 'STG001' },
-                              stageName: { type: 'string', example: 'Foundation' },
+                              stageName: {
+                                type: 'string',
+                                example: 'Foundation',
+                              },
                               taskCode: { type: 'string', example: 'TSK001' },
-                              taskName: { type: 'string', example: 'Excavation' },
+                              taskName: {
+                                type: 'string',
+                                example: 'Excavation',
+                              },
                               userName: { type: 'string', example: 'John Doe' },
-                              userEmail: { type: 'string', example: 'john@example.com' },
-                              delayReason: { type: 'string', example: 'Weather conditions' },
+                              userEmail: {
+                                type: 'string',
+                                example: 'john@example.com',
+                              },
+                              delayReason: {
+                                type: 'string',
+                                example: 'Weather conditions',
+                              },
                               delayDays: { type: 'integer', example: 3 },
                               taskProgress: { type: 'number', example: 45 },
                               totalDelayInDays: { type: 'integer', example: 5 },
-                              approvalStatus: { type: 'string', example: 'APPROVED' },
-                              approvalTime: { type: 'string', format: 'date-time' },
+                              approvalStatus: {
+                                type: 'string',
+                                example: 'APPROVED',
+                              },
+                              approvalTime: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                             },
                           },
                         },
@@ -1501,9 +1615,10 @@ export const ReportPaths = {
         200: {
           description: 'Excel file containing project user task report',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,
@@ -1514,7 +1629,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Project User Task Summary (Admin)',
-      description: 'Returns high-level analytics for project user tasks, including low progress tasks, top users, and delays.',
+      description:
+        'Returns high-level analytics for project user tasks, including low progress tasks, top users, and delays.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1542,7 +1658,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1554,10 +1673,19 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               taskCode: { type: 'string', example: 'TSK001' },
-                              taskName: { type: 'string', example: 'Excavation' },
+                              taskName: {
+                                type: 'string',
+                                example: 'Excavation',
+                              },
                               userName: { type: 'string', example: 'John Doe' },
                               taskProgress: { type: 'number', example: 5 },
                             },
@@ -1569,7 +1697,10 @@ export const ReportPaths = {
                             type: 'object',
                             properties: {
                               userName: { type: 'string', example: 'John Doe' },
-                              userEmail: { type: 'string', example: 'john@example.com' },
+                              userEmail: {
+                                type: 'string',
+                                example: 'john@example.com',
+                              },
                               taskCount: { type: 'integer', example: 10 },
                             },
                           },
@@ -1580,7 +1711,10 @@ export const ReportPaths = {
                             type: 'object',
                             properties: {
                               userName: { type: 'string', example: 'John Doe' },
-                              userEmail: { type: 'string', example: 'john@example.com' },
+                              userEmail: {
+                                type: 'string',
+                                example: 'john@example.com',
+                              },
                               projectCount: { type: 'integer', example: 3 },
                             },
                           },
@@ -1590,10 +1724,19 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
                               taskCode: { type: 'string', example: 'TSK001' },
-                              taskName: { type: 'string', example: 'Excavation' },
-                              totalDelayInDays: { type: 'integer', example: 15 },
+                              taskName: {
+                                type: 'string',
+                                example: 'Excavation',
+                              },
+                              totalDelayInDays: {
+                                type: 'integer',
+                                example: 15,
+                              },
                             },
                           },
                         },
@@ -1613,7 +1756,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Machine Summary Report (Admin)',
-      description: 'Returns list of machines and readings across accessible domains.',
+      description:
+        'Returns list of machines and readings across accessible domains.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1641,7 +1785,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1653,14 +1800,35 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              expectedLitrePerHour: { type: 'number', example: 12.5 },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              expectedLitrePerHour: {
+                                type: 'number',
+                                example: 12.5,
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                             },
                           },
                         },
@@ -1669,24 +1837,66 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              readingCode: { type: 'string', example: 'MR-001' },
-                              readingDate: { type: 'string', format: 'date-time' },
-                              openingFuelStock: { type: 'number', example: 100 },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              readingCode: {
+                                type: 'string',
+                                example: 'MR-001',
+                              },
+                              readingDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              openingFuelStock: {
+                                type: 'number',
+                                example: 100,
+                              },
                               closingFuelStock: { type: 'number', example: 40 },
-                              fuelRefillQuantity: { type: 'number', example: 20 },
+                              fuelRefillQuantity: {
+                                type: 'number',
+                                example: 20,
+                              },
                               fuelConsumed: { type: 'number', example: 80 },
                               hoursRun: { type: 'number', example: 6.5 },
-                              expectedLitrePerHour: { type: 'number', example: 12.5 },
-                              actualLitrePerHour: { type: 'number', example: 12.3 },
-                              machineStartTime: { type: 'string', format: 'date-time' },
-                              machineEndTime: { type: 'string', format: 'date-time' },
+                              expectedLitrePerHour: {
+                                type: 'number',
+                                example: 12.5,
+                              },
+                              actualLitrePerHour: {
+                                type: 'number',
+                                example: 12.3,
+                              },
+                              machineStartTime: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              machineEndTime: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                             },
                           },
                         },
@@ -1706,7 +1916,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Machine Summary Dashboard (Admin)',
-      description: 'Returns aggregated metrics for machines (working hours, maintenance logs, and movement logs).',
+      description:
+        'Returns aggregated metrics for machines (working hours, maintenance logs, and movement logs).',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1734,7 +1945,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1746,11 +1960,26 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
-                              totalWorkingHours: { type: 'number', example: 128.5 },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
+                              totalWorkingHours: {
+                                type: 'number',
+                                example: 128.5,
+                              },
                             },
                           },
                         },
@@ -1759,10 +1988,22 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               maintenanceCount: { type: 'integer', example: 5 },
                             },
                           },
@@ -1772,10 +2013,22 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
                               movementCount: { type: 'integer', example: 8 },
                             },
                           },
@@ -1785,14 +2038,38 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              machineCode: { type: 'string', example: 'MC-001' },
-                              machineType: { type: 'string', example: 'Excavator' },
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
-                              scheduleCode: { type: 'string', example: 'MS-001' },
-                              scheduleTitle: { type: 'string', example: 'Monthly Maintenance' },
-                              nextDueDate: { type: 'string', format: 'date-time' },
-                              scheduleStatus: { type: 'string', example: 'SCHEDULED' },
+                              machineCode: {
+                                type: 'string',
+                                example: 'MC-001',
+                              },
+                              machineType: {
+                                type: 'string',
+                                example: 'Excavator',
+                              },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
+                              scheduleCode: {
+                                type: 'string',
+                                example: 'MS-001',
+                              },
+                              scheduleTitle: {
+                                type: 'string',
+                                example: 'Monthly Maintenance',
+                              },
+                              nextDueDate: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              scheduleStatus: {
+                                type: 'string',
+                                example: 'SCHEDULED',
+                              },
                             },
                           },
                         },
@@ -1812,7 +2089,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Export Machine and Vehicle Summary (Admin)',
-      description: 'Exports machine, vehicle, logs, and schedules worksheet as an Excel spreadsheet.',
+      description:
+        'Exports machine, vehicle, logs, and schedules worksheet as an Excel spreadsheet.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1847,11 +2125,13 @@ export const ReportPaths = {
       ],
       responses: {
         200: {
-          description: 'Excel file containing machine and vehicle summary sheets',
+          description:
+            'Excel file containing machine and vehicle summary sheets',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,
@@ -1862,7 +2142,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Product Inventory Report (Admin)',
-      description: 'Returns product inventory data, standard rates, stock levels, and alert details.',
+      description:
+        'Returns product inventory data, standard rates, stock levels, and alert details.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1890,7 +2171,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -1901,8 +2185,14 @@ export const ReportPaths = {
                           type: 'object',
                           properties: {
                             totalProducts: { type: 'integer', example: 50 },
-                            totalInventoryQuantity: { type: 'number', example: 5000 },
-                            totalInventoryValue: { type: 'number', example: 2250000 },
+                            totalInventoryQuantity: {
+                              type: 'number',
+                              example: 5000,
+                            },
+                            totalInventoryValue: {
+                              type: 'number',
+                              example: 2250000,
+                            },
                             lowStockCount: { type: 'integer', example: 3 },
                             outOfStockCount: { type: 'integer', example: 1 },
                             lowStock: {
@@ -1910,10 +2200,22 @@ export const ReportPaths = {
                               items: {
                                 type: 'object',
                                 properties: {
-                                  productCode: { type: 'string', example: 'PROD-CEM' },
-                                  productName: { type: 'string', example: 'Cement Grade 53' },
-                                  gradeCode: { type: 'string', example: 'GR-A' },
-                                  gradeName: { type: 'string', example: 'Grade A' },
+                                  productCode: {
+                                    type: 'string',
+                                    example: 'PROD-CEM',
+                                  },
+                                  productName: {
+                                    type: 'string',
+                                    example: 'Cement Grade 53',
+                                  },
+                                  gradeCode: {
+                                    type: 'string',
+                                    example: 'GR-A',
+                                  },
+                                  gradeName: {
+                                    type: 'string',
+                                    example: 'Grade A',
+                                  },
                                   quantity: { type: 'number', example: 12 },
                                   reorderLevel: { type: 'number', example: 50 },
                                   uomCode: { type: 'string', example: 'BAG' },
@@ -1925,10 +2227,22 @@ export const ReportPaths = {
                               items: {
                                 type: 'object',
                                 properties: {
-                                  productCode: { type: 'string', example: 'PROD-STEEL' },
-                                  productName: { type: 'string', example: 'Steel TMT 12mm' },
-                                  gradeCode: { type: 'string', example: 'GR-B' },
-                                  gradeName: { type: 'string', example: 'Grade B' },
+                                  productCode: {
+                                    type: 'string',
+                                    example: 'PROD-STEEL',
+                                  },
+                                  productName: {
+                                    type: 'string',
+                                    example: 'Steel TMT 12mm',
+                                  },
+                                  gradeCode: {
+                                    type: 'string',
+                                    example: 'GR-B',
+                                  },
+                                  gradeName: {
+                                    type: 'string',
+                                    example: 'Grade B',
+                                  },
                                   uomCode: { type: 'string', example: 'TONNE' },
                                   reorderLevel: { type: 'number', example: 10 },
                                 },
@@ -1941,22 +2255,47 @@ export const ReportPaths = {
                           items: {
                             type: 'object',
                             properties: {
-                              id: { type: 'string', format: 'uuid', example: 'a2430489-0b1e-450f-a42e-834928420993' },
+                              id: {
+                                type: 'string',
+                                format: 'uuid',
+                                example: 'a2430489-0b1e-450f-a42e-834928420993',
+                              },
                               code: { type: 'string', example: 'PROD-CEM' },
-                              displayName: { type: 'string', example: 'Cement Grade 53' },
-                              productType: { type: 'string', example: 'MATERIAL' },
+                              displayName: {
+                                type: 'string',
+                                example: 'Cement Grade 53',
+                              },
+                              productType: {
+                                type: 'string',
+                                example: 'MATERIAL',
+                              },
                               status: { type: 'string', example: 'ACTIVE' },
-                              createdAt: { type: 'string', format: 'date-time' },
-                              updatedAt: { type: 'string', format: 'date-time' },
+                              createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
+                              updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                              },
                               uoms: {
                                 type: 'array',
                                 items: {
                                   type: 'object',
                                   properties: {
                                     code: { type: 'string', example: 'BAG' },
-                                    name: { type: 'string', example: 'Bag (50kg)' },
-                                    conversionRate: { type: 'number', example: 1 },
-                                    baseUomName: { type: 'string', example: 'Bag' },
+                                    name: {
+                                      type: 'string',
+                                      example: 'Bag (50kg)',
+                                    },
+                                    conversionRate: {
+                                      type: 'number',
+                                      example: 1,
+                                    },
+                                    baseUomName: {
+                                      type: 'string',
+                                      example: 'Bag',
+                                    },
                                   },
                                 },
                               },
@@ -1966,15 +2305,27 @@ export const ReportPaths = {
                                   type: 'object',
                                   properties: {
                                     code: { type: 'string', example: 'GR-A' },
-                                    name: { type: 'string', example: 'Grade A' },
+                                    name: {
+                                      type: 'string',
+                                      example: 'Grade A',
+                                    },
                                     stdRates: {
                                       type: 'array',
                                       items: {
                                         type: 'object',
                                         properties: {
-                                          type: { type: 'string', example: 'STANDARD' },
-                                          value: { type: 'number', example: 450 },
-                                          alertThreshold: { type: 'number', example: 480 },
+                                          type: {
+                                            type: 'string',
+                                            example: 'STANDARD',
+                                          },
+                                          value: {
+                                            type: 'number',
+                                            example: 450,
+                                          },
+                                          alertThreshold: {
+                                            type: 'number',
+                                            example: 480,
+                                          },
                                         },
                                       },
                                     },
@@ -1986,12 +2337,24 @@ export const ReportPaths = {
                                 items: {
                                   type: 'object',
                                   properties: {
-                                    gradeCode: { type: 'string', example: 'GR-A' },
-                                    gradeName: { type: 'string', example: 'Grade A' },
+                                    gradeCode: {
+                                      type: 'string',
+                                      example: 'GR-A',
+                                    },
+                                    gradeName: {
+                                      type: 'string',
+                                      example: 'Grade A',
+                                    },
                                     quantity: { type: 'number', example: 120 },
                                     uomCode: { type: 'string', example: 'BAG' },
-                                    reorderLevel: { type: 'number', example: 50 },
-                                    lowStock: { type: 'boolean', example: false },
+                                    reorderLevel: {
+                                      type: 'number',
+                                      example: 50,
+                                    },
+                                    lowStock: {
+                                      type: 'boolean',
+                                      example: false,
+                                    },
                                   },
                                 },
                               },
@@ -2015,7 +2378,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Export Product Inventory Report (Admin)',
-      description: 'Exports product inventory data report as an Excel spreadsheet.',
+      description:
+        'Exports product inventory data report as an Excel spreadsheet.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -2045,9 +2409,10 @@ export const ReportPaths = {
         200: {
           description: 'Excel file containing product inventory report',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,
@@ -2058,7 +2423,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Vendor Purchase History (Admin)',
-      description: 'Returns details of invoices, GRNs, and amount summaries per vendor across domains.',
+      description:
+        'Returns details of invoices, GRNs, and amount summaries per vendor across domains.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -2086,7 +2452,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -2097,8 +2466,14 @@ export const ReportPaths = {
                           type: 'object',
                           properties: {
                             totalVendors: { type: 'integer', example: 12 },
-                            totalInvoicedAmount: { type: 'number', example: 1250000.75 },
-                            totalGrnAmount: { type: 'number', example: 1120000.5 },
+                            totalInvoicedAmount: {
+                              type: 'number',
+                              example: 1250000.75,
+                            },
+                            totalGrnAmount: {
+                              type: 'number',
+                              example: 1120000.5,
+                            },
                           },
                         },
                         vendors: {
@@ -2107,15 +2482,33 @@ export const ReportPaths = {
                             type: 'object',
                             properties: {
                               vendorCode: { type: 'string', example: 'VND01' },
-                              vendorName: { type: 'string', example: 'Apex Materials Corp' },
-                              vendorEmail: { type: 'string', example: 'sales@apex.com' },
-                              contactPerson: { type: 'string', example: 'Robert Smith' },
+                              vendorName: {
+                                type: 'string',
+                                example: 'Apex Materials Corp',
+                              },
+                              vendorEmail: {
+                                type: 'string',
+                                example: 'sales@apex.com',
+                              },
+                              contactPerson: {
+                                type: 'string',
+                                example: 'Robert Smith',
+                              },
                               phone: { type: 'string', example: '+1 555-0199' },
-                              address: { type: 'string', example: '123 Industrial Parkway' },
+                              address: {
+                                type: 'string',
+                                example: '123 Industrial Parkway',
+                              },
                               totalInvoices: { type: 'integer', example: 15 },
-                              totalInvoicedAmount: { type: 'number', example: 450000 },
+                              totalInvoicedAmount: {
+                                type: 'number',
+                                example: 450000,
+                              },
                               totalGrns: { type: 'integer', example: 10 },
-                              totalGrnAmount: { type: 'number', example: 380000 },
+                              totalGrnAmount: {
+                                type: 'number',
+                                example: 380000,
+                              },
                               paymentStatusSummary: {
                                 type: 'object',
                                 properties: {
@@ -2123,14 +2516,20 @@ export const ReportPaths = {
                                     type: 'object',
                                     properties: {
                                       count: { type: 'integer', example: 2 },
-                                      amount: { type: 'number', example: 50000 },
+                                      amount: {
+                                        type: 'number',
+                                        example: 50000,
+                                      },
                                     },
                                   },
                                   PAID: {
                                     type: 'object',
                                     properties: {
                                       count: { type: 'integer', example: 13 },
-                                      amount: { type: 'number', example: 400000 },
+                                      amount: {
+                                        type: 'number',
+                                        example: 400000,
+                                      },
                                     },
                                   },
                                 },
@@ -2140,14 +2539,35 @@ export const ReportPaths = {
                                 items: {
                                   type: 'object',
                                   properties: {
-                                    invoiceCode: { type: 'string', example: 'INV-10023' },
-                                    invoiceDate: { type: 'string', format: 'date-time' },
-                                    dueDate: { type: 'string', format: 'date-time' },
-                                    totalAmount: { type: 'number', example: 35000 },
+                                    invoiceCode: {
+                                      type: 'string',
+                                      example: 'INV-10023',
+                                    },
+                                    invoiceDate: {
+                                      type: 'string',
+                                      format: 'date-time',
+                                    },
+                                    dueDate: {
+                                      type: 'string',
+                                      format: 'date-time',
+                                    },
+                                    totalAmount: {
+                                      type: 'number',
+                                      example: 35000,
+                                    },
                                     totalTax: { type: 'number', example: 3500 },
-                                    paymentStatus: { type: 'string', example: 'PAID' },
-                                    projectCode: { type: 'string', example: 'PRJ001' },
-                                    projectName: { type: 'string', example: 'Bridge Construction' },
+                                    paymentStatus: {
+                                      type: 'string',
+                                      example: 'PAID',
+                                    },
+                                    projectCode: {
+                                      type: 'string',
+                                      example: 'PRJ001',
+                                    },
+                                    projectName: {
+                                      type: 'string',
+                                      example: 'Bridge Construction',
+                                    },
                                   },
                                 },
                               },
@@ -2156,14 +2576,35 @@ export const ReportPaths = {
                                 items: {
                                   type: 'object',
                                   properties: {
-                                    grnCode: { type: 'string', example: 'GRN-552' },
-                                    productOrderCode: { type: 'string', example: 'PO-991' },
-                                    date: { type: 'string', format: 'date-time' },
-                                    wbReference: { type: 'string', example: 'WB-772' },
+                                    grnCode: {
+                                      type: 'string',
+                                      example: 'GRN-552',
+                                    },
+                                    productOrderCode: {
+                                      type: 'string',
+                                      example: 'PO-991',
+                                    },
+                                    date: {
+                                      type: 'string',
+                                      format: 'date-time',
+                                    },
+                                    wbReference: {
+                                      type: 'string',
+                                      example: 'WB-772',
+                                    },
                                     totalItems: { type: 'integer', example: 3 },
-                                    totalAmount: { type: 'number', example: 30000 },
-                                    projectCode: { type: 'string', example: 'PRJ001' },
-                                    projectName: { type: 'string', example: 'Bridge Construction' },
+                                    totalAmount: {
+                                      type: 'number',
+                                      example: 30000,
+                                    },
+                                    projectCode: {
+                                      type: 'string',
+                                      example: 'PRJ001',
+                                    },
+                                    projectName: {
+                                      type: 'string',
+                                      example: 'Bridge Construction',
+                                    },
                                   },
                                 },
                               },
@@ -2186,7 +2627,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Export Vendor Purchase History (Admin)',
-      description: 'Exports vendor purchase history report as an Excel spreadsheet.',
+      description:
+        'Exports vendor purchase history report as an Excel spreadsheet.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -2216,9 +2658,10 @@ export const ReportPaths = {
         200: {
           description: 'Excel file containing vendor purchase history report',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,
@@ -2229,7 +2672,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Get Product Transaction History (Admin)',
-      description: 'Returns product transactions (requisitions, invoices, receipts/GRNs) over a timeline.',
+      description:
+        'Returns product transactions (requisitions, invoices, receipts/GRNs) over a timeline.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -2271,7 +2715,10 @@ export const ReportPaths = {
                 type: 'object',
                 properties: {
                   success: { type: 'boolean', example: true },
-                  message: { type: 'string', example: 'Report fetched successfully' },
+                  message: {
+                    type: 'string',
+                    example: 'Report fetched successfully',
+                  },
                   data: {
                     type: 'array',
                     items: {
@@ -2284,19 +2731,37 @@ export const ReportPaths = {
                             type: 'object',
                             properties: {
                               date: { type: 'string', format: 'date-time' },
-                              type: { type: 'string', example: 'Receipt (GRN)' },
+                              type: {
+                                type: 'string',
+                                example: 'Receipt (GRN)',
+                              },
                               code: { type: 'string', example: 'GRN-552' },
-                              productCode: { type: 'string', example: 'PROD-CEM' },
-                              productName: { type: 'string', example: 'Cement Grade 53' },
+                              productCode: {
+                                type: 'string',
+                                example: 'PROD-CEM',
+                              },
+                              productName: {
+                                type: 'string',
+                                example: 'Cement Grade 53',
+                              },
                               gradeCode: { type: 'string', example: 'GR-A' },
                               gradeName: { type: 'string', example: 'Grade A' },
                               quantity: { type: 'number', example: 100 },
                               uom: { type: 'string', example: 'BAG' },
                               unitRate: { type: 'number', example: 450 },
                               totalAmount: { type: 'number', example: 45000 },
-                              projectCode: { type: 'string', example: 'PRJ001' },
-                              projectName: { type: 'string', example: 'Bridge Construction' },
-                              reference: { type: 'string', example: 'Apex Materials Corp' },
+                              projectCode: {
+                                type: 'string',
+                                example: 'PRJ001',
+                              },
+                              projectName: {
+                                type: 'string',
+                                example: 'Bridge Construction',
+                              },
+                              reference: {
+                                type: 'string',
+                                example: 'Apex Materials Corp',
+                              },
                               status: { type: 'string', example: 'APPROVED' },
                             },
                           },
@@ -2317,7 +2782,8 @@ export const ReportPaths = {
     get: {
       tags: ['Admin Reports'],
       summary: 'Export Product Transaction History (Admin)',
-      description: 'Exports product transaction history report as an Excel spreadsheet.',
+      description:
+        'Exports product transaction history report as an Excel spreadsheet.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -2359,11 +2825,13 @@ export const ReportPaths = {
       ],
       responses: {
         200: {
-          description: 'Excel file containing product transaction history report',
+          description:
+            'Excel file containing product transaction history report',
           content: {
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-              schema: { type: 'string', format: 'binary' },
-            },
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: { type: 'string', format: 'binary' },
+              },
           },
         },
         ...errors,

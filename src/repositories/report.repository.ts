@@ -41,7 +41,10 @@ export const ReportRepository = {
   findRawMaterialPurchaseRequests<
     T extends Prisma.RawMaterialPurchaseRequestFindManyArgs,
   >(
-    args?: Prisma.SelectSubset<T, Prisma.RawMaterialPurchaseRequestFindManyArgs>,
+    args?: Prisma.SelectSubset<
+      T,
+      Prisma.RawMaterialPurchaseRequestFindManyArgs
+    >,
   ) {
     return prisma.rawMaterialPurchaseRequest.findMany(args);
   },
