@@ -107,6 +107,7 @@ export const VendorProductPriceService = {
       productCode?: string;
       productGradeId?: string;
       currencyId?: string;
+      vendorId?: string;
     },
     langCode: string,
   ) {
@@ -124,6 +125,7 @@ export const VendorProductPriceService = {
           productCode: query.productCode,
           productGradeId: query.productGradeId,
           currencyId: query.currencyId,
+          vendorId: query.vendorId,
         },
         select: {
           id: true,

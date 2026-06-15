@@ -104,6 +104,7 @@ export const VendorProductPriceService = {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       productCode?: string;
+      vendorId?: string;
     },
     langCode: string,
   ) {
@@ -118,6 +119,7 @@ export const VendorProductPriceService = {
           status: query.status,
           searchKey: query.searchKey,
           productCode: query.productCode,
+          vendorId: query.vendorId,
         },
         select: {
           id: true,
