@@ -18,6 +18,24 @@ export const ProductService = {
     return value.toString().trim().toUpperCase().replace(/\s+/g, '_');
   },
 
+  async getStats(domainId: string) {
+    const {
+      totalProducts,
+      activeCount,
+      inactiveCount,
+      rawMaterialCount,
+      finishedProductCount,
+    } = await ProductRepository.getStatsDetailed(domainId);
+
+    return {
+      totalProducts,
+      activeCount,
+      inactiveCount,
+      rawMaterialCount,
+      finishedProductCount,
+    };
+  },
+
   async createProduct(domainId: string, data: any) {
     const incomingLanguageCodes: string[] = Object.keys(data.displayName || {});
     if (!incomingLanguageCodes.includes('en')) {

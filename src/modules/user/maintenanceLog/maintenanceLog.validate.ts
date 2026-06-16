@@ -3,14 +3,20 @@ import { z } from 'zod';
 
 const assetType = z.enum(['VEHICLE', 'MACHINERY']);
 
+// Frontend sends unused ids as "" — coerce empty strings to null
+const optionalUuid = z.preprocess(
+  (val) => (val === '' ? null : val),
+  z.string().trim().uuid().nullable().optional(),
+);
+
 export const createMaintenanceLogBody = z.object({
   code: z.string().trim().min(1, { message: 'Code is required' }),
   date: z.string().trim().min(1, { message: 'Date is required' }),
   description: z.record(z.string(), z.unknown()),
   assetType,
-  vehicleId: z.string().trim().uuid().nullable().optional(),
-  machineryId: z.string().trim().uuid().nullable().optional(),
-  maintenanceScheduleId: z.string().trim().uuid().nullable().optional(),
+  vehicleId: optionalUuid,
+  machineryId: optionalUuid,
+  maintenanceScheduleId: optionalUuid,
   expenseAmount: z.number().nonnegative().optional(),
   meterReading: z.number().nonnegative().nullable().optional(),
   status: z.nativeEnum(StatusEnum).optional(),

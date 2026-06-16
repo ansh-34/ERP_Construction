@@ -120,20 +120,12 @@ function assertAssetSelection(
   machineryId?: string | null,
 ): void {
   if (assetType === 'VEHICLE') {
-    if (!isNonEmptyString(vehicleId)) {
-      throw new Error('vehicleId is required');
-    }
-
     if (machineryId !== undefined && machineryId !== null) {
       throw new Error('machineryId must be empty');
     }
   }
 
   if (assetType === 'MACHINERY') {
-    if (!isNonEmptyString(machineryId)) {
-      throw new Error('machineryId is required');
-    }
-
     if (vehicleId !== undefined && vehicleId !== null) {
       throw new Error('vehicleId must be empty');
     }
@@ -147,18 +139,18 @@ async function assertAssetExists(
   vehicleId?: string | null,
   machineryId?: string | null,
 ): Promise<void> {
-  if (assetType === 'VEHICLE') {
+  if (assetType === 'VEHICLE' && isNonEmptyString(vehicleId)) {
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
-      vehicleId ?? '',
+      vehicleId,
       domainId,
     );
 
     if (!vehicle) throw new Error('invalid vehicleId');
   }
 
-  if (assetType === 'MACHINERY') {
+  if (assetType === 'MACHINERY' && isNonEmptyString(machineryId)) {
     const machinery = await machineryRepository.findById(
-      machineryId ?? '',
+      machineryId,
       domainId,
       adminId,
     );
@@ -222,6 +214,15 @@ export const maintenanceLogService = {
     data: CreateMaintenanceLogInput,
     language: string | null = null,
   ): Promise<LocalizedMaintenanceLogRecord> {
+    // Frontend sends unused ids as "" — treat empty strings as not provided
+    data.vehicleId = isNonEmptyString(data.vehicleId) ? data.vehicleId : null;
+    data.machineryId = isNonEmptyString(data.machineryId)
+      ? data.machineryId
+      : null;
+    data.maintenanceScheduleId = isNonEmptyString(data.maintenanceScheduleId)
+      ? data.maintenanceScheduleId
+      : null;
+
     assertCreateInput(data);
 
     try {

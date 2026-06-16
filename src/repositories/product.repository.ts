@@ -231,6 +231,35 @@ export const ProductRepository = {
     return count === productCodes.length;
   },
 
+  async getStatsDetailed(domainId: string) {
+    const where = { domainId, isDeleted: false };
+    const [
+      totalProducts,
+      activeCount,
+      inactiveCount,
+      rawMaterialCount,
+      finishedProductCount,
+    ] = await prisma.$transaction([
+      prisma.product.count({ where }),
+      prisma.product.count({ where: { ...where, status: 'ACTIVE' } }),
+      prisma.product.count({ where: { ...where, status: 'INACTIVE' } }),
+      prisma.product.count({
+        where: { ...where, productType: 'RAW_MATERIAL' },
+      }),
+      prisma.product.count({
+        where: { ...where, productType: 'FINISHED_PRODUCT' },
+      }),
+    ]);
+
+    return {
+      totalProducts,
+      activeCount,
+      inactiveCount,
+      rawMaterialCount,
+      finishedProductCount,
+    };
+  },
+
   count(args: any): Promise<any> {
     return prisma.product.count(args) as Promise<any>;
   },

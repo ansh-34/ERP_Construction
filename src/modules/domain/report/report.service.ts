@@ -2070,6 +2070,7 @@ async function getProductTransactionHistoryReport(
       uom: true,
       project: { select: { code: true, name: true } },
       requestedUser: { select: { name: true, email: true } },
+      domain: { select: { name: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -2167,7 +2168,10 @@ async function getProductTransactionHistoryReport(
       totalAmount: 0,
       projectCode: r.project.code,
       projectName: getLocalizedText(r.project.name, language),
-      reference: r.requestedUser?.name || 'N/A',
+      reference:
+        r.requestedUser?.name ||
+        getLocalizedText(r.domain?.name, language) ||
+        'N/A',
       status: r.approvalStatus,
     });
   });

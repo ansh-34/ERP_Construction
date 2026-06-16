@@ -496,6 +496,7 @@ export const invoiceRepository = {
             invoiceCode,
             purchaseOrderId: poId,
             vendorName,
+            vendorId: items[0].pricing.id,
             totalTax,
             totalAmount,
             totalItems,

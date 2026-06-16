@@ -61,6 +61,26 @@ export const createVehicle = async (req: Request, res: Response) => {
   }
 };
 
+export const updateVehicle = async (req: Request, res: Response) => {
+  try {
+    const vehicle = await VehicleService.updateVehicle(
+      req.user!.domainId,
+      req.body,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.VEHICLE.UPDATED,
+      data: vehicle,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.VEHICLE.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const listVehicles = async (req: Request, res: Response) => {
   try {
     const language = req.headers.language as string | undefined;

@@ -56,6 +56,42 @@ export const VehicleService = {
     });
   },
 
+  async updateVehicle(
+    domainId: string,
+    data: {
+      id: string;
+      numberPlate?: string;
+      vehicleType?: string;
+      loadCapacity?: number;
+      loadCapacityUomId?: string;
+      alertLoadThreshold?: number;
+      status?: 'ACTIVE' | 'INACTIVE';
+    },
+  ) {
+    const { id, ...updates } = data;
+
+    const existing = await VehicleRepository.findActiveByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!existing) {
+      throw new Error(Messages.VEHICLE.NOT_FOUND);
+    }
+
+    if (updates.numberPlate) {
+      const duplicate =
+        await VehicleRepository.findActiveByNumberPlateExcludingId(
+          updates.numberPlate,
+          id,
+        );
+      if (duplicate) {
+        throw new Error(Messages.VEHICLE.NUMBER_PLATE_ALREADY_EXISTS);
+      }
+    }
+
+    return VehicleRepository.update(id, updates);
+  },
+
   async listVehicles(
     domainId: string,
     query: PaginationQuery & {

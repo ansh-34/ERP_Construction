@@ -56,6 +56,8 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message === 'task not completed' ||
     message.includes('does not match') ||
     message.includes('cannot be') ||
+    message.includes('must be after') ||
+    message.includes('must be greater than') ||
     message.includes('Only pending') ||
     message.includes('already approved') ||
     message.includes('already created') ||

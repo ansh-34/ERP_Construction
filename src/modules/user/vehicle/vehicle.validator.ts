@@ -12,6 +12,16 @@ export const createVehicleBodySchema = z.object({
   alertLoadThreshold: z.number().nonnegative(),
 });
 
+export const updateVehicleBodySchema = z.object({
+  id: z.string().uuid(),
+  numberPlate: z.string().min(1).optional(),
+  vehicleType: z.string().min(1).optional(),
+  loadCapacity: z.number().positive().optional(),
+  loadCapacityUomId: z.string().uuid().optional(),
+  alertLoadThreshold: z.number().nonnegative().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
 export const listVehiclesQuerySchema = paginationQuerySchema
   .merge(statusFilterSchema)
   .extend({
@@ -19,3 +29,4 @@ export const listVehiclesQuerySchema = paginationQuerySchema
   });
 
 export type CreateVehicleData = z.infer<typeof createVehicleBodySchema>;
+export type UpdateVehicleData = z.infer<typeof updateVehicleBodySchema>;

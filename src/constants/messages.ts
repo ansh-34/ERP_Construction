@@ -186,6 +186,8 @@ export const Messages = Object.freeze({
     DETAIL_FAILED: 'Failed to fetch vehicle details',
     DELETED: 'Vehicle deleted successfully',
     DELETE_FAILED: 'Failed to delete vehicle',
+    UPDATED: 'Vehicle updated successfully',
+    UPDATE_FAILED: 'Failed to update vehicle',
   },
   LANGUAGE: {
     CREATED: 'Language created',
@@ -234,6 +236,8 @@ export const Messages = Object.freeze({
     STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
     GRADE_CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
     INVALID_PRODUCT_SELECTED: 'One or more selected products are invalid',
+    STATS_RETRIEVED: 'Product stats retrieved',
+    STATS_FAILED: 'Failed to fetch product stats',
   },
   PRODUCT_GRADE: {
     CREATED: 'Product grade created successfully',

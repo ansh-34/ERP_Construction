@@ -6,6 +6,7 @@ import {
   uomRepository,
   projectRepository,
   mediaRepository,
+  UserRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { translateResponse } from '../../../utils/translation.js';
@@ -66,6 +67,22 @@ const ensureRelationsBelongToDomain = async (
     if (!media) throw new Error('Document media not found');
   }
 };
+const resolveRequestedUser = (row: {
+  requestedUser?: { id: string; name: string; email: string } | null;
+  domain?: { id: string; name: unknown; email: string } | null;
+}) => {
+  if (row.requestedUser) return row.requestedUser;
+  if (!row.domain) return null;
+  const rawName = row.domain.name;
+  const name =
+    typeof rawName === 'string'
+      ? rawName
+      : rawName && typeof rawName === 'object'
+        ? (rawName as Record<string, string>).en ||
+          (Object.values(rawName as Record<string, string>)[0] ?? '')
+        : '';
+  return { id: row.domain.id, name, email: row.domain.email };
+};
 
 export const RawMaterialPurchaseRequestService = {
   generateCode(domainId: string): string {
@@ -113,6 +130,12 @@ export const RawMaterialPurchaseRequestService = {
       });
     }
 
+    const requestingUser = await UserRepository.findActiveByIdAndDomain(
+      requestedBy,
+      domainId,
+    );
+    const requestedByUserId = requestingUser ? requestedBy : null;
+
     const timestamp = Date.now();
     const suffix = domainId.slice(0, 4).toUpperCase();
     const code = `RMPR-${suffix}-${timestamp}`;
@@ -136,7 +159,7 @@ export const RawMaterialPurchaseRequestService = {
             requiredBy: new Date(data.requiredBy),
             reason: data.reason || 'No reason provided',
             projectId: data.projectId,
-            requestedBy,
+            requestedBy: requestedByUserId,
             domainId,
             approvalStatus: ApprovalStatus.PENDING,
             status: 'ACTIVE',
@@ -267,6 +290,7 @@ export const RawMaterialPurchaseRequestService = {
         productGrade: true,
         uom: true,
         requestedUser: { select: { id: true, name: true, email: true } },
+        domain: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
         document: true,
@@ -291,7 +315,7 @@ export const RawMaterialPurchaseRequestService = {
               }
             : null,
           requestedBy: row.requestedBy,
-          requestedUser: row.requestedUser,
+          requestedUser: resolveRequestedUser(row),
           requiredBy: row.requiredBy,
           reason: row.reason,
           approvalStatus: row.approvalStatus,
@@ -345,6 +369,7 @@ export const RawMaterialPurchaseRequestService = {
         productGrade: true,
         uom: true,
         requestedUser: { select: { id: true, name: true, email: true } },
+        domain: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
         document: true,
@@ -355,6 +380,7 @@ export const RawMaterialPurchaseRequestService = {
     }
     return {
       ...target,
+      requestedUser: resolveRequestedUser(target),
       documentUrl: target.document?.url || null,
     };
   },
@@ -367,6 +393,7 @@ export const RawMaterialPurchaseRequestService = {
         productGrade: true,
         uom: true,
         requestedUser: { select: { id: true, name: true, email: true } },
+        domain: { select: { id: true, name: true, email: true } },
         project: true,
         purchaseOrder: true,
         document: true,
@@ -393,7 +420,7 @@ export const RawMaterialPurchaseRequestService = {
           }
         : null,
       requestedBy: firstRow.requestedBy,
-      requestedUser: firstRow.requestedUser,
+      requestedUser: resolveRequestedUser(firstRow),
       requiredBy: firstRow.requiredBy,
       reason: firstRow.reason,
       approvalStatus: firstRow.approvalStatus,

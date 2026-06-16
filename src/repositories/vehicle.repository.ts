@@ -7,6 +7,12 @@ export const VehicleRepository = {
     });
   },
 
+  findActiveByNumberPlateExcludingId(numberPlate: string, excludeId: string) {
+    return prisma.vehicle.findFirst({
+      where: { numberPlate, isDeleted: false, id: { not: excludeId } },
+    });
+  },
+
   count(options: {
     filters: {
       domainId?: string;
@@ -109,6 +115,20 @@ export const VehicleRepository = {
     domainId: string;
   }) {
     return prisma.vehicle.create({ data });
+  },
+
+  update(
+    id: string,
+    data: {
+      numberPlate?: string;
+      vehicleType?: string;
+      loadCapacity?: number;
+      loadCapacityUomId?: string;
+      alertLoadThreshold?: number;
+      status?: 'ACTIVE' | 'INACTIVE';
+    },
+  ) {
+    return prisma.vehicle.update({ where: { id }, data });
   },
 
   listByDomain(
