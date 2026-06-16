@@ -68,12 +68,6 @@ export const ReportRepository = {
     return prisma.movementLog.findMany(args);
   },
 
-  findUoms<T extends Prisma.UomFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.UomFindManyArgs>,
-  ) {
-    return prisma.uom.findMany(args);
-  },
-
   findProducts<T extends Prisma.ProductFindManyArgs>(
     args?: Prisma.SelectSubset<T, Prisma.ProductFindManyArgs>,
   ) {
@@ -84,12 +78,6 @@ export const ReportRepository = {
     args?: Prisma.SelectSubset<T, Prisma.VendorFindManyArgs>,
   ) {
     return prisma.vendor.findMany(args);
-  },
-
-  findInvoices<T extends Prisma.InvoiceFindManyArgs>(
-    args?: Prisma.SelectSubset<T, Prisma.InvoiceFindManyArgs>,
-  ) {
-    return prisma.invoice.findMany(args);
   },
 
   findGrns<T extends Prisma.GrnFindManyArgs>(
@@ -119,6 +107,18 @@ export const ReportRepository = {
     args?: Prisma.SelectSubset<T, Prisma.InvoiceItemFindManyArgs>,
   ) {
     return prisma.invoiceItem.findMany(args);
+  },
+
+  findUoms<T extends Prisma.UomFindManyArgs>(
+    args?: Prisma.SelectSubset<T, Prisma.UomFindManyArgs>,
+  ) {
+    return prisma.uom.findMany(args);
+  },
+
+  findInvoices<T extends Prisma.InvoiceFindManyArgs>(
+    args?: Prisma.SelectSubset<T, Prisma.InvoiceFindManyArgs>,
+  ) {
+    return prisma.invoice.findMany(args);
   },
 
   findGrnProducts<T extends Prisma.GrnProductFindManyArgs>(

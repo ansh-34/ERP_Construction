@@ -71,6 +71,7 @@ export const approveRejectBodySchema = z.object({
 
 export const listPurchaseOrdersQuerySchema = paginationQuerySchema.extend({
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  searchKey: z.string().optional(),
   orderStatus: z.string().optional(),
   projectId: z.string().uuid().optional(),
   domainId: z.string().uuid().optional(),

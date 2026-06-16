@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { validate } from '../../../middlewares/validate.js';
 import {
   createProduct,
+  getProductStats,
   listProducts,
   getProductById,
   deleteProduct,
@@ -41,6 +42,8 @@ router.get(
   validate(listProductsQuerySchema, 'query'),
   listProducts,
 );
+// aggregate statistics
+router.get('/stats', /* authorize('product', 'read'), */ getProductStats);
 router.get(
   '/grades',
   // authorize('product', 'read'),

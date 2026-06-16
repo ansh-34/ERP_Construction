@@ -216,6 +216,78 @@ export const VendorProductPricePaths = {
     },
   },
 
+  '/api/domain/vendor/product-prices/import': {
+    post: {
+      tags: ['Vendor Product Prices'],
+      summary: 'Import vendor product prices',
+      description:
+        'Bulk import vendor product prices from an Excel (.xlsx) file. ' +
+        'Each row is upserted by vendor+product+grade+uom+currency: a matching ' +
+        'price is updated, otherwise a new one is created. Rows that fail ' +
+        'validation are skipped and returned in failedRows.',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['file'],
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                  description:
+                    'Excel file with columns: vendorName, productCode, ' +
+                    'productGradeCode, uomCode, price, currencyCode.',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Import completed',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Vendor product prices imported successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      inserted: { type: 'integer', example: 12 },
+                      failed: { type: 'integer', example: 1 },
+                      failedRows: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          additionalProperties: true,
+                          example: {
+                            vendorName: 'Acme',
+                            productCode: 'PRD-001',
+                            error: 'Invalid productGradeCode',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
   '/api/domain/vendors/product-prices/import': {
     post: {
       tags: ['Vendor Product Prices'],
@@ -538,6 +610,78 @@ export const VendorProductPricePaths = {
               schema: {
                 type: 'string',
                 format: 'binary',
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
+  '/api/domain/user/product-prices/import': {
+    post: {
+      tags: ['User Product Prices'],
+      summary: 'Import user product prices',
+      description:
+        'Bulk import user product prices from an Excel (.xlsx) file. ' +
+        'Each row is upserted by vendor+product+grade+uom+currency: a matching ' +
+        'price is updated, otherwise a new one is created. Rows that fail ' +
+        'validation are skipped and returned in failedRows.',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['file'],
+              properties: {
+                file: {
+                  type: 'string',
+                  format: 'binary',
+                  description:
+                    'Excel file with columns: vendorName, productCode, ' +
+                    'productGradeCode, uomCode, price, currencyCode.',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'Import completed',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'User product prices imported successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      inserted: { type: 'integer', example: 12 },
+                      failed: { type: 'integer', example: 1 },
+                      failedRows: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          additionalProperties: true,
+                          example: {
+                            vendorName: 'Acme',
+                            productCode: 'PRD-001',
+                            error: 'Invalid productGradeCode',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },

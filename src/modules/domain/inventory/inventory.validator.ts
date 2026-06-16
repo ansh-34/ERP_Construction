@@ -11,6 +11,8 @@ export const createInventoryBodySchema = z.object({
   quantity: z.number().min(0),
   uomId: z.string().uuid(),
   reorderLevel: z.number().min(0).optional().default(0),
+  price: z.number().min(0).optional(),
+  currencyId: z.string().uuid().optional(),
 });
 
 export const updateReorderLevelBodySchema = z.object({

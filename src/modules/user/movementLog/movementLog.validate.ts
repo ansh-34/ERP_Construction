@@ -11,13 +11,19 @@ const movementType = z.enum([
   'OTHER',
 ]);
 
+// Frontend sends unused ids as "" — coerce empty strings to null
+const optionalUuid = z.preprocess(
+  (val) => (val === '' ? null : val),
+  z.string().trim().uuid().nullable().optional(),
+);
+
 export const createMovementLogBody = z.object({
   code: z.string().trim().min(1, { message: 'Code is required' }),
   movementType,
   assetType,
-  vehicleId: z.string().trim().uuid().nullable().optional(),
-  machineryId: z.string().trim().uuid().nullable().optional(),
-  projectId: z.string().trim().uuid().nullable().optional(),
+  vehicleId: optionalUuid,
+  machineryId: optionalUuid,
+  projectId: optionalUuid,
   fromLocation: z.string().trim().min(1).nullable().optional(),
   toLocation: z.string().trim().min(1).nullable().optional(),
   startDateTime: z

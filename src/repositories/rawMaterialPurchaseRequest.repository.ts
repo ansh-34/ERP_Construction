@@ -2,6 +2,134 @@ import prisma from '@/infra/database/prisma/prisma.client';
 
 const asPrisma = prisma as any;
 
+async function enrichPoProductsWithCodes(products: any[], domainId: string) {
+  if (!products || products.length === 0) return [];
+
+  const poIds = Array.from(
+    new Set(products.map((p: any) => p.purchaseOrderId).filter(Boolean)),
+  ) as string[];
+
+  if (poIds.length === 0) {
+    return products.map((pop: any) => {
+      const {
+        id,
+        purchaseOrderId,
+        orderCode,
+        productName,
+        productGradeName,
+        quantity,
+        tax,
+        uomId,
+        rate,
+        projectId,
+        domainId: popDomainId,
+        status,
+        isDeleted,
+        createdAt,
+        updatedAt,
+        uom,
+        ...otherFields
+      } = pop;
+
+      return {
+        id,
+        purchaseOrderId,
+        orderCode,
+        productName,
+        productCode: null,
+        productGradeName,
+        productGradeCode: null,
+        quantity,
+        tax,
+        uomId,
+        uomCode: pop.uom?.code || null,
+        rate,
+        projectId,
+        domainId: popDomainId,
+        status,
+        isDeleted,
+        createdAt,
+        updatedAt,
+        uom,
+        ...otherFields,
+      };
+    });
+  }
+
+  const rmprs = await prisma.rawMaterialPurchaseRequest.findMany({
+    where: {
+      purchaseOrderId: { in: poIds },
+      domainId,
+      isDeleted: false,
+    },
+    include: {
+      product: true,
+      productGrade: true,
+      uom: true,
+    },
+  });
+
+  return products.map((pop: any) => {
+    const match = rmprs.find((req: any) => {
+      const isPoMatch = req.purchaseOrderId === pop.purchaseOrderId;
+      const isProductMatch =
+        req.product &&
+        JSON.stringify(req.product.displayName) ===
+          JSON.stringify(pop.productName);
+      const isGradeMatch = req.productGrade
+        ? pop.productGradeName &&
+          JSON.stringify(req.productGrade.gradeDisplayName) ===
+            JSON.stringify(pop.productGradeName)
+        : !pop.productGradeName;
+      const isUomMatch = req.uomId === pop.uomId;
+      return isPoMatch && isProductMatch && isGradeMatch && isUomMatch;
+    });
+
+    const {
+      id,
+      purchaseOrderId,
+      orderCode,
+      productName,
+      productGradeName,
+      quantity,
+      tax,
+      uomId,
+      rate,
+      projectId,
+      domainId: popDomainId,
+      status,
+      isDeleted,
+      createdAt,
+      updatedAt,
+      uom,
+      ...otherFields
+    } = pop;
+
+    return {
+      id,
+      purchaseOrderId,
+      orderCode,
+      productName,
+      productCode: match?.product?.code || null,
+      productGradeName,
+      productGradeCode: match?.productGrade?.gradeCode || null,
+      quantity,
+      tax,
+      uomId,
+      uomCode: pop.uom?.code || match?.uom?.code || null,
+      rate,
+      projectId,
+      domainId: popDomainId,
+      status,
+      isDeleted,
+      createdAt,
+      updatedAt,
+      uom,
+      ...otherFields,
+    };
+  });
+}
+
 export const RawMaterialPurchaseRequestRepository = {
   create(data: any, tx?: any, include?: any) {
     const client = tx || prisma;
@@ -29,7 +157,7 @@ export const RawMaterialPurchaseRequestRepository = {
       };
       select?: any;
     },
-  ) {
+  ): Promise<[number, any[]]> {
     const where: any = {
       isDeleted: false,
       domainId,
@@ -45,12 +173,6 @@ export const RawMaterialPurchaseRequestRepository = {
                   mode: 'insensitive',
                 },
               },
-              {
-                productCode: {
-                  contains: options.filters.searchKey,
-                  mode: 'insensitive',
-                },
-              },
             ],
           }
         : {}),
@@ -58,18 +180,25 @@ export const RawMaterialPurchaseRequestRepository = {
         ? { domainId: options.filters.domainId }
         : {}),
     };
-    return await Promise.all([
+
+    const include = options.select ? undefined : { uom: true };
+
+    const [count, products] = await Promise.all([
       prisma.purchaseOrderProduct.count({
         where,
       }),
       prisma.purchaseOrderProduct.findMany({
         where,
+        ...(include ? { include } : {}),
         ...(options.select ? { select: options.select } : {}),
         orderBy: { createdAt: 'asc' },
         take: limit,
         skip: offset,
       }),
     ]);
+
+    const enriched = await enrichPoProductsWithCodes(products, domainId);
+    return [count, enriched];
   },
 
   async findByIdWithDetails(id: string, domainId: string) {
@@ -267,6 +396,7 @@ export const RawMaterialPurchaseRequestRepository = {
       orderStatus?: string;
       projectId?: string;
       isDeleted?: boolean;
+      searchKey?: string;
     },
   ) {
     const where: any = {
@@ -275,6 +405,19 @@ export const RawMaterialPurchaseRequestRepository = {
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.orderStatus ? { orderStatus: filters.orderStatus } : {}),
       ...(filters.projectId ? { projectId: filters.projectId } : {}),
+      ...(filters.searchKey
+        ? {
+            OR: [
+              { code: { contains: filters.searchKey, mode: 'insensitive' } },
+              {
+                sourceRmprCode: {
+                  contains: filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          }
+        : {}),
     };
 
     return prisma.$transaction([
@@ -290,7 +433,7 @@ export const RawMaterialPurchaseRequestRepository = {
   },
 
   async getPurchaseOrderById(id: string, domainId: string) {
-    return prisma.purchaseOrder.findFirst({
+    const po = await prisma.purchaseOrder.findFirst({
       where: { id, domainId, isDeleted: false },
       include: {
         project: true,
@@ -300,6 +443,18 @@ export const RawMaterialPurchaseRequestRepository = {
         },
       },
     });
+
+    if (!po) return null;
+
+    const enrichedProducts = await enrichPoProductsWithCodes(
+      po.purchaseOrderProducts,
+      domainId,
+    );
+
+    return {
+      ...po,
+      purchaseOrderProducts: enrichedProducts,
+    };
   },
 
   // async updatePurchaseOrder(id: string, data: any) {
@@ -353,11 +508,13 @@ export const RawMaterialPurchaseRequestRepository = {
   // },
 
   async listPoProducts(purchaseOrderId: string, domainId: string) {
-    return prisma.purchaseOrderProduct.findMany({
+    const products = await prisma.purchaseOrderProduct.findMany({
       where: { purchaseOrderId, domainId, isDeleted: false },
       include: { uom: true },
       orderBy: { createdAt: 'asc' },
     });
+
+    return enrichPoProductsWithCodes(products, domainId);
   },
 
   async getPoProductById(
@@ -437,7 +594,7 @@ export const RawMaterialPurchaseRequestRepository = {
   //   },
 
   groupBy(args: any): Promise<any> {
-    return prisma.rawMaterialPurchaseRequest.groupBy(args) as Promise<any>;
+    return (prisma.rawMaterialPurchaseRequest as any).groupBy(args);
   },
 
   findMany(args: any, tx?: any): Promise<any> {

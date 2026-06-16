@@ -31,8 +31,10 @@ export const listVendorProductPricesQuerySchema = paginationQuerySchema
   .extend({
     searchKey: z.string().optional(),
     productId: z.string().uuid().optional(),
+    productCode: z.string().optional(),
     productGradeId: z.string().uuid().optional(),
     currencyId: z.string().uuid().optional(),
+    vendorId: z.string().uuid().optional(),
   });
 
 export const vendorProductPriceIdParamSchema = idParamSchema;

@@ -186,6 +186,8 @@ export const Messages = Object.freeze({
     DETAIL_FAILED: 'Failed to fetch vehicle details',
     DELETED: 'Vehicle deleted successfully',
     DELETE_FAILED: 'Failed to delete vehicle',
+    UPDATED: 'Vehicle updated successfully',
+    UPDATE_FAILED: 'Failed to update vehicle',
   },
   LANGUAGE: {
     CREATED: 'Language created',
@@ -234,6 +236,8 @@ export const Messages = Object.freeze({
     STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
     GRADE_CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
     INVALID_PRODUCT_SELECTED: 'One or more selected products are invalid',
+    STATS_RETRIEVED: 'Product stats retrieved',
+    STATS_FAILED: 'Failed to fetch product stats',
   },
   PRODUCT_GRADE: {
     CREATED: 'Product grade created successfully',
@@ -294,6 +298,13 @@ export const Messages = Object.freeze({
     PRODUCT_NOT_FOUND: 'Product not found',
     GRADE_NOT_FOUND: 'Product grade not found',
     UOM_NOT_FOUND: 'UOM not found',
+    IMPORT_SUCCESS: 'Inventory imported successfully',
+    IMPORT_FAILED: 'Failed to import inventory',
+    NO_FILE_UPLOADED: 'No file uploaded',
+    INVALID_LANGUAGE:
+      'One or more languages in the sheet do not belong to your domain',
+    NO_DOMAIN_LANGUAGES: 'No languages are configured for your domain',
+    INVALID_CURRENCY: 'Currency does not belong to your domain',
   },
   JOURNEY_SCHEDULE: {
     CREATED: 'Journey schedule created',
@@ -524,6 +535,8 @@ export const Messages = Object.freeze({
       'All PO products must have a vendor assigned before generating invoices',
     ALREADY_GENERATED:
       'Invoices have already been generated for this purchase order',
+    PDF_QUEUED: 'Invoice PDF generation has been queued',
+    PDF_STATUS_RETRIEVED: 'Invoice PDF status retrieved successfully',
   },
   PAYMENT_REQUEST: {
     CREATED: 'Payment request created successfully',
@@ -535,5 +548,17 @@ export const Messages = Object.freeze({
     LIST_FAILED: 'Failed to retrieve payment requests',
     UPDATE_FAILED: 'Failed to update payment request',
     DELETE_FAILED: 'Failed to delete payment request',
+  },
+  FUEL_LOG: {
+    CREATED: 'Fuel log created successfully',
+    RETRIEVED: 'Fuel log retrieved successfully',
+    LIST_RETRIEVED: 'Fuel logs retrieved successfully',
+    UPDATED: 'Fuel log updated successfully',
+    DELETED: 'Fuel log deleted successfully',
+    NOT_FOUND: 'Fuel log not found',
+    CREATE_FAILED: 'Failed to create fuel log',
+    LIST_FAILED: 'Failed to retrieve fuel logs',
+    UPDATE_FAILED: 'Failed to update fuel log',
+    DELETE_FAILED: 'Failed to delete fuel log',
   },
 });

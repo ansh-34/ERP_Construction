@@ -90,12 +90,13 @@ export const bulkUpdateStdRatesBodySchema = z.object({
 });
 
 export const bulkUpdateUomsBodySchema = z.object({
-  uom: z.array(z.string().uuid()),
+  uoms: uomsSchema,
 });
 
 export const listProductsQuerySchema = paginationQuerySchema
   .merge(statusFilterSchema)
   .extend({
+    limit: z.coerce.number().int().min(1).max(500).optional(),
     searchKey: z.string().optional(),
   });
 

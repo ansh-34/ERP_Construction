@@ -1,9 +1,11 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   ObjectCannedACL,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import variables from '@/config/variables.config';
 import { randomUUID } from 'crypto';
 
@@ -87,6 +89,50 @@ export const uploadToS3 = async (
   );
 
   return buildS3Url(bucket, key);
+};
+
+export const uploadBufferToS3 = async (
+  buffer: Buffer,
+  folder: string,
+  fileName: string,
+  contentType: string,
+): Promise<string> => {
+  const bucket = assertS3Bucket();
+  const safeFolder = safeFolderPath(folder);
+  const key = `${safeFolder}/${Date.now()}-${randomUUID()}-${safeFileName(fileName)}`;
+
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ACL: objectAcl,
+    }),
+  );
+
+  return buildS3Url(bucket, key);
+};
+
+// Returns a short-lived presigned GET URL so a stored object can be downloaded
+// back even when the bucket/object is private. Returns null if the key can't be
+// resolved from the stored URL.
+export const getSignedDownloadUrl = async (
+  url: string,
+  expiresIn = 3600,
+): Promise<string | null> => {
+  const bucket = assertS3Bucket();
+  const key = getS3KeyFromUrl(url, bucket);
+
+  if (!key) {
+    return null;
+  }
+
+  return getSignedUrl(
+    s3Client,
+    new GetObjectCommand({ Bucket: bucket, Key: key }),
+    { expiresIn },
+  );
 };
 
 export const deleteFromS3 = async (url: string): Promise<void> => {

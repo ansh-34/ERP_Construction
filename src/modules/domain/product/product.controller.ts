@@ -24,6 +24,23 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
+export const getProductStats = async (req: Request, res: Response) => {
+  try {
+    const stats = await ProductService.getStats(req.user!.domainId);
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PRODUCT.STATS_RETRIEVED,
+      data: stats,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.PRODUCT.STATS_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const listProducts = async (req: Request, res: Response) => {
   try {
     const { language = 'en' } = req.headers;

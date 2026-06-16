@@ -102,17 +102,12 @@ function assertAssetSelection(data: CreateMovementLogInput): void {
     throw new Error('invalid assetType');
 
   if (data.assetType === 'VEHICLE') {
-    if (!isNonEmptyString(data.vehicleId))
-      throw new Error('vehicleId is required');
     if (data.machineryId !== undefined && data.machineryId !== null) {
       throw new Error('machineryId must be empty');
     }
   }
 
   if (data.assetType === 'MACHINERY') {
-    if (!isNonEmptyString(data.machineryId)) {
-      throw new Error('machineryId is required');
-    }
     if (data.vehicleId !== undefined && data.vehicleId !== null) {
       throw new Error('vehicleId must be empty');
     }
@@ -148,17 +143,17 @@ function assertCreateInput(data: CreateMovementLogInput): void {
 async function assertRelationsExist(
   data: CreateMovementLogInput,
 ): Promise<void> {
-  if (data.assetType === 'VEHICLE') {
+  if (data.assetType === 'VEHICLE' && isNonEmptyString(data.vehicleId)) {
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
-      data.vehicleId ?? '',
+      data.vehicleId,
       data.domainId,
     );
     if (!vehicle) throw new Error('invalid vehicleId');
   }
 
-  if (data.assetType === 'MACHINERY') {
+  if (data.assetType === 'MACHINERY' && isNonEmptyString(data.machineryId)) {
     const machinery = await machineryRepository.findById(
-      data.machineryId ?? '',
+      data.machineryId,
       data.domainId,
       data.adminId,
     );
@@ -177,6 +172,13 @@ async function assertRelationsExist(
 
 export const movementLogService = {
   async create(data: CreateMovementLogInput): Promise<MovementLogRecord> {
+    // Frontend sends unused ids as "" — treat empty strings as not provided
+    data.vehicleId = isNonEmptyString(data.vehicleId) ? data.vehicleId : null;
+    data.machineryId = isNonEmptyString(data.machineryId)
+      ? data.machineryId
+      : null;
+    data.projectId = isNonEmptyString(data.projectId) ? data.projectId : null;
+
     assertCreateInput(data);
 
     try {

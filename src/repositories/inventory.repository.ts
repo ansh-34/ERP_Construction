@@ -42,6 +42,14 @@ const inventoryIncludes = {
       conversionRate: true,
     },
   },
+  currency: {
+    select: {
+      id: true,
+      name: true,
+      code: true,
+      symbol: true,
+    },
+  },
 } satisfies Prisma.InventoryInclude;
 
 export const InventoryRepository = {
@@ -167,6 +175,38 @@ export const InventoryRepository = {
         AND "quantity" <= "reorderLevel"
     `;
     return Number(result[0].count);
+  },
+
+  /** Insert or update an entry by its (product, grade, domain) uniqueness — used by import */
+  upsertEntry(data: {
+    productId: string;
+    productGradeId: string;
+    domainId: string;
+    uomId: string;
+    quantity: number;
+    reorderLevel: number;
+    price?: number | null;
+    currencyId?: string | null;
+  }) {
+    return prisma.inventory.upsert({
+      where: {
+        productId_productGradeId_domainId_isDeleted: {
+          productId: data.productId,
+          productGradeId: data.productGradeId,
+          domainId: data.domainId,
+          isDeleted: false,
+        },
+      },
+      create: data,
+      update: {
+        quantity: data.quantity,
+        reorderLevel: data.reorderLevel,
+        uomId: data.uomId,
+        price: data.price ?? null,
+        currencyId: data.currencyId ?? null,
+        status: 'ACTIVE',
+      },
+    });
   },
 
   /** Fetch all records for export (no pagination) */

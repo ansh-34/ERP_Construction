@@ -39,8 +39,8 @@ export const listVendorProductPrices = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.VENDOR_PRODUCT_PRICE.RETRIEVED,
-      data: data.vendorProductPrices,
       pagination: data.pagination,
+      data: data.vendorProductPrices,
     });
   } catch (error) {
     const message =

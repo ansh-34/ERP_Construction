@@ -5,12 +5,14 @@ import {
   getVehicleStats,
   getVehicleById,
   createVehicle,
+  updateVehicle,
   listVehicles,
   deleteVehicle,
   getVehicleAnalytics,
 } from './vehicle.controller.js';
 import {
   createVehicleBodySchema,
+  updateVehicleBodySchema,
   listVehiclesQuerySchema,
 } from './vehicle.validator.js';
 import { idParamSchema } from '../../common/common.validator.js';
@@ -45,6 +47,14 @@ router.post(
   // authorize('vehicle', 'create'),
   validate(createVehicleBodySchema, 'body'),
   createVehicle,
+);
+
+// update
+router.put(
+  '/',
+  // authorize('vehicle', 'update'),
+  validate(updateVehicleBodySchema, 'body'),
+  updateVehicle,
 );
 
 // delete

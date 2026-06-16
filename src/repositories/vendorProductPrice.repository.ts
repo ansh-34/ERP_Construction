@@ -44,8 +44,10 @@ export const vendorProductPriceRepository = {
         status?: 'ACTIVE' | 'INACTIVE';
         searchKey?: string;
         productId?: string;
+        productCode?: string;
         productGradeId?: string;
         currencyId?: string;
+        vendorId?: string;
       };
       select?: any;
     } = {},
@@ -56,16 +58,25 @@ export const vendorProductPriceRepository = {
       isDeleted: false,
       ...(options.filters?.status && { status: options.filters.status }),
       ...(searchKey && {
-        searchText: { contains: searchKey, mode: 'insensitive' },
+        OR: [
+          { vendor: { name: { contains: searchKey, mode: 'insensitive' } } },
+          { searchText: { contains: searchKey, mode: 'insensitive' } },
+        ],
       }),
       ...(options.filters?.productId && {
         productId: options.filters.productId,
+      }),
+      ...(options.filters?.productCode && {
+        product: { code: options.filters.productCode },
       }),
       ...(options.filters?.productGradeId && {
         productGradeId: options.filters.productGradeId,
       }),
       ...(options.filters?.currencyId && {
         currencyId: options.filters.currencyId,
+      }),
+      ...(options.filters?.vendorId && {
+        vendorId: options.filters.vendorId,
       }),
     };
 

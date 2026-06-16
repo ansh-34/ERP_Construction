@@ -32,6 +32,9 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'task plannedEndDate is required' ||
       error.message === 'request already actioned' ||
       error.message === 'empty update payload' ||
+      error.message === 'endDateTime must be after startDateTime' ||
+      error.message ===
+        'endMeterReading must be greater than startMeterReading' ||
       error.message.includes('cannot be')
     ) {
       return error;

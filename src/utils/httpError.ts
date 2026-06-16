@@ -56,6 +56,8 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message === 'task not completed' ||
     message.includes('does not match') ||
     message.includes('cannot be') ||
+    message.includes('must be after') ||
+    message.includes('must be greater than') ||
     message.includes('Only pending') ||
     message.includes('already approved') ||
     message.includes('already created') ||
@@ -74,6 +76,15 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return message.includes('duplicate')
       ? HttpStatus.CONFLICT
       : HttpStatus.BAD_REQUEST;
+  }
+
+  // Domain-scoped validation errors (e.g. language/currency not offered by the
+  // domain, no languages configured) are client errors, not server errors.
+  if (
+    message.includes('belong to your domain') ||
+    message.includes('configured for your domain')
+  ) {
+    return HttpStatus.BAD_REQUEST;
   }
 
   return HttpStatus.INTERNAL_SERVER_ERROR;
