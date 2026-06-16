@@ -77,8 +77,9 @@ export const projectController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { domainId, searchKey, offset, limit } = req.query as {
+      const { domainId, status, searchKey, offset, limit } = req.query as {
         domainId?: string;
+        status?: StatusEnum;
         searchKey?: string;
         offset?: string;
         limit?: string;
@@ -87,6 +88,7 @@ export const projectController = {
         domainId ?? '',
         req.user!.adminId,
         searchKey,
+        status,
         { offset, limit },
         language,
       );

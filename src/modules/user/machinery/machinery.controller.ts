@@ -53,8 +53,9 @@ export const machineryController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { projectId, searchKey, offset, limit } = req.query as {
+      const { projectId, status, searchKey, offset, limit } = req.query as {
         projectId?: string;
+        status?: StatusEnum;
         searchKey?: string;
         offset?: string;
         limit?: string;
@@ -65,6 +66,7 @@ export const machineryController = {
         req.user!.adminId,
         projectId,
         searchKey,
+        status,
         { offset, limit },
         language,
       );

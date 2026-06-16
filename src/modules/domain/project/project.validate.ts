@@ -85,6 +85,7 @@ export const updateProjectBody = z
 
 export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
+  status: z.nativeEnum(StatusEnum).optional(),
   searchKey: z.string().trim().optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),

@@ -173,6 +173,7 @@ export const maintenanceLogRepository = {
       vehicleId?: string;
       machineryId?: string;
       maintenanceScheduleId?: string;
+      status?: StatusEnum;
       searchKey?: string;
       fromDate?: Date;
       toDate?: Date;
@@ -199,6 +200,9 @@ export const maintenanceLogRepository = {
       where.push(
         Prisma.sql`ml."maintenanceScheduleId" = ${filters.maintenanceScheduleId}`,
       );
+    }
+    if (filters.status) {
+      where.push(Prisma.sql`ml."status" = ${filters.status}`);
     }
     if (filters.fromDate) {
       where.push(Prisma.sql`ml."date" >= ${filters.fromDate}`);

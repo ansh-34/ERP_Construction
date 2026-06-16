@@ -162,6 +162,7 @@ export const movementLogRepository = {
       vehicleId?: string;
       machineryId?: string;
       projectId?: string;
+      status?: StatusEnum;
       searchKey?: string;
       fromDate?: Date;
       toDate?: Date;
@@ -191,6 +192,9 @@ export const movementLogRepository = {
     }
     if (filters.projectId) {
       where.push(Prisma.sql`ml."projectId" = ${filters.projectId}`);
+    }
+    if (filters.status) {
+      where.push(Prisma.sql`ml."status" = ${filters.status}`);
     }
     if (filters.fromDate) {
       where.push(Prisma.sql`ml."startDateTime" >= ${filters.fromDate}`);

@@ -123,6 +123,7 @@ export const machineryRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    status?: StatusEnum,
     offset = 0,
     limit = 10,
   ): Promise<MachineryRecord[]> => {
@@ -137,6 +138,10 @@ export const machineryRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`m."projectId" = ${projectId}`);
+    }
+
+    if (status) {
+      filters.push(Prisma.sql`m."status" = ${status}`);
     }
 
     if (searchKey) {
@@ -161,6 +166,7 @@ export const machineryRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    status?: StatusEnum,
   ): Promise<MachineryRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -173,6 +179,10 @@ export const machineryRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (status) {
+      filters.push(Prisma.sql`"status" = ${status}`);
     }
 
     if (searchKey) {
@@ -194,6 +204,7 @@ export const machineryRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    status?: StatusEnum,
     offset = 0,
     limit = 10,
   ): Promise<MachineryRecord[]> => {
@@ -208,6 +219,10 @@ export const machineryRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (status) {
+      filters.push(Prisma.sql`"status" = ${status}`);
     }
 
     if (searchKey) {
@@ -254,6 +269,7 @@ export const machineryRepository = {
     adminId?: string,
     projectId?: string,
     searchKey?: string,
+    status?: StatusEnum,
   ): Promise<number> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -266,6 +282,10 @@ export const machineryRepository = {
 
     if (projectId) {
       filters.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+
+    if (status) {
+      filters.push(Prisma.sql`"status" = ${status}`);
     }
 
     if (searchKey) {

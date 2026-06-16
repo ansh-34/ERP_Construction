@@ -36,6 +36,7 @@ export const updateMachineryBody = z
 export const listMachineryQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   projectId: z.string().trim().min(1).optional(),
+  status: z.nativeEnum(StatusEnum).optional(),
   searchKey: z.string().trim().optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),

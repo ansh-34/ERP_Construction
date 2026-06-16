@@ -235,6 +235,7 @@ export const movementLogService = {
       vehicleId?: string;
       machineryId?: string;
       projectId?: string;
+      status?: StatusEnum;
       searchKey?: string;
       fromDate?: string;
       toDate?: string;
@@ -248,6 +249,7 @@ export const movementLogService = {
         vehicleId: query.vehicleId,
         machineryId: query.machineryId,
         projectId: query.projectId,
+        status: query.status,
         searchKey: query.searchKey,
         fromDate: parseDate(query.fromDate, 'fromDate'),
         toDate: parseDate(query.toDate, 'toDate'),

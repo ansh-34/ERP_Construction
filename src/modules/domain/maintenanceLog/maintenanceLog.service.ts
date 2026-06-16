@@ -261,6 +261,7 @@ export const maintenanceLogService = {
       vehicleId?: string;
       machineryId?: string;
       maintenanceScheduleId?: string;
+      status?: StatusEnum;
       searchKey?: string;
       fromDate?: string;
       toDate?: string;
@@ -274,6 +275,7 @@ export const maintenanceLogService = {
         vehicleId: query.vehicleId,
         machineryId: query.machineryId,
         maintenanceScheduleId: query.maintenanceScheduleId,
+        status: query.status,
         searchKey: query.searchKey,
         fromDate: parseDate(query.fromDate, 'fromDate'),
         toDate: parseDate(query.toDate, 'toDate'),

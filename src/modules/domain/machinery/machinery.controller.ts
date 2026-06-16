@@ -53,19 +53,22 @@ export const machineryController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { domainId, projectId, searchKey, offset, limit } = req.query as {
-        domainId?: string;
-        projectId?: string;
-        searchKey?: string;
-        offset?: string;
-        limit?: string;
-      };
+      const { domainId, projectId, status, searchKey, offset, limit } =
+        req.query as {
+          domainId?: string;
+          projectId?: string;
+          status?: StatusEnum;
+          searchKey?: string;
+          offset?: string;
+          limit?: string;
+        };
 
       const { machineries, pagination } = await machineryService.getAll(
         domainId ?? '',
         req.user!.adminId,
         projectId,
         searchKey,
+        status,
         { offset, limit },
         language,
       );

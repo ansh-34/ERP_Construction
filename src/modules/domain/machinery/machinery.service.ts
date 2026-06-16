@@ -173,6 +173,7 @@ export const machineryService = {
     adminId: string,
     projectId?: string,
     searchKey?: string,
+    status?: StatusEnum,
     paginationQuery: PaginationQuery = {},
     language: string | null = null,
   ): Promise<{
@@ -199,10 +200,17 @@ export const machineryService = {
           adminId,
           projectId,
           searchKey,
+          status,
           offset,
           limit,
         ),
-        machineryRepository.count(domainId, adminId, projectId, searchKey),
+        machineryRepository.count(
+          domainId,
+          adminId,
+          projectId,
+          searchKey,
+          status,
+        ),
       ]);
       return {
         machineries: machineries.map((machinery) =>

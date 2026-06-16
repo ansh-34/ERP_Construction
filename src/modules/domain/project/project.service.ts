@@ -679,6 +679,7 @@ export const projectService = {
     domainId: string,
     adminId: string,
     searchKey?: string,
+    status?: StatusEnum,
     paginationQuery: PaginationQuery = {},
     language: string | null = null,
   ): Promise<PaginatedProjects> => {
@@ -693,6 +694,7 @@ export const projectService = {
         domainId,
         searchKey,
         resolvedAdminId,
+        status,
       );
       const paginatedProjects = projects.slice(offset, offset + limit);
 

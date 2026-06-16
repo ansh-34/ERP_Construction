@@ -333,6 +333,7 @@ export const projectRepository = {
     domainId: string,
     searchKey?: string,
     adminId?: string,
+    status?: StatusEnum,
   ): Promise<ProjectRecord[]> => {
     const filters = [
       Prisma.sql`p."domainId" = ${domainId}`,
@@ -341,6 +342,10 @@ export const projectRepository = {
 
     if (adminId) {
       filters.push(Prisma.sql`p."adminId" = ${adminId}`);
+    }
+
+    if (status) {
+      filters.push(Prisma.sql`p."status" = ${status}`);
     }
 
     if (searchKey) {

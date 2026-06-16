@@ -41,6 +41,7 @@ export const listMovementLogQuery = z.object({
   vehicleId: z.string().trim().uuid().optional(),
   machineryId: z.string().trim().uuid().optional(),
   projectId: z.string().trim().uuid().optional(),
+  status: z.nativeEnum(StatusEnum).optional(),
   searchKey: z.string().trim().optional(),
   fromDate: z.string().trim().min(1).optional(),
   toDate: z.string().trim().min(1).optional(),
