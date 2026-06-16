@@ -698,6 +698,7 @@ export const RawMaterialPurchaseRequestService = {
       projectId?: string;
       domainId?: string;
       isDeleted?: boolean;
+      searchKey?: string;
     },
   ) {
     if (query.domainId && query.domainId !== authDomainId) {
@@ -716,6 +717,7 @@ export const RawMaterialPurchaseRequestService = {
           orderStatus: query.orderStatus,
           projectId: query.projectId,
           isDeleted: query.isDeleted,
+          searchKey: query.searchKey,
         },
       );
 

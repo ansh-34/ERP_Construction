@@ -396,6 +396,7 @@ export const RawMaterialPurchaseRequestRepository = {
       orderStatus?: string;
       projectId?: string;
       isDeleted?: boolean;
+      searchKey?: string;
     },
   ) {
     const where: any = {
@@ -404,6 +405,19 @@ export const RawMaterialPurchaseRequestRepository = {
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.orderStatus ? { orderStatus: filters.orderStatus } : {}),
       ...(filters.projectId ? { projectId: filters.projectId } : {}),
+      ...(filters.searchKey
+        ? {
+            OR: [
+              { code: { contains: filters.searchKey, mode: 'insensitive' } },
+              {
+                sourceRmprCode: {
+                  contains: filters.searchKey,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          }
+        : {}),
     };
 
     return prisma.$transaction([

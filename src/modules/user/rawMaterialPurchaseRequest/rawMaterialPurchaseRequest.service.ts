@@ -672,6 +672,7 @@ export const RawMaterialPurchaseRequestService = {
       projectId?: string;
       domainId?: string;
       isDeleted?: boolean;
+      searchKey?: string;
     },
     langCode?: string,
   ) {
@@ -691,6 +692,7 @@ export const RawMaterialPurchaseRequestService = {
           orderStatus: query.orderStatus,
           projectId: query.projectId,
           isDeleted: query.isDeleted,
+          searchKey: query.searchKey,
         },
       );
 
