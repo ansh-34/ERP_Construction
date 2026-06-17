@@ -439,9 +439,15 @@ export const projectTaskRepository = {
       filters.push(Prisma.sql`pt."stageId" = ${stageId}`);
     }
 
-    if (searchKey) {
+    const normalizedSearchKey = searchKey?.trim().toLowerCase();
+    if (normalizedSearchKey) {
       filters.push(
-        Prisma.sql`pt."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+        Prisma.sql`(
+          LOWER(pt."searchText") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(pt."code") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(pt."name"::text) LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(COALESCE(pt."projectBatchCode", '')) LIKE ${`%${normalizedSearchKey}%`}
+        )`,
       );
     }
 

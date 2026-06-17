@@ -326,9 +326,21 @@ export const projectTaskDelayRepository = {
       filters.push(Prisma.sql`ptd."taskId" = ${taskId}`);
     }
 
-    if (searchKey) {
+    const normalizedSearchKey = searchKey?.trim().toLowerCase();
+    if (normalizedSearchKey) {
       filters.push(
-        Prisma.sql`ptd."searchText" LIKE ${`%${searchKey.toLowerCase()}%`}`,
+        Prisma.sql`(
+          LOWER(ptd."searchText") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(ptd."delayReason"::text) LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(pt."searchText") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(pt."code") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(pt."name"::text) LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(ps."searchText") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(ps."code") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(ps."name"::text) LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(p."code") LIKE ${`%${normalizedSearchKey}%`}
+          OR LOWER(p."name"::text) LIKE ${`%${normalizedSearchKey}%`}
+        )`,
       );
     }
 

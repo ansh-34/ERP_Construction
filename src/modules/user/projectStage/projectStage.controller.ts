@@ -60,15 +60,19 @@ export const projectStageController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { searchKey, offset, limit } = req.query as {
+      const { searchKey, search, keyword, q, offset, limit } = req.query as {
         searchKey?: string;
+        search?: string;
+        keyword?: string;
+        q?: string;
         offset?: string;
         limit?: string;
       };
+      const resolvedSearchKey = searchKey || search || keyword || q;
       const { projectStages, pagination } = await projectStageService.getAll(
         req.user!.domainId,
         req.user!.adminId,
-        searchKey,
+        resolvedSearchKey,
         { offset, limit },
         language,
       );

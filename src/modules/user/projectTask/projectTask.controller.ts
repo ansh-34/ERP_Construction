@@ -90,20 +90,33 @@ export const projectTaskController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { projectId, stageId, searchKey, offset, limit } = req.query as {
+      const {
+        projectId,
+        stageId,
+        searchKey,
+        search,
+        keyword,
+        q,
+        offset,
+        limit,
+      } = req.query as {
         projectId?: string;
         stageId?: string;
         searchKey?: string;
+        search?: string;
+        keyword?: string;
+        q?: string;
         offset?: string;
         limit?: string;
       };
+      const resolvedSearchKey = searchKey || search || keyword || q;
 
       const { projectTasks, pagination } = await projectTaskService.getAll(
         req.user!.domainId,
         req.user!.adminId,
         projectId,
         stageId,
-        searchKey,
+        resolvedSearchKey,
         { offset, limit },
         language,
       );

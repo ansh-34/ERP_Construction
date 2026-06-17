@@ -69,15 +69,28 @@ export const projectTaskDelayController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { projectId, stageId, taskId, searchKey, offset, limit } =
-        req.query as {
-          projectId?: string;
-          stageId?: string;
-          taskId?: string;
-          searchKey?: string;
-          offset?: string;
-          limit?: string;
-        };
+      const {
+        projectId,
+        stageId,
+        taskId,
+        searchKey,
+        search,
+        keyword,
+        q,
+        offset,
+        limit,
+      } = req.query as {
+        projectId?: string;
+        stageId?: string;
+        taskId?: string;
+        searchKey?: string;
+        search?: string;
+        keyword?: string;
+        q?: string;
+        offset?: string;
+        limit?: string;
+      };
+      const resolvedSearchKey = searchKey || search || keyword || q;
       const { projectTaskDelays, pagination } =
         await projectTaskDelayService.getAll(
           req.user!.domainId,
@@ -85,7 +98,7 @@ export const projectTaskDelayController = {
           projectId,
           stageId,
           taskId,
-          searchKey,
+          resolvedSearchKey,
           { offset, limit },
           language,
         );
