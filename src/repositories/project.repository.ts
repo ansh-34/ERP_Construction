@@ -80,20 +80,7 @@ const projectSelect = Prisma.sql`
   "updatedAt"
 `;
 
-const projectListSelect = Prisma.sql`
-  p."id",
-  p."name",
-  p."code",
-  p."description",
-  p."budget",
-  p."spent",
-  p."expectedStartDate",
-  p."expectedEndDate",
-  p."actualStartDate",
-  p."actualEndDate",
-  p."locationId",
-  p."domainId",
-  p."adminId",
+export const projectProgressSql = Prisma.sql`
   COALESCE((
     SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
     FROM (
@@ -109,7 +96,24 @@ const projectListSelect = Prisma.sql`
         AND ps."status" = ${StatusEnum.ACTIVE}
       GROUP BY ps."id"
     ) stage_progress
-  ), 0) AS "progress",
+  ), 0)
+`;
+
+const projectListSelect = Prisma.sql`
+  p."id",
+  p."name",
+  p."code",
+  p."description",
+  p."budget",
+  p."spent",
+  p."expectedStartDate",
+  p."expectedEndDate",
+  p."actualStartDate",
+  p."actualEndDate",
+  p."locationId",
+  p."domainId",
+  p."adminId",
+  ${projectProgressSql} AS "progress",
   COALESCE((
     SELECT SUM(pt."totalDelayInDays")::float
     FROM "ProjectTask" pt
@@ -150,22 +154,7 @@ const projectDetailSelect = Prisma.sql`
   p."expectedEndDate",
   p."actualStartDate",
   p."actualEndDate",
-  COALESCE((
-    SELECT ROUND(AVG(stage_progress."progress")::numeric, 2)::float
-    FROM (
-      SELECT COALESCE(AVG(LEAST(GREATEST(pt."taskProgress", 0), 100)), 0) AS "progress"
-      FROM "ProjectStage" ps
-      LEFT JOIN "ProjectTask" pt ON pt."stageId" = ps."id"
-        AND pt."domainId" = ps."domainId"
-        AND pt."isDeleted" = false
-        AND pt."status" = ${StatusEnum.ACTIVE}
-      WHERE ps."projectId" = p."id"
-        AND ps."domainId" = p."domainId"
-        AND ps."isDeleted" = false
-        AND ps."status" = ${StatusEnum.ACTIVE}
-      GROUP BY ps."id"
-    ) stage_progress
-  ), 0) AS "progress",
+  ${projectProgressSql} AS "progress",
   COALESCE((
     SELECT SUM(pt."totalDelayInDays")::float
     FROM "ProjectTask" pt

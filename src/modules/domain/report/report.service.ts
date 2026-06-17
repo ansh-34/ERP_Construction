@@ -8,6 +8,7 @@ type SummaryProject = {
   country: string;
   budget: number;
   spent: number;
+  progress: number;
 };
 
 export type SummaryExportProject = SummaryProject & {
@@ -116,6 +117,7 @@ async function getSummaryReport(
     country: project.country,
     budget: project.budget,
     spent: project.spent,
+    progress: project.progress,
   }));
 
   const budget = summaryProjects.reduce(
@@ -146,55 +148,10 @@ async function getSummaryExportProjects(
 ): Promise<SummaryExportProject[]> {
   const countryFilter = normalizeCountry(country);
 
-  const projects = await ReportRepository.findProjects({
-    where: {
-      domainId,
-      isDeleted: false,
-      status: StatusEnum.ACTIVE,
-      ...(projectId ? { id: projectId } : {}),
-      ...(countryFilter
-        ? {
-            location: {
-              is: {
-                domainId,
-                isDeleted: false,
-                OR: [
-                  {
-                    code: {
-                      equals: countryFilter,
-                      mode: 'insensitive',
-                    },
-                  },
-                  {
-                    searchText: {
-                      contains: countryFilter.toLowerCase(),
-                    },
-                  },
-                ],
-              },
-            },
-          }
-        : {}),
-    },
-    select: {
-      id: true,
-      name: true,
-      code: true,
-      status: true,
-      budget: true,
-      spent: true,
-      expectedStartDate: true,
-      expectedEndDate: true,
-      actualStartDate: true,
-      actualEndDate: true,
-      location: {
-        select: {
-          code: true,
-          name: true,
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
+  const projects = await ReportRepository.findProjectSummaryProjects({
+    domainId,
+    country: countryFilter,
+    projectId,
   });
 
   if (projectId && projects.length === 0) {
@@ -215,6 +172,7 @@ async function getSummaryExportProjects(
       status: project.status,
       budget,
       spent,
+      progress: toNumber(project.progress),
       utilization: budget > 0 ? roundToTwo((spent / budget) * 100) : 0,
       expectedStartDate: project.expectedStartDate,
       expectedEndDate: project.expectedEndDate,
@@ -231,6 +189,16 @@ async function getProjectWorkbookWorksheets(
   language: string | null,
 ): Promise<ReportWorkbookWorksheet[]> {
   const countryFilter = normalizeCountry(country);
+  const progressRows = await ReportRepository.findProjectSummaryProjects({
+    domainId,
+    country: countryFilter,
+    projectId,
+    activeOnly: false,
+  });
+  const progressByProjectId = new Map(
+    progressRows.map((project) => [project.id, toNumber(project.progress)]),
+  );
+
   const projects = await ReportRepository.findProjects({
     where: {
       domainId,
@@ -256,6 +224,7 @@ async function getProjectWorkbookWorksheets(
         : {}),
     },
     select: {
+      id: true,
       name: true,
       code: true,
       description: true,
@@ -271,6 +240,19 @@ async function getProjectWorkbookWorksheets(
       updatedAt: true,
       projectStages: {
         where: { isDeleted: false },
+        select: {
+          name: true,
+          code: true,
+          description: true,
+          progress: true,
+          expectedStartDate: true,
+          expectedEndDate: true,
+          actualStartDate: true,
+          actualEndDate: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -287,6 +269,7 @@ async function getProjectWorkbookWorksheets(
     projectDescription: normalizeDescription(project.description, language),
     budget: toNumber(project.budget),
     spent: toNumber(project.spent),
+    progress: progressByProjectId.get(project.id) ?? 0,
     locationCode: project.location.code,
     locationName: getLocalizedText(project.location.name, language),
     projectStatus: project.status,
@@ -325,6 +308,7 @@ async function getProjectWorkbookWorksheets(
         'projectDescription',
         'budget',
         'spent',
+        'progress',
         'locationCode',
         'locationName',
         'projectStatus',

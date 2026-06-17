@@ -424,6 +424,7 @@ export const ReportPaths = {
                         },
                         status: { type: 'string', example: 'ACTIVE' },
                         country: { type: 'string', example: 'India' },
+                        progress: { type: 'number', example: 38.5 },
                         totalStages: { type: 'integer', example: 5 },
                         totalTasks: { type: 'integer', example: 25 },
                         completedTasks: { type: 'integer', example: 10 },
@@ -1314,6 +1315,10 @@ export const ReportPaths = {
                                   country: { type: 'string', example: 'India' },
                                   budget: { type: 'number', example: 500000.0 },
                                   spent: { type: 'number', example: 200000.0 },
+                                  progress: {
+                                    type: 'number',
+                                    example: 38.5,
+                                  },
                                 },
                               },
                             },

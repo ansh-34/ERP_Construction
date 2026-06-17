@@ -1,11 +1,84 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client.js';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import { StatusEnum } from '@constants/index';
+import { projectProgressSql } from './project.repository.js';
+
+export type ProjectSummaryReportRow = {
+  id: string;
+  name: unknown;
+  code: string;
+  status: StatusEnum;
+  budget: unknown;
+  spent: unknown;
+  expectedStartDate: Date | null;
+  expectedEndDate: Date | null;
+  actualStartDate: Date | null;
+  actualEndDate: Date | null;
+  progress: unknown;
+  location: {
+    code: string | null;
+    name: unknown;
+  } | null;
+};
 
 export const ReportRepository = {
   findProjects<T extends Prisma.ProjectFindManyArgs>(
     args?: Prisma.SelectSubset<T, Prisma.ProjectFindManyArgs>,
   ) {
     return prisma.project.findMany(args);
+  },
+
+  findProjectSummaryProjects(params: {
+    domainId: string;
+    country?: string;
+    projectId?: string;
+    activeOnly?: boolean;
+  }): Promise<ProjectSummaryReportRow[]> {
+    const { domainId, country, projectId, activeOnly = true } = params;
+    const filters: Prisma.Sql[] = [
+      Prisma.sql`p."domainId" = ${domainId}`,
+      Prisma.sql`p."isDeleted" = false`,
+    ];
+
+    if (activeOnly) {
+      filters.push(Prisma.sql`p."status" = ${StatusEnum.ACTIVE}`);
+    }
+
+    if (projectId) {
+      filters.push(Prisma.sql`p."id" = ${projectId}`);
+    }
+
+    if (country) {
+      filters.push(Prisma.sql`(
+        LOWER(l."code") = ${country.toLowerCase()}
+        OR l."searchText" LIKE ${`%${country.toLowerCase()}%`}
+      )`);
+    }
+
+    return prisma.$queryRaw<ProjectSummaryReportRow[]>(Prisma.sql`
+      SELECT
+        p."id",
+        p."name",
+        p."code",
+        p."status",
+        p."budget",
+        p."spent",
+        p."expectedStartDate",
+        p."expectedEndDate",
+        p."actualStartDate",
+        p."actualEndDate",
+        ${projectProgressSql} AS "progress",
+        jsonb_build_object(
+          'code', l."code",
+          'name', l."name"
+        ) AS "location"
+      FROM "Project" p
+      LEFT JOIN "Location" l ON l."id" = p."locationId"
+        AND l."domainId" = p."domainId"
+        AND l."isDeleted" = false
+      WHERE ${Prisma.join(filters, ' AND ')}
+      ORDER BY p."createdAt" DESC
+    `);
   },
 
   findProjectTaskDelays<T extends Prisma.ProjectTaskDelayFindManyArgs>(
