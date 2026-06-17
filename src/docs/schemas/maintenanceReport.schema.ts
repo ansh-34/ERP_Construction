@@ -2,7 +2,7 @@ export const MaintenanceReportSchemas = {
   MaintenanceReportObject: {
     type: 'object',
     properties: {
-      groupBy: { type: 'string', enum: ['WEEK', 'MONTH', 'YEAR'] },
+      groupBy: { type: 'string', enum: ['DAY', 'WEEK', 'MONTH', 'YEAR'] },
       summary: {
         type: 'object',
         properties: {

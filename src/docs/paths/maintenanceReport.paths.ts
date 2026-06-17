@@ -20,7 +20,7 @@ export const MaintenanceReportPaths = {
           name: 'groupBy',
           schema: {
             type: 'string',
-            enum: ['WEEK', 'MONTH', 'YEAR'],
+            enum: ['DAY', 'WEEK', 'MONTH', 'YEAR'],
             default: 'MONTH',
           },
         },

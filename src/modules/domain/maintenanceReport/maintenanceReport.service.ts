@@ -6,7 +6,7 @@ import {
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isNonEmptyString } from '@/utils/validation';
 
-type MaintenanceReportGroupBy = 'WEEK' | 'MONTH' | 'YEAR';
+type MaintenanceReportGroupBy = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
 
 interface MaintenanceReportFilters {
   groupBy?: MaintenanceReportGroupBy;
@@ -91,6 +91,11 @@ function getIsoWeek(date: Date): string {
 }
 
 function getPeriod(date: Date, groupBy: MaintenanceReportGroupBy): string {
+  if (groupBy === 'DAY') {
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
+      date.getUTCDate(),
+    )}`;
+  }
   if (groupBy === 'WEEK') return getIsoWeek(date);
   if (groupBy === 'YEAR') return String(date.getUTCFullYear());
 

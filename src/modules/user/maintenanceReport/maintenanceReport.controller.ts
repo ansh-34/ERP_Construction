@@ -9,7 +9,7 @@ export const maintenanceReportController = {
     try {
       const { groupBy, assetType, vehicleId, machineryId, fromDate, toDate } =
         req.query as {
-          groupBy?: 'WEEK' | 'MONTH' | 'YEAR';
+          groupBy?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
           assetType?: MaintenanceAssetType;
           vehicleId?: string;
           machineryId?: string;

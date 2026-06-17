@@ -17,7 +17,7 @@ export const maintenanceReportController = {
         toDate,
       } = req.query as {
         domainId?: string;
-        groupBy?: 'WEEK' | 'MONTH' | 'YEAR';
+        groupBy?: 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
         assetType?: MaintenanceAssetType;
         vehicleId?: string;
         machineryId?: string;
