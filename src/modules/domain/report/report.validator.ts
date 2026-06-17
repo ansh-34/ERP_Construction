@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 export const projectSummaryQuerySchema = z.object({
   country: z.string().trim().optional(),
+  projectId: z.string().trim().uuid().optional(),
 });
 
 export const projectSummaryExportQuerySchema = projectSummaryQuerySchema.extend(
   {
     export: z.enum(['xlsx']),
-    projectId: z.string().trim().uuid().optional(),
   },
 );
 

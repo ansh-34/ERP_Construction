@@ -60,11 +60,14 @@ export const reportController = {
   getProjectSummary: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language = (req.headers.language as string) || 'en';
-      const { country } = req.query as { country?: string };
+      const { country, projectId } = req.query as {
+        country?: string;
+        projectId?: string;
+      };
 
       const report = await reportService.getProjectSummary(
         req.user!.domainId,
-        { country },
+        { country, projectId },
         language,
       );
 

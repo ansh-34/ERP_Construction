@@ -378,7 +378,7 @@ export const ReportPaths = {
       tags: ['Reports'],
       summary: 'Get Project Summary Report',
       description:
-        'Get project summary report, optionally filtered by country.',
+        'Get project summary report, optionally filtered by country or project.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -387,6 +387,13 @@ export const ReportPaths = {
           required: false,
           schema: { type: 'string' },
           description: 'Filter projects by country name',
+        },
+        {
+          in: 'query',
+          name: 'projectId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter report for one project',
         },
       ],
       responses: {
@@ -1250,7 +1257,7 @@ export const ReportPaths = {
       tags: ['Admin Reports'],
       summary: 'Get Project Summary Report (Admin)',
       description:
-        'Returns project summary report for accessible domains, optionally filtered by country.',
+        'Returns project summary report for accessible domains, optionally filtered by country or project.',
       security: [{ bearerAuth: [] }],
       parameters: [
         ...adminDomainScopeParams,
@@ -1260,6 +1267,13 @@ export const ReportPaths = {
           required: false,
           schema: { type: 'string' },
           description: 'Filter projects by country name',
+        },
+        {
+          in: 'query',
+          name: 'projectId',
+          required: false,
+          schema: { type: 'string', format: 'uuid' },
+          description: 'Filter report for one project',
         },
       ],
       responses: {

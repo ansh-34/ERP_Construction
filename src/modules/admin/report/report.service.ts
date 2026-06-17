@@ -135,13 +135,13 @@ export const AdminReportService = {
 
   getProjectSummary: (
     adminId: string,
-    filter: DomainFilter & { country?: string },
+    filter: DomainFilter & { country?: string; projectId?: string },
     language: string | null = null,
   ) =>
     runGrouped(adminId, filter, language, (domainId) =>
       reportService.getProjectSummary(
         domainId,
-        { country: filter.country },
+        { country: filter.country, projectId: filter.projectId },
         language,
       ),
     ),

@@ -26,6 +26,7 @@ const exportFlag = { export: z.literal('xlsx').optional() };
 export const projectSummaryQuerySchema = z.object({
   ...domainScope,
   country: z.string().optional(),
+  projectId: z.string().uuid().optional(),
 });
 
 export const projectSummaryExportQuerySchema = z.object({

@@ -106,10 +106,11 @@ function worksheet(
 async function getSummaryReport(
   domainId: string,
   country: string | undefined,
+  projectId: string | undefined,
   language: string | null,
 ): Promise<{ analytics: SummaryAnalytics }> {
   const summaryProjects = (
-    await getSummaryExportProjects(domainId, country, language)
+    await getSummaryExportProjects(domainId, country, projectId, language)
   ).map((project) => ({
     project: project.project,
     country: project.country,
@@ -140,6 +141,7 @@ async function getSummaryReport(
 async function getSummaryExportProjects(
   domainId: string,
   country: string | undefined,
+  projectId: string | undefined,
   language: string | null,
 ): Promise<SummaryExportProject[]> {
   const countryFilter = normalizeCountry(country);
@@ -149,6 +151,7 @@ async function getSummaryExportProjects(
       domainId,
       isDeleted: false,
       status: StatusEnum.ACTIVE,
+      ...(projectId ? { id: projectId } : {}),
       ...(countryFilter
         ? {
             location: {
@@ -193,6 +196,10 @@ async function getSummaryExportProjects(
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  if (projectId && projects.length === 0) {
+    throw new Error('not found');
+  }
 
   return projects.map((project) => {
     const budget = toNumber(project.budget);
@@ -2458,11 +2465,16 @@ async function getVendorPurchaseHistoryWorkbookWorksheets(
 export const reportService = {
   getProjectSummary: async (
     domainId: string,
-    filters: { country?: string },
+    filters: { country?: string; projectId?: string },
     language: string | null = null,
   ) => {
     try {
-      return await getSummaryReport(domainId, filters.country, language);
+      return await getSummaryReport(
+        domainId,
+        filters.country,
+        filters.projectId,
+        language,
+      );
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
@@ -2470,13 +2482,14 @@ export const reportService = {
 
   getSummaryExportProjects: async (
     domainId: string,
-    filters: { country?: string },
+    filters: { country?: string; projectId?: string },
     language: string | null = null,
   ): Promise<SummaryExportProject[]> => {
     try {
       return await getSummaryExportProjects(
         domainId,
         filters.country,
+        filters.projectId,
         language,
       );
     } catch (error: unknown) {

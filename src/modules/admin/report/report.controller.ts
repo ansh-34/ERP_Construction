@@ -111,11 +111,12 @@ export const adminReportController = {
   getProjectSummary: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { adminId, language } = scope(req);
-      const { domainIds, search, country } = req.query as ReportQuery;
+      const { domainIds, search, country, projectId } =
+        req.query as ReportQuery;
 
       const report = await AdminReportService.getProjectSummary(
         adminId,
-        { domainIds, search, country },
+        { domainIds, search, country, projectId },
         language,
       );
 
