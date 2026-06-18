@@ -39,6 +39,8 @@ import dispatchRouter from './dispatch/dispatch.router.js';
 import journeyScheduleRouter from './journeySchedule/journeySchedule.router.js';
 import vehicleRouter from './vehicle/vehicle.router.js';
 import roleRouter from './role/role.router.js';
+import onboardingRouter from './onboarding/onboarding.router.js';
+
 import { listAllProductGrades } from './productGrade/productGrade.controller.js';
 import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
@@ -62,6 +64,7 @@ const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
 const userRouter = Router();
 
 userRouter.use('/auth', authRouter);
+userRouter.use('/onboarding', onboardingRouter);
 
 userRouter.use(authMiddleware);
 userRouter.use('/language', languageRouter);
