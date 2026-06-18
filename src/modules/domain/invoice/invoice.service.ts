@@ -48,8 +48,16 @@ export const InvoiceService = {
   },
 
   async getInvoiceById(domainId: string, id: string) {
-    const invoice = await invoiceRepository.findByIdAndDomain(id, domainId);
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+    if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
+      invoice.pdfUrl =
+        (await getSignedDownloadUrl(invoice.pdfUrl)) ?? invoice.pdfUrl;
+    }
+
     return invoice;
   },
 
@@ -91,8 +99,6 @@ export const InvoiceService = {
     );
   },
 
-  // Enqueue background PDF generation for an invoice. Idempotent: if a job is
-  // already pending/processing it returns the current status without re-queuing.
   async requestPdf(domainId: string, id: string) {
     const invoice: any = await invoiceRepository.findByIdAndDomain(
       id,
@@ -100,14 +106,23 @@ export const InvoiceService = {
     );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
 
-    if (invoice.pdfStatus === PdfStatus.PROCESSING) {
+    const STALE_IN_FLIGHT_MS = 5 * 60 * 1000;
+    const lastUpdated = invoice.updatedAt
+      ? new Date(invoice.updatedAt).getTime()
+      : 0;
+    const isStale = Date.now() - lastUpdated > STALE_IN_FLIGHT_MS;
+
+    const inFlight =
+      invoice.pdfStatus === PdfStatus.PENDING ||
+      invoice.pdfStatus === PdfStatus.PROCESSING;
+    if (inFlight && !isStale) {
       return { pdfStatus: invoice.pdfStatus };
     }
 
-    await invoiceRepository.update(id, { pdfStatus: PdfStatus.PROCESSING });
+    await invoiceRepository.update(id, { pdfStatus: PdfStatus.PENDING });
     await enqueuePdfGeneration(id);
 
-    return { pdfStatus: PdfStatus.PROCESSING };
+    return { pdfStatus: PdfStatus.PENDING };
   },
 
   async getPdfStatus(domainId: string, id: string) {
@@ -117,8 +132,6 @@ export const InvoiceService = {
     );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
 
-    // Presigned download link so the PDF can be fetched back from S3 even when
-    // the bucket/object is private. Valid for 1 hour.
     let downloadUrl: string | null = null;
     if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
       downloadUrl = await getSignedDownloadUrl(invoice.pdfUrl);

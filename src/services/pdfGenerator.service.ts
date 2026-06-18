@@ -289,13 +289,13 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     throw new Error(`Invoice with ID ${invoiceId} not found`);
   }
 
-  // Set status to PROCESSING
-  await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: { pdfStatus: 'PROCESSING' },
-  });
-
   try {
+    // Set status to PROCESSING
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { pdfStatus: 'PROCESSING' },
+    });
+
     // 2. Resolve Active Template (fallback to seeded default)
     const activeTemplate = await prisma.invoiceTemplate.findFirst({
       where: {

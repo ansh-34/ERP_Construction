@@ -8,6 +8,8 @@ import {
   listInvoiceItems,
   generateInvoicesFromPO,
   listAllInvoiceItems,
+  requestInvoicePdf,
+  getInvoicePdfStatus,
 } from './invoice.controller.js';
 import {
   listInvoicesQuerySchema,
@@ -46,6 +48,20 @@ router.get(
   authorize('INVOICE', 'READ'),
   validate(invoiceIdParamsSchema, 'params'),
   listInvoiceItems,
+);
+
+router.post(
+  '/:id/pdf',
+  authorize('INVOICE', 'UPDATE'),
+  validate(invoiceIdParamsSchema, 'params'),
+  requestInvoicePdf,
+);
+
+router.get(
+  '/:id/pdf',
+  authorize('INVOICE', 'READ'),
+  validate(invoiceIdParamsSchema, 'params'),
+  getInvoicePdfStatus,
 );
 
 router.get(
