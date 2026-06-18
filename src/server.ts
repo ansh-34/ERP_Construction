@@ -5,7 +5,6 @@ import prisma from './infra/database/prisma/prisma.client.js';
 import { runFunctions } from './start/index.js';
 import { startLogUploader } from './utils/logUploader.js';
 import { startPdfWorker } from './queue/pdfWorker.js';
-import { stopBoss } from './queue/pgBoss.js';
 
 dotenv.config();
 
