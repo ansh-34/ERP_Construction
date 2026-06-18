@@ -216,7 +216,10 @@ function buildUpdateData(
     ? parseTime(data.endTime, date, 'endTime')
     : existingLog.endTime;
   const totalWorkingHours =
-    data.totalWorkingHours ?? calculateWorkingHours(startTime, endTime);
+    data.totalWorkingHours ??
+    (startTime && endTime
+      ? calculateWorkingHours(startTime, endTime)
+      : existingLog.totalWorkingHours);
 
   if (!isPositiveFiniteNumber(totalWorkingHours)) {
     throw new Error('invalid totalWorkingHours');

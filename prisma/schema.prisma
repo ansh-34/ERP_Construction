@@ -12,6 +12,13 @@ enum StatusEnum {
   INACTIVE
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+}
+
 enum PdfStatus {
   PENDING
   PROCESSING
@@ -49,7 +56,6 @@ enum OnboardingStatusEnum {
   COMPLETED
 }
 
-
 model Admin {
   id String @id @default(uuid()) @db.Uuid
 
@@ -78,31 +84,31 @@ model Admin {
 
   isDeleted Boolean @default(false)
 
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  adminLanguages         AdminLanguages[]
-  adminCurrencies        AdminCurrencies[]
-  domains                Domain[]
-  projects               Project[]
-  projectStages          ProjectStage[]
-  projectTasks           ProjectTask[]
-  projectTaskImages      ProjectTaskImage[]
-  projectTaskDelays      ProjectTaskDelay[]
-  projectUserAssignments ProjectUserAssignment[]
-  projectUserDailyLogs   ProjectUserDailyLog[]
-  apiKeys                ApiKey[]
-  locations              Location[]
-  machineries            Machinery[]
-  machineReadings        MachineReading[]
-  maintenanceSchedules   MaintenanceSchedule[]
-  maintenanceLogs        MaintenanceLog[]
-  movementLogs           MovementLog[]
-  fuelLogs               FuelLog[]
-  mediaFiles             Media[]                 @relation("AdminMediaFiles")
-  users                  User[]
-  roles                  Role[]
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  adminLanguages             AdminLanguages[]
+  adminCurrencies            AdminCurrencies[]
+  domains                    Domain[]
+  projects                   Project[]
+  projectStages              ProjectStage[]
+  projectTasks               ProjectTask[]
+  projectTaskImages          ProjectTaskImage[]
+  projectTaskDelays          ProjectTaskDelay[]
+  projectUserAssignments     ProjectUserAssignment[]
+  projectUserDailyLogs       ProjectUserDailyLog[]
+  apiKeys                    ApiKey[]
+  locations                  Location[]
+  machineries                Machinery[]
+  machineReadings            MachineReading[]
+  maintenanceSchedules       MaintenanceSchedule[]
+  maintenanceLogs            MaintenanceLog[]
+  movementLogs               MovementLog[]
+  fuelLogs                   FuelLog[]
+  mediaFiles                 Media[]                     @relation("AdminMediaFiles")
+  users                      User[]
+  roles                      Role[]
   adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
-  vendorProductPricings  VendorProductPricing[]
+  vendorProductPricings      VendorProductPricing[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -969,10 +975,10 @@ model Invoice {
   totalItems         Int                   @default(0)
   totalItemsReceived Float                 @default(0)
 
-  pdfUrl             String?
-  pdfStatus          PdfStatus             @default(PENDING)
-  pdfGeneratedAt     DateTime?
-  pdfVersion         Int                   @default(0)
+  pdfUrl         String?
+  pdfStatus      PdfStatus @default(PENDING)
+  pdfGeneratedAt DateTime?
+  pdfVersion     Int       @default(0)
 
   items       InvoiceItem[]
   grns        Grn[]
@@ -1583,7 +1589,7 @@ model FuelLog {
   fuelDirectionType FuelDirectionType
   fuelValue         Float
   fuelQuantity      Float
-  searchText        String            @default("")
+  searchText        String               @default("")
 
   fuelUomId String @db.Uuid
   fuelUom   Uom    @relation(fields: [fuelUomId], references: [id])
@@ -1671,25 +1677,26 @@ model ProjectUserAssignment {
 }
 
 model ProjectUserDailyLog {
-  id                String     @id @default(uuid()) @db.Uuid
+  id                String           @id @default(uuid()) @db.Uuid
   date              DateTime
-  projectId         String     @db.Uuid
-  project           Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId            String     @db.Uuid
-  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  startTime         DateTime
-  endTime           DateTime
+  projectId         String           @db.Uuid
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId            String           @db.Uuid
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime         DateTime?
+  endTime           DateTime?
   totalWorkingHours Float
-  dayCharge         Decimal    @db.Decimal(15, 2)
+  dayCharge         Decimal          @db.Decimal(15, 2)
+  attendanceStatus  AttendanceStatus @default(PRESENT)
   notes             String?
-  domainId          String     @db.Uuid
-  domain            Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId           String     @db.Uuid
-  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status            StatusEnum @default(ACTIVE)
-  isDeleted         Boolean    @default(false)
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  domainId          String           @db.Uuid
+  domain            Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String           @db.Uuid
+  admin             Admin            @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum       @default(ACTIVE)
+  isDeleted         Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   @@index([createdAt, isDeleted, domainId], map: "pudl_created_deleted_domain_idx")
   @@index([createdAt, isDeleted, domainId, projectId], map: "pudl_created_deleted_domain_project_idx")
@@ -1756,4 +1763,3 @@ model PaymentRequest {
   @@index([requestedBy])
   @@index([vendorId])
 }
-

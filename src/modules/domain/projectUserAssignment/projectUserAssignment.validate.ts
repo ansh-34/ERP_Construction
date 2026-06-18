@@ -50,6 +50,12 @@ export const listProjectUserAssignmentQuery = z.object({
   limit: z.string().trim().optional(),
 });
 
+export const availabilityProjectUserAssignmentQuery = z.object({
+  date: z.string().trim().min(1, { message: 'Date is required' }),
+  projectId: z.string().trim().min(1).optional(),
+  userId: z.string().trim().min(1).optional(),
+});
+
 export const idParams = z.object({
   id: z.string().trim().min(1, { message: 'Id is required' }),
 });

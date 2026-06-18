@@ -1,10 +1,6 @@
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { z } from 'zod';
 
-const positiveNumber = z
-  .number()
-  .finite()
-  .positive({ message: 'Value must be greater than 0' });
 const nonNegativeNumber = z
   .number()
   .finite()
@@ -15,10 +11,11 @@ const dailyLogRowSchema = z.object({
   date: dateString,
   projectId: z.string().trim().min(1, { message: 'Project id is required' }),
   userId: z.string().trim().min(1, { message: 'User id is required' }),
-  startTime: dateString,
-  endTime: dateString,
-  totalWorkingHours: positiveNumber.optional(),
+  startTime: dateString.nullable().optional(),
+  endTime: dateString.nullable().optional(),
+  totalWorkingHours: nonNegativeNumber.optional(),
   dayCharge: nonNegativeNumber,
+  attendanceStatus: z.nativeEnum(AttendanceStatusEnum).optional(),
   notes: z.string().trim().nullable().optional(),
   status: z.nativeEnum(StatusEnum).optional(),
 });
@@ -28,10 +25,11 @@ export const createProjectUserDailyLogBody = z.array(dailyLogRowSchema).min(1);
 export const updateProjectUserDailyLogBody = z
   .object({
     date: dateString.optional(),
-    startTime: dateString.optional(),
-    endTime: dateString.optional(),
-    totalWorkingHours: positiveNumber.optional(),
+    startTime: dateString.nullable().optional(),
+    endTime: dateString.nullable().optional(),
+    totalWorkingHours: nonNegativeNumber.optional(),
     dayCharge: nonNegativeNumber.optional(),
+    attendanceStatus: z.nativeEnum(AttendanceStatusEnum).optional(),
     notes: z.string().trim().nullable().optional(),
     status: z.nativeEnum(StatusEnum).optional(),
   })
