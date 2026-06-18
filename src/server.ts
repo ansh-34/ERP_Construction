@@ -4,8 +4,7 @@ import { variables } from './config/index.js';
 import prisma from './infra/database/prisma/prisma.client.js';
 import { runFunctions } from './start/index.js';
 import { startLogUploader } from './utils/logUploader.js';
-// import { startPdfWorker } from './queue/pdfWorker.js';
-// import { stopBoss } from './queue/pgBoss.js';
+import { startPdfWorker } from './queue/pdfWorker.js';
 
 dotenv.config();
 
@@ -21,9 +20,10 @@ const startServer = async () => {
     // log cron jobs for s3 scheduler and db upload
     startLogUploader();
 
-    // startPdfWorker().catch((err) => {
-    //   console.error('Failed to start PDF worker:', err);
-    // });
+    // Start the pg-boss worker that consumes invoice PDF generation jobs.
+    startPdfWorker().catch((err) => {
+      console.error('Failed to start PDF worker:', err);
+    });
 
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`);
