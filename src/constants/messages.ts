@@ -234,7 +234,6 @@ export const Messages = Object.freeze({
     CODE_ALREADY_EXISTS: 'Product with this code already exists',
     DISPLAY_NAME_EN_REQUIRED: 'displayName in english is required',
     GRADE_DISPLAY_NAME_EN_REQUIRED: 'gradeDisplayName in english is required',
-    STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
     GRADE_CODE_ALREADY_EXISTS: 'Product grade with this code already exists',
     INVALID_PRODUCT_SELECTED: 'One or more selected products are invalid',
     STATS_RETRIEVED: 'Product stats retrieved',
@@ -255,17 +254,10 @@ export const Messages = Object.freeze({
     INVALID_PRODUCT_GRADE_SELECTED:
       'One or more selected product grades are invalid',
   },
-  PRODUCT_GRADE_STD_RATE: {
-    CREATED: 'Product grade standard rate created successfully',
-    RETRIEVED: 'Product grade standard rates retrieved',
-    CREATE_FAILED: 'Failed to create product grade standard rate',
-    LIST_FAILED: 'Failed to list product grade standard rates',
-    UPDATED: 'Product grade standard rate updated successfully',
-    DELETED: 'Product grade standard rate deleted successfully',
-    NOT_FOUND: 'Product grade standard rate not found',
-    UPDATE_FAILED: 'Failed to update product grade standard rate',
-    DELETE_FAILED: 'Failed to delete product grade standard rate',
-    STD_RATE_TYPE_EN_REQUIRED: 'stdRateType in english is required',
+  PRODUCT_GRADE_LAST_PURCHASE_RATE: {
+    RETRIEVED: 'Product grade last purchase rates retrieved',
+    LIST_FAILED: 'Failed to list product grade last purchase rates',
+    NOT_FOUND: 'Product grade last purchase rate not found',
   },
   PRODUCT_UOM: {
     CREATED: 'Product UOM created successfully',

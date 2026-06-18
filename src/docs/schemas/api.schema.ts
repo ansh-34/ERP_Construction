@@ -32,6 +32,7 @@ import { MovementLogSchemas } from './movementLog.schema.js';
 import { MovementReportSchemas } from './movementReport.schema.js';
 import { PaymentRequestSchemas } from './paymentRequest.schema.js';
 import { IndustryRoleTemplateSchemas } from './industryRoleTemplate.schema.js';
+import { LastPurchaseRateSchemas } from './lastPurchaseRate.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -66,4 +67,5 @@ export const ApiSchemas = {
   ...MovementReportSchemas,
   ...PaymentRequestSchemas,
   ...IndustryRoleTemplateSchemas,
+  ...LastPurchaseRateSchemas,
 };

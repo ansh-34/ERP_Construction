@@ -50,13 +50,13 @@ export const listAllProductGrades = async (req: Request, res: Response) => {
   }
 };
 
-export const listProductGradesWithStdRates = async (
+export const listProductGradesWithLastPurchaseRates = async (
   req: Request,
   res: Response,
 ) => {
   try {
     const language = req.headers.language as string | undefined;
-    const result = await ProductGradeService.findAllWithStdRates(
+    const result = await ProductGradeService.findAllWithLastPurchaseRates(
       req.user!.domainId,
       req.params.productId,
       req.query as any,

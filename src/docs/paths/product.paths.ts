@@ -61,7 +61,6 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
   const scopeTag = isUser ? 'User ' : '';
   const productsTag = `${scopeTag}Products`;
   const gradesTag = `${scopeTag}Product Grades`;
-  const stdRatesTag = `${scopeTag}Product Grade Std Rates`;
   const uomsTag = `${scopeTag}Product UOMs`;
 
   return {
@@ -70,7 +69,7 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
         tags: [productsTag],
         summary: 'List products',
         description:
-          'Returns paginated list with grade/UOM counts plus gradeIds, uomIds, standardRateIds, and inventories per product.',
+          'Returns paginated list with grade/UOM counts plus gradeIds, uomIds, and inventories per product.',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -220,58 +219,6 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
         },
       },
     },
-    [`${basePath}/grades/std-rates`]: {
-      get: {
-        tags: [stdRatesTag],
-        summary: `List all product grade standard rates globally in ${isUser ? 'user context' : 'domain'}`,
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            in: 'header',
-            name: 'language',
-            schema: { type: 'string', default: 'en' },
-          },
-          {
-            in: 'query',
-            name: 'page',
-            schema: { type: 'integer', minimum: 1 },
-          },
-          {
-            in: 'query',
-            name: 'limit',
-            schema: { type: 'integer', minimum: 1, maximum: 100 },
-          },
-        ],
-        responses: {
-          200: {
-            description:
-              'All product grade standard rates retrieved successfully.',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    message: {
-                      type: 'string',
-                      example:
-                        'Product grade standard rates retrieved successfully',
-                    },
-                    data: {
-                      type: 'array',
-                      items: {
-                        $ref: '#/components/schemas/ProductGradeStdRateObject',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          ...errors,
-        },
-      },
-    },
     [`${basePath}/uoms`]: {
       get: {
         tags: [uomsTag],
@@ -394,37 +341,6 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
         },
       },
     },
-    [`${basePath}/{productId}/standard-rates`]: {
-      put: {
-        tags: [productsTag],
-        summary: 'Bulk update product standard rates',
-        description:
-          'Replace/update standard rates for a product. Rates with id are updated, without id are created.',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            in: 'path',
-            name: 'productId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/BulkUpdateStdRatesBody',
-              },
-            },
-          },
-        },
-        responses: {
-          ...successMsg('Product standard rates updated successfully'),
-          ...errors,
-        },
-      },
-    },
     [`${basePath}/{productId}/grades/{id}`]: {
       get: {
         tags: [gradesTag],
@@ -493,113 +409,6 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
           },
         ],
         responses: { ...successMsg('Product grade deleted'), ...errors },
-      },
-    },
-    [`${basePath}/{productId}/grades/std-rates`]: {
-      get: {
-        tags: [stdRatesTag],
-        summary:
-          'List all grades for a specific product nested with their standard rates',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            in: 'path',
-            name: 'productId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            in: 'header',
-            name: 'language',
-            schema: { type: 'string', default: 'en' },
-          },
-          {
-            in: 'query',
-            name: 'page',
-            schema: { type: 'integer', minimum: 1 },
-          },
-          {
-            in: 'query',
-            name: 'limit',
-            schema: { type: 'integer', minimum: 1, maximum: 100 },
-          },
-        ],
-        responses: {
-          200: {
-            description:
-              'Nested tree of product -> grades -> std rates retrieved successfully',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ProductGradesNestedStdRatesResponse',
-                },
-              },
-            },
-          },
-          ...errors,
-        },
-      },
-    },
-    [`${basePath}/{productId}/grades/{gradeId}/std-rates`]: {
-      get: {
-        tags: [stdRatesTag],
-        summary: 'List product grade standard rates',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            in: 'path',
-            name: 'productId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            in: 'path',
-            name: 'gradeId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            in: 'query',
-            name: 'page',
-            schema: { type: 'integer', minimum: 1 },
-          },
-          {
-            in: 'query',
-            name: 'limit',
-            schema: { type: 'integer', minimum: 1, maximum: 100 },
-          },
-        ],
-        responses: { ...dataMsg('Standard rates retrieved'), ...errors },
-      },
-      post: {
-        tags: [stdRatesTag],
-        summary: 'Create product grade standard rate',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            in: 'path',
-            name: 'productId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            in: 'path',
-            name: 'gradeId',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/CreateProductGradeStdRateBody',
-              },
-            },
-          },
-        },
-        responses: { ...createdMsg('Standard rate created'), ...errors },
       },
     },
     [`${basePath}/{productId}/uoms`]: {
@@ -768,110 +577,6 @@ export const ProductPaths = {
             'application/json': {
               schema: {
                 $ref: '#/components/schemas/DomainProductGradesListResponse',
-              },
-            },
-          },
-        },
-        ...errors,
-      },
-    },
-  },
-  '/api/domain/std-rates': {
-    get: {
-      tags: ['Product Grade Std Rates'],
-      summary: 'List all product grade standard rates globally in domain',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'header',
-          name: 'language',
-          schema: { type: 'string', default: 'en' },
-        },
-        {
-          in: 'query',
-          name: 'page',
-          schema: { type: 'integer', minimum: 1 },
-        },
-        {
-          in: 'query',
-          name: 'limit',
-          schema: { type: 'integer', minimum: 1, maximum: 100 },
-        },
-      ],
-      responses: {
-        200: {
-          description:
-            'All product grade standard rates retrieved successfully.',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: {
-                    type: 'string',
-                    example:
-                      'Product grade standard rates retrieved successfully',
-                  },
-                  data: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ProductGradeStdRateObject',
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        ...errors,
-      },
-    },
-  },
-  '/api/user/std-rates': {
-    get: {
-      tags: ['User Product Grade Std Rates'],
-      summary: 'List all product grade standard rates globally in user context',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'header',
-          name: 'language',
-          schema: { type: 'string', default: 'en' },
-        },
-        {
-          in: 'query',
-          name: 'page',
-          schema: { type: 'integer', minimum: 1 },
-        },
-        {
-          in: 'query',
-          name: 'limit',
-          schema: { type: 'integer', minimum: 1, maximum: 100 },
-        },
-      ],
-      responses: {
-        200: {
-          description:
-            'All product grade standard rates retrieved successfully.',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  message: {
-                    type: 'string',
-                    example:
-                      'Product grade standard rates retrieved successfully',
-                  },
-                  data: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ProductGradeStdRateObject',
-                    },
-                  },
-                },
               },
             },
           },

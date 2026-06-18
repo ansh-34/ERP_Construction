@@ -237,7 +237,7 @@ export const ProductGradeService = {
     };
   },
 
-  async findAllWithStdRates(
+  async findAllWithLastPurchaseRates(
     domainId: string,
     productId: string,
     query: {
@@ -288,12 +288,19 @@ export const ProductGradeService = {
           status: true,
           createdAt: true,
           updatedAt: true,
-          productGradeStdRates: {
+          productGradeLastPurchaseRates: {
             where: { isDeleted: false },
+            orderBy: { lastPurchaseDate: 'desc' },
             select: {
               id: true,
-              stdRateType: true,
-              stdRateValue: true,
+              lastPrice: true,
+              purchaseType: true,
+              currencyId: true,
+              vendorId: true,
+              vendorName: true,
+              uomId: true,
+              uom: { select: { id: true, code: true, displayName: true } },
+              lastPurchaseDate: true,
             },
           },
         },
@@ -310,13 +317,14 @@ export const ProductGradeService = {
       status: grade.status,
       createdAt: grade.createdAt,
       updatedAt: grade.updatedAt,
-      productGradeStdRates: (grade.productGradeStdRates || []).map(
-        (stdRate: any) => ({
-          id: stdRate.id,
-          stdRateType: langCode
-            ? ProductGradeService.localizeName(stdRate.stdRateType, langCode)
-            : stdRate.stdRateType,
-          stdRateValue: stdRate.stdRateValue,
+      // One latest rate per UOM for this grade.
+      lastPurchaseRates: (grade.productGradeLastPurchaseRates || []).map(
+        (rate: any) => ({
+          ...rate,
+          uomCode: rate.uom?.code ?? null,
+          uomName: langCode
+            ? ProductGradeService.localizeName(rate.uom?.displayName, langCode)
+            : (rate.uom?.displayName ?? null),
         }),
       ),
     }));
@@ -350,7 +358,15 @@ export const ProductGradeService = {
       include: {
         productGrades: {
           where: { id, isDeleted: false },
-          include: { productGradeStdRates: { where: { isDeleted: false } } },
+          include: {
+            productGradeLastPurchaseRates: {
+              where: { isDeleted: false },
+              orderBy: { lastPurchaseDate: 'desc' },
+              include: {
+                uom: { select: { id: true, code: true, displayName: true } },
+              },
+            },
+          },
         },
       },
     });
@@ -370,23 +386,30 @@ export const ProductGradeService = {
         grade.gradeDisplayName,
         language,
       );
-      grade.productGradeStdRates = (grade.productGradeStdRates || []).map(
-        (stdRate: any) => ({
-          ...stdRate,
-          stdRateType: ProductGradeService.localizeName(
-            stdRate.stdRateType,
-            language,
-          ),
-        }),
-      );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { productGrades, ...productData } = product;
 
+    const { productGradeLastPurchaseRates, ...gradeRest } = grade as any;
+
+    // One latest rate per UOM for this grade.
+    const lastPurchaseRates = (productGradeLastPurchaseRates || []).map(
+      (rate: any) => ({
+        ...rate,
+        uomCode: rate.uom?.code ?? null,
+        uomName: language
+          ? ProductGradeService.localizeName(rate.uom?.displayName, language)
+          : (rate.uom?.displayName ?? null),
+      }),
+    );
+
     return {
       ...productData,
-      productGrade: grade,
+      productGrade: {
+        ...gradeRest,
+        lastPurchaseRates,
+      },
     };
   },
 
@@ -440,7 +463,7 @@ export const ProductGradeService = {
   async softDelete(domainId: string, productId: string, id: string) {
     await this.findOne(domainId, productId, id);
     await prisma.$transaction([
-      prisma.productGradeStdRates.updateMany({
+      prisma.productGradeLastPurchaseRate.updateMany({
         where: { productGradeId: id },
         data: { isDeleted: true },
       }),

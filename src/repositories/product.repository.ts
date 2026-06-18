@@ -11,18 +11,22 @@ const productWithDetails = {
       gradeCode: true,
       status: true,
       createdAt: true,
-      productGradeStdRates: {
+      productGradeLastPurchaseRates: {
         where: { isDeleted: false },
+        orderBy: { lastPurchaseDate: 'desc' as const },
         select: {
           id: true,
-          stdRateType: true,
-          stdRateValue: true,
-          alertThresold: true,
+          lastPrice: true,
+          purchaseType: true,
+          currencyId: true,
+          vendorId: true,
+          vendorName: true,
+          lastInvoiceId: true,
+          lastPurchaseDate: true,
+          uomId: true,
+          uom: { select: { id: true, code: true, displayName: true } },
           status: true,
           createdAt: true,
-          // productGrade: {
-          //   select: { id: true, gradeDisplayName: true, gradeCode: true },
-          // },
         },
       },
       // inventories: {
@@ -199,13 +203,21 @@ export const ProductRepository = {
   async softDelete(id: string) {
     const product = await prisma.product.findUnique({ where: { id } });
     const suffix = `_DEL_${Date.now()}`;
-    return prisma.product.update({
-      where: { id },
-      data: {
-        isDeleted: true,
-        status: 'INACTIVE',
-        code: (product?.code || id) + suffix,
-      },
+    return prisma.$transaction(async (tx) => {
+      // Soft-delete the product's last-purchase rates alongside the product so
+      // they don't linger as ACTIVE rows for a deleted product.
+      await tx.productGradeLastPurchaseRate.updateMany({
+        where: { productId: id, isDeleted: false },
+        data: { isDeleted: true },
+      });
+      return tx.product.update({
+        where: { id },
+        data: {
+          isDeleted: true,
+          status: 'INACTIVE',
+          code: (product?.code || id) + suffix,
+        },
+      });
     });
   },
 

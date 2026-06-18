@@ -22,13 +22,19 @@ const inventoryIncludes = {
       gradeDisplayName: true,
       gradeCode: true,
       status: true,
-      productGradeStdRates: {
+      productGradeLastPurchaseRates: {
         where: { isDeleted: false },
+        orderBy: { lastPurchaseDate: 'desc' as const },
         select: {
           id: true,
-          stdRateType: true,
-          stdRateValue: true,
-          alertThresold: true,
+          lastPrice: true,
+          purchaseType: true,
+          currencyId: true,
+          vendorId: true,
+          vendorName: true,
+          lastPurchaseDate: true,
+          uomId: true,
+          uom: { select: { id: true, code: true, displayName: true } },
           status: true,
         },
       },

@@ -734,19 +734,34 @@ export const ReportPaths = {
                                 properties: {
                                   code: { type: 'string', example: 'GR-A' },
                                   name: { type: 'string', example: 'Grade A' },
-                                  stdRates: {
+                                  lastPurchaseRates: {
                                     type: 'array',
+                                    description: 'Latest purchase rate per UOM',
                                     items: {
                                       type: 'object',
                                       properties: {
-                                        type: {
+                                        uomCode: {
                                           type: 'string',
-                                          example: 'STANDARD',
+                                          example: 'KG',
                                         },
-                                        value: { type: 'number', example: 450 },
-                                        alertThreshold: {
-                                          type: 'number',
-                                          example: 480,
+                                        uomName: {
+                                          type: 'string',
+                                          example: 'Kilogram',
+                                        },
+                                        vendorName: {
+                                          type: 'string',
+                                          example: 'ABC Traders',
+                                        },
+                                        price: { type: 'number', example: 450 },
+                                        purchaseType: {
+                                          type: 'string',
+                                          enum: ['IMPORT', 'LOCAL'],
+                                          nullable: true,
+                                          example: 'LOCAL',
+                                        },
+                                        lastPurchaseDate: {
+                                          type: 'string',
+                                          format: 'date-time',
                                         },
                                       },
                                     },
@@ -2328,22 +2343,38 @@ export const ReportPaths = {
                                       type: 'string',
                                       example: 'Grade A',
                                     },
-                                    stdRates: {
+                                    lastPurchaseRates: {
                                       type: 'array',
+                                      description:
+                                        'Latest purchase rate per UOM',
                                       items: {
                                         type: 'object',
                                         properties: {
-                                          type: {
+                                          uomCode: {
                                             type: 'string',
-                                            example: 'STANDARD',
+                                            example: 'KG',
                                           },
-                                          value: {
+                                          uomName: {
+                                            type: 'string',
+                                            example: 'Kilogram',
+                                          },
+                                          vendorName: {
+                                            type: 'string',
+                                            example: 'ABC Traders',
+                                          },
+                                          price: {
                                             type: 'number',
                                             example: 450,
                                           },
-                                          alertThreshold: {
-                                            type: 'number',
-                                            example: 480,
+                                          purchaseType: {
+                                            type: 'string',
+                                            enum: ['IMPORT', 'LOCAL'],
+                                            nullable: true,
+                                            example: 'LOCAL',
+                                          },
+                                          lastPurchaseDate: {
+                                            type: 'string',
+                                            format: 'date-time',
                                           },
                                         },
                                       },

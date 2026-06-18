@@ -388,10 +388,23 @@ export const invoiceRepository = {
           purchaseOrderProducts: {
             where: { isDeleted: false },
           },
+          rawMaterialPurchaseRequests: {
+            where: { isDeleted: false },
+            select: { productId: true, productGradeId: true, type: true },
+          },
         },
       });
 
       if (!po) throw new Error('Purchase order not found');
+
+      // Map IMPORT/LOCAL purchase type per product+grade from the source RMPRs.
+      const purchaseTypeByProductGrade = new Map<string, 'IMPORT' | 'LOCAL'>();
+      for (const rmpr of po.rawMaterialPurchaseRequests) {
+        purchaseTypeByProductGrade.set(
+          `${rmpr.productId}|${rmpr.productGradeId}`,
+          rmpr.type,
+        );
+      }
 
       // Check if invoices already exist for this PO
       const existing = await tx.invoice.count({
@@ -423,7 +436,9 @@ export const invoiceRepository = {
           productId: string;
           productGradeId: string;
           uomId: string;
+          uom?: { code: string; displayName: unknown } | null;
           price: number;
+          currencyId: string | null;
         };
       };
 
@@ -444,7 +459,10 @@ export const invoiceRepository = {
             domainId,
             isDeleted: false,
           },
-          include: { vendor: { select: { id: true, name: true } } },
+          include: {
+            vendor: { select: { id: true, name: true } },
+            uom: { select: { code: true, displayName: true } },
+          },
         });
         if (!pricing) {
           throw new Error(
@@ -525,6 +543,62 @@ export const invoiceRepository = {
               domainId,
             },
           });
+
+          await tx.purchaseOrderProduct.update({
+            where: { id: item.poProduct.id },
+            data: { rate: item.pricing.price },
+          });
+
+          // Record the price paid as the latest vendor purchase rate for this
+          // product/grade/uom/type. One current row per (product, grade, uom,
+          // IMPORT|LOCAL). Only overwrite when this invoice is at least as recent
+          // as what is stored, so a later-generated but back-dated invoice can't
+          // clobber a newer rate.
+          const purchaseType =
+            purchaseTypeByProductGrade.get(
+              `${item.pricing.productId}|${item.pricing.productGradeId}`,
+            ) ?? null;
+
+          const rateValues = {
+            lastPrice: item.pricing.price,
+            purchaseType,
+            currencyId: item.pricing.currencyId,
+            vendorId: item.pricing.vendor?.id ?? null,
+            vendorName,
+            lastInvoiceId: invoice.id,
+            lastPurchaseDate: invoice.invoiceDate,
+            searchText: vendorName.toLowerCase(),
+            status: 'ACTIVE' as const,
+            isDeleted: false,
+          };
+
+          const existingRate = await tx.productGradeLastPurchaseRate.findFirst({
+            where: {
+              productId: item.pricing.productId,
+              productGradeId: item.pricing.productGradeId,
+              uomId: item.pricing.uomId,
+              purchaseType,
+              domainId,
+            },
+            select: { id: true, lastPurchaseDate: true },
+          });
+
+          if (!existingRate) {
+            await tx.productGradeLastPurchaseRate.create({
+              data: {
+                productId: item.pricing.productId,
+                productGradeId: item.pricing.productGradeId,
+                uomId: item.pricing.uomId,
+                domainId,
+                ...rateValues,
+              },
+            });
+          } else if (invoice.invoiceDate >= existingRate.lastPurchaseDate) {
+            await tx.productGradeLastPurchaseRate.update({
+              where: { id: existingRate.id },
+              data: rateValues,
+            });
+          }
         }
 
         // Small delay for unique invoice codes

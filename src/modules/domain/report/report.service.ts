@@ -1543,8 +1543,12 @@ async function getProductInventoryReport(
       productGrades: {
         where: { isDeleted: false },
         include: {
-          productGradeStdRates: {
+          productGradeLastPurchaseRates: {
             where: { isDeleted: false },
+            orderBy: { lastPurchaseDate: 'desc' },
+            include: {
+              uom: { select: { id: true, code: true, displayName: true } },
+            },
           },
         },
       },
@@ -1572,18 +1576,26 @@ async function getProductInventoryReport(
     });
 
     const grades = product.productGrades.map((grade) => {
-      const stdRates = grade.productGradeStdRates.map((rate) => ({
-        type: getLocalizedText(rate.stdRateType, language),
-        value: rate.stdRateValue,
-        alertThreshold: rate.alertThresold,
-      }));
+      // One latest rate per UOM for this grade.
+      const lastPurchaseRates = grade.productGradeLastPurchaseRates.map(
+        (rate) => ({
+          uomCode: rate.uom?.code ?? null,
+          uomName: rate.uom?.displayName
+            ? getLocalizedText(rate.uom.displayName, language)
+            : null,
+          vendorName: rate.vendorName,
+          price: rate.lastPrice,
+          purchaseType: rate.purchaseType,
+          lastPurchaseDate: rate.lastPurchaseDate,
+        }),
+      );
 
       return {
         code: grade.gradeCode,
         name: getLocalizedText(grade.gradeDisplayName, language),
         createdAt: grade.createdAt,
         updatedAt: grade.updatedAt,
-        stdRates,
+        lastPurchaseRates,
       };
     });
 
@@ -1647,14 +1659,20 @@ async function getProductInventoryReport(
     .slice(0, 5);
 
   const totalInventoryValue = formattedProducts.reduce((total, p) => {
-    const gradeRateMap = new Map(
-      p.grades.map((g) => [
-        g.code,
-        g.stdRates.length > 0 ? toNumber(g.stdRates[0].value) : 0,
-      ]),
-    );
+    // Map the latest purchase price per grade + UOM. A grade+UOM may have both
+    // an IMPORT and a LOCAL rate; rates are ordered newest-first, so keep the
+    // first (most recent) seen for valuation regardless of type.
+    const gradeUomRateMap = new Map<string, number>();
+    for (const g of p.grades) {
+      for (const rate of g.lastPurchaseRates) {
+        const key = `${g.code}|${rate.uomCode ?? ''}`;
+        if (!gradeUomRateMap.has(key)) {
+          gradeUomRateMap.set(key, toNumber(rate.price));
+        }
+      }
+    }
     const productValue = p.inventory.reduce((sum, inv) => {
-      const rate = gradeRateMap.get(inv.gradeCode) ?? 0;
+      const rate = gradeUomRateMap.get(`${inv.gradeCode}|${inv.uomCode}`) ?? 0;
       return sum + toNumber(inv.quantity) * rate;
     }, 0);
     return total + productValue;
@@ -1718,29 +1736,35 @@ async function getProductInventoryWorkbookWorksheets(
 
   const gradeRows = report.products.flatMap((p) =>
     p.grades.flatMap((g) => {
-      if (g.stdRates.length === 0) {
+      if (g.lastPurchaseRates.length === 0) {
         return [
           {
             productCode: p.code,
             productName: p.displayName,
             gradeCode: g.code,
             gradeName: g.name,
-            stdRateType: 'N/A',
-            stdRateValue: 0,
-            alertThreshold: 0,
+            uomCode: 'N/A',
+            purchaseType: 'N/A',
+            vendorName: 'N/A',
+            lastPrice: 0,
+            lastPurchaseDate: '',
             createdAt: g.createdAt,
             updatedAt: g.updatedAt,
           },
         ];
       }
-      return g.stdRates.map((rate) => ({
+      return g.lastPurchaseRates.map((rate) => ({
         productCode: p.code,
         productName: p.displayName,
         gradeCode: g.code,
         gradeName: g.name,
-        stdRateType: rate.type,
-        stdRateValue: rate.value,
-        alertThreshold: rate.alertThreshold,
+        uomCode: rate.uomCode ?? 'N/A',
+        purchaseType: rate.purchaseType ?? 'N/A',
+        vendorName: rate.vendorName,
+        lastPrice: rate.price,
+        lastPurchaseDate: rate.lastPurchaseDate
+          ? new Date(rate.lastPurchaseDate).toISOString()
+          : '',
         createdAt: g.createdAt,
         updatedAt: g.updatedAt,
       }));
@@ -1796,9 +1820,11 @@ async function getProductInventoryWorkbookWorksheets(
         'productName',
         'gradeCode',
         'gradeName',
-        'stdRateType',
-        'stdRateValue',
-        'alertThreshold',
+        'uomCode',
+        'purchaseType',
+        'vendorName',
+        'lastPrice',
+        'lastPurchaseDate',
         'createdAt',
         'updatedAt',
       ],

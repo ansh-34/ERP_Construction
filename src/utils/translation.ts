@@ -2,7 +2,6 @@ const MULTILINGUAL_FIELDS = new Set([
   'displayName',
   'name',
   'gradeDisplayName',
-  'stdRateType',
   'organizationType',
   'delayReason',
   'productName',

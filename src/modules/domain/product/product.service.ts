@@ -2,7 +2,6 @@ import { Messages } from '../../../constants/index.js';
 import {
   ProductRepository,
   productUomRepository,
-  ProductGradeRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizeStatus } from '../../../utils/validation.js';
@@ -53,7 +52,7 @@ export const ProductService = {
       throw new Error(Messages.PRODUCT.CODE_ALREADY_EXISTS);
     }
 
-    const { grades, standardRates, uoms, uom, ...productFields } = data;
+    const { grades, uoms, uom, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
@@ -119,80 +118,16 @@ export const ProductService = {
             },
           });
           gradeMap.set(gCode, created.id);
-
-          // Create standard rates nested inside the grade
-          if (g.standardRates && g.standardRates.length > 0) {
-            for (const sr of g.standardRates) {
-              const srSearchText = Object.values(sr.stdRateType || {})
-                .join(' ')
-                .toLowerCase();
-              await tx.productGradeStdRates.create({
-                data: {
-                  productId: product.id,
-                  productGradeId: created.id,
-                  stdRateType: sr.stdRateType,
-                  stdRateValue: sr.stdRateValue,
-                  alertThresold: sr.alertThresold,
-                  searchText: srSearchText,
-                  status: normalizeStatus(sr.status),
-                  domainId,
-                  isDeleted: false,
-                },
-              });
-            }
-          }
         }
       }
 
-      // 3. Create standard rates if provided
-      if (standardRates && standardRates.length > 0) {
-        for (let i = 0; i < standardRates.length; i++) {
-          const sr = standardRates[i];
-          let gradeId = sr.gradeId;
-
-          if (!gradeId && sr.gradeCode) {
-            gradeId = gradeMap.get(sr.gradeCode);
-          } else if (!gradeId && !sr.gradeCode && grades && grades[i]) {
-            const gCode =
-              grades[i].gradeCode ||
-              grades[i].gradeDisplayName?.en
-                ?.toString()
-                .toUpperCase()
-                .replace(/\s+/g, '_');
-            gradeId = gradeMap.get(gCode);
-          }
-
-          if (!gradeId) continue; // skip if no grade match
-
-          const srSearchText = Object.values(sr.stdRateType || {})
-            .join(' ')
-            .toLowerCase();
-          await tx.productGradeStdRates.create({
-            data: {
-              productId: product.id,
-              productGradeId: gradeId,
-              stdRateType: sr.stdRateType,
-              stdRateValue: sr.stdRateValue,
-              alertThresold: sr.alertThresold,
-              searchText: srSearchText,
-              status: normalizeStatus(sr.status),
-              domainId,
-              isDeleted: false,
-            },
-          });
-        }
-      }
-
-      // 4. Return fully populated product
+      // 3. Return fully populated product
       return ProductRepository.findFirst(
         {
           where: { id: product.id },
           include: {
             productGrades: {
               where: { isDeleted: false },
-              include: {
-                productGradeStdRates: { where: { isDeleted: false } },
-              },
             },
             productUoms: {
               where: { isDeleted: false },
@@ -247,13 +182,6 @@ export const ProductService = {
             orderBy: { createdAt: 'desc' },
             select: {
               id: true,
-              productGradeStdRates: {
-                where: { isDeleted: false },
-                orderBy: { createdAt: 'desc' },
-                select: {
-                  id: true,
-                },
-              },
             },
           },
           productUoms: {
@@ -300,9 +228,6 @@ export const ProductService = {
         uomsCount: _count?.productUoms || 0,
         gradeIds: (productGrades || []).map((grade: any) => grade.id),
         uomIds: (productUoms || []).map((productUom: any) => productUom.uomId),
-        standardRateIds: (productGrades || []).flatMap((grade: any) =>
-          (grade.productGradeStdRates || []).map((stdRate: any) => stdRate.id),
-        ),
         inventories: (inventories || []).map((inv: any) => ({
           ...inv,
           productId: inv.productId,
@@ -365,24 +290,13 @@ export const ProductService = {
           grade.gradeDisplayName,
           language,
         ),
-        productGradeStdRates: (grade.productGradeStdRates || []).map(
-          (stdRate: any) => ({
-            ...stdRate,
-            stdRateType: ProductService.localizeName(
-              stdRate.stdRateType,
-              language,
-            ),
-            productGrade: stdRate.productGrade
-              ? {
-                  ...stdRate.productGrade,
-                  gradeDisplayName: ProductService.localizeName(
-                    stdRate.productGrade.gradeDisplayName,
-                    language,
-                  ),
-                }
-              : stdRate.productGrade,
-          }),
-        ),
+        productGradeLastPurchaseRates: (
+          grade.productGradeLastPurchaseRates || []
+        ).map((rate: any) => ({
+          ...rate,
+          uomCode: rate.uom?.code ?? null,
+          uomName: ProductService.localizeName(rate.uom?.displayName, language),
+        })),
         // inventories: (grade.inventories || []).map((inv: any) => ({
         //   ...inv,
         //   uom: inv.uom
@@ -470,7 +384,7 @@ export const ProductService = {
       }
     }
 
-    const { grades, standardRates, uoms, uom, ...productFields } = data;
+    const { grades, uoms, uom, ...productFields } = data;
     delete productFields.domainId;
     delete productFields.adminId;
 
@@ -493,27 +407,6 @@ export const ProductService = {
     // Handle grades if provided
     if (grades && grades.length > 0) {
       await ProductService.bulkUpdateGrades(domainId, id, grades);
-    }
-
-    // Handle standardRates if provided
-    if (standardRates && standardRates.length > 0) {
-      if (grades && grades.length > 0) {
-        for (let i = 0; i < standardRates.length; i++) {
-          if (
-            !standardRates[i].gradeId &&
-            !standardRates[i].gradeCode &&
-            grades[i]
-          ) {
-            standardRates[i].gradeCode =
-              grades[i].gradeCode ||
-              grades[i].gradeDisplayName?.en
-                ?.toString()
-                .toUpperCase()
-                .replace(/\s+/g, '_');
-          }
-        }
-      }
-      await ProductService.bulkUpdateStandardRates(domainId, id, standardRates);
     }
 
     // Return fully populated product
@@ -541,7 +434,6 @@ export const ProductService = {
           .join(' ')
           .toLowerCase();
 
-        let gradeId = grade.id;
         if (grade.id) {
           // Update existing
           await tx.productGrades.update({
@@ -555,7 +447,7 @@ export const ProductService = {
           });
         } else {
           // Create new
-          const created = await tx.productGrades.create({
+          await tx.productGrades.create({
             data: {
               productId,
               domainId,
@@ -566,44 +458,6 @@ export const ProductService = {
               isDeleted: false,
             },
           });
-          gradeId = created.id;
-        }
-
-        // Handle nested standardRates
-        if (grade.standardRates) {
-          for (const sr of grade.standardRates) {
-            const srSearchText = Object.values(sr.stdRateType || {})
-              .join(' ')
-              .toLowerCase();
-
-            if (sr.id) {
-              await tx.productGradeStdRates.update({
-                where: { id: sr.id },
-                data: {
-                  productGradeId: gradeId,
-                  stdRateType: sr.stdRateType,
-                  stdRateValue: sr.stdRateValue,
-                  alertThresold: sr.alertThresold,
-                  searchText: srSearchText,
-                  status: sr.status ? normalizeStatus(sr.status) : undefined,
-                },
-              });
-            } else {
-              await tx.productGradeStdRates.create({
-                data: {
-                  productId,
-                  productGradeId: gradeId,
-                  domainId,
-                  stdRateType: sr.stdRateType,
-                  stdRateValue: sr.stdRateValue,
-                  alertThresold: sr.alertThresold,
-                  searchText: srSearchText,
-                  status: normalizeStatus(sr.status),
-                  isDeleted: false,
-                },
-              });
-            }
-          }
         }
       }
     });
@@ -637,73 +491,6 @@ export const ProductService = {
           },
           tx,
         );
-      }
-    });
-  },
-
-  // Standalone bulk update: standard rates
-
-  async bulkUpdateStandardRates(
-    domainId: string,
-    productId: string,
-    standardRates: any[],
-  ) {
-    const product = await ProductRepository.findByIdAndDomain(
-      productId,
-      domainId,
-    );
-    if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
-
-    // Fetch active grades to resolve gradeCode → gradeId
-    const activeGrades = await ProductGradeRepository.findMany({
-      where: { productId, domainId, isDeleted: false },
-    });
-
-    await transaction(async (tx: any) => {
-      for (const sr of standardRates) {
-        const searchText = Object.values(sr.stdRateType || {})
-          .join(' ')
-          .toLowerCase();
-
-        // Resolve gradeId
-        let gradeId = sr.gradeId;
-        if (!gradeId && sr.gradeCode) {
-          const match = activeGrades.find(
-            (g: any) => g.gradeCode === sr.gradeCode,
-          );
-          if (match) gradeId = match.id;
-        }
-        if (!gradeId) continue; // skip if we can't match a grade
-
-        if (sr.id) {
-          // Update existing
-          await tx.productGradeStdRates.update({
-            where: { id: sr.id },
-            data: {
-              productGradeId: gradeId,
-              stdRateType: sr.stdRateType,
-              stdRateValue: sr.stdRateValue,
-              alertThresold: sr.alertThresold,
-              searchText,
-              status: sr.status ? normalizeStatus(sr.status) : undefined,
-            },
-          });
-        } else {
-          // Create new
-          await tx.productGradeStdRates.create({
-            data: {
-              productId,
-              productGradeId: gradeId,
-              domainId,
-              stdRateType: sr.stdRateType,
-              stdRateValue: sr.stdRateValue,
-              alertThresold: sr.alertThresold,
-              searchText,
-              status: normalizeStatus(sr.status),
-              isDeleted: false,
-            },
-          });
-        }
       }
     });
   },

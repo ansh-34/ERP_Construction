@@ -18,16 +18,8 @@ export const ProductSchemas = {
         type: 'array',
         description:
           'Optional array of grades to create with the product. ' +
-          'Multiple grades can be supplied at once. Each grade gets an implicit ' +
-          'zero-based index which can be referenced in standardRates via gradeIndex.',
+          'Multiple grades can be supplied at once.',
         items: { $ref: '#/components/schemas/GradeItem' },
-      },
-      standardRates: {
-        type: 'array',
-        description:
-          'Optional array of standard rates. Link to a grade via gradeIndex (preferred for new grades), ' +
-          'gradeCode, or gradeId. Multiple rates per grade are supported.',
-        items: { $ref: '#/components/schemas/StandardRateItem' },
       },
     },
   },
@@ -47,12 +39,6 @@ export const ProductSchemas = {
         description:
           'Optional array of grades. Items with id are updated; without id are created.',
         items: { $ref: '#/components/schemas/GradeItem' },
-      },
-      standardRates: {
-        type: 'array',
-        description:
-          'Optional array of standard rates. Items with id are updated (partial — only supply changed fields); without id are created.',
-        items: { $ref: '#/components/schemas/StandardRateItem' },
       },
     },
   },
@@ -75,62 +61,9 @@ export const ProductSchemas = {
       gradeCode: {
         type: 'string',
         description:
-          'Auto-derived from en name if omitted (e.g. "Grade 500D" → "GRADE_500D"). ' +
-          'If omitted, predict the auto-generated code and use it in standardRates.gradeCode to link them.',
+          'Auto-derived from en name if omitted (e.g. "Grade 500D" → "GRADE_500D").',
         example: 'GRADE_500D',
       },
-      status: {
-        type: 'string',
-        enum: ['active', 'inactive'],
-        default: 'active',
-      },
-    },
-  },
-
-  StandardRateItem: {
-    type: 'object',
-    // FIX 3: Removed required constraint on stdRateType/stdRateValue/alertThresold so
-    // that partial updates (id + changed fields only, as shown in Postman "Update Standard Rates")
-    // are valid. Only id is conditionally required for updates; all fields are optional here
-    // and validated server-side based on whether it's a create or update operation.
-    properties: {
-      id: {
-        type: 'string',
-        format: 'uuid',
-        description:
-          'OPTIONAL. Pass an existing UUID to update. Omit entirely to create a new rate. ' +
-          'When updating, only supply the fields you want to change alongside id.',
-      },
-      gradeId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'UUID of the grade this rate belongs to.',
-      },
-      gradeCode: {
-        type: 'string',
-        description:
-          'Alternative to gradeId — resolved server-side. Use the exact gradeCode ' +
-          '(or predicted auto-generated one, e.g. "GRADE_500D") to link this rate to a grade.',
-      },
-      // FIX 4: Added gradeIndex — Postman comments indicate rates are linked to grades
-      // by their zero-based position in the grades array during product creation.
-      gradeIndex: {
-        type: 'integer',
-        minimum: 0,
-        description:
-          'Zero-based index into the grades array in the same request. ' +
-          'Used during product creation to link a standard rate to a new grade ' +
-          'without needing to know its id or gradeCode in advance. ' +
-          'Takes precedence over gradeCode if both are supplied.',
-        example: 0,
-      },
-      stdRateType: {
-        type: 'object',
-        description: 'Localized rate type',
-        example: { en: 'Purchase Rate' },
-      },
-      stdRateValue: { type: 'number', example: 65000 },
-      alertThresold: { type: 'number', example: 70000 },
       status: {
         type: 'string',
         enum: ['active', 'inactive'],
@@ -154,27 +87,6 @@ export const ProductSchemas = {
             id: '{{existingGradeId}}',
             gradeDisplayName: { en: 'Grade 500D Updated' },
             status: 'active',
-          },
-        ],
-      },
-    },
-  },
-
-  BulkUpdateStdRatesBody: {
-    type: 'object',
-    required: ['standardRates'],
-    properties: {
-      standardRates: {
-        type: 'array',
-        description:
-          'Array of standard rate items. Items with id are updated (partial — only id + changed fields needed); ' +
-          'items without id are created. Matches Postman "Update Standard Rates" payload.',
-        items: { $ref: '#/components/schemas/StandardRateItem' },
-        example: [
-          {
-            id: '{{existingStdRateId}}',
-            stdRateValue: 70000,
-            alertThresold: 75000,
           },
         ],
       },
@@ -238,12 +150,6 @@ export const ProductSchemas = {
                 'Active UOM IDs assigned to the product. Use one as uomId for RMPR and related APIs.',
               items: { type: 'string', format: 'uuid' },
               example: ['c3229ef5-df0f-4ae4-a494-6864849640b2'],
-            },
-            standardRateIds: {
-              type: 'array',
-              description: 'Active standard rate IDs from the product grades.',
-              items: { type: 'string', format: 'uuid' },
-              example: ['8fbdbf4f-b112-4a5f-b3ee-63a81abc2d99'],
             },
             inventories: {
               type: 'array',
@@ -322,18 +228,28 @@ export const ProductSchemas = {
                 },
                 gradeCode: { type: 'string', example: 'GRADE_500D' },
                 status: { type: 'string', example: 'active' },
-                productGradeStdRates: {
+                productGradeLastPurchaseRates: {
                   type: 'array',
+                  description: 'Latest purchase rate per UOM',
                   items: {
                     type: 'object',
                     properties: {
                       id: { type: 'string', format: 'uuid' },
-                      stdRateType: {
-                        type: 'object',
-                        example: { en: 'Purchase Rate' },
+                      lastPrice: { type: 'number', example: 65000 },
+                      purchaseType: {
+                        type: 'string',
+                        enum: ['IMPORT', 'LOCAL'],
+                        nullable: true,
+                        example: 'LOCAL',
                       },
-                      stdRateValue: { type: 'number', example: 65000 },
-                      alertThresold: { type: 'number', example: 70000 },
+                      vendorName: { type: 'string', example: 'ABC Traders' },
+                      lastPurchaseDate: {
+                        type: 'string',
+                        format: 'date-time',
+                      },
+                      uomId: { type: 'string', format: 'uuid' },
+                      uomCode: { type: 'string', example: 'KG' },
+                      uomName: { type: 'object', example: { en: 'Kilogram' } },
                       status: { type: 'string', example: 'active' },
                     },
                   },
@@ -387,18 +303,25 @@ export const ProductSchemas = {
               },
             },
           },
-          productGradeStdRates: {
+          productGradeLastPurchaseRates: {
             type: 'array',
+            description: 'Latest purchase rate per UOM',
             items: {
               type: 'object',
               properties: {
                 id: { type: 'string', format: 'uuid' },
-                stdRateType: {
-                  type: 'object',
-                  example: { en: 'Purchase Rate' },
+                lastPrice: { type: 'number', example: 65000 },
+                purchaseType: {
+                  type: 'string',
+                  enum: ['IMPORT', 'LOCAL'],
+                  nullable: true,
+                  example: 'LOCAL',
                 },
-                stdRateValue: { type: 'number', example: 65000 },
-                alertThresold: { type: 'number', example: 70000 },
+                vendorName: { type: 'string', example: 'ABC Traders' },
+                lastPurchaseDate: { type: 'string', format: 'date-time' },
+                uomId: { type: 'string', format: 'uuid' },
+                uomCode: { type: 'string', example: 'KG' },
+                uomName: { type: 'object', example: { en: 'Kilogram' } },
                 status: { type: 'string', example: 'active' },
                 createdAt: { type: 'string', format: 'date-time' },
                 productGrade: {
@@ -480,21 +403,6 @@ export const ProductSchemas = {
     },
   },
 
-  CreateProductGradeStdRateBody: {
-    type: 'object',
-    required: ['stdRateType', 'stdRateValue', 'alertThresold'],
-    properties: {
-      stdRateType: {
-        type: 'object',
-        description: 'Localized type',
-        example: { en: 'Base Rate' },
-      },
-      stdRateValue: { type: 'number', example: 65000 },
-      alertThresold: { type: 'number', example: 70000 },
-      status: { type: 'string', default: 'active' },
-    },
-  },
-
   CreateProductUomBody: {
     type: 'object',
     required: ['uomId'],
@@ -543,7 +451,7 @@ export const ProductSchemas = {
     },
   },
 
-  ProductGradesNestedStdRatesResponse: {
+  ProductGradesNestedLastPurchaseRatesResponse: {
     type: 'object',
     properties: {
       success: { type: 'boolean', example: true },
@@ -576,17 +484,34 @@ export const ProductSchemas = {
                       type: 'string',
                       example: 'Final Grade B',
                     },
-                    productGradeStdRates: {
+                    lastPurchaseRates: {
                       type: 'array',
+                      description: 'Latest purchase rate per UOM',
                       items: {
                         type: 'object',
                         properties: {
                           id: { type: 'string', format: 'uuid' },
-                          stdRateType: {
+                          vendorName: {
                             type: 'string',
-                            example: 'Export Rate',
+                            example: 'ABC Traders',
                           },
-                          stdRateValue: { type: 'number', example: 90000 },
+                          lastPrice: { type: 'number', example: 90000 },
+                          purchaseType: {
+                            type: 'string',
+                            enum: ['IMPORT', 'LOCAL'],
+                            nullable: true,
+                            example: 'LOCAL',
+                          },
+                          lastPurchaseDate: {
+                            type: 'string',
+                            format: 'date-time',
+                          },
+                          uomId: { type: 'string', format: 'uuid' },
+                          uomCode: { type: 'string', example: 'KG' },
+                          uomName: {
+                            type: 'object',
+                            example: { en: 'Kilogram' },
+                          },
                         },
                       },
                     },

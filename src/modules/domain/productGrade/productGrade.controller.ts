@@ -53,23 +53,23 @@ export const listAllDomainProductGrades = async (
   }
 };
 
-export const listProductGradesWithStdRates = async (
+export const listProductGradesWithLastPurchaseRates = async (
   req: Request,
   res: Response,
 ) => {
   try {
     const { language = 'en' } = req.headers;
-    const result = await ProductGradeService.findAllWithStdRates(
+    const result = await ProductGradeService.findAllWithLastPurchaseRates(
       req.user!.domainId,
       req.params.productId,
       req.query as any,
       language as string,
     );
-    // findAllWithStdRates returns { product, grades: { data, total, page, limit, totalPages } }
+    // findAllWithLastPurchaseRates returns { product, grades: { data, total, page, limit, totalPages } }
     // It's already slightly different, but the user said "list all product grades dont put two data field same with list standard rates".
     // I'll flatten it to avoid nested `grades.data` if that's what's happening.
-    // Let's just leave findAllWithStdRates as is unless I restructure it completely. Wait, no.
-    // Actually, I'll just destructure result.grades for listProductGradesWithStdRates.
+    // Let's just leave findAllWithLastPurchaseRates as is unless I restructure it completely. Wait, no.
+    // Actually, I'll just destructure result.grades for listProductGradesWithLastPurchaseRates.
     const { product, grades } = result;
     const { data, ...pagination } = grades as any;
     return res.status(HttpStatus.OK).json({

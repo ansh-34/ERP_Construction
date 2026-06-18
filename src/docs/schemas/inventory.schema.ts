@@ -79,18 +79,15 @@ export const InventorySchemas = {
           gradeDisplayName: { type: 'object', example: { en: 'Fine Sand' } },
           gradeCode: { type: 'string', example: 'FS' },
           status: { type: 'string', example: 'ACTIVE' },
-          productGradeStdRates: {
+          productGradeLastPurchaseRates: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
                 id: { type: 'string', format: 'uuid' },
-                stdRateType: {
-                  type: 'object',
-                  example: { en: 'Purchase Rate' },
-                },
-                stdRateValue: { type: 'number', example: 450 },
-                alertThresold: { type: 'number', example: 500 },
+                lastPrice: { type: 'number', example: 450 },
+                vendorName: { type: 'string', example: 'ABC Traders' },
+                lastPurchaseDate: { type: 'string', format: 'date-time' },
                 status: { type: 'string', example: 'ACTIVE' },
               },
             },

@@ -48,7 +48,7 @@ export * from './vendor.repository.js';
 export * from './invoice.repository.js';
 export * from './paymentRequest.repository.js';
 export * from './productGrade.repository.js';
-export * from './productGradeStdRate.repository.js';
+export * from './productGradeLastPurchaseRate.repository.js';
 export * from './report.repository.js';
 export * from './dbAnalytics.repository.js';
 export * from './fuelLog.repository.js';

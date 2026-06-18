@@ -42,7 +42,7 @@ import roleRouter from './role/role.router.js';
 import onboardingRouter from './onboarding/onboarding.router.js';
 
 import { listAllProductGrades } from './productGrade/productGrade.controller.js';
-import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
+import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
 
 import { validate } from '../../middlewares/validate.js';
@@ -112,10 +112,6 @@ userRouter.get(
   validate(listAllGradesAndRatesQuerySchema, 'query'),
   listAllProductGrades,
 );
-userRouter.get(
-  '/std-rates',
-  validate(listAllGradesAndRatesQuerySchema, 'query'),
-  listAllProductGradeStdRates,
-);
+userRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 
 export default userRouter;

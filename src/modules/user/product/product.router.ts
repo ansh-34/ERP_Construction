@@ -8,7 +8,6 @@ import {
   deleteProduct,
   updateProduct,
   bulkUpdateGrades,
-  bulkUpdateStandardRates,
   bulkUpdateUoms,
 } from './product.controller.js';
 import {
@@ -17,7 +16,6 @@ import {
   productIdParamsSchema,
   updateProductBodySchema,
   bulkUpdateGradesBodySchema,
-  bulkUpdateStdRatesBodySchema,
   bulkUpdateUomsBodySchema,
 } from './product.validator.js';
 import { productGradeRouter } from '../productGrade/productGrade.router.js';
@@ -26,7 +24,6 @@ import { listProductGradeQuerySchema } from '../productGrade/productGrade.valida
 import { productUomRouter } from '../productUom/productUom.router.js';
 import { listAllDomainProductUoms } from '../productUom/productUom.controller.js';
 import { listProductUomQuerySchema } from '../productUom/productUom.validation.js';
-import { listAllProductGradeStdRates } from '../productGradeStdRate/productGradeStdRate.controller.js';
 
 const router = Router();
 
@@ -47,12 +44,6 @@ router.get(
   authorize('PRODUCT', 'READ'),
   validate(listProductGradeQuerySchema, 'query'),
   listAllProductGrades,
-);
-router.get(
-  '/grades/std-rates',
-  authorize('PRODUCT', 'READ'),
-  validate(listProductGradeQuerySchema, 'query'),
-  listAllProductGradeStdRates,
 );
 router.get(
   '/uoms',
@@ -87,14 +78,6 @@ router.put(
   validate(bulkUpdateGradesBodySchema, 'body'),
   bulkUpdateGrades,
 );
-router.put(
-  '/:id/standard-rates',
-  authorize('PRODUCT', 'UPDATE'),
-  validate(productIdParamsSchema, 'params'),
-  validate(bulkUpdateStdRatesBodySchema, 'body'),
-  bulkUpdateStandardRates,
-);
-
 router.put(
   '/:id/uoms',
   authorize('PRODUCT', 'UPDATE'),

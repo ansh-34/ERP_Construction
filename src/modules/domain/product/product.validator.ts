@@ -22,31 +22,6 @@ const gradeItemSchema = z.object({
   status: z
     .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
     .default('ACTIVE'),
-  standardRates: z
-    .array(
-      z.object({
-        id: z.string().uuid().optional(),
-        stdRateType: localizedName,
-        stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
-        alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-        status: z
-          .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
-          .default('ACTIVE'),
-      }),
-    )
-    .optional(),
-});
-
-const standardRateItemSchema = z.object({
-  id: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional(),
-  gradeCode: z.string().min(1).optional(),
-  stdRateType: localizedName,
-  stdRateValue: z.number().min(0, 'stdRateValue must be >= 0'),
-  alertThresold: z.number().min(0, 'alertThresold must be >= 0'),
-  status: z
-    .enum(['active', 'inactive', 'ACTIVE', 'INACTIVE'])
-    .default('ACTIVE'),
 });
 
 const uomItemSchema = z.object({
@@ -68,7 +43,6 @@ export const createProductBodySchema = z.object({
     .default('ACTIVE'),
   uoms: uomsSchema.optional(),
   grades: z.array(gradeItemSchema).optional(),
-  standardRates: z.array(standardRateItemSchema).optional(),
 });
 
 export const updateProductBodySchema = z.object({
@@ -78,15 +52,10 @@ export const updateProductBodySchema = z.object({
   status: statusFilterSchema.shape.status.optional(),
   uom: z.array(z.string().uuid()).optional(),
   grades: z.array(gradeItemSchema).optional(),
-  standardRates: z.array(standardRateItemSchema).optional(),
 });
 
 export const bulkUpdateGradesBodySchema = z.object({
   grades: z.array(gradeItemSchema).min(1),
-});
-
-export const bulkUpdateStdRatesBodySchema = z.object({
-  standardRates: z.array(standardRateItemSchema).min(1),
 });
 
 export const bulkUpdateUomsBodySchema = z.object({

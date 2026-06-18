@@ -149,28 +149,6 @@ export const bulkUpdateGrades = async (req: Request, res: Response) => {
   }
 };
 
-export const bulkUpdateStandardRates = async (req: Request, res: Response) => {
-  try {
-    await ProductService.bulkUpdateStandardRates(
-      req.user!.domainId,
-      req.params.id,
-      req.body.standardRates,
-    );
-
-    return res.status(HttpStatus.OK).json({
-      success: true,
-      message: Messages.PRODUCT_GRADE_STD_RATE.UPDATED,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : Messages.PRODUCT_GRADE_STD_RATE.UPDATE_FAILED;
-    const statusCode = resolveHttpStatus(message);
-    return res.status(statusCode).json({ success: false, message });
-  }
-};
-
 export const bulkUpdateUoms = async (req: Request, res: Response) => {
   try {
     await ProductService.bulkUpdateUoms(

@@ -4,7 +4,7 @@ import { validate } from '../../../middlewares/validate.js';
 import {
   createProductGrade,
   listProductGrades,
-  listProductGradesWithStdRates,
+  listProductGradesWithLastPurchaseRates,
   getProductGradeById,
   updateProductGrade,
   deleteProductGrade,
@@ -16,7 +16,6 @@ import {
   productGradeProductIdParamSchema,
   productGradeIdParamSchema,
 } from './productGrade.validation.js';
-import { productGradeStdRateRouter } from '../productGradeStdRate/productGradeStdRate.router.js';
 
 export const productGradeRouter = (): Router => {
   const router = Router({ mergeParams: true });
@@ -34,10 +33,10 @@ export const productGradeRouter = (): Router => {
     listProductGrades,
   );
   router.get(
-    '/std-rates',
+    '/last-purchase-rates',
     validate(productGradeProductIdParamSchema, 'params'),
     validate(listProductGradeQuerySchema, 'query'),
-    listProductGradesWithStdRates,
+    listProductGradesWithLastPurchaseRates,
   );
   router.get(
     '/:id',
@@ -58,8 +57,6 @@ export const productGradeRouter = (): Router => {
     validate(productGradeIdParamSchema, 'params'),
     deleteProductGrade,
   );
-
-  router.use('/:gradeId/std-rates', productGradeStdRateRouter());
 
   return router;
 };

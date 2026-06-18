@@ -174,7 +174,7 @@ model Domain {
   products                    Product[]
   productUoms                 ProductUom[]
   productGrades               ProductGrades[]
-  productGradeStdRates        ProductGradeStdRates[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   apiKeys                     ApiKey[]
   locations                   Location[]
   media                       Media[]
@@ -314,6 +314,7 @@ model Currency {
   adminCurrencies       AdminCurrencies[]
   vendorProductPricings VendorProductPricing[]
   inventories           Inventory[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@map("currency")
 }
@@ -593,6 +594,7 @@ model Uom {
   vendorProductPricings       VendorProductPricing[]
   invoiceItems                InvoiceItem[]
   fuelLogs                    FuelLog[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -710,7 +712,7 @@ model Product {
 
   domain               Domain                 @relation(fields: [domainId], references: [id])
   productGrades        ProductGrades[]
-  productGradeStdRates ProductGradeStdRates[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   inventories          Inventory[]
   status               StatusEnum             @default(ACTIVE)
   isDeleted            Boolean                @default(false)
@@ -756,7 +758,7 @@ model ProductGrades {
   domainId                    String                       @db.Uuid
   domain                      Domain                       @relation(fields: [domainId], references: [id])
   product                     Product                      @relation(fields: [productId], references: [id])
-  productGradeStdRates        ProductGradeStdRates[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   inventories                 Inventory[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   vendorProductPricings       VendorProductPricing[]
@@ -772,26 +774,39 @@ model ProductGrades {
   @@index([createdAt, isDeleted, status])
 }
 
-model ProductGradeStdRates {
-  id             String        @id @default(uuid()) @db.Uuid
-  productGradeId String        @db.Uuid
-  productId      String        @db.Uuid
-  stdRateType    Json
-  searchText     String        @default("")
-  stdRateValue   Float
-  alertThresold  Float
-  domainId       String        @db.Uuid
-  domain         Domain        @relation(fields: [domainId], references: [id])
-  product        Product       @relation(fields: [productId], references: [id])
-  productGrade   ProductGrades @relation(fields: [productGradeId], references: [id])
-  status         StatusEnum    @default(ACTIVE)
-  isDeleted      Boolean
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+model ProductGradeLastPurchaseRate {
+  id               String        @id @default(uuid()) @db.Uuid
+  productId        String        @db.Uuid
+  product          Product       @relation(fields: [productId], references: [id])
+  productGradeId   String        @db.Uuid
+  productGrade     ProductGrades @relation(fields: [productGradeId], references: [id])
+  uomId            String        @db.Uuid
+  uom              Uom           @relation(fields: [uomId], references: [id])
+  lastPrice        Float
+  purchaseType     PurchaseRequestType?
+  currencyId       String?       @db.Uuid
+  currency         Currency?     @relation(fields: [currencyId], references: [id])
+  vendorId         String?       @db.Uuid
+  vendor           Vendor?       @relation(fields: [vendorId], references: [id])
+  vendorName       String
+  lastInvoiceId    String?       @db.Uuid
+  lastInvoice      Invoice?      @relation(fields: [lastInvoiceId], references: [id])
+  lastPurchaseDate DateTime
+  searchText       String        @default("")
+  domainId         String        @db.Uuid
+  domain           Domain        @relation(fields: [domainId], references: [id])
+  status           StatusEnum    @default(ACTIVE)
+  isDeleted        Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
+  @@unique([productId, productGradeId, uomId, purchaseType, domainId])
   @@index([isDeleted])
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, status])
+  @@index([productId])
+  @@index([productGradeId])
+  @@index([domainId])
 }
 
 enum PurchaseRequestType {
@@ -977,6 +992,7 @@ model Invoice {
   items       InvoiceItem[]
   grns        Grn[]
   grnProducts GrnProduct[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@unique([invoiceCode, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -1145,6 +1161,7 @@ model Vendor {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   vendorProductPricings VendorProductPricing[]
+  productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@unique([code, domainId, isDeleted])
   @@unique([email, domainId, isDeleted])

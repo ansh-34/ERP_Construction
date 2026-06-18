@@ -10,3 +10,4 @@ src/infra/database/prisma/generated/
 postman/
 /logs/
 /exports/generated-pdfs/
+/docs/

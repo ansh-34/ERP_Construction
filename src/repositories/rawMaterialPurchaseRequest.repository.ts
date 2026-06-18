@@ -18,9 +18,7 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
         productName,
         productGradeName,
         quantity,
-        tax,
         uomId,
-        rate,
         projectId,
         domainId: popDomainId,
         status,
@@ -28,7 +26,6 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
         createdAt,
         updatedAt,
         uom,
-        ...otherFields
       } = pop;
 
       return {
@@ -40,10 +37,8 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
         productGradeName,
         productGradeCode: null,
         quantity,
-        tax,
         uomId,
         uomCode: pop.uom?.code || null,
-        rate,
         projectId,
         domainId: popDomainId,
         status,
@@ -51,7 +46,6 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
         createdAt,
         updatedAt,
         uom,
-        ...otherFields,
       };
     });
   }
@@ -92,9 +86,7 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       productName,
       productGradeName,
       quantity,
-      tax,
       uomId,
-      rate,
       projectId,
       domainId: popDomainId,
       status,
@@ -102,7 +94,6 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       createdAt,
       updatedAt,
       uom,
-      ...otherFields
     } = pop;
 
     return {
@@ -114,10 +105,8 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       productGradeName,
       productGradeCode: match?.productGrade?.gradeCode || null,
       quantity,
-      tax,
       uomId,
       uomCode: pop.uom?.code || match?.uom?.code || null,
-      rate,
       projectId,
       domainId: popDomainId,
       status,
@@ -125,7 +114,6 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       createdAt,
       updatedAt,
       uom,
-      ...otherFields,
     };
   });
 }
@@ -378,7 +366,25 @@ export const RawMaterialPurchaseRequestRepository = {
       // Retrieve the full PO with products to return
       const fullPo = await tx.purchaseOrder.findFirst({
         where: { id: po.id },
-        include: { purchaseOrderProducts: true },
+        include: {
+          purchaseOrderProducts: {
+            select: {
+              id: true,
+              purchaseOrderId: true,
+              orderCode: true,
+              productName: true,
+              productGradeName: true,
+              quantity: true,
+              uomId: true,
+              projectId: true,
+              domainId: true,
+              status: true,
+              isDeleted: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
       });
 
       return { request: updatedRequest, purchaseOrder: fullPo };

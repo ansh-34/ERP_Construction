@@ -45,7 +45,7 @@ import onboardingRouter from './onboarding/onboarding.router.js';
 import dashboardRouter from './dashboard/dashboard.router.js';
 
 import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
-import { listAllProductGradeStdRates } from './productGradeStdRate/productGradeStdRate.controller.js';
+import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
 import { validate } from '../../middlewares/validate.js';
 import { z } from 'zod';
 import {
@@ -118,10 +118,6 @@ domainRouter.get(
   validate(listAllGradesAndRatesQuerySchema, 'query'),
   listAllDomainProductGrades,
 );
-domainRouter.get(
-  '/std-rates',
-  validate(listAllGradesAndRatesQuerySchema, 'query'),
-  listAllProductGradeStdRates,
-);
+domainRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 
 export default domainRouter;
