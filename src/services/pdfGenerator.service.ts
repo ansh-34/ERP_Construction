@@ -411,8 +411,9 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     }
 
     // 8. Upload PDF buffer to S3
+    const invoiceYear = invoice.invoiceDate.getFullYear();
     const fileName = `${invoice.invoiceCode}.pdf`;
-    const folderPath = `invoices/${invoice.domainId}`;
+    const folderPath = `invoices/${invoice.domainId}/${invoiceYear}`;
 
     console.log(
       `[PdfService] Uploading PDF buffer to S3: ${folderPath}/${fileName}`,
@@ -422,6 +423,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
       folderPath,
       fileName,
       'application/pdf',
+      true,
     );
 
     // 9. Save PDF URL and update status to READY in DB
