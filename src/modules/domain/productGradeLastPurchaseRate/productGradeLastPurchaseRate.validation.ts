@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import {
   idParamSchema,
-  pageBasedPaginationQuerySchema,
+  paginationQuerySchema,
   statusFilterSchema,
 } from '../../common/common.validator.js';
 
 export const listProductGradeLastPurchaseRateQuerySchema =
-  pageBasedPaginationQuerySchema.merge(statusFilterSchema).extend({
+  paginationQuerySchema.merge(statusFilterSchema).extend({
     searchKey: z.string().optional(),
     productId: z.string().uuid().optional().or(z.literal('')),
     gradeId: z.string().uuid().optional().or(z.literal('')),

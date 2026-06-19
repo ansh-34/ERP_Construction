@@ -12,11 +12,11 @@ export const listProductGradeLastPurchaseRates = async (
       req.user!.domainId,
       req.query as any,
     );
-    const { data, ...pagination } = result as any;
+    const { data, ...paginationData } = result as any;
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.PRODUCT_GRADE_LAST_PURCHASE_RATE.RETRIEVED,
-      pagination,
+      pagination: { currentCount: data.length, ...paginationData },
       data,
     });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { ProductGradeLastPurchaseRateRepository } from '../../../repositories/index.js';
 import { Messages } from '../../../constants/index.js';
+import { normalizePagination } from '../../../utils/pagination.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 
 function localizeName(value: any, langCode: string) {
@@ -66,8 +67,8 @@ export const ProductGradeLastPurchaseRateService = {
   async findAll(
     domainId: string,
     query: {
-      page?: string;
-      limit?: string;
+      offset?: number | string;
+      limit?: number | string;
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
       productId?: string;
@@ -78,9 +79,7 @@ export const ProductGradeLastPurchaseRateService = {
       [key: string]: any;
     },
   ) {
-    const page = parseInt(query.page ?? '1');
-    const limit = parseInt(query.limit ?? '10');
-    const skip = (page - 1) * limit;
+    const { offset, limit } = normalizePagination(query);
 
     // null → return raw JSON objects; string → flatten to that language (default en)
     const lang: string | null = query.lang ? query.lang || 'en' : null;
@@ -102,10 +101,10 @@ export const ProductGradeLastPurchaseRateService = {
       }),
     };
 
-    const [data, total] = await Promise.all([
+    const [data, totalCount] = await Promise.all([
       ProductGradeLastPurchaseRateRepository.findMany({
         where,
-        skip,
+        skip: offset,
         take: limit,
         orderBy: { lastPurchaseDate: 'desc' },
         include: includeRelations,
@@ -115,10 +114,9 @@ export const ProductGradeLastPurchaseRateService = {
 
     return {
       data: data.map((rate: any) => normalize(rate, lang)),
-      total,
-      page,
+      totalCount,
+      offset,
       limit,
-      totalPages: Math.ceil(total / limit),
     };
   },
 
