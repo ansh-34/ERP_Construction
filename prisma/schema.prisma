@@ -104,6 +104,7 @@ model Admin {
   maintenanceLogs            MaintenanceLog[]
   movementLogs               MovementLog[]
   fuelLogs                   FuelLog[]
+  inventoryFuelStocks        InventoryFuelStock[]
   mediaFiles                 Media[]                     @relation("AdminMediaFiles")
   users                      User[]
   roles                      Role[]
@@ -198,6 +199,7 @@ model Domain {
   maintenanceLogs             MaintenanceLog[]
   movementLogs                MovementLog[]
   fuelLogs                    FuelLog[]
+  inventoryFuelStocks         InventoryFuelStock[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   purchaseOrders              PurchaseOrder[]
   vendors                     Vendor[]
@@ -599,6 +601,7 @@ model Uom {
   vendorProductPricings       VendorProductPricing[]
   invoiceItems                InvoiceItem[]
   fuelLogs                    FuelLog[]
+  inventoryFuelStocks         InventoryFuelStock[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -626,6 +629,7 @@ model Vehicle {
   maintenanceSchedules MaintenanceSchedule[]
   maintenanceLogs      MaintenanceLog[]
   movementLogs         MovementLog[]
+  fuelLogs             FuelLog[]
 
   @@unique([numberPlate, isDeleted])
   @@index([createdAt, isDeleted, domainId])
@@ -852,6 +856,45 @@ enum FuelType {
 enum FuelDirectionType {
   CONSUMED
   FILLED
+}
+
+enum FuelTransactionType {
+  REFILL
+  CONSUMED
+}
+
+enum FuelEntityType {
+  PROJECT_FUEL_TANK
+  VEHICLE
+  MACHINERY
+}
+
+model InventoryFuelStock {
+  id                    String     @id @default(uuid()) @db.Uuid
+  projectId             String     @db.Uuid
+  project               Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fuelType              FuelType
+  uomId                 String     @db.Uuid
+  uom                   Uom        @relation(fields: [uomId], references: [id], onDelete: Restrict)
+  availableQuantity     Float      @default(0)
+  totalRefilledQuantity Float      @default(0)
+  totalConsumedQuantity Float      @default(0)
+  domainId              String     @db.Uuid
+  domain                Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId               String     @db.Uuid
+  admin                 Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status                StatusEnum @default(ACTIVE)
+  isDeleted             Boolean    @default(false)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  fuelLogs FuelLog[]
+
+  @@unique([projectId, fuelType, uomId, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([createdAt, isDeleted, domainId, projectId])
+  @@index([createdAt, isDeleted, domainId, fuelType])
+  @@index([adminId])
 }
 
 model RawMaterialPurchaseRequest {
@@ -1266,6 +1309,7 @@ model Project {
   invoices                    Invoice[]
   paymentRequests             PaymentRequest[]
   fuelLogs                    FuelLog[]
+  inventoryFuelStocks         InventoryFuelStock[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1438,6 +1482,7 @@ model Machinery {
   maintenanceSchedules MaintenanceSchedule[]
   maintenanceLogs      MaintenanceLog[]
   movementLogs         MovementLog[]
+  fuelLogs             FuelLog[]
   machineReadings      MachineReading[]
 
   @@index([createdAt, isDeleted, domainId])
@@ -1582,14 +1627,25 @@ model FuelLog {
   id String @id @default(uuid()) @db.Uuid
 
   fuelType          FuelType
-  equipmentUniqueId String
-  equipmentCategory MaintenanceAssetType
-  equipmentType     String
+  equipmentUniqueId String?
+  equipmentCategory MaintenanceAssetType?
+  equipmentType     String?
   date              DateTime
   fuelDirectionType FuelDirectionType
   fuelValue         Float
   fuelQuantity      Float
-  searchText        String               @default("")
+  searchText        String                @default("")
+  transactionType   FuelTransactionType   @default(REFILL)
+  fuelEntityType    FuelEntityType        @default(PROJECT_FUEL_TANK)
+
+  inventoryFuelStockId String?             @db.Uuid
+  inventoryFuelStock   InventoryFuelStock? @relation(fields: [inventoryFuelStockId], references: [id], onDelete: SetNull)
+
+  vehicleId String?  @db.Uuid
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  machineryId String?    @db.Uuid
+  machinery   Machinery? @relation(fields: [machineryId], references: [id], onDelete: SetNull)
 
   fuelUomId String @db.Uuid
   fuelUom   Uom    @relation(fields: [fuelUomId], references: [id])
@@ -1612,6 +1668,11 @@ model FuelLog {
   @@index([domainId, equipmentCategory])
   @@index([fuelType])
   @@index([fuelDirectionType])
+  @@index([transactionType])
+  @@index([fuelEntityType])
+  @@index([inventoryFuelStockId])
+  @@index([vehicleId])
+  @@index([machineryId])
   @@index([projectId])
   @@index([date])
 }

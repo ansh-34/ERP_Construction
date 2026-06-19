@@ -4,33 +4,43 @@ import type { MaintenanceAssetType } from './maintenanceSchedule.repository';
 
 export type FuelType = 'PETROL' | 'DIESEL';
 export type FuelDirectionType = 'CONSUMED' | 'FILLED';
+export type FuelTransactionType = 'REFILL' | 'CONSUMED';
+export type FuelEntityType = 'PROJECT_FUEL_TANK' | 'VEHICLE' | 'MACHINERY';
 
 export interface UpdateFuelLogInput {
   fuelType?: FuelType;
-  equipmentUniqueId?: string;
-  equipmentCategory?: MaintenanceAssetType;
-  equipmentType?: string;
+  equipmentUniqueId?: string | null;
+  equipmentCategory?: MaintenanceAssetType | null;
+  equipmentType?: string | null;
   date?: Date;
   fuelDirectionType?: FuelDirectionType;
   fuelValue?: number;
   fuelQuantity?: number;
+  transactionType?: FuelTransactionType;
+  fuelEntityType?: FuelEntityType;
   fuelUomId?: string;
   projectId?: string;
+  vehicleId?: string | null;
+  machineryId?: string | null;
   searchText?: string;
 }
 
 export interface CreateFuelLogInput {
   fuelType: FuelType;
-  equipmentUniqueId: string;
-  equipmentCategory: MaintenanceAssetType;
-  equipmentType: string;
+  equipmentUniqueId?: string | null;
+  equipmentCategory?: MaintenanceAssetType | null;
+  equipmentType?: string | null;
   date: Date;
   fuelDirectionType: FuelDirectionType;
   fuelValue: number;
   fuelQuantity: number;
+  transactionType: FuelTransactionType;
+  fuelEntityType: FuelEntityType;
   searchText: string;
   fuelUomId: string;
   projectId?: string | null;
+  vehicleId?: string | null;
+  machineryId?: string | null;
   domainId: string;
   adminId: string;
   status: StatusEnum;
@@ -39,28 +49,94 @@ export interface CreateFuelLogInput {
 const fuelLogInclude = {
   fuelUom: { select: { id: true, code: true, displayName: true } },
   project: { select: { id: true, code: true, name: true, status: true } },
+  inventoryFuelStock: true,
+  vehicle: { select: { id: true, numberPlate: true, vehicleType: true } },
+  machinery: { select: { id: true, code: true, type: true } },
 } as const;
 
 export const fuelLogRepository = {
   create(data: CreateFuelLogInput) {
-    return prisma.fuelLog.create({
-      data: {
-        fuelType: data.fuelType,
-        equipmentUniqueId: data.equipmentUniqueId,
-        equipmentCategory: data.equipmentCategory,
-        equipmentType: data.equipmentType,
-        date: data.date,
-        fuelDirectionType: data.fuelDirectionType,
-        fuelValue: data.fuelValue,
-        fuelQuantity: data.fuelQuantity,
-        searchText: data.searchText,
-        fuelUomId: data.fuelUomId,
-        projectId: data.projectId ?? null,
-        domainId: data.domainId,
-        adminId: data.adminId,
-        status: data.status,
-      },
-      include: fuelLogInclude,
+    return prisma.$transaction(async (tx) => {
+      if (!data.projectId) {
+        throw new Error('projectId is required');
+      }
+
+      const existingStock = await tx.inventoryFuelStock.findFirst({
+        where: {
+          projectId: data.projectId,
+          fuelType: data.fuelType,
+          uomId: data.fuelUomId,
+          domainId: data.domainId,
+          isDeleted: false,
+        },
+      });
+
+      let stock = existingStock;
+
+      if (data.transactionType === 'REFILL') {
+        stock = existingStock
+          ? await tx.inventoryFuelStock.update({
+              where: { id: existingStock.id },
+              data: {
+                availableQuantity: { increment: data.fuelQuantity },
+                totalRefilledQuantity: { increment: data.fuelQuantity },
+              },
+            })
+          : await tx.inventoryFuelStock.create({
+              data: {
+                projectId: data.projectId,
+                fuelType: data.fuelType,
+                uomId: data.fuelUomId,
+                availableQuantity: data.fuelQuantity,
+                totalRefilledQuantity: data.fuelQuantity,
+                totalConsumedQuantity: 0,
+                domainId: data.domainId,
+                adminId: data.adminId,
+                status: StatusEnum.ACTIVE,
+              },
+            });
+      } else {
+        if (!existingStock) {
+          throw new Error('fuel stock not found');
+        }
+
+        if (existingStock.availableQuantity < data.fuelQuantity) {
+          throw new Error('insufficient fuel stock');
+        }
+
+        stock = await tx.inventoryFuelStock.update({
+          where: { id: existingStock.id },
+          data: {
+            availableQuantity: { decrement: data.fuelQuantity },
+            totalConsumedQuantity: { increment: data.fuelQuantity },
+          },
+        });
+      }
+
+      return tx.fuelLog.create({
+        data: {
+          fuelType: data.fuelType,
+          equipmentUniqueId: data.equipmentUniqueId,
+          equipmentCategory: data.equipmentCategory,
+          equipmentType: data.equipmentType,
+          date: data.date,
+          fuelDirectionType: data.fuelDirectionType,
+          fuelValue: data.fuelValue,
+          fuelQuantity: data.fuelQuantity,
+          transactionType: data.transactionType,
+          fuelEntityType: data.fuelEntityType,
+          searchText: data.searchText,
+          fuelUomId: data.fuelUomId,
+          projectId: data.projectId,
+          vehicleId: data.vehicleId ?? null,
+          machineryId: data.machineryId ?? null,
+          inventoryFuelStockId: stock.id,
+          domainId: data.domainId,
+          adminId: data.adminId,
+          status: data.status,
+        },
+        include: fuelLogInclude,
+      });
     });
   },
 
@@ -71,6 +147,8 @@ export const fuelLogRepository = {
       fuelType?: FuelType;
       equipmentCategory?: MaintenanceAssetType;
       fuelDirectionType?: FuelDirectionType;
+      transactionType?: FuelTransactionType;
+      fuelEntityType?: FuelEntityType;
       equipmentUniqueId?: string;
       projectId?: string;
       fromDate?: Date;
@@ -97,6 +175,8 @@ export const fuelLogRepository = {
       fuelType?: FuelType;
       equipmentCategory?: MaintenanceAssetType;
       fuelDirectionType?: FuelDirectionType;
+      transactionType?: FuelTransactionType;
+      fuelEntityType?: FuelEntityType;
       equipmentUniqueId?: string;
       projectId?: string;
       fromDate?: Date;
@@ -144,12 +224,22 @@ export const fuelLogRepository = {
         ...(data.fuelDirectionType !== undefined
           ? { fuelDirectionType: data.fuelDirectionType }
           : {}),
+        ...(data.transactionType !== undefined
+          ? { transactionType: data.transactionType }
+          : {}),
+        ...(data.fuelEntityType !== undefined
+          ? { fuelEntityType: data.fuelEntityType }
+          : {}),
         ...(data.fuelValue !== undefined ? { fuelValue: data.fuelValue } : {}),
         ...(data.fuelQuantity !== undefined
           ? { fuelQuantity: data.fuelQuantity }
           : {}),
         ...(data.fuelUomId !== undefined ? { fuelUomId: data.fuelUomId } : {}),
         ...(data.projectId !== undefined ? { projectId: data.projectId } : {}),
+        ...(data.vehicleId !== undefined ? { vehicleId: data.vehicleId } : {}),
+        ...(data.machineryId !== undefined
+          ? { machineryId: data.machineryId }
+          : {}),
         ...(data.searchText !== undefined
           ? { searchText: data.searchText }
           : {}),
@@ -178,6 +268,8 @@ function buildWhere(
     fuelType?: FuelType;
     equipmentCategory?: MaintenanceAssetType;
     fuelDirectionType?: FuelDirectionType;
+    transactionType?: FuelTransactionType;
+    fuelEntityType?: FuelEntityType;
     equipmentUniqueId?: string;
     projectId?: string;
     fromDate?: Date;
@@ -195,6 +287,12 @@ function buildWhere(
       : {}),
     ...(filters.fuelDirectionType
       ? { fuelDirectionType: filters.fuelDirectionType }
+      : {}),
+    ...(filters.transactionType
+      ? { transactionType: filters.transactionType }
+      : {}),
+    ...(filters.fuelEntityType
+      ? { fuelEntityType: filters.fuelEntityType }
       : {}),
     ...(filters.equipmentUniqueId
       ? { equipmentUniqueId: filters.equipmentUniqueId }

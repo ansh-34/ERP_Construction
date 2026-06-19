@@ -52,3 +52,4 @@ export * from './productGradeStdRate.repository.js';
 export * from './report.repository.js';
 export * from './dbAnalytics.repository.js';
 export * from './fuelLog.repository.js';
+export * from './inventoryFuelStock.repository.js';
