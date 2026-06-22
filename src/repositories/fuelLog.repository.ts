@@ -1,4 +1,5 @@
 import prisma from '@/infra/database/prisma/prisma.client';
+import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import { StatusEnum } from '@constants/index';
 import type { MaintenanceAssetType } from './maintenanceSchedule.repository';
 
@@ -7,6 +8,20 @@ export type FuelDirectionType = 'CONSUMED' | 'FILLED';
 export type FuelTransactionType = 'REFILL' | 'CONSUMED';
 export type FuelEntityType = 'PROJECT_FUEL_TANK' | 'VEHICLE' | 'MACHINERY';
 
+export interface MachineryFuelUsageContext {
+  machineryId: string;
+  projectId: string;
+  fuelType: FuelType;
+  fuelUomId: string;
+  domainId: string;
+  adminId: string;
+}
+
+export interface MachineryFuelDailyUsage {
+  usageDate: string;
+  totalQuantity: number;
+}
+
 export interface UpdateFuelLogInput {
   fuelType?: FuelType;
   equipmentUniqueId?: string | null;
@@ -14,7 +29,6 @@ export interface UpdateFuelLogInput {
   equipmentType?: string | null;
   date?: Date;
   fuelDirectionType?: FuelDirectionType;
-  fuelValue?: number;
   fuelQuantity?: number;
   transactionType?: FuelTransactionType;
   fuelEntityType?: FuelEntityType;
@@ -32,7 +46,6 @@ export interface CreateFuelLogInput {
   equipmentType?: string | null;
   date: Date;
   fuelDirectionType: FuelDirectionType;
-  fuelValue: number;
   fuelQuantity: number;
   transactionType: FuelTransactionType;
   fuelEntityType: FuelEntityType;
@@ -57,13 +70,8 @@ const fuelLogInclude = {
 export const fuelLogRepository = {
   create(data: CreateFuelLogInput) {
     return prisma.$transaction(async (tx) => {
-      if (!data.projectId) {
-        throw new Error('projectId is required');
-      }
-
       const existingStock = await tx.inventoryFuelStock.findFirst({
         where: {
-          projectId: data.projectId,
           fuelType: data.fuelType,
           uomId: data.fuelUomId,
           domainId: data.domainId,
@@ -84,7 +92,6 @@ export const fuelLogRepository = {
             })
           : await tx.inventoryFuelStock.create({
               data: {
-                projectId: data.projectId,
                 fuelType: data.fuelType,
                 uomId: data.fuelUomId,
                 availableQuantity: data.fuelQuantity,
@@ -121,7 +128,6 @@ export const fuelLogRepository = {
           equipmentType: data.equipmentType,
           date: data.date,
           fuelDirectionType: data.fuelDirectionType,
-          fuelValue: data.fuelValue,
           fuelQuantity: data.fuelQuantity,
           transactionType: data.transactionType,
           fuelEntityType: data.fuelEntityType,
@@ -230,7 +236,6 @@ export const fuelLogRepository = {
         ...(data.fuelEntityType !== undefined
           ? { fuelEntityType: data.fuelEntityType }
           : {}),
-        ...(data.fuelValue !== undefined ? { fuelValue: data.fuelValue } : {}),
         ...(data.fuelQuantity !== undefined
           ? { fuelQuantity: data.fuelQuantity }
           : {}),
@@ -258,6 +263,54 @@ export const fuelLogRepository = {
       },
       data: { isDeleted: true },
     });
+  },
+
+  findMachineryDailyUsage(
+    context: MachineryFuelUsageContext,
+    fromDate: Date,
+    toDate: Date,
+  ) {
+    return prisma.$queryRaw<MachineryFuelDailyUsage[]>(Prisma.sql`
+      SELECT
+        to_char(date_trunc('day', fl."date"), 'YYYY-MM-DD') AS "usageDate",
+        SUM(fl."fuelQuantity")::double precision AS "totalQuantity"
+      FROM "FuelLog" fl
+      WHERE fl."machineryId" = ${context.machineryId}
+        AND fl."projectId" = ${context.projectId}
+        AND fl."fuelType" = ${context.fuelType}::"FuelType"
+        AND fl."fuelUomId" = ${context.fuelUomId}
+        AND fl."domainId" = ${context.domainId}
+        AND fl."adminId" = ${context.adminId}
+        AND fl."transactionType" = 'CONSUMED'::"FuelTransactionType"
+        AND fl."fuelEntityType" = 'MACHINERY'::"FuelEntityType"
+        AND fl."status" = 'ACTIVE'::"StatusEnum"
+        AND fl."isDeleted" = false
+        AND fl."date" >= ${fromDate}
+        AND fl."date" < ${toDate}
+      GROUP BY date_trunc('day', fl."date")
+      ORDER BY "usageDate" ASC
+    `);
+  },
+
+  findMachineryUsageContexts(fromDate: Date, toDate: Date) {
+    return prisma.$queryRaw<MachineryFuelUsageContext[]>(Prisma.sql`
+      SELECT DISTINCT
+        fl."machineryId",
+        fl."projectId",
+        fl."fuelType",
+        fl."fuelUomId",
+        fl."domainId",
+        fl."adminId"
+      FROM "FuelLog" fl
+      WHERE fl."machineryId" IS NOT NULL
+        AND fl."projectId" IS NOT NULL
+        AND fl."transactionType" = 'CONSUMED'::"FuelTransactionType"
+        AND fl."fuelEntityType" = 'MACHINERY'::"FuelEntityType"
+        AND fl."status" = 'ACTIVE'::"StatusEnum"
+        AND fl."isDeleted" = false
+        AND fl."date" >= ${fromDate}
+        AND fl."date" < ${toDate}
+    `);
   },
 };
 

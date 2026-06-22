@@ -21,7 +21,6 @@ export const createFuelLog = async (req: Request, res: Response) => {
       fuelDirectionType,
       transactionType,
       fuelEntityType,
-      fuelValue,
       fuelQuantity,
       fuelUomId,
       projectId,
@@ -36,10 +35,9 @@ export const createFuelLog = async (req: Request, res: Response) => {
       fuelDirectionType?: FuelDirectionType;
       transactionType: FuelTransactionType;
       fuelEntityType: FuelEntityType;
-      fuelValue?: number;
       fuelQuantity: number;
       fuelUomId: string;
-      projectId: string;
+      projectId?: string | null;
       vehicleId?: string | null;
       machineryId?: string | null;
     };
@@ -53,7 +51,6 @@ export const createFuelLog = async (req: Request, res: Response) => {
       fuelDirectionType,
       transactionType,
       fuelEntityType,
-      fuelValue,
       fuelQuantity,
       fuelUomId,
       projectId,

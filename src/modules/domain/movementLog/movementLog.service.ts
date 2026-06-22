@@ -14,6 +14,7 @@ import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
 } from '@/utils/validation';
+import { enqueueMachineryRuntimeAlertCheck } from '@/queue/alertQueue';
 
 interface CreateMovementLogInput {
   code: string;
@@ -220,6 +221,19 @@ export const movementLogService = {
           { projectId: data.projectId },
           data.adminId,
         );
+
+        enqueueMachineryRuntimeAlertCheck({
+          machineryId: data.machineryId,
+          projectId: data.projectId,
+          usageDate: startDateTime.toISOString().slice(0, 10),
+          domainId: data.domainId,
+          adminId: data.adminId,
+        }).catch((error: unknown) => {
+          console.error(
+            'Failed to enqueue machinery runtime alert check:',
+            error instanceof Error ? error.message : error,
+          );
+        });
       }
 
       return log;

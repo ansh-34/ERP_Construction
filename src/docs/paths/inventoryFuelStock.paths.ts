@@ -7,21 +7,12 @@ const inventoryFuelStockObject = {
   type: 'object',
   properties: {
     id: { type: 'string', format: 'uuid' },
-    projectId: { type: 'string', format: 'uuid' },
     fuelType: { type: 'string', enum: fuelTypeEnum, example: 'DIESEL' },
     uomId: { type: 'string', format: 'uuid' },
     availableQuantity: { type: 'number', example: 160 },
     totalRefilledQuantity: { type: 'number', example: 200 },
     totalConsumedQuantity: { type: 'number', example: 40 },
     status: { type: 'string', enum: statusEnum, example: 'ACTIVE' },
-    project: {
-      type: 'object',
-      properties: {
-        id: { type: 'string', format: 'uuid' },
-        code: { type: 'string', example: 'PRJ-001' },
-        name: { type: 'object', example: { en: 'Demo Project' } },
-      },
-    },
     uom: {
       type: 'object',
       properties: {
@@ -47,11 +38,6 @@ const listQueryParams = [
     name: 'limit',
     schema: { type: 'integer', minimum: 1, maximum: 100 },
     description: 'Page size',
-  },
-  {
-    in: 'query',
-    name: 'projectId',
-    schema: { type: 'string', format: 'uuid' },
   },
   {
     in: 'query',
@@ -84,7 +70,7 @@ export const InventoryFuelStockPaths = {
       tags: ['Inventory Fuel Stocks'],
       summary: 'List inventory fuel stocks',
       description:
-        'Read-only fuel stock balance list. Stock is created and updated only through fuel logs.',
+        'Read-only domain fuel stock balances. Stock is created and updated only through fuel logs.',
       security: [{ bearerAuth: [] }],
       parameters: listQueryParams,
       responses: {
@@ -127,7 +113,7 @@ export const InventoryFuelStockPaths = {
       tags: ['Inventory Fuel Stocks'],
       summary: 'Get inventory fuel stock by id',
       description:
-        'Read-only fuel stock detail. Use fuel logs to refill or consume fuel.',
+        'Read-only domain fuel stock detail. Use fuel logs to refill or consume fuel.',
       security: [{ bearerAuth: [] }],
       parameters: [idParam],
       responses: {
@@ -158,7 +144,7 @@ export const InventoryFuelStockPaths = {
       tags: ['User Inventory Fuel Stocks'],
       summary: 'List user inventory fuel stocks',
       description:
-        'Read-only fuel stock balance list for user module. Stock is created and updated only through fuel logs.',
+        'Read-only domain fuel stock balances for the user module. Stock is created and updated only through fuel logs.',
       security: [{ bearerAuth: [] }],
       parameters: listQueryParams,
       responses: {

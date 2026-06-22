@@ -10,22 +10,31 @@ const equipmentCategory = z.enum(['VEHICLE', 'MACHINERY']);
 const transactionType = z.enum(['REFILL', 'CONSUMED']);
 const fuelEntityType = z.enum(['PROJECT_FUEL_TANK', 'VEHICLE', 'MACHINERY']);
 
-export const createFuelLogBody = z.object({
-  fuelType,
-  equipmentUniqueId: z.string().trim().min(1).nullable().optional(),
-  equipmentCategory: equipmentCategory.nullable().optional(),
-  equipmentType: z.string().trim().min(1).nullable().optional(),
-  date: z.string().trim().min(1, { message: 'date is required' }),
-  fuelDirectionType: fuelDirectionType.optional(),
-  transactionType,
-  fuelEntityType,
-  fuelValue: z.number().nonnegative().optional(),
-  fuelQuantity: z.number().positive(),
-  fuelUomId: z.string().trim().uuid(),
-  projectId: z.string().trim().uuid(),
-  vehicleId: z.string().trim().uuid().nullable().optional(),
-  machineryId: z.string().trim().uuid().nullable().optional(),
-});
+export const createFuelLogBody = z
+  .object({
+    fuelType,
+    equipmentUniqueId: z.string().trim().min(1).nullable().optional(),
+    equipmentCategory: equipmentCategory.nullable().optional(),
+    equipmentType: z.string().trim().min(1).nullable().optional(),
+    date: z.string().trim().min(1, { message: 'date is required' }),
+    fuelDirectionType: fuelDirectionType.optional(),
+    transactionType,
+    fuelEntityType,
+    fuelQuantity: z.number().positive(),
+    fuelUomId: z.string().trim().uuid(),
+    projectId: z.string().trim().uuid().nullable().optional(),
+    vehicleId: z.string().trim().uuid().nullable().optional(),
+    machineryId: z.string().trim().uuid().nullable().optional(),
+  })
+  .superRefine((data, context) => {
+    if (data.transactionType === 'CONSUMED' && !data.projectId) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['projectId'],
+        message: 'projectId is required for fuel consumption',
+      });
+    }
+  });
 
 export const updateFuelLogBody = z
   .object({
@@ -37,7 +46,6 @@ export const updateFuelLogBody = z
     fuelDirectionType: fuelDirectionType.optional(),
     transactionType: transactionType.optional(),
     fuelEntityType: fuelEntityType.optional(),
-    fuelValue: z.number().nonnegative().optional(),
     fuelQuantity: z.number().positive().optional(),
     fuelUomId: z.string().trim().uuid().optional(),
     projectId: z.string().trim().uuid().optional(),

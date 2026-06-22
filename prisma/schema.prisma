@@ -26,6 +26,24 @@ enum PdfStatus {
   FAILED
 }
 
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationRecipientType {
+  DOMAIN
+  ADMIN
+  USER
+}
+
 enum LangDirEnum {
   ltr
   rtl
@@ -105,6 +123,9 @@ model Admin {
   movementLogs               MovementLog[]
   fuelLogs                   FuelLog[]
   inventoryFuelStocks        InventoryFuelStock[]
+  alertRules                 AlertRule[]
+  alerts                     Alert[]
+  notifications              Notification[]
   mediaFiles                 Media[]                     @relation("AdminMediaFiles")
   users                      User[]
   roles                      Role[]
@@ -200,6 +221,9 @@ model Domain {
   movementLogs                MovementLog[]
   fuelLogs                    FuelLog[]
   inventoryFuelStocks         InventoryFuelStock[]
+  alertRules                  AlertRule[]
+  alerts                      Alert[]
+  notifications               Notification[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   purchaseOrders              PurchaseOrder[]
   vendors                     Vendor[]
@@ -871,8 +895,6 @@ enum FuelEntityType {
 
 model InventoryFuelStock {
   id                    String     @id @default(uuid()) @db.Uuid
-  projectId             String     @db.Uuid
-  project               Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fuelType              FuelType
   uomId                 String     @db.Uuid
   uom                   Uom        @relation(fields: [uomId], references: [id], onDelete: Restrict)
@@ -890,11 +912,82 @@ model InventoryFuelStock {
 
   fuelLogs FuelLog[]
 
-  @@unique([projectId, fuelType, uomId, domainId, isDeleted])
+  @@unique([fuelType, uomId, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
-  @@index([createdAt, isDeleted, domainId, projectId])
   @@index([createdAt, isDeleted, domainId, fuelType])
   @@index([adminId])
+}
+
+model AlertRule {
+  id          String        @id @default(uuid()) @db.Uuid
+  moduleCode  String
+  alertCode   String
+  name        String
+  description String?
+  config      Json?
+  severity    AlertSeverity @default(WARNING)
+  isEnabled   Boolean       @default(true)
+  domainId    String        @db.Uuid
+  domain      Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String        @db.Uuid
+  admin       Admin         @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status      StatusEnum    @default(ACTIVE)
+  isDeleted   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([moduleCode, alertCode, domainId, isDeleted])
+  @@index([domainId, moduleCode])
+  @@index([adminId])
+}
+
+model Alert {
+  id          String        @id @default(uuid()) @db.Uuid
+  moduleCode  String
+  alertCode   String
+  entityType  String
+  entityId    String        @db.Uuid
+  title       String
+  message     String
+  severity    AlertSeverity
+  alertStatus AlertStatus   @default(ACTIVE)
+  metadata    Json?
+  domainId    String        @db.Uuid
+  domain      Domain        @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId     String        @db.Uuid
+  admin       Admin         @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  notifications Notification[]
+
+  @@index([domainId, moduleCode, alertCode])
+  @@index([entityType, entityId])
+  @@index([alertStatus])
+  @@index([adminId])
+}
+
+model Notification {
+  id            String                    @id @default(uuid()) @db.Uuid
+  alertId       String?                   @db.Uuid
+  alert         Alert?                    @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  recipientType NotificationRecipientType
+  recipientId   String                    @db.Uuid
+  title         String
+  message       String
+  isRead        Boolean                   @default(false)
+  readAt        DateTime?
+  domainId      String                    @db.Uuid
+  domain        Domain                    @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId       String?                   @db.Uuid
+  admin         Admin?                    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@index([recipientType, recipientId, isRead])
+  @@index([domainId])
+  @@index([alertId])
 }
 
 model RawMaterialPurchaseRequest {
@@ -1309,7 +1402,6 @@ model Project {
   invoices                    Invoice[]
   paymentRequests             PaymentRequest[]
   fuelLogs                    FuelLog[]
-  inventoryFuelStocks         InventoryFuelStock[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -1632,7 +1724,6 @@ model FuelLog {
   equipmentType     String?
   date              DateTime
   fuelDirectionType FuelDirectionType
-  fuelValue         Float
   fuelQuantity      Float
   searchText        String                @default("")
   transactionType   FuelTransactionType   @default(REFILL)

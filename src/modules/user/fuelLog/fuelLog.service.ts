@@ -40,10 +40,9 @@ interface CreateFuelLogInput {
   fuelDirectionType?: FuelDirectionType;
   transactionType: FuelTransactionType;
   fuelEntityType: FuelEntityType;
-  fuelValue?: number;
   fuelQuantity: number;
   fuelUomId: string;
-  projectId: string;
+  projectId?: string | null;
   vehicleId?: string | null;
   machineryId?: string | null;
   domainId: string;
@@ -103,17 +102,16 @@ function assertCreateInput(data: CreateFuelLogInput): void {
   if (!fuelEntityTypes.includes(data.fuelEntityType)) {
     throw new Error('invalid fuelEntityType');
   }
-  if (
-    data.fuelValue !== undefined &&
-    !isNonNegativeFiniteNumber(data.fuelValue)
-  ) {
-    throw new Error('invalid fuelValue');
-  }
   if (!isNonNegativeFiniteNumber(data.fuelQuantity) || data.fuelQuantity <= 0) {
     throw new Error('invalid fuelQuantity');
   }
   if (!isNonEmptyString(data.fuelUomId)) throw new Error('invalid fuelUomId');
-  if (!isNonEmptyString(data.projectId)) throw new Error('invalid projectId');
+  if (
+    data.transactionType === 'CONSUMED' &&
+    !isNonEmptyString(data.projectId)
+  ) {
+    throw new Error('projectId is required for fuel consumption');
+  }
   if (!isNonEmptyString(data.domainId)) throw new Error('invalid domainId');
   if (!isNonEmptyString(data.adminId)) throw new Error('invalid adminId');
 
@@ -150,12 +148,14 @@ async function assertRelationsExist(data: CreateFuelLogInput): Promise<void> {
   );
   if (!uom) throw new Error('invalid fuelUomId');
 
-  const project = await projectRepository.findById(
-    data.projectId,
-    data.domainId,
-    data.adminId,
-  );
-  if (!project) throw new Error('invalid projectId');
+  if (data.projectId) {
+    const project = await projectRepository.findById(
+      data.projectId,
+      data.domainId,
+      data.adminId,
+    );
+    if (!project) throw new Error('invalid projectId');
+  }
 
   if (data.vehicleId) {
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
@@ -193,13 +193,12 @@ export const FuelLogService = {
         fuelDirectionType:
           data.fuelDirectionType ??
           (data.transactionType === 'REFILL' ? 'FILLED' : 'CONSUMED'),
-        fuelValue: data.fuelValue ?? 0,
         fuelQuantity: data.fuelQuantity,
         transactionType: data.transactionType,
         fuelEntityType: data.fuelEntityType,
         searchText: buildSearchText(data),
         fuelUomId: data.fuelUomId,
-        projectId: data.projectId,
+        projectId: data.projectId ?? null,
         vehicleId: data.fuelEntityType === 'VEHICLE' ? data.vehicleId : null,
         machineryId:
           data.fuelEntityType === 'MACHINERY' ? data.machineryId : null,

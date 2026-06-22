@@ -53,3 +53,7 @@ export * from './report.repository.js';
 export * from './dbAnalytics.repository.js';
 export * from './fuelLog.repository.js';
 export * from './inventoryFuelStock.repository.js';
+export * from './alert.repository.js';
+export * from './alertRule.repository.js';
+export * from './notification.repository.js';
+export * from './alertRecipient.repository.js';

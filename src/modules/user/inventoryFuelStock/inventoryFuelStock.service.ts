@@ -28,7 +28,6 @@ export const inventoryFuelStockService = {
     domainId: string,
     adminId: string,
     query: PaginationQuery & {
-      projectId?: string;
       fuelType?: FuelType;
       uomId?: string;
       status?: StatusEnum;
@@ -41,7 +40,6 @@ export const inventoryFuelStockService = {
     try {
       const { offset, limit } = normalizePagination(query);
       const filters = {
-        projectId: query.projectId,
         fuelType: query.fuelType,
         uomId: query.uomId,
         status: query.status,
@@ -49,14 +47,8 @@ export const inventoryFuelStockService = {
       };
 
       const [totalCount, inventoryFuelStocks] = await Promise.all([
-        inventoryFuelStockRepository.count(domainId, adminId, filters),
-        inventoryFuelStockRepository.findMany(
-          domainId,
-          adminId,
-          filters,
-          offset,
-          limit,
-        ),
+        inventoryFuelStockRepository.count(domainId, filters),
+        inventoryFuelStockRepository.findMany(domainId, filters, offset, limit),
       ]);
 
       return {
@@ -83,7 +75,7 @@ export const inventoryFuelStockService = {
     if (!isNonEmptyString(adminId)) throw new Error('invalid adminId');
 
     try {
-      return await inventoryFuelStockRepository.findById(id, domainId, adminId);
+      return await inventoryFuelStockRepository.findById(id, domainId);
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

@@ -34,7 +34,6 @@ const fuelLogObject = {
       enum: fuelEntityEnum,
       example: 'PROJECT_FUEL_TANK',
     },
-    fuelValue: { type: 'number', example: 4500.5 },
     fuelQuantity: { type: 'number', example: 60 },
     fuelUomId: { type: 'string', format: 'uuid' },
     projectId: { type: 'string', format: 'uuid', nullable: true },
@@ -69,7 +68,6 @@ const createBodySchema = {
     'fuelEntityType',
     'fuelQuantity',
     'fuelUomId',
-    'projectId',
   ],
   properties: {
     fuelType: { type: 'string', enum: fuelTypeEnum, example: 'DIESEL' },
@@ -105,7 +103,7 @@ const createBodySchema = {
       enum: fuelTransactionEnum,
       example: 'REFILL',
       description:
-        'REFILL adds fuel into the project fuel tank. CONSUMED subtracts from the project fuel tank.',
+        'REFILL adds fuel into the authenticated domain fuel tank. CONSUMED subtracts from it.',
     },
     fuelEntityType: {
       type: 'string',
@@ -114,10 +112,15 @@ const createBodySchema = {
       description:
         'Use PROJECT_FUEL_TANK for REFILL, VEHICLE or MACHINERY for CONSUMED.',
     },
-    fuelValue: { type: 'number', minimum: 0, example: 4500.5 },
     fuelQuantity: { type: 'number', minimum: 0, example: 60 },
     fuelUomId: { type: 'string', format: 'uuid' },
-    projectId: { type: 'string', format: 'uuid' },
+    projectId: {
+      type: 'string',
+      format: 'uuid',
+      nullable: true,
+      description:
+        'Optional for REFILL. Required for VEHICLE or MACHINERY consumption.',
+    },
     vehicleId: {
       type: 'string',
       format: 'uuid',

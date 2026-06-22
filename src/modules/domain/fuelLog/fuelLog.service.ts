@@ -18,6 +18,7 @@ import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
 } from '@/utils/validation';
+import { enqueueMachineryFuelUsageAlertCheck } from '@/queue/alertQueue';
 type FuelLogRecord = Awaited<ReturnType<typeof fuelLogRepository.findById>>;
 
 const fuelTypes: FuelType[] = ['PETROL', 'DIESEL'];
@@ -39,10 +40,9 @@ interface CreateFuelLogInput {
   fuelDirectionType?: FuelDirectionType;
   transactionType: FuelTransactionType;
   fuelEntityType: FuelEntityType;
-  fuelValue?: number;
   fuelQuantity: number;
   fuelUomId: string;
-  projectId: string;
+  projectId?: string | null;
   vehicleId?: string | null;
   machineryId?: string | null;
   domainId: string;
@@ -102,17 +102,16 @@ function assertCreateInput(data: CreateFuelLogInput): void {
   if (!fuelEntityTypes.includes(data.fuelEntityType)) {
     throw new Error('invalid fuelEntityType');
   }
-  if (
-    data.fuelValue !== undefined &&
-    !isNonNegativeFiniteNumber(data.fuelValue)
-  ) {
-    throw new Error('invalid fuelValue');
-  }
   if (!isNonNegativeFiniteNumber(data.fuelQuantity) || data.fuelQuantity <= 0) {
     throw new Error('invalid fuelQuantity');
   }
   if (!isNonEmptyString(data.fuelUomId)) throw new Error('invalid fuelUomId');
-  if (!isNonEmptyString(data.projectId)) throw new Error('invalid projectId');
+  if (
+    data.transactionType === 'CONSUMED' &&
+    !isNonEmptyString(data.projectId)
+  ) {
+    throw new Error('projectId is required for fuel consumption');
+  }
   if (!isNonEmptyString(data.domainId)) throw new Error('invalid domainId');
   if (!isNonEmptyString(data.adminId)) throw new Error('invalid adminId');
 
@@ -149,12 +148,14 @@ async function assertRelationsExist(data: CreateFuelLogInput): Promise<void> {
   );
   if (!uom) throw new Error('invalid fuelUomId');
 
-  const project = await projectRepository.findById(
-    data.projectId,
-    data.domainId,
-    data.adminId,
-  );
-  if (!project) throw new Error('invalid projectId');
+  if (data.projectId) {
+    const project = await projectRepository.findById(
+      data.projectId,
+      data.domainId,
+      data.adminId,
+    );
+    if (!project) throw new Error('invalid projectId');
+  }
 
   if (data.vehicleId) {
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
@@ -183,7 +184,7 @@ export const FuelLogService = {
 
       const date = parseDate(data.date, 'date');
 
-      return await fuelLogRepository.create({
+      const log = await fuelLogRepository.create({
         fuelType: data.fuelType,
         equipmentUniqueId: data.equipmentUniqueId ?? null,
         equipmentCategory: data.equipmentCategory ?? null,
@@ -192,13 +193,12 @@ export const FuelLogService = {
         fuelDirectionType:
           data.fuelDirectionType ??
           (data.transactionType === 'REFILL' ? 'FILLED' : 'CONSUMED'),
-        fuelValue: data.fuelValue ?? 0,
         fuelQuantity: data.fuelQuantity,
         transactionType: data.transactionType,
         fuelEntityType: data.fuelEntityType,
         searchText: buildSearchText(data),
         fuelUomId: data.fuelUomId,
-        projectId: data.projectId,
+        projectId: data.projectId ?? null,
         vehicleId: data.fuelEntityType === 'VEHICLE' ? data.vehicleId : null,
         machineryId:
           data.fuelEntityType === 'MACHINERY' ? data.machineryId : null,
@@ -206,6 +206,30 @@ export const FuelLogService = {
         adminId: data.adminId,
         status: data.status,
       });
+
+      if (
+        data.transactionType === 'CONSUMED' &&
+        data.fuelEntityType === 'MACHINERY' &&
+        log.machineryId &&
+        data.projectId
+      ) {
+        enqueueMachineryFuelUsageAlertCheck({
+          machineryId: log.machineryId,
+          projectId: data.projectId,
+          fuelType: data.fuelType,
+          fuelUomId: data.fuelUomId,
+          usageDate: date.toISOString().slice(0, 10),
+          domainId: data.domainId,
+          adminId: data.adminId,
+        }).catch((error: unknown) => {
+          console.error(
+            'Failed to enqueue machinery fuel usage alert check:',
+            error instanceof Error ? error.message : error,
+          );
+        });
+      }
+
+      return log;
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }

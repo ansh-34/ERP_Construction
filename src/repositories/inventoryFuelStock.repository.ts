@@ -3,7 +3,6 @@ import { StatusEnum } from '@constants/index';
 import type { FuelType } from './fuelLog.repository';
 
 export interface InventoryFuelStockFilters {
-  projectId?: string;
   fuelType?: FuelType;
   uomId?: string;
   status?: StatusEnum;
@@ -11,20 +10,18 @@ export interface InventoryFuelStockFilters {
 }
 
 const inventoryFuelStockInclude = {
-  project: { select: { id: true, code: true, name: true, status: true } },
   uom: { select: { id: true, code: true, displayName: true } },
 } as const;
 
 export const inventoryFuelStockRepository = {
   findMany(
     domainId: string,
-    adminId: string,
     filters: InventoryFuelStockFilters = {},
     offset = 0,
     limit = 10,
   ) {
     return prisma.inventoryFuelStock.findMany({
-      where: buildWhere(domainId, adminId, filters),
+      where: buildWhere(domainId, filters),
       include: inventoryFuelStockInclude,
       orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
       skip: offset,
@@ -32,22 +29,17 @@ export const inventoryFuelStockRepository = {
     });
   },
 
-  count(
-    domainId: string,
-    adminId: string,
-    filters: InventoryFuelStockFilters = {},
-  ) {
+  count(domainId: string, filters: InventoryFuelStockFilters = {}) {
     return prisma.inventoryFuelStock.count({
-      where: buildWhere(domainId, adminId, filters),
+      where: buildWhere(domainId, filters),
     });
   },
 
-  findById(id: string, domainId: string, adminId: string) {
+  findById(id: string, domainId: string) {
     return prisma.inventoryFuelStock.findFirst({
       where: {
         id,
         domainId,
-        adminId,
         isDeleted: false,
       },
       include: inventoryFuelStockInclude,
@@ -55,16 +47,10 @@ export const inventoryFuelStockRepository = {
   },
 };
 
-function buildWhere(
-  domainId: string,
-  adminId: string,
-  filters: InventoryFuelStockFilters,
-) {
+function buildWhere(domainId: string, filters: InventoryFuelStockFilters) {
   return {
     domainId,
-    adminId,
     isDeleted: false,
-    ...(filters.projectId ? { projectId: filters.projectId } : {}),
     ...(filters.fuelType ? { fuelType: filters.fuelType } : {}),
     ...(filters.uomId ? { uomId: filters.uomId } : {}),
     ...(filters.status ? { status: filters.status } : {}),
@@ -72,7 +58,6 @@ function buildWhere(
       ? {
           OR: [
             { fuelType: { equals: filters.searchKey as FuelType } },
-            { project: { code: { contains: filters.searchKey } } },
             { uom: { code: { contains: filters.searchKey } } },
           ],
         }
