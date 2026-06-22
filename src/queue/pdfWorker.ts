@@ -3,14 +3,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { Job } from 'pg-boss';
 import { getBoss, PDF_QUEUE } from './pgBoss.js';
+import prisma from '../infra/database/prisma/prisma.client.js';
 
 // @ts-expect-error import.meta is valid at runtime (ESM via tsx / NodeNext build)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Hard cap on a single child process. Slightly above the in-render timeout
 // (PDF_RENDER_TIMEOUT_MS, default 30s) so the child can normally finish/clean up
-// on its own; this only catches a child that hangs before/around rendering.
 const CHILD_TIMEOUT_MS = Number(process.env.PDF_CHILD_TIMEOUT_MS) || 60000;
 
 // Run one PDF generation in a forked child process, isolated from the main
@@ -83,11 +82,29 @@ export async function startPdfWorker(): Promise<void> {
             `[Worker] Job ${job.id} [Invoice: ${invoiceId}] successfully completed.`,
           );
         } catch (err) {
-          // Re-throw so pg-boss records the failure and applies retry/backoff.
           console.error(
             `[Worker] Job ${job.id} [Invoice: ${invoiceId}] failed:`,
             err instanceof Error ? err.message : err,
           );
+
+          // Mark the invoice FAILED from the parent. The child sets FAILED on a
+          // normal error, but a timeout/SIGKILL or hard crash kills it before
+          // its catch can run — without this the invoice would be stranded in
+          // PROCESSING. Safe/idempotent; a pg-boss retry flips it back to
+          // PROCESSING on the next attempt.
+          await prisma.invoice
+            .update({
+              where: { id: invoiceId },
+              data: { pdfStatus: 'FAILED' },
+            })
+            .catch((e) =>
+              console.error(
+                `[Worker] Could not mark invoice ${invoiceId} FAILED:`,
+                e instanceof Error ? e.message : e,
+              ),
+            );
+
+          // Re-throw so pg-boss records the failure and applies retry/backoff.
           throw err;
         }
       }

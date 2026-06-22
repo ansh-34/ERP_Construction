@@ -2,6 +2,9 @@ import { Messages } from '../../../constants/index.js';
 import { invoiceRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { translateResponse } from '../../../utils/translation.js';
+import { enqueuePdfGeneration } from '../../../queue/pdfQueue.js';
+import { PdfStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
+import { getSignedDownloadUrl } from '../../../utils/s3.utils.js';
 
 export const InvoiceService = {
   generateInvoiceCode(domainId: string): string {
@@ -46,8 +49,16 @@ export const InvoiceService = {
   },
 
   async getInvoiceById(domainId: string, id: string) {
-    const invoice = await invoiceRepository.findByIdAndDomain(id, domainId);
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+    if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
+      invoice.pdfUrl =
+        (await getSignedDownloadUrl(invoice.pdfUrl)) ?? invoice.pdfUrl;
+    }
+
     return invoice;
   },
 
@@ -117,6 +128,52 @@ export const InvoiceService = {
     return {
       items: translateResponse(items, langCode),
       pagination: { totalCount, currentCount: items.length, offset, limit },
+    };
+  },
+
+  async requestPdf(domainId: string, id: string) {
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+
+    const STALE_IN_FLIGHT_MS = 5 * 60 * 1000;
+    const lastUpdated = invoice.updatedAt
+      ? new Date(invoice.updatedAt).getTime()
+      : 0;
+    const isStale = Date.now() - lastUpdated > STALE_IN_FLIGHT_MS;
+
+    const inFlight =
+      invoice.pdfStatus === PdfStatus.PENDING ||
+      invoice.pdfStatus === PdfStatus.PROCESSING;
+    if (inFlight && !isStale) {
+      return { pdfStatus: invoice.pdfStatus };
+    }
+
+    await invoiceRepository.update(id, { pdfStatus: PdfStatus.PENDING });
+    await enqueuePdfGeneration(id);
+
+    return { pdfStatus: PdfStatus.PENDING };
+  },
+
+  async getPdfStatus(domainId: string, id: string) {
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+
+    let downloadUrl: string | null = null;
+    if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
+      downloadUrl = await getSignedDownloadUrl(invoice.pdfUrl);
+    }
+
+    return {
+      pdfStatus: invoice.pdfStatus,
+      pdfUrl: invoice.pdfUrl,
+      downloadUrl,
+      pdfGeneratedAt: invoice.pdfGeneratedAt,
     };
   },
 };

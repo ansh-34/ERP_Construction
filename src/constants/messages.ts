@@ -39,6 +39,7 @@ export const Messages = Object.freeze({
       'Domain seeded successfully. Verification link sent to email.',
     SEEDING_FAILED: 'Seeding failed',
     VERIFY_DOMAIN_SUCCESS: 'Domain verified and activated successfully.',
+    VERIFY_USER_SUCCESS: 'User verified and activated successfully.',
     VERIFICATION_FAILED: 'Verification failed',
     EMAIL_TOKEN_REQUIRED: 'email and token are required',
     EMAIL_PASSWORD_REQUIRED: 'email and password are required',

@@ -64,6 +64,7 @@ export const UserService = {
       domainId,
       adminId: domain.adminId,
       isEmailVerified: false,
+      onboardingStep: 'EMAIL_VERIFICATION',
     });
 
     await TokenRepository.create({

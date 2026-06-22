@@ -37,8 +37,9 @@ export const OtpRepository = {
     });
   },
 
-  markUsed(id: string) {
-    return prisma.otp.update({
+  markUsed(id: string, options: { transaction?: any } = {}) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.otp.update({
       where: { id },
       data: { isUsed: true },
     });

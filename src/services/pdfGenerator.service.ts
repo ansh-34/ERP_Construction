@@ -289,13 +289,13 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     throw new Error(`Invoice with ID ${invoiceId} not found`);
   }
 
-  // Set status to PROCESSING
-  await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: { pdfStatus: 'PROCESSING' },
-  });
-
   try {
+    // Set status to PROCESSING
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: { pdfStatus: 'PROCESSING' },
+    });
+
     // 2. Resolve Active Template (fallback to seeded default)
     const activeTemplate = await prisma.invoiceTemplate.findFirst({
       where: {
@@ -411,8 +411,9 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     }
 
     // 8. Upload PDF buffer to S3
+    const invoiceYear = invoice.invoiceDate.getFullYear();
     const fileName = `${invoice.invoiceCode}.pdf`;
-    const folderPath = `invoices/${invoice.domainId}`;
+    const folderPath = `invoices/${invoice.domainId}/${invoiceYear}`;
 
     console.log(
       `[PdfService] Uploading PDF buffer to S3: ${folderPath}/${fileName}`,
@@ -422,6 +423,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
       folderPath,
       fileName,
       'application/pdf',
+      true,
     );
 
     // 9. Save PDF URL and update status to READY in DB

@@ -7,7 +7,7 @@ import { startLogUploader } from './utils/logUploader.js';
 import { startAlertCron } from './cron/alert.cron.js';
 import { startAlertWorker } from './workers/alertWorker/index.js';
 import { stopBoss } from './queue/pgBoss.js';
-// import { startPdfWorker } from './queue/pdfWorker.js';
+import { startPdfWorker } from './queue/pdfWorker.js';
 
 dotenv.config();
 
@@ -47,9 +47,10 @@ const startServer = async () => {
       console.error('Failed to start alert worker:', err);
     });
 
-    // startPdfWorker().catch((err) => {
-    //   console.error('Failed to start PDF worker:', err);
-    // });
+    // Start the pg-boss worker that consumes invoice PDF generation jobs.
+    startPdfWorker().catch((err) => {
+      console.error('Failed to start PDF worker:', err);
+    });
 
     app.listen(port, () => {
       console.log(`Server running on http://localhost:${port}`);

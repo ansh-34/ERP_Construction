@@ -9,6 +9,12 @@ export const UserRepository = {
     });
   },
 
+  findActiveById(id: string, domainId: string) {
+    return prisma.user.findFirst({
+      where: { id, domainId, isDeleted: false, status: 'ACTIVE' },
+    });
+  },
+
   count(options: {
     filters: {
       searchKey?: string;
@@ -125,6 +131,7 @@ export const UserRepository = {
     domainId: string;
     adminId?: string | null;
     isEmailVerified?: boolean;
+    onboardingStep?: string;
   }) {
     return prisma.user.create({
       data: {
@@ -197,5 +204,24 @@ export const UserRepository = {
       where: { id },
       data: { password },
     });
+  },
+
+  verifyAndDeleteToken(userId: string, tokenId: string) {
+    return prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: { isEmailVerified: true },
+      });
+
+      await tx.token.update({
+        where: { id: tokenId },
+        data: { isDeleted: true },
+      });
+    });
+  },
+
+  update(id: string, data: any, options: { transaction?: any } = {}) {
+    const prismaClient = options?.transaction || prisma;
+    return prismaClient.user.update({ where: { id, isDeleted: false }, data });
   },
 };
