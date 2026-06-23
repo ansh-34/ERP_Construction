@@ -44,6 +44,8 @@ import onboardingRouter from './onboarding/onboarding.router.js';
 import { listAllProductGrades } from './productGrade/productGrade.controller.js';
 import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
+import customerRouter from './customer/customer.router.js';
+import customerRateRouter from './customerRate/customerRate.router.js';
 
 import { validate } from '../../middlewares/validate.js';
 import { z } from 'zod';
@@ -105,6 +107,8 @@ userRouter.use('/journey-schedules', journeyScheduleRouter);
 userRouter.use('/dispatch', dispatchRouter);
 userRouter.use('/roles', roleRouter);
 userRouter.use('/payment-requests', paymentRequestRouter);
+userRouter.use('/customers', customerRouter);
+userRouter.use('/customer-rates', customerRateRouter);
 
 // New flat query APIs
 userRouter.get(

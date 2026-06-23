@@ -36,6 +36,8 @@ import vendorProductPriceRouter from './vendorProductPrice/vendorProductPrice.ro
 import vendorRouter from './vendor/vendor.router.js';
 import invoiceRouter from './invoice/invoice.router.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
+import customerRouter from './customer/customer.router.js';
+import customerRateRouter from './customerRate/customerRate.router.js';
 import reportRouter from './report/report.routes';
 import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
@@ -109,6 +111,8 @@ domainRouter.use('/vendors', vendorProductPriceRouter);
 domainRouter.use('/vendors', vendorRouter);
 domainRouter.use('/invoices', invoiceRouter);
 domainRouter.use('/payment-requests', paymentRequestRouter);
+domainRouter.use('/customers', customerRouter);
+domainRouter.use('/customer-rates', customerRateRouter);
 domainRouter.use('/report', reportRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);

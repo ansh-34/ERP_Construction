@@ -52,3 +52,5 @@ export * from './productGradeLastPurchaseRate.repository.js';
 export * from './report.repository.js';
 export * from './dbAnalytics.repository.js';
 export * from './fuelLog.repository.js';
+export * from './customer.repository.js';
+export * from './customerRate.repository.js';
