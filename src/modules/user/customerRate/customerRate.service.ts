@@ -25,11 +25,14 @@ const rateFields = (dto: Partial<CustomerRateDto>) => ({
 export const CustomerRateService = {
   async create(domainId: string, adminId: string, dto: CustomerRateDto) {
     return customerRateRepository.create({
-      ...rateFields(dto),
       customerId: dto.customerId,
       productId: dto.productId,
       productGradeId: dto.productGradeId,
+      rate: dto.rate,
+      currencyId: dto.currencyId,
+      uomId: dto.uomId,
       effectiveFrom: dto.effectiveFrom,
+      ...(dto.effectiveTo !== undefined && { effectiveTo: dto.effectiveTo }),
       status: dto.status ?? 'ACTIVE',
       domainId,
       adminId,

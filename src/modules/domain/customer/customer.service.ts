@@ -15,7 +15,13 @@ type CustomerDto = {
   status?: 'ACTIVE' | 'INACTIVE';
 };
 
-const buildSearchText = (dto: Partial<CustomerDto> & { name?: string }) =>
+const buildSearchText = (dto: {
+  name?: string | null;
+  phoneCode?: string | null;
+  phone?: string | null;
+  gstNumber?: string | null;
+  billingName?: string | null;
+}) =>
   [dto.name, dto.phoneCode, dto.phone, dto.gstNumber, dto.billingName]
     .filter(Boolean)
     .join(' ')
