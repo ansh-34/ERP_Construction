@@ -52,11 +52,65 @@ export const listPaymentRequests = async (req: Request, res: Response) => {
   }
 };
 
+export const listActivePaymentRequests = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { paymentRequests, pagination } =
+      await PaymentRequestService.listActivePaymentRequests(
+        req.user!.domainId,
+        req.query as PaginationQuery,
+      );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PAYMENT_REQUEST.RETRIEVED,
+      pagination: {
+        currentCount: paymentRequests.length,
+        ...pagination,
+      },
+      data: paymentRequests,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PAYMENT_REQUEST.LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const getActivePaymentRequestById = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const request = await PaymentRequestService.getActivePaymentRequestById(
+      req.user!.domainId,
+      req.params.id,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.PAYMENT_REQUEST.RETRIEVED,
+      data: request,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PAYMENT_REQUEST.NOT_FOUND;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const getPaymentRequestById = async (req: Request, res: Response) => {
   try {
     const request = await PaymentRequestService.getPaymentRequestById(
       req.user!.domainId,
       req.params.id,
+      req.query as { type?: string; lifecycle?: 'ACTIVE' | 'VOID' },
     );
     return res.status(HttpStatus.OK).json({
       success: true,

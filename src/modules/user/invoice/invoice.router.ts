@@ -3,10 +3,13 @@ import authorize from '../../../middlewares/authorize.js';
 import { validate } from '../../../middlewares/validate.js';
 import {
   listInvoices,
+  listActiveInvoices,
   getInvoiceById,
+  getActiveInvoiceById,
   deleteInvoice,
   listInvoiceItems,
   generateInvoicesFromPO,
+  finalizeInvoice,
   listAllInvoiceItems,
   requestInvoicePdf,
   getInvoicePdfStatus,
@@ -16,6 +19,7 @@ import {
   invoiceIdParamsSchema,
   poIdParamsSchema,
   generateInvoicesBodySchema,
+  finalizeInvoiceBodySchema,
   invoiceItemsQuerySchema,
 } from './invoice.validator.js';
 
@@ -29,11 +33,33 @@ router.post(
   generateInvoicesFromPO,
 );
 
+router.post(
+  '/:id/finalize',
+  authorize('INVOICE', 'UPDATE'),
+  validate(invoiceIdParamsSchema, 'params'),
+  validate(finalizeInvoiceBodySchema, 'body'),
+  finalizeInvoice,
+);
+
 router.get(
   '/',
   authorize('INVOICE', 'READ'),
   validate(listInvoicesQuerySchema, 'query'),
   listInvoices,
+);
+
+router.get(
+  '/active',
+  authorize('INVOICE', 'READ'),
+  validate(listInvoicesQuerySchema, 'query'),
+  listActiveInvoices,
+);
+
+router.get(
+  '/active/:id',
+  authorize('INVOICE', 'READ'),
+  validate(invoiceIdParamsSchema, 'params'),
+  getActiveInvoiceById,
 );
 
 router.get(

@@ -256,4 +256,20 @@ export const VehicleRepository = {
       data: { isDeleted: true, status: 'INACTIVE' },
     });
   },
+
+  async getAnalytics(domainId: string) {
+    const base = { domainId, isDeleted: false };
+    const [total, active, inactive, capacitySum] = await Promise.all([
+      prisma.vehicle.count({ where: base }),
+      prisma.vehicle.count({ where: { ...base, status: 'ACTIVE' } }),
+      prisma.vehicle.count({ where: { ...base, status: 'INACTIVE' } }),
+      prisma.vehicle.aggregate({ where: base, _sum: { loadCapacity: true } }),
+    ]);
+    return {
+      total,
+      active,
+      inactive,
+      totalCapacity: capacitySum._sum.loadCapacity ?? 0,
+    };
+  },
 };

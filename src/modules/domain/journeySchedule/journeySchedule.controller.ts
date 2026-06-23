@@ -23,6 +23,51 @@ export const getJourneyScheduleStats = async (req: Request, res: Response) => {
   }
 };
 
+export const getJourneyScheduleById = async (req: Request, res: Response) => {
+  try {
+    const schedule = await JourneyScheduleService.getJourneyScheduleById(
+      req.user!.domainId,
+      req.params.id,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.JOURNEY_SCHEDULE.RETRIEVED,
+      data: schedule,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.JOURNEY_SCHEDULE.GET_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const updateJourneySchedule = async (req: Request, res: Response) => {
+  try {
+    const schedule = await JourneyScheduleService.updateJourneySchedule(
+      req.user!.domainId,
+      req.params.id,
+      req.body,
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.JOURNEY_SCHEDULE.UPDATED,
+      data: schedule,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.JOURNEY_SCHEDULE.UPDATE_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 export const createJourneySchedule = async (req: Request, res: Response) => {
   try {
     const schedule = await JourneyScheduleService.createJourneySchedule(

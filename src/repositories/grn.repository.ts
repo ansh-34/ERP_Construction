@@ -188,7 +188,7 @@ export const GrnRepository = {
     if (updatedGrn?.invoiceId) {
       await GrnRepository.recalculateInvoiceGrnStats(
         tx,
-        updatedGrn.invoiceId,
+        updatedGrn.invoiceId as string,
         domainId,
       );
     }
@@ -228,6 +228,7 @@ export const GrnRepository = {
       approvalStatus?: string;
       projectId?: string;
       invoiceId?: string;
+      referenceType?: string;
     },
   ) {
     const where: any = {
@@ -239,6 +240,9 @@ export const GrnRepository = {
         : {}),
       ...(filters.projectId ? { projectId: filters.projectId } : {}),
       ...(filters.invoiceId ? { invoiceId: filters.invoiceId } : {}),
+      ...(filters.referenceType
+        ? { referenceType: filters.referenceType }
+        : {}),
       ...(filters.searchKey
         ? {
             OR: [
@@ -301,11 +305,13 @@ export const GrnRepository = {
         where: { id },
         data: { isDeleted: true },
       });
-      await GrnRepository.recalculateInvoiceGrnStats(
-        tx,
-        grn.invoiceId,
-        grn.domainId,
-      );
+      if (grn.invoiceId) {
+        await GrnRepository.recalculateInvoiceGrnStats(
+          tx,
+          grn.invoiceId,
+          grn.domainId,
+        );
+      }
       return grn;
     });
   },
@@ -330,58 +336,10 @@ export const GrnRepository = {
       const fallbackCurrencyId = grn.vendor?.currencyId ?? null;
 
       for (const item of grn.grnProducts) {
-        // Try to find product by code or en displayName matching material
-        const product = await tx.product.findFirst({
-          where: {
-            domainId,
-            isDeleted: false,
-            OR: [
-              { code: item.material },
-              { displayName: { path: ['en'], equals: item.material } },
-            ],
-          },
-          include: {
-            productGrades: {
-              where: { domainId, isDeleted: false },
-            },
-          },
-        });
+        const productId: string | null = item.productId ?? null;
+        const productGradeId: string | null = item.productGradeId ?? null;
 
-        let productId: string | null = product?.id || null;
-        let productGradeId: string | null =
-          product?.productGrades?.[0]?.id || null;
-
-        // Try lookup via invoiceItem
-        if (!productId || !productGradeId) {
-          const invoiceItem = await tx.invoiceItem.findFirst({
-            where: {
-              invoiceId: item.invoiceId,
-              uomId: item.uomId,
-            },
-          });
-          if (invoiceItem) {
-            productId = invoiceItem.productId;
-            productGradeId = invoiceItem.productGradeId;
-          }
-        }
-
-        // Fallback to any active product/grade in the domain if still not found
-        if (!productId || !productGradeId) {
-          const fallbackProduct = await tx.product.findFirst({
-            where: { domainId, isDeleted: false },
-            include: {
-              productGrades: {
-                where: { domainId, isDeleted: false },
-              },
-            },
-          });
-          if (fallbackProduct) {
-            productId = fallbackProduct.id;
-            productGradeId = fallbackProduct.productGrades[0]?.id || null;
-          }
-        }
-
-        if (productId && productGradeId) {
+        if (productId && productGradeId && item.uomId) {
           // Resolve the vendor price for THIS specific line item. The GRN's
           // vendor may price many products, so match on vendor + product +
           // grade + uom; fall back to product + grade, then the GRN vendor row.

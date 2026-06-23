@@ -9,24 +9,65 @@ export const grnProductSchema = z.object({
   material: z.string().min(1),
   quantity: z.number().positive(),
   tax: z.number().nonnegative().optional().default(0),
-  uomId: z.string().uuid(),
+  uomId: z.string().uuid().optional(),
   rate: z.number().nonnegative().optional().default(0),
 });
 
-export const grnProductInputSchema = z.object({
-  productId: z.string().uuid(),
-  quantity: z.number().positive(),
-  tax: z.number().nonnegative().optional(),
+const invoiceGrnSchema = z.object({
+  referenceType: z.literal('INVOICE'),
+  invoiceId: z.string().uuid(),
+  wbReference: z.string().optional(),
+  grnProducts: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        quantity: z.number().positive(),
+      }),
+    )
+    .min(1),
 });
 
-export const createGrnBodySchema = z.object({
+const poGrnSchema = z.object({
+  referenceType: z.literal('PO'),
+  purchaseOrderId: z.string().uuid(),
+  vendorId: z.string().uuid(),
   wbReference: z.string().optional(),
-  invoiceId: z.string().uuid(),
-  totalItems: z.number().int().nonnegative().optional(),
-  totalTax: z.number().nonnegative().optional().default(0),
-  totalAmount: z.number().nonnegative().optional(),
-  grnProducts: z.array(grnProductInputSchema).optional(),
+  grnProducts: z
+    .array(
+      z.object({
+        poProductId: z.string().uuid(),
+        quantity: z.number().positive(),
+        rate: z.number().nonnegative(),
+        currencyId: z.string().uuid(),
+      }),
+    )
+    .min(1),
 });
+
+const naGrnSchema = z.object({
+  referenceType: z.literal('NA'),
+  vendorId: z.string().uuid(),
+  projectId: z.string().uuid().optional(),
+  wbReference: z.string().optional(),
+  grnProducts: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        productGradeId: z.string().uuid(),
+        quantity: z.number().positive(),
+        rate: z.number().nonnegative().default(0),
+        uomId: z.string().uuid(),
+        currencyId: z.string().uuid(),
+      }),
+    )
+    .min(1),
+});
+
+export const createGrnBodySchema = z.discriminatedUnion('referenceType', [
+  invoiceGrnSchema,
+  poGrnSchema,
+  naGrnSchema,
+]);
 
 export const updateGrnBodySchema = z.object({
   wbReference: z.string().optional(),
@@ -54,6 +95,7 @@ export const listGrnsQuerySchema = paginationQuerySchema
     approvalStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
     projectId: z.string().uuid().optional(),
     invoiceId: z.string().uuid().optional(),
+    referenceType: z.enum(['INVOICE', 'PO', 'NA']).optional(),
   });
 
 export const grnIdParamsSchema = idParamSchema;

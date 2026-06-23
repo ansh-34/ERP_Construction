@@ -1,8 +1,12 @@
 import { Messages } from '../../../constants/index.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
-import { productUomRepository } from '../../../repositories/index.js';
+import {
+  productUomRepository,
+  ProductRepository,
+  uomRepository,
+} from '../../../repositories/index.js';
 import { normalizeStatus } from '../../../utils/validation.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 
 export const ProductUomService = {
   localizeName(value: any, langCode: string) {
@@ -15,15 +19,17 @@ export const ProductUomService = {
     productId: string,
     dto: { uomId: string; status?: 'ACTIVE' | 'INACTIVE'; [key: string]: any },
   ) {
-    return prisma.$transaction(async (tx: any) => {
-      const product = await tx.product.findFirst({
-        where: { id: productId, domainId, isDeleted: false },
-      });
+    return transaction(async (tx: any) => {
+      const product = await ProductRepository.findFirst(
+        { where: { id: productId, domainId, isDeleted: false } },
+        tx,
+      );
       if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
 
-      const uom = await tx.uom.findFirst({
-        where: { id: dto.uomId, domainId, isDeleted: false },
-      });
+      const uom = await uomRepository.findFirst(
+        { where: { id: dto.uomId, domainId, isDeleted: false } },
+        tx,
+      );
       if (!uom) throw new Error(Messages.UOM.NOT_FOUND);
 
       const existing = await productUomRepository.findByProductAndUom(

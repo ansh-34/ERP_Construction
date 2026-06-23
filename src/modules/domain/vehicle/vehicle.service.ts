@@ -129,6 +129,10 @@ export const VehicleService = {
     };
   },
 
+  async getAnalytics(domainId: string) {
+    return VehicleRepository.getAnalytics(domainId);
+  },
+
   async deleteVehicle(domainId: string, id: string) {
     const vehicle = await VehicleRepository.findActiveByIdAndDomain(
       id,

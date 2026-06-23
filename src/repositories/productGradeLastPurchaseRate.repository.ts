@@ -15,4 +15,9 @@ export const ProductGradeLastPurchaseRateRepository = {
     const client = tx || prisma;
     return client.productGradeLastPurchaseRate.count(args) as Promise<any>;
   },
+
+  updateMany(args: any, tx?: any): Promise<any> {
+    const client = tx || prisma;
+    return client.productGradeLastPurchaseRate.updateMany(args) as Promise<any>;
+  },
 };

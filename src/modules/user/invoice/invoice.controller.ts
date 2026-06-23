@@ -27,9 +27,56 @@ export const listInvoices = async (req: Request, res: Response) => {
   }
 };
 
+export const listActiveInvoices = async (req: Request, res: Response) => {
+  try {
+    const language = req.headers.language as string | undefined;
+    const { invoices, pagination } = await InvoiceService.listActiveInvoices(
+      req.user!.domainId,
+      req.query as PaginationQuery,
+      language,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.INVOICE.RETRIEVED,
+      pagination: { currentCount: invoices.length, ...pagination },
+      data: invoices,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.LIST_FAILED;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
+
 export const getInvoiceById = async (req: Request, res: Response) => {
   try {
     const invoice = await InvoiceService.getInvoiceById(
+      req.user!.domainId,
+      req.params.id,
+      req.query as {
+        invoiceType?: 'PROFORMA' | 'FINAL';
+        lifecycle?: 'ACTIVE' | 'VOID';
+      },
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.INVOICE.RETRIEVED,
+      data: invoice,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.NOT_FOUND;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const getActiveInvoiceById = async (req: Request, res: Response) => {
+  try {
+    const invoice = await InvoiceService.getActiveInvoiceById(
       req.user!.domainId,
       req.params.id,
     );
@@ -91,6 +138,7 @@ export const generateInvoicesFromPO = async (req: Request, res: Response) => {
     const invoices = await InvoiceService.generateFromPurchaseOrder(
       req.user!.domainId,
       req.params.poId,
+      req.user!.userId,
       req.body.assignments,
     );
     return res.status(HttpStatus.CREATED).json({
@@ -101,6 +149,28 @@ export const generateInvoicesFromPO = async (req: Request, res: Response) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.INVOICE.GENERATE_FAILED;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const finalizeInvoice = async (req: Request, res: Response) => {
+  try {
+    const invoice = await InvoiceService.finalizeInvoice(
+      req.user!.domainId,
+      req.params.id,
+      req.user!.userId,
+      req.body,
+    );
+    return res.status(HttpStatus.CREATED).json({
+      success: true,
+      message: Messages.INVOICE.FINALIZED,
+      data: invoice,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.INVOICE.FINALIZE_FAILED;
     return res
       .status(resolveHttpStatus(message))
       .json({ success: false, message });

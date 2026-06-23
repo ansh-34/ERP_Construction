@@ -4,7 +4,9 @@ import authorize from '../../../middlewares/authorize.js';
 import {
   createPaymentRequest,
   listPaymentRequests,
+  listActivePaymentRequests,
   getPaymentRequestById,
+  getActivePaymentRequestById,
   updatePaymentRequest,
   deletePaymentRequest,
 } from './paymentRequest.controller.js';
@@ -29,6 +31,20 @@ router.get(
   authorize('PAYMENT_REQUEST', 'READ'),
   validate(listPaymentRequestsQuerySchema, 'query'),
   listPaymentRequests,
+);
+
+router.get(
+  '/active',
+  authorize('PAYMENT_REQUEST', 'READ'),
+  validate(listPaymentRequestsQuerySchema, 'query'),
+  listActivePaymentRequests,
+);
+
+router.get(
+  '/active/:id',
+  authorize('PAYMENT_REQUEST', 'READ'),
+  validate(paymentRequestIdParamsSchema, 'params'),
+  getActivePaymentRequestById,
 );
 
 router.get(

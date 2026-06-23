@@ -38,6 +38,9 @@ export const InvoiceService = {
         vendorName: query.vendorName,
         purchaseOrderId: query.purchaseOrderId,
         projectId: query.projectId,
+        // Default to FINAL + ACTIVE; override with ?invoiceType / ?lifecycle.
+        invoiceType: query.invoiceType ?? 'FINAL',
+        lifecycle: query.lifecycle ?? 'ACTIVE',
       },
     );
 
@@ -47,10 +50,46 @@ export const InvoiceService = {
     };
   },
 
-  async getInvoiceById(domainId: string, id: string) {
+  async listActiveInvoices(authDomainId: string, query: Record<string, any>) {
+    return InvoiceService.listInvoices(authDomainId, {
+      ...query,
+      lifecycle: 'ACTIVE',
+    });
+  },
+
+  async getInvoiceById(
+    domainId: string,
+    id: string,
+    query?: {
+      invoiceType?: 'PROFORMA' | 'FINAL';
+      lifecycle?: 'ACTIVE' | 'VOID';
+    },
+  ) {
     const invoice: any = await invoiceRepository.findByIdAndDomain(
       id,
       domainId,
+      {
+        // Default to FINAL + ACTIVE; override with ?invoiceType / ?lifecycle.
+        invoiceType: query?.invoiceType ?? 'FINAL',
+        lifecycle: query?.lifecycle ?? 'ACTIVE',
+      },
+    );
+    if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
+    if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
+      invoice.pdfUrl =
+        (await getSignedDownloadUrl(invoice.pdfUrl)) ?? invoice.pdfUrl;
+    }
+
+    return invoice;
+  },
+
+  async getActiveInvoiceById(domainId: string, id: string) {
+    const invoice: any = await invoiceRepository.findByIdAndDomain(
+      id,
+      domainId,
+      {
+        lifecycle: 'ACTIVE',
+      },
     );
     if (!invoice) throw new Error(Messages.INVOICE.NOT_FOUND);
     if (invoice.pdfStatus === PdfStatus.READY && invoice.pdfUrl) {
@@ -87,6 +126,7 @@ export const InvoiceService = {
   async generateFromPurchaseOrder(
     domainId: string,
     poId: string,
+    requestedBy: string,
     assignments: {
       purchaseOrderProductId: string;
       vendorProductPricingId: string;
@@ -95,7 +135,30 @@ export const InvoiceService = {
     return invoiceRepository.generateFromPurchaseOrder(
       poId,
       domainId,
+      requestedBy,
       assignments,
+    );
+  },
+
+  async finalizeInvoice(
+    domainId: string,
+    proformaId: string,
+    requestedBy: string,
+    payload: {
+      items: {
+        productId: string;
+        productGradeId?: string | null;
+        uomId: string;
+        quantity: number;
+        rate: number;
+      }[];
+    },
+  ) {
+    return invoiceRepository.finalizeInvoice(
+      proformaId,
+      domainId,
+      requestedBy,
+      payload,
     );
   },
 

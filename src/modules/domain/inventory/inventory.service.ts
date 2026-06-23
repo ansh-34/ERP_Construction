@@ -8,6 +8,8 @@ import {
   ProductRepository,
   ProductGradeRepository,
   uomRepository,
+  RawMaterialPurchaseRequestRepository,
+  invoiceRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
@@ -416,5 +418,41 @@ export const InventoryService = {
         fs.unlinkSync(filePath);
       }
     }
+  },
+
+  async getAnalytics(domainId: string) {
+    const [
+      rawMaterials,
+      finishedProducts,
+      pendingRequests,
+      lowStock,
+      openPOs,
+      paidInvoices,
+    ] = await Promise.all([
+      ProductRepository.count({
+        where: { domainId, productType: 'RAW_MATERIAL', isDeleted: false },
+      }),
+      ProductRepository.count({
+        where: { domainId, productType: 'FINISHED_PRODUCT', isDeleted: false },
+      }),
+      RawMaterialPurchaseRequestRepository.count({
+        where: { domainId, approvalStatus: 'PENDING', isDeleted: false },
+      }),
+      InventoryRepository.getLowStockCount(domainId),
+      RawMaterialPurchaseRequestRepository.countPurchaseOrdersWhere({
+        where: { domainId, orderStatus: 'PENDING_VENDOR', isDeleted: false },
+      }),
+      invoiceRepository.countWhere({
+        where: { domainId, paymentStatus: 'PAID', isDeleted: false },
+      }),
+    ]);
+    return {
+      rawMaterials,
+      finishedProducts,
+      pendingRequests,
+      lowStock,
+      openPOs,
+      payments: paidInvoices,
+    };
   },
 };

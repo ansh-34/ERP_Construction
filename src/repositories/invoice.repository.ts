@@ -12,6 +12,35 @@ const toDisplayString = (value: unknown): string => {
   return JSON.stringify(value ?? '');
 };
 
+// PaymentRequest.requestedBy is an FK to User. Invoice generation can be triggered
+// by a domain owner whose token id is the domain (not a User row), so only keep the
+// id when it actually references a User; otherwise store null.
+const resolveRequestedBy = async (
+  tx: { user: { findFirst: (args: any) => Promise<{ id: string } | null> } },
+  requestedBy: string | null | undefined,
+): Promise<string | null> => {
+  if (!requestedBy) return null;
+  const user = await tx.user.findFirst({
+    where: { id: requestedBy },
+    select: { id: true },
+  });
+  return user ? requestedBy : null;
+};
+
+// Mirrors PaymentRequestService.generateCode() so payment requests auto-created
+// alongside invoices share the same PR-<timestamp> code format.
+const generatePaymentRequestCode = (): string => {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  const ms = String(now.getMilliseconds()).padStart(3, '0');
+  return `PR-${dd}${mm}${yyyy}${hh}${min}${ss}${ms}`;
+};
+
 export const invoiceRepository = {
   async create(
     data: {
@@ -146,9 +175,22 @@ export const invoiceRepository = {
     return prisma.invoice.count({ where: whereClause });
   },
 
-  findByIdAndDomain(id: string, domainId: string) {
+  findByIdAndDomain(
+    id: string,
+    domainId: string,
+    opts?: {
+      invoiceType?: 'PROFORMA' | 'FINAL';
+      lifecycle?: 'ACTIVE' | 'VOID';
+    },
+  ) {
     return prisma.invoice.findFirst({
-      where: { id, domainId, isDeleted: false },
+      where: {
+        id,
+        domainId,
+        isDeleted: false,
+        ...(opts?.invoiceType && { invoiceType: opts.invoiceType }),
+        ...(opts?.lifecycle && { lifecycle: opts.lifecycle }),
+      },
       include: {
         items: {
           include: {
@@ -175,12 +217,18 @@ export const invoiceRepository = {
       vendorName?: string;
       purchaseOrderId?: string;
       projectId?: string;
+      invoiceType?: 'PROFORMA' | 'FINAL';
+      lifecycle?: 'ACTIVE' | 'VOID';
     },
   ) {
     const searchKey = filter?.searchKey?.trim() || '';
     const where: Prisma.InvoiceWhereInput = {
       domainId,
       isDeleted: false,
+      // List everything by default; callers filter via ?lifecycle= or use the
+      // dedicated /active endpoints.
+      ...(filter?.lifecycle && { lifecycle: filter.lifecycle }),
+      ...(filter?.invoiceType && { invoiceType: filter.invoiceType }),
       ...(filter?.status && { status: filter.status }),
       ...(filter?.vendorName && {
         vendorName: { contains: filter.vendorName, mode: 'insensitive' },
@@ -376,12 +424,17 @@ export const invoiceRepository = {
   async generateFromPurchaseOrder(
     poId: string,
     domainId: string,
+    requestedBy: string,
     assignments: {
       purchaseOrderProductId: string;
       vendorProductPricingId: string;
     }[],
   ) {
     const invoices = await prisma.$transaction(async (tx) => {
+      // requestedBy must reference a real User. When the action is performed by a
+      // domain owner (whose token id is the domain, not a User), store null.
+      const prRequestedBy = await resolveRequestedBy(tx, requestedBy);
+
       const po = await tx.purchaseOrder.findFirst({
         where: { id: poId, domainId, isDeleted: false },
         include: {
@@ -487,19 +540,12 @@ export const invoiceRepository = {
         const suffix = domainId.slice(0, 4).toUpperCase();
         const invoiceCode = `INV-${suffix}-${Date.now()}`;
 
-        // Calculate totals using pricing from VendorProductPricing
-        const totalTax = items.reduce(
-          (sum, i) => sum + i.poProduct.tax * i.poProduct.quantity,
-          0,
-        );
+        // Tax is not tracked: totalTax stays 0 and totals exclude tax.
+        const totalTax = 0;
         const totalAmount = items.reduce(
-          (sum, i) =>
-            sum +
-            i.pricing.price * i.poProduct.quantity +
-            i.poProduct.tax * i.poProduct.quantity,
+          (sum, i) => sum + i.pricing.price * i.poProduct.quantity,
           0,
         );
-
         if (!po.projectId) {
           throw new Error('Purchase order does not have an associated project');
         }
@@ -520,14 +566,30 @@ export const invoiceRepository = {
             totalItems,
             projectId: po.projectId,
             domainId,
+            invoiceType: 'PROFORMA',
+          },
+        });
+
+        // The first invoice generated from a PO is provisional (proforma); spawn a
+        // matching payment request immediately so finance is in the loop.
+        await tx.paymentRequest.create({
+          data: {
+            code: generatePaymentRequestCode(),
+            type: 'PROFORMA',
+            vendorId: items[0].pricing.id,
+            projectId: po.projectId,
+            tds: 0,
+            grossAmount: totalAmount,
+            netPayable: totalAmount,
+            requestedBy: prRequestedBy,
+            invoiceId: invoice.id,
+            domainId,
           },
         });
 
         // Create invoice items from the resolved assignments
         for (const item of items) {
-          const itemTax = item.poProduct.tax * item.poProduct.quantity;
-          const itemTotal =
-            item.pricing.price * item.poProduct.quantity + itemTax;
+          const itemTotal = item.pricing.price * item.poProduct.quantity;
 
           await tx.invoiceItem.create({
             data: {
@@ -537,7 +599,9 @@ export const invoiceRepository = {
               description: `${toDisplayString(item.poProduct.productName)}${item.poProduct.productGradeName ? ' - ' + toDisplayString(item.poProduct.productGradeName) : ''}`,
               quantity: item.poProduct.quantity,
               uomId: item.pricing.uomId,
-              taxAmount: itemTax,
+              rate: item.pricing.price,
+              rateDifference: 0,
+              taxAmount: 0,
               totalAmount: itemTotal,
               discount: 0,
               domainId,
@@ -646,8 +710,180 @@ export const invoiceRepository = {
     return invoices;
   },
 
+  // Issue the final (negotiated) invoice that supersedes a proforma. The official
+  // submits the complete, corrected item set; we create a fresh FINAL invoice plus
+  // a FINAL payment request, then void the proforma invoice and its payment
+  // request(s) (kept on record, not deleted).
+  async finalizeInvoice(
+    proformaId: string,
+    domainId: string,
+    requestedBy: string,
+    payload: {
+      // The final invoice is built only from these items. Each line is uniquely
+      // identified by (productId, productGradeId, uomId). quantity and rate are
+      // required. rateDifference compares against the matching proforma line.
+      items: {
+        productId: string;
+        productGradeId?: string | null;
+        uomId: string;
+        quantity: number;
+        rate: number;
+      }[];
+    },
+  ) {
+    const finalInvoice = await prisma.$transaction(async (tx) => {
+      const proforma = await tx.invoice.findFirst({
+        where: { id: proformaId, domainId, isDeleted: false },
+        include: { items: true },
+      });
+      if (!proforma) throw new Error('Invoice not found');
+      if (proforma.invoiceType !== 'PROFORMA') {
+        throw new Error('Only a proforma invoice can be finalized');
+      }
+      if (proforma.lifecycle === 'VOID') {
+        throw new Error('Invoice is void and cannot be finalized');
+      }
+
+      const prRequestedBy = await resolveRequestedBy(tx, requestedBy);
+
+      // Lines are uniquely identified by product + grade + uom.
+      const keyOf = (
+        productId: string,
+        productGradeId: string | null | undefined,
+        uomId: string,
+      ) => `${productId}|${productGradeId ?? ''}|${uomId}`;
+
+      const proformaByKey = new Map<string, (typeof proforma.items)[number]>();
+      for (const pItem of proforma.items) {
+        proformaByKey.set(
+          keyOf(pItem.productId, pItem.productGradeId, pItem.uomId),
+          pItem,
+        );
+      }
+
+      // The final invoice contains ONLY the items sent in the body; each must be a
+      // unique (product, grade, uom). rateDifference = proforma rate − new rate for
+      // the matching proforma line (0 when there is no match).
+      const seen = new Set<string>();
+      const lines = payload.items.map((item) => {
+        const key = keyOf(item.productId, item.productGradeId, item.uomId);
+        if (seen.has(key)) {
+          throw new Error(
+            `Duplicate item for product ${item.productId} / uom ${item.uomId}; product + grade + uom must be unique`,
+          );
+        }
+        seen.add(key);
+
+        const match = proformaByKey.get(key);
+        const proformaRate = match?.rate ?? 0;
+        return {
+          productId: item.productId,
+          productGradeId: item.productGradeId ?? null,
+          uomId: item.uomId,
+          description: match?.description ?? undefined,
+          rate: item.rate,
+          quantity: item.quantity,
+          rateDifference: match ? proformaRate - item.rate : 0,
+          itemTotal: item.rate * item.quantity,
+        };
+      });
+
+      // Tax is not tracked: totalTax stays 0 and totals exclude tax.
+      const totalTax = 0;
+      const totalAmount = lines.reduce((sum, l) => sum + l.itemTotal, 0);
+      const totalItems = lines.reduce((sum, l) => sum + l.quantity, 0);
+
+      const suffix = domainId.slice(0, 4).toUpperCase();
+      const invoiceCode = `INV-${suffix}-${Date.now()}`;
+
+      const finalInvoice = await tx.invoice.create({
+        data: {
+          invoiceCode,
+          purchaseOrderId: proforma.purchaseOrderId,
+          vendorId: proforma.vendorId,
+          vendorName: proforma.vendorName,
+          totalTax,
+          totalAmount,
+          totalItems,
+          projectId: proforma.projectId,
+          domainId,
+          invoiceType: 'FINAL',
+        },
+      });
+
+      for (const line of lines) {
+        await tx.invoiceItem.create({
+          data: {
+            invoiceId: finalInvoice.id,
+            productId: line.productId,
+            productGradeId: line.productGradeId,
+            description: line.description,
+            quantity: line.quantity,
+            uomId: line.uomId,
+            rate: line.rate,
+            rateDifference: line.rateDifference,
+            taxAmount: 0,
+            totalAmount: line.itemTotal,
+            discount: 0,
+            domainId,
+          },
+        });
+      }
+
+      // Final payment request for the negotiated amount (no TDS; net = gross).
+      await tx.paymentRequest.create({
+        data: {
+          code: generatePaymentRequestCode(),
+          type: 'FINAL',
+          vendorId: proforma.vendorId!,
+          projectId: proforma.projectId,
+          tds: 0,
+          grossAmount: totalAmount,
+          netPayable: totalAmount,
+          requestedBy: prRequestedBy,
+          invoiceId: finalInvoice.id,
+          domainId,
+        },
+      });
+
+      // Void the proforma invoice and its payment request(s).
+      await tx.invoice.update({
+        where: { id: proforma.id },
+        data: { lifecycle: 'VOID' },
+      });
+      await tx.paymentRequest.updateMany({
+        where: { invoiceId: proforma.id, domainId, isDeleted: false },
+        data: { lifecycle: 'VOID' },
+      });
+
+      return tx.invoice.findFirst({
+        where: { id: finalInvoice.id },
+        include: {
+          items: {
+            include: {
+              product: { select: { displayName: true, code: true } },
+              productGrade: {
+                select: { gradeDisplayName: true, gradeCode: true },
+              },
+              uom: { select: { displayName: true, code: true } },
+            },
+          },
+          purchaseOrder: { select: { id: true, code: true } },
+          project: { select: { id: true, name: true, code: true } },
+        },
+      });
+    });
+
+    // Note: invoice PDF generation runs only for the proforma, not the final.
+    return finalInvoice;
+  },
+
   findFirst(args: any, tx?: any) {
     const client = tx || prisma;
     return client.invoice.findFirst(args);
+  },
+
+  countWhere(args: any) {
+    return prisma.invoice.count(args);
   },
 };

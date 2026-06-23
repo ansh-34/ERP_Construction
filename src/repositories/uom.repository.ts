@@ -122,4 +122,9 @@ export const uomRepository = {
     });
     return count === codes.length;
   },
+
+  findFirst(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.uom.findFirst(args);
+  },
 };

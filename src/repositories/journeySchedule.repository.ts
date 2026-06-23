@@ -7,6 +7,27 @@ export const JourneyScheduleRepository = {
     });
   },
 
+  findByIdWithIncludes(id: string, domainId: string) {
+    return prisma.vehicleJourneySchedule.findFirst({
+      where: { id, domainId, isDeleted: false },
+      include: {
+        truck: { select: { id: true, numberPlate: true, vehicleType: true } },
+        loadedQuantityUom: true,
+      },
+    });
+  },
+
+  update(id: string, data: any) {
+    return prisma.vehicleJourneySchedule.update({
+      where: { id },
+      data,
+      include: {
+        truck: { select: { id: true, numberPlate: true, vehicleType: true } },
+        loadedQuantityUom: true,
+      },
+    });
+  },
+
   findDuplicateForVehicle(code: string, domainId: string, truckId: string) {
     return prisma.vehicleJourneySchedule.findFirst({
       where: { code, domainId, isDeleted: false, truckId },

@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { VehicleService } from './vehicle.service.js';
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 
 export const getVehicleStats = async (req: Request, res: Response) => {
   try {
@@ -125,42 +124,12 @@ export const deleteVehicle = async (req: Request, res: Response) => {
 // GET /vehicles/analytics
 export const getVehicleAnalytics = async (req: Request, res: Response) => {
   try {
-    const domainId = req.user!.domainId;
-
-    const [
-      vehiclesTotal,
-      vehiclesActive,
-      vehiclesInactive,
-      vehicleCapacitySum,
-    ] = await Promise.all([
-      prisma.vehicle.count({
-        where: { domainId, isDeleted: false },
-      }),
-      prisma.vehicle.count({
-        where: { domainId, isDeleted: false, status: 'ACTIVE' },
-      }),
-      prisma.vehicle.count({
-        where: { domainId, isDeleted: false, status: 'INACTIVE' },
-      }),
-      prisma.vehicle.aggregate({
-        where: { domainId, isDeleted: false },
-        _sum: { loadCapacity: true },
-      }),
-    ]);
-
-    const totalCapacity = vehicleCapacitySum._sum.loadCapacity ?? 0;
+    const analytics = await VehicleService.getAnalytics(req.user!.domainId);
 
     return res.status(HttpStatus.OK).json({
       success: true,
       message: 'Vehicle analytics retrieved successfully',
-      data: {
-        vehicles: {
-          total: vehiclesTotal,
-          active: vehiclesActive,
-          inactive: vehiclesInactive,
-          totalCapacity,
-        },
-      },
+      data: { vehicles: analytics },
     });
   } catch (error) {
     const message =

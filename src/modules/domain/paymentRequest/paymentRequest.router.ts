@@ -3,7 +3,9 @@ import { validate } from '../../../middlewares/validate.js';
 import {
   createPaymentRequest,
   listPaymentRequests,
+  listActivePaymentRequests,
   getPaymentRequestById,
+  getActivePaymentRequestById,
   updatePaymentRequest,
   deletePaymentRequest,
 } from './paymentRequest.controller.js';
@@ -26,6 +28,18 @@ router.get(
   '/',
   validate(listPaymentRequestsQuerySchema, 'query'),
   listPaymentRequests,
+);
+
+router.get(
+  '/active',
+  validate(listPaymentRequestsQuerySchema, 'query'),
+  listActivePaymentRequests,
+);
+
+router.get(
+  '/active/:id',
+  validate(paymentRequestIdParamsSchema, 'params'),
+  getActivePaymentRequestById,
 );
 
 router.get(

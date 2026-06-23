@@ -1,6 +1,11 @@
-import prisma from '../../../infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
+import {
+  ProductRepository,
+  ProductGradeRepository,
+  ProductGradeLastPurchaseRateRepository,
+} from '../../../repositories/index.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 
 export const ProductGradeService = {
   localizeName(value: any, langCode: string) {
@@ -37,30 +42,23 @@ export const ProductGradeService = {
       .join(' ')
       .toLowerCase();
 
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: productId, domainId, isDeleted: false },
     });
     if (!product) throw new Error(Messages.PRODUCT.NOT_FOUND);
 
-    const existing = await prisma.productGrades.findFirst({
-      where: {
-        gradeCode,
-        productId,
-        domainId,
-        isDeleted: false,
-      },
+    const existing = await ProductGradeRepository.findFirst({
+      where: { gradeCode, productId, domainId, isDeleted: false },
     });
     if (existing) throw new Error(Messages.PRODUCT_GRADE.CODE_ALREADY_EXISTS);
 
-    return prisma.productGrades.create({
-      data: {
-        ...dto,
-        gradeCode,
-        searchText,
-        productId,
-        domainId,
-        isDeleted: false,
-      } as any,
+    return ProductGradeRepository.create({
+      ...dto,
+      gradeCode,
+      searchText,
+      productId,
+      domainId,
+      isDeleted: false,
     });
   },
 
@@ -92,7 +90,7 @@ export const ProductGradeService = {
       }),
     };
     const [data, total] = await Promise.all([
-      prisma.productGrades.findMany({
+      ProductGradeRepository.findMany({
         where,
         skip,
         take: limit,
@@ -105,16 +103,10 @@ export const ProductGradeService = {
           createdAt: true,
           updatedAt: true,
           productId: true,
-          product: {
-            select: {
-              id: true,
-              code: true,
-              displayName: true,
-            },
-          },
+          product: { select: { id: true, code: true, displayName: true } },
         },
       }),
-      prisma.productGrades.count({ where }),
+      ProductGradeRepository.countWhere({ where }),
     ]);
 
     const normalizedData = data.map((grade: any) => ({
@@ -178,7 +170,7 @@ export const ProductGradeService = {
       }),
     };
     const [data, total] = await Promise.all([
-      prisma.productGrades.findMany({
+      ProductGradeRepository.findMany({
         where,
         skip,
         take: limit,
@@ -191,16 +183,10 @@ export const ProductGradeService = {
           createdAt: true,
           updatedAt: true,
           productId: true,
-          product: {
-            select: {
-              id: true,
-              code: true,
-              displayName: true,
-            },
-          },
+          product: { select: { id: true, code: true, displayName: true } },
         },
       }),
-      prisma.productGrades.count({ where }),
+      ProductGradeRepository.countWhere({ where }),
     ]);
 
     const normalizedData = data.map((grade: any) => ({
@@ -251,7 +237,7 @@ export const ProductGradeService = {
     const limit = parseInt(query.limit ?? '10');
     const skip = (page - 1) * limit;
 
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: productId, domainId, isDeleted: false },
       select: { id: true, code: true, displayName: true },
     });
@@ -274,7 +260,7 @@ export const ProductGradeService = {
     };
 
     const [data, total] = await Promise.all([
-      prisma.productGrades.findMany({
+      ProductGradeRepository.findMany({
         where,
         skip,
         take: limit,
@@ -303,7 +289,7 @@ export const ProductGradeService = {
           },
         },
       }),
-      prisma.productGrades.count({ where }),
+      ProductGradeRepository.countWhere({ where }),
     ]);
 
     const normalizedGrades = data.map((grade: any) => ({
@@ -353,7 +339,7 @@ export const ProductGradeService = {
     id: string,
     language: string | null = null,
   ) {
-    const product = await prisma.product.findFirst({
+    const product = await ProductRepository.findFirst({
       where: { id: productId, domainId, isDeleted: false },
       include: {
         productGrades: {
@@ -393,7 +379,6 @@ export const ProductGradeService = {
 
     const { productGradeLastPurchaseRates, ...gradeRest } = grade as any;
 
-    // One latest rate per UOM for this grade.
     const lastPurchaseRates = (productGradeLastPurchaseRates || []).map(
       (rate: any) => ({
         ...rate,
@@ -434,7 +419,7 @@ export const ProductGradeService = {
     let gradeCode: string | null = null;
     if (dto.gradeCode) {
       gradeCode = ProductGradeService.normalizeCode(dto.gradeCode);
-      const conflict = await prisma.productGrades.findFirst({
+      const conflict = await ProductGradeRepository.findFirst({
         where: {
           gradeCode,
           productId,
@@ -449,25 +434,22 @@ export const ProductGradeService = {
     const searchText = dto?.gradeDisplayName
       ? Object.values(dto.gradeDisplayName).join(' ').toLowerCase()
       : null;
-    return prisma.productGrades.update({
-      where: { id },
-      data: {
-        ...dto,
-        ...(gradeCode ? { gradeCode } : {}),
-        ...(searchText ? { searchText } : {}),
-        updatedAt: new Date(),
-      } as any,
+    return ProductGradeRepository.update(id, {
+      ...dto,
+      ...(gradeCode ? { gradeCode } : {}),
+      ...(searchText ? { searchText } : {}),
+      updatedAt: new Date(),
     });
   },
 
   async softDelete(domainId: string, productId: string, id: string) {
     await this.findOne(domainId, productId, id);
-    await prisma.$transaction([
-      prisma.productGradeLastPurchaseRate.updateMany({
-        where: { productGradeId: id },
-        data: { isDeleted: true },
-      }),
-      prisma.productGrades.update({ where: { id }, data: { isDeleted: true } }),
-    ]);
+    await transaction(async (tx) => {
+      await ProductGradeLastPurchaseRateRepository.updateMany(
+        { where: { productGradeId: id }, data: { isDeleted: true } },
+        tx,
+      );
+      await ProductGradeRepository.update(id, { isDeleted: true }, tx);
+    });
   },
 };

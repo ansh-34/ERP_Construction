@@ -90,4 +90,22 @@ export const ProductGradeRepository = {
   findMany(args: any) {
     return prisma.productGrades.findMany(args);
   },
+
+  countWhere(args: any) {
+    return prisma.productGrades.count(args);
+  },
+
+  create(data: any) {
+    return prisma.productGrades.create({ data });
+  },
+
+  update(id: string, data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.productGrades.update({ where: { id }, data });
+  },
+
+  updateMany(args: any, tx?: any) {
+    const client = tx || prisma;
+    return client.productGrades.updateMany(args);
+  },
 };

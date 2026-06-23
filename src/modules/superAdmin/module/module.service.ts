@@ -1,5 +1,5 @@
-import prisma from '@/infra/database/prisma/prisma.client.js';
 import { Messages } from '../../../constants/index.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 import {
   ModuleDependencyPermissionRepository,
   ModuleDependencyRepository,
@@ -67,7 +67,7 @@ export const ModuleService = {
       throw new Error(Messages.MODULE.INVALID_DEPENDENCY_PERMISSIONS);
     }
 
-    return await prisma.$transaction(async (tx: any) => {
+    return await transaction(async (tx: any) => {
       const mod = await ModuleRepository.create(
         {
           name,

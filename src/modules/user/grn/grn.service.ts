@@ -3,11 +3,25 @@ import {
   GrnRepository,
   invoiceRepository,
   vendorProductPriceRepository,
+  vendorRepository,
+  ProductRepository,
+  ProductGradeRepository,
+  RawMaterialPurchaseRequestRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { translateResponse } from '../../../utils/translation.js';
 import { transaction } from '../../../infra/database/prisma/transaction.js';
+
+const toMaterialName = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const r = value as Record<string, unknown>;
+    if (typeof r.en === 'string') return r.en;
+    if (typeof r.name === 'string') return r.name;
+  }
+  return 'Unknown Material';
+};
 
 export const GrnService = {
   async generateCode(): Promise<string> {
@@ -23,61 +37,37 @@ export const GrnService = {
     return `GRN-${datePart}`;
   },
 
-  async createGrn(
-    domainId: string,
-    data: {
-      wbReference?: string;
-      invoiceId: string;
-      totalItems?: number;
-      totalTax?: number;
-      totalAmount?: number;
-      grnProducts?: any[];
-    },
-  ) {
-    const invoice = (await invoiceRepository.findFirst({
-      where: { id: data.invoiceId, domainId, isDeleted: false },
-      include: {
-        purchaseOrder: true,
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    })) as any;
-
-    if (!invoice) {
-      throw new Error('Invoice not found');
-    }
-
-    if (!invoice.vendorId) {
-      throw new Error('Invoice does not have a vendor pricing associated');
-    }
-
-    const po = invoice.purchaseOrder;
-    if (po.orderStatus !== 'PENDING_VENDOR' && po.orderStatus !== 'INVOICED') {
-      throw new Error('GRN can only be created against an active PO');
-    }
-
+  async createGrn(domainId: string, data: any) {
     const code = await GrnService.generateCode();
     const currentDate = new Date();
 
-    const grnProjectId = invoice.projectId;
+    // --- INVOICE path ---
+    if (data.referenceType === 'INVOICE') {
+      const invoice = (await invoiceRepository.findFirst({
+        where: { id: data.invoiceId, domainId, isDeleted: false },
+        include: {
+          purchaseOrder: true,
+          items: { include: { product: true } },
+        },
+      })) as any;
 
-    const { grnProducts: inputGrnProducts, ...restData } = data;
+      if (!invoice) throw new Error('Invoice not found');
+      if (!invoice.vendorId)
+        throw new Error('Invoice does not have a vendor pricing associated');
 
-    let grnProducts;
-    if (inputGrnProducts && inputGrnProducts.length > 0) {
-      grnProducts = [];
-      for (const p of inputGrnProducts) {
+      const po = invoice.purchaseOrder;
+      if (po.orderStatus !== 'PENDING_VENDOR' && po.orderStatus !== 'INVOICED')
+        throw new Error('GRN can only be created against an active PO');
+
+      const grnProducts: any[] = [];
+      for (const p of data.grnProducts) {
         const invoiceItem = (invoice.items || []).find(
           (item: any) => item.productId === p.productId,
         );
-        if (!invoiceItem) {
+        if (!invoiceItem)
           throw new Error(
-            `Product with ID ${p.productId} not found on the referenced invoice`,
+            `Product ${p.productId} not found on the referenced invoice`,
           );
-        }
 
         const vendorPricing = (await vendorProductPriceRepository.findFirst({
           where: {
@@ -97,19 +87,14 @@ export const GrnService = {
               invoiceItem.quantity
             : 0;
 
-        const tax =
-          p.tax ??
-          (invoiceItem.quantity > 0
-            ? (invoiceItem.taxAmount / invoiceItem.quantity) * p.quantity
-            : 0);
-
         grnProducts.push({
           material:
             invoiceItem.description ||
-            invoiceItem.product?.displayName ||
-            'Unknown Material',
+            toMaterialName(invoiceItem.product?.displayName),
+          productId: invoiceItem.productId,
+          productGradeId: invoiceItem.productGradeId ?? null,
           quantity: p.quantity,
-          tax,
+          tax: 0,
           rate,
           uomId: invoiceItem.uomId,
           projectId: invoice.projectId,
@@ -118,51 +103,172 @@ export const GrnService = {
           date: currentDate,
         });
       }
-    } else {
-      grnProducts = (invoice.items || []).map((item: any) => {
-        const rate =
-          item.quantity > 0
-            ? (item.totalAmount - item.taxAmount) / item.quantity
-            : 0;
-        return {
-          material:
-            item.description || item.product?.displayName || 'Unknown Material',
-          quantity: item.quantity,
-          tax: item.taxAmount,
-          rate,
-          uomId: item.uomId,
-          projectId: invoice.projectId,
-          invoiceId: invoice.id,
-          vendor: invoice.vendorName,
-          date: currentDate,
-        };
-      });
-    }
 
-    const totalItems = restData.totalItems ?? grnProducts.length;
-    const totalTax =
-      restData.totalTax ??
-      grnProducts.reduce((sum: number, p: any) => sum + p.tax, 0);
-    const totalAmount =
-      restData.totalAmount ??
-      grnProducts.reduce(
-        (sum: number, p: any) => sum + (p.quantity * p.rate + p.tax),
+      const totalItems = grnProducts.length;
+      const totalAmount = grnProducts.reduce(
+        (sum: number, p: any) => sum + p.quantity * p.rate,
         0,
       );
 
+      return GrnRepository.create(
+        {
+          wbReference: data.wbReference,
+          referenceType: 'INVOICE',
+          invoiceId: invoice.id,
+          totalItems,
+          totalTax: 0,
+          totalAmount,
+          code,
+          domainId,
+          date: currentDate,
+          productOrderCode: po.code,
+          vendorId: invoice.vendorId,
+          vendorName: invoice.vendorName,
+          projectId: invoice.projectId,
+        },
+        grnProducts,
+      );
+    }
+
+    // --- PO path ---
+    if (data.referenceType === 'PO') {
+      const vendor = await vendorRepository.findByIdAndDomain(
+        data.vendorId,
+        domainId,
+      );
+      if (!vendor) throw new Error('Vendor not found');
+
+      const po =
+        await RawMaterialPurchaseRequestRepository.findPurchaseOrderWithProducts(
+          data.purchaseOrderId,
+          domainId,
+        );
+      if (!po) throw new Error('Purchase Order not found');
+
+      const grnProducts: any[] = [];
+      for (const p of data.grnProducts) {
+        const poItem = (po.purchaseOrderProducts || []).find(
+          (item: any) => item.id === p.poProductId,
+        );
+        if (!poItem)
+          throw new Error(
+            `PO product ${p.poProductId} does not belong to the referenced PO`,
+          );
+
+        const product = await ProductRepository.findFirst({
+          where: {
+            displayName: { equals: poItem.productName },
+            domainId,
+            isDeleted: false,
+          },
+        });
+
+        const productGrade =
+          product && poItem.productGradeName
+            ? await ProductGradeRepository.findFirst({
+                where: {
+                  gradeDisplayName: { equals: poItem.productGradeName },
+                  productId: product.id,
+                  domainId,
+                  isDeleted: false,
+                },
+              })
+            : null;
+
+        grnProducts.push({
+          material: toMaterialName(poItem.productName),
+          productId: product?.id ?? null,
+          productGradeId: productGrade?.id ?? null,
+          quantity: p.quantity,
+          tax: 0,
+          rate: p.rate,
+          currencyId: p.currencyId,
+          uomId: poItem.uomId,
+          projectId: po.projectId ?? null,
+          invoiceId: null,
+          vendor: vendor.name,
+          date: currentDate,
+        });
+      }
+
+      const totalItems = grnProducts.length;
+      const totalAmount = grnProducts.reduce(
+        (sum: number, p: any) => sum + p.quantity * p.rate,
+        0,
+      );
+
+      return GrnRepository.create(
+        {
+          wbReference: data.wbReference,
+          referenceType: 'PO',
+          invoiceId: null,
+          totalItems,
+          totalTax: 0,
+          totalAmount,
+          code,
+          domainId,
+          date: currentDate,
+          productOrderCode: po.code,
+          vendorId: null,
+          vendorName: vendor.name,
+          projectId: po.projectId ?? null,
+        },
+        grnProducts,
+      );
+    }
+
+    // --- NA path (standalone) ---
+    const vendor = await vendorRepository.findByIdAndDomain(
+      data.vendorId,
+      domainId,
+    );
+    if (!vendor) throw new Error('Vendor not found');
+
+    const grnProducts: any[] = [];
+    for (const p of data.grnProducts) {
+      const product = await ProductRepository.findByIdAndDomain(
+        p.productId,
+        domainId,
+      );
+      if (!product) throw new Error(`Product ${p.productId} not found`);
+
+      grnProducts.push({
+        material: toMaterialName(product.displayName),
+        productId: product.id,
+        productGradeId: p.productGradeId,
+        quantity: p.quantity,
+        tax: 0,
+        rate: p.rate ?? 0,
+        currencyId: p.currencyId,
+        uomId: p.uomId,
+        projectId: data.projectId ?? null,
+        invoiceId: null,
+        vendor: vendor.name,
+        date: currentDate,
+      });
+    }
+
+    const totalItems = grnProducts.length;
+    const totalAmount = grnProducts.reduce(
+      (sum: number, p: any) => sum + p.quantity * p.rate,
+      0,
+    );
+
     return GrnRepository.create(
       {
-        ...restData,
+        wbReference: data.wbReference,
+        referenceType: 'NA',
+        invoiceId: null,
         totalItems,
-        totalTax,
+        totalTax: 0,
         totalAmount,
         code,
         domainId,
         date: currentDate,
-        productOrderCode: po.code,
-        vendorId: invoice.vendorId,
-        vendorName: invoice.vendorName,
-        projectId: grnProjectId,
+        productOrderCode: null,
+        vendorId: null,
+        vendorName: vendor.name,
+        projectId: data.projectId ?? null,
       },
       grnProducts,
     );
@@ -178,6 +284,7 @@ export const GrnService = {
       approvalStatus?: string;
       projectId?: string;
       invoiceId?: string;
+      referenceType?: string;
       [key: string]: any;
     },
     langCode?: string,
@@ -194,6 +301,7 @@ export const GrnService = {
         approvalStatus: query.approvalStatus,
         projectId: query.projectId,
         invoiceId: query.invoiceId,
+        referenceType: query.referenceType,
       },
     );
 
@@ -205,9 +313,7 @@ export const GrnService = {
 
   async getGrnById(domainId: string, id: string) {
     const grn = await GrnRepository.findByIdWithDetails(id, domainId);
-    if (!grn) {
-      throw new Error(Messages.GRN.NOT_FOUND);
-    }
+    if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
     return grn;
   },
 
@@ -224,9 +330,7 @@ export const GrnService = {
     },
   ) {
     const grn = await GrnRepository.findByIdAndDomain(id, domainId);
-    if (!grn) {
-      throw new Error(Messages.GRN.NOT_FOUND);
-    }
+    if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
     if (
       grn.approvalStatus !== ApprovalStatus.PENDING &&
       grn.approvalStatus !== ApprovalStatus.REJECTED
@@ -237,17 +341,15 @@ export const GrnService = {
     const { grnProducts, ...grnData } = data;
 
     return transaction(async (tx) => {
-      const updatedFields: any = { ...grnData };
-
-      const updatedGrn = await GrnRepository.update(id, updatedFields, tx);
+      const updatedGrn = await GrnRepository.update(id, { ...grnData }, tx);
 
       if (grnProducts !== undefined) {
-        const finalInvoice = (await invoiceRepository.findFirst(
-          {
-            where: { id: updatedGrn.invoiceId, domainId },
-          },
-          tx,
-        )) as any;
+        const finalInvoice = updatedGrn.invoiceId
+          ? ((await invoiceRepository.findFirst(
+              { where: { id: updatedGrn.invoiceId, domainId } },
+              tx,
+            )) as any)
+          : null;
         const finalVendor = finalInvoice
           ? finalInvoice.vendorName
           : updatedGrn.vendorName;
@@ -267,11 +369,7 @@ export const GrnService = {
           if (p.id) {
             await GrnRepository.updateGrnProductRaw(
               p.id,
-              {
-                ...productData,
-                isDeleted: false,
-                status: 'ACTIVE',
-              },
+              { ...productData, isDeleted: false, status: 'ACTIVE' },
               tx,
             );
           } else {
@@ -283,7 +381,7 @@ export const GrnService = {
                 date: new Date(),
                 vendor: finalVendor,
                 projectId: finalProjectId,
-                invoiceId: updatedGrn.invoiceId,
+                invoiceId: updatedGrn.invoiceId ?? null,
                 domainId,
                 status: 'ACTIVE',
               },
@@ -315,12 +413,9 @@ export const GrnService = {
 
   async deleteGrn(domainId: string, id: string) {
     const grn = await GrnRepository.findByIdAndDomain(id, domainId);
-    if (!grn) {
-      throw new Error(Messages.GRN.NOT_FOUND);
-    }
-    if (grn.approvalStatus === ApprovalStatus.APPROVED) {
+    if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
+    if (grn.approvalStatus === ApprovalStatus.APPROVED)
       throw new Error('Cannot delete an APPROVED GRN');
-    }
     return GrnRepository.softDelete(id);
   },
 
@@ -330,16 +425,12 @@ export const GrnService = {
     approvalStatus: ApprovalStatus,
   ) {
     const grn = await GrnRepository.findByIdAndDomain(id, domainId);
-    if (!grn) {
-      throw new Error(Messages.GRN.NOT_FOUND);
-    }
-    if (grn.approvalStatus !== ApprovalStatus.PENDING) {
+    if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
+    if (grn.approvalStatus !== ApprovalStatus.PENDING)
       throw new Error(Messages.GRN.ALREADY_ACTIONED);
-    }
 
-    if (approvalStatus === ApprovalStatus.APPROVED) {
+    if (approvalStatus === ApprovalStatus.APPROVED)
       return GrnRepository.approveAndUpdateInventory(id, domainId);
-    }
 
     return GrnRepository.reject(id);
   },
@@ -347,9 +438,8 @@ export const GrnService = {
   async createGrnProduct(domainId: string, grnId: string, data: any) {
     const grn = await GrnRepository.findByIdAndDomain(grnId, domainId);
     if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
-    if (grn.approvalStatus === ApprovalStatus.APPROVED) {
+    if (grn.approvalStatus === ApprovalStatus.APPROVED)
       throw new Error('Cannot add products to an approved GRN');
-    }
 
     return GrnRepository.createGrnProduct(grnId, domainId, {
       ...data,
@@ -357,7 +447,7 @@ export const GrnService = {
       date: new Date(),
       vendor: grn.vendorName,
       projectId: grn.projectId,
-      invoiceId: grn.invoiceId,
+      invoiceId: grn.invoiceId ?? null,
       domainId,
     });
   },
@@ -374,9 +464,8 @@ export const GrnService = {
   ) {
     const grn = await GrnRepository.findByIdAndDomain(grnId, domainId);
     if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
-    if (grn.approvalStatus === ApprovalStatus.APPROVED) {
+    if (grn.approvalStatus === ApprovalStatus.APPROVED)
       throw new Error('Cannot update products in an approved GRN');
-    }
 
     const product = await GrnRepository.getGrnProductById(
       productId,
@@ -391,9 +480,8 @@ export const GrnService = {
   async deleteGrnProduct(domainId: string, grnId: string, productId: string) {
     const grn = await GrnRepository.findByIdAndDomain(grnId, domainId);
     if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
-    if (grn.approvalStatus === ApprovalStatus.APPROVED) {
+    if (grn.approvalStatus === ApprovalStatus.APPROVED)
       throw new Error('Cannot delete products from an approved GRN');
-    }
 
     const product = await GrnRepository.getGrnProductById(
       productId,

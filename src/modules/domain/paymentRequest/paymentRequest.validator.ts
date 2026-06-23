@@ -10,7 +10,7 @@ export const createPaymentRequestBodySchema = z.object({
   type: z.string().min(1, 'Type is required'),
   vendorId: z.string().uuid('Invalid vendor ID'),
   projectId: z.string().uuid('Invalid project ID'),
-  referenceNumber: z.string().min(1, 'Reference number is required'),
+  referenceNumber: z.string().min(1).optional(),
   tds: z.number().min(0, 'TDS must be >= 0'),
   grossAmount: z.number().min(0, 'Gross amount must be >= 0'),
   netPayable: z.number().min(0, 'Net payable must be >= 0'),
@@ -42,6 +42,8 @@ export const listPaymentRequestsQuerySchema = paginationQuerySchema
     projectId: z.string().uuid().optional(),
     vendorId: z.string().uuid().optional(),
     paymentStatus: z.enum(['PENDING', 'APPROVED', 'PAID']).optional(),
+    lifecycle: z.enum(['ACTIVE', 'VOID']).optional(),
+    type: z.string().optional(),
     searchKey: z.string().optional(),
   });
 

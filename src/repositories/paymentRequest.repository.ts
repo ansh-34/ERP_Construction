@@ -11,9 +11,19 @@ export const PaymentRequestRepository = {
     });
   },
 
-  async findByIdWithDetails(id: string, domainId: string) {
+  async findByIdWithDetails(
+    id: string,
+    domainId: string,
+    opts?: { type?: string; lifecycle?: 'ACTIVE' | 'VOID' },
+  ) {
     return prisma.paymentRequest.findFirst({
-      where: { id, domainId, isDeleted: false },
+      where: {
+        id,
+        domainId,
+        isDeleted: false,
+        ...(opts?.type && { type: opts.type }),
+        ...(opts?.lifecycle && { lifecycle: opts.lifecycle }),
+      },
       include: {
         vendor: true,
         project: true,
@@ -33,11 +43,15 @@ export const PaymentRequestRepository = {
       projectId?: string;
       vendorId?: string;
       isDeleted?: boolean;
+      lifecycle?: 'ACTIVE' | 'VOID';
+      type?: string;
     },
   ) {
     const where: any = {
       domainId,
       isDeleted: filters.isDeleted ?? false,
+      ...(filters.lifecycle ? { lifecycle: filters.lifecycle } : {}),
+      ...(filters.type ? { type: filters.type } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.paymentStatus
         ? { paymentStatus: filters.paymentStatus }

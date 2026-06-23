@@ -3,6 +3,7 @@ import {
   PaymentRequestRepository,
   projectRepository,
   vendorProductPriceRepository,
+  UserRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
@@ -64,11 +65,18 @@ export const PaymentRequestService = {
 
     const code = PaymentRequestService.generateCode();
 
+    // requestedBy is an FK to User. When a domain owner (whose token id is the
+    // domain, not a User) creates the request, store null instead of failing.
+    const requester = await UserRepository.findActiveById(
+      requestedBy,
+      domainId,
+    );
+
     const prData = {
       ...data,
       code,
       date: data.date ? new Date(data.date) : new Date(),
-      requestedBy,
+      requestedBy: requester ? requestedBy : null,
       domainId,
       status: data.status || 'ACTIVE',
       isDeleted: false,
@@ -106,6 +114,9 @@ export const PaymentRequestService = {
         projectId: query.projectId,
         vendorId: query.vendorId,
         isDeleted: query.isDeleted,
+        // Default to FINAL + ACTIVE; override with ?type / ?lifecycle.
+        type: query.type ?? 'FINAL',
+        lifecycle: query.lifecycle ?? 'ACTIVE',
       });
 
     return {
@@ -118,8 +129,44 @@ export const PaymentRequestService = {
     };
   },
 
-  async getPaymentRequestById(domainId: string, id: string) {
-    const pr = await PaymentRequestRepository.findByIdWithDetails(id, domainId);
+  async listActivePaymentRequests(
+    authDomainId: string,
+    query: Record<string, any>,
+  ) {
+    return PaymentRequestService.listPaymentRequests(authDomainId, {
+      ...query,
+      lifecycle: 'ACTIVE',
+    });
+  },
+
+  async getPaymentRequestById(
+    domainId: string,
+    id: string,
+    query?: { type?: string; lifecycle?: 'ACTIVE' | 'VOID' },
+  ) {
+    const pr = await PaymentRequestRepository.findByIdWithDetails(
+      id,
+      domainId,
+      {
+        // Default to FINAL + ACTIVE; override with ?type / ?lifecycle.
+        type: query?.type ?? 'FINAL',
+        lifecycle: query?.lifecycle ?? 'ACTIVE',
+      },
+    );
+    if (!pr) {
+      throw new Error(Messages.PAYMENT_REQUEST.NOT_FOUND);
+    }
+    return pr;
+  },
+
+  async getActivePaymentRequestById(domainId: string, id: string) {
+    const pr = await PaymentRequestRepository.findByIdWithDetails(
+      id,
+      domainId,
+      {
+        lifecycle: 'ACTIVE',
+      },
+    );
     if (!pr) {
       throw new Error(Messages.PAYMENT_REQUEST.NOT_FOUND);
     }

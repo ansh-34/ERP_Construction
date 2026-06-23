@@ -2227,7 +2227,7 @@ async function getProductTransactionHistoryReport(
   });
 
   grnProducts.forEach((item) => {
-    const associatedItem = item.invoice.items.find(
+    const associatedItem = item.invoice?.items?.find(
       (ii) => ii.uomId === item.uomId,
     );
 
@@ -2297,7 +2297,7 @@ async function getProductTransactionHistoryReport(
       gradeCode,
       gradeName,
       quantity: item.quantity,
-      uom: item.uom.code,
+      uom: item.uom?.code ?? 'N/A',
       unitRate: item.rate,
       totalAmount: roundToTwo(item.quantity * item.rate),
       projectCode: item.project?.code || 'N/A',

@@ -312,6 +312,9 @@ export const Messages = Object.freeze({
     DUPLICATE_FOR_VEHICLE:
       'Journey schedule with this code already exists for this vehicle',
     NOT_FOUND: 'Journey schedule not found',
+    UPDATED: 'Journey schedule updated successfully',
+    UPDATE_FAILED: 'Failed to update journey schedule',
+    GET_FAILED: 'Failed to fetch journey schedule',
     DELETED: 'Journey schedule deleted successfully',
     DELETE_FAILED: 'Failed to delete journey schedule',
   },
@@ -524,6 +527,9 @@ export const Messages = Object.freeze({
     ITEM_UPDATE_FAILED: 'Failed to update invoice item',
     GENERATED: 'Invoices generated from purchase order successfully',
     GENERATE_FAILED: 'Failed to generate invoices from purchase order',
+    FINALIZED:
+      'Final invoice created; proforma invoice and payment request voided',
+    FINALIZE_FAILED: 'Failed to finalize invoice',
     VENDORS_NOT_ASSIGNED:
       'All PO products must have a vendor assigned before generating invoices',
     ALREADY_GENERATED:

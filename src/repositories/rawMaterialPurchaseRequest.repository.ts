@@ -39,6 +39,10 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
         quantity,
         uomId,
         uomCode: pop.uom?.code || null,
+        lastPurchasePrice: pop.lastPurchasePrice ?? null,
+        lastPurchaseCurrencyId: pop.lastPurchaseCurrencyId ?? null,
+        lastPurchaseVendorId: pop.lastPurchaseVendorId ?? null,
+        lastPurchaseVendorName: pop.lastPurchaseVendorName ?? null,
         projectId,
         domainId: popDomainId,
         status,
@@ -107,6 +111,10 @@ async function enrichPoProductsWithCodes(products: any[], domainId: string) {
       quantity,
       uomId,
       uomCode: pop.uom?.code || match?.uom?.code || null,
+      lastPurchasePrice: pop.lastPurchasePrice ?? null,
+      lastPurchaseCurrencyId: pop.lastPurchaseCurrencyId ?? null,
+      lastPurchaseVendorId: pop.lastPurchaseVendorId ?? null,
+      lastPurchaseVendorName: pop.lastPurchaseVendorName ?? null,
       projectId,
       domainId: popDomainId,
       status,
@@ -326,6 +334,17 @@ export const RawMaterialPurchaseRequestRepository = {
 
       // Create a PO product line item for each item in the RMPR group
       for (const req of requests) {
+        const lastRate = await tx.productGradeLastPurchaseRate.findFirst({
+          where: {
+            productId: req.productId,
+            productGradeId: req.productGradeId,
+            uomId: req.uomId,
+            domainId: req.domainId,
+            isDeleted: false,
+          },
+          orderBy: { lastPurchaseDate: 'desc' },
+        });
+
         await tx.purchaseOrderProduct.create({
           data: {
             purchaseOrderId: po.id,
@@ -338,6 +357,10 @@ export const RawMaterialPurchaseRequestRepository = {
             uomId: req.uomId,
             rate: 0,
             tax: 0,
+            lastPurchasePrice: lastRate?.lastPrice ?? null,
+            lastPurchaseCurrencyId: lastRate?.currencyId ?? null,
+            lastPurchaseVendorId: lastRate?.vendorId ?? null,
+            lastPurchaseVendorName: lastRate?.vendorName ?? null,
             projectId: req.projectId,
             domainId: req.domainId,
           },
@@ -621,5 +644,16 @@ export const RawMaterialPurchaseRequestRepository = {
   updateMany(args: any, tx?: any): Promise<any> {
     const client = tx || prisma;
     return client.rawMaterialPurchaseRequest.updateMany(args) as Promise<any>;
+  },
+
+  findPurchaseOrderWithProducts(id: string, domainId: string) {
+    return prisma.purchaseOrder.findFirst({
+      where: { id, domainId, isDeleted: false },
+      include: { purchaseOrderProducts: { where: { isDeleted: false } } },
+    });
+  },
+
+  countPurchaseOrdersWhere(args: any) {
+    return prisma.purchaseOrder.count(args);
   },
 };

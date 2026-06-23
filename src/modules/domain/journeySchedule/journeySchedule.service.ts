@@ -39,6 +39,71 @@ export const JourneyScheduleService = {
     throw new Error('Failed to generate unique vehicle journey schedule code');
   },
 
+  async getJourneyScheduleById(domainId: string, id: string) {
+    const schedule = await JourneyScheduleRepository.findByIdWithIncludes(
+      id,
+      domainId,
+    );
+    if (!schedule) {
+      throw new Error(Messages.JOURNEY_SCHEDULE.NOT_FOUND);
+    }
+    return schedule;
+  },
+
+  async updateJourneySchedule(
+    domainId: string,
+    id: string,
+    data: {
+      description?: string;
+      date?: string;
+      driverName?: string;
+      startLocation?: string;
+      endLocation?: string;
+      distance?: number;
+      average?: number;
+      expectedFuelValue?: number;
+      fuelAlertThreshold?: number;
+      loadedQuantity?: number;
+      loadedQuantityUomId?: string;
+      loadedAt?: string;
+      loadingStatus?: string;
+    },
+  ) {
+    const schedule = await JourneyScheduleRepository.findActiveByIdAndDomain(
+      id,
+      domainId,
+    );
+    if (!schedule) {
+      throw new Error(Messages.JOURNEY_SCHEDULE.NOT_FOUND);
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (data.description !== undefined)
+      updateData.description = data.description;
+    if (data.date !== undefined) updateData.date = new Date(data.date);
+    if (data.driverName !== undefined) updateData.driverName = data.driverName;
+    if (data.startLocation !== undefined)
+      updateData.startLocation = data.startLocation;
+    if (data.endLocation !== undefined)
+      updateData.endLocation = data.endLocation;
+    if (data.distance !== undefined) updateData.distance = data.distance;
+    if (data.average !== undefined) updateData.average = data.average;
+    if (data.expectedFuelValue !== undefined)
+      updateData.expectedFuelValue = data.expectedFuelValue;
+    if (data.fuelAlertThreshold !== undefined)
+      updateData.fuelAlertThreshold = data.fuelAlertThreshold;
+    if (data.loadedQuantity !== undefined)
+      updateData.loadedQuantity = data.loadedQuantity;
+    if (data.loadedQuantityUomId !== undefined)
+      updateData.loadedQuantityUomId = data.loadedQuantityUomId;
+    if (data.loadedAt !== undefined)
+      updateData.loadedAt = new Date(data.loadedAt);
+    if (data.loadingStatus !== undefined)
+      updateData.loadingStatus = data.loadingStatus;
+
+    return JourneyScheduleRepository.update(id, updateData);
+  },
+
   async createJourneySchedule(
     domainId: string,
     data: {
@@ -49,11 +114,11 @@ export const JourneyScheduleService = {
       startLocation: string;
       endLocation: string;
       distance: number;
-      average: number;
-      expectedFuelValue: number;
-      fuelAlertThreshold: number;
-      loadedQuantity: number;
-      loadedQuantityUomId: string;
+      average?: number;
+      expectedFuelValue?: number;
+      fuelAlertThreshold?: number;
+      loadedQuantity?: number;
+      loadedQuantityUomId?: string;
       loadedAt: string;
       loadingStatus: string;
     },
