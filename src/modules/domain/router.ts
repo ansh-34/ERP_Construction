@@ -41,6 +41,7 @@ import invoiceRouter from './invoice/invoice.router.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
 import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
+import saleOrderRouter from './saleOrder/saleOrder.router.js';
 import reportRouter from './report/report.routes';
 import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
@@ -49,23 +50,8 @@ import modulePermissionRouter from './modulePermission/modulePermission.router';
 import onboardingRouter from './onboarding/onboarding.router.js';
 import dashboardRouter from './dashboard/dashboard.router.js';
 
-import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
+import { allGradesRouter } from './productGrade/productGrade.router.js';
 import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
-import { validate } from '../../middlewares/validate.js';
-import { z } from 'zod';
-import {
-  pageBasedPaginationQuerySchema,
-  statusFilterSchema,
-} from '../common/common.validator.js';
-
-const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
-  .merge(statusFilterSchema)
-  .extend({
-    searchKey: z.string().optional(),
-    productId: z.string().uuid().optional().or(z.literal('')),
-    gradeId: z.string().uuid().optional().or(z.literal('')),
-    productGradeId: z.string().uuid().optional().or(z.literal('')),
-  });
 
 const domainRouter = Router();
 
@@ -119,15 +105,11 @@ domainRouter.use('/invoices', invoiceRouter);
 domainRouter.use('/payment-requests', paymentRequestRouter);
 domainRouter.use('/customers', customerRouter);
 domainRouter.use('/customer-rates', customerRateRouter);
+domainRouter.use('/sale-orders', saleOrderRouter);
 domainRouter.use('/report', reportRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);
-// New flat query APIs
-domainRouter.get(
-  '/grades',
-  validate(listAllGradesAndRatesQuerySchema, 'query'),
-  listAllDomainProductGrades,
-);
+domainRouter.use('/grades', allGradesRouter());
 domainRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 
 export default domainRouter;

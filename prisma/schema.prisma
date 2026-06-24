@@ -139,6 +139,8 @@ model Admin {
   vendorProductPricings  VendorProductPricing[]
   customers              Customer[]
   customerRates          CustomerRate[]
+  saleOrders             SaleOrder[]
+  saleOrderProducts      SaleOrderProduct[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -243,6 +245,8 @@ model Domain {
   paymentRequests             PaymentRequest[]
   customers                   Customer[]
   customerRates               CustomerRate[]
+  saleOrders                  SaleOrder[]
+  saleOrderProducts           SaleOrderProduct[]
   admin                       Admin                        @relation(fields: [adminId], references: [id])
   adminId                     String                       @db.Uuid
 
@@ -641,6 +645,7 @@ model Uom {
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   customerRates               CustomerRate[]
   inventoryFuelStocks         InventoryFuelStock[]
+  saleOrderProducts           SaleOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -772,6 +777,7 @@ model Product {
   invoiceItems                InvoiceItem[]
   grnProducts                 GrnProduct[]
   customerRates               CustomerRate[]
+  saleOrderProducts           SaleOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([isDeleted])
@@ -814,6 +820,7 @@ model ProductGrades {
   invoiceItems                InvoiceItem[]
   grnProducts                 GrnProduct[]
   customerRates               CustomerRate[]
+  saleOrderProducts           SaleOrderProduct[]
   status                      StatusEnum                   @default(ACTIVE)
   isDeleted                   Boolean
   createdAt                   DateTime                     @default(now())
@@ -2008,6 +2015,7 @@ model Customer {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   customerRates   CustomerRate[]
+  saleOrders      SaleOrder[]
 
   @@index([domainId, isDeleted])
   @@index([adminId])
@@ -2045,4 +2053,84 @@ model CustomerRate {
   @@index([adminId])
 }
 
+enum SaleOrderEntryType {
+  PLANT_ENTRY
+  MANUAL
+}
 
+enum SaleOrderPaymentType {
+  CASH
+  CREDIT
+}
+
+enum SaleOrderStatus {
+  PENDING
+  INPROGRESS
+  INVOICED
+}
+
+model SaleOrder {
+  id                         String               @id @default(uuid()) @db.Uuid
+  ticketNumber               String
+  date                       DateTime             @default(now())
+  entryType                  SaleOrderEntryType   @default(MANUAL)
+  customerId                 String?              @db.Uuid
+  customer                   Customer?            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerName               String
+  customerPhone              String
+  totalAmount                Float                @default(0)
+  totalTaxAmount             Float                @default(0)
+  totalTransportationCharges Float                @default(0)
+  totalRoyaltyCharges        Float                @default(0)
+  paymentType                SaleOrderPaymentType @default(CASH)
+  orderStatus                SaleOrderStatus      @default(PENDING)
+  remarks                    String?
+  domainId                   String               @db.Uuid
+  domain                     Domain               @relation(fields: [domainId], references: [id])
+  adminId                    String               @db.Uuid
+  admin                      Admin                @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status                     StatusEnum           @default(ACTIVE)
+  isDeleted                  Boolean              @default(false)
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  saleOrderProducts          SaleOrderProduct[]
+
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([customerId])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+model SaleOrderProduct {
+  id                   String         @id @default(uuid()) @db.Uuid
+  saleOrderId          String         @db.Uuid
+  saleOrder            SaleOrder      @relation(fields: [saleOrderId], references: [id])
+  productId            String         @db.Uuid
+  product              Product        @relation(fields: [productId], references: [id])
+  productGradeId       String?        @db.Uuid
+  productGrade         ProductGrades? @relation(fields: [productGradeId], references: [id])
+  quantity             Float
+  uomId                String         @db.Uuid
+  uom                  Uom            @relation(fields: [uomId], references: [id])
+  unitRate             Float          @default(0)
+  amount               Float          @default(0)
+  taxAmount            Float          @default(0)
+  transportationCharge Float          @default(0)
+  royaltyAmount        Float          @default(0)
+  domainId             String         @db.Uuid
+  domain               Domain         @relation(fields: [domainId], references: [id])
+  adminId              String         @db.Uuid
+  admin                Admin          @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status               StatusEnum     @default(ACTIVE)
+  isDeleted            Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([saleOrderId])
+  @@index([productId])
+  @@index([productGradeId])
+  @@index([uomId])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+}

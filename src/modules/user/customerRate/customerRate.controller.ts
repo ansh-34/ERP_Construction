@@ -29,10 +29,12 @@ export const createCustomerRate = async (req: Request, res: Response) => {
 
 export const listCustomerRates = async (req: Request, res: Response) => {
   try {
+    const lang = (req.headers.lang as string) || null;
     const { data, pagination } = await CustomerRateService.findAll(
       req.user!.domainId,
       req.user!.adminId,
       req.query,
+      lang,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
@@ -47,10 +49,12 @@ export const listCustomerRates = async (req: Request, res: Response) => {
 
 export const getCustomerRateById = async (req: Request, res: Response) => {
   try {
+    const lang = (req.headers.lang as string) || 'en';
     const data = await CustomerRateService.findOne(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
+      lang,
     );
     return res.status(HttpStatus.OK).json({
       success: true,

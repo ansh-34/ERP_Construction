@@ -42,27 +42,12 @@ import vehicleRouter from './vehicle/vehicle.router.js';
 import roleRouter from './role/role.router.js';
 import onboardingRouter from './onboarding/onboarding.router.js';
 
-import { listAllProductGrades } from './productGrade/productGrade.controller.js';
+import { allGradesRouter } from './productGrade/productGrade.router.js';
 import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
 import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
-
-import { validate } from '../../middlewares/validate.js';
-import { z } from 'zod';
-import {
-  pageBasedPaginationQuerySchema,
-  statusFilterSchema,
-} from '../common/common.validator.js';
-
-const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
-  .merge(statusFilterSchema)
-  .extend({
-    searchKey: z.string().optional(),
-    productId: z.string().uuid().optional().or(z.literal('')),
-    gradeId: z.string().uuid().optional().or(z.literal('')),
-    productGradeId: z.string().uuid().optional().or(z.literal('')),
-  });
+import saleOrderRouter from './saleOrder/saleOrder.router.js';
 
 const userRouter = Router();
 
@@ -111,13 +96,8 @@ userRouter.use('/roles', roleRouter);
 userRouter.use('/payment-requests', paymentRequestRouter);
 userRouter.use('/customers', customerRouter);
 userRouter.use('/customer-rates', customerRateRouter);
-
-// New flat query APIs
-userRouter.get(
-  '/grades',
-  validate(listAllGradesAndRatesQuerySchema, 'query'),
-  listAllProductGrades,
-);
+userRouter.use('/sale-orders', saleOrderRouter);
+userRouter.use('/grades', allGradesRouter());
 userRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 
 export default userRouter;

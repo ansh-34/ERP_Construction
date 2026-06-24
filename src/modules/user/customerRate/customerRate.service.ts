@@ -22,6 +22,50 @@ const rateFields = (dto: Partial<CustomerRateDto>) => ({
   ...(dto.effectiveTo !== undefined && { effectiveTo: dto.effectiveTo }),
 });
 
+function localizeName(value: unknown, lang: string): string {
+  if (typeof value === 'object' && value !== null) {
+    const map = value as Record<string, string>;
+    return map[lang] ?? map.en ?? '';
+  }
+  return '';
+}
+
+function normalize(record: any, lang: string | null) {
+  const name = (v: unknown) => (lang !== null ? localizeName(v, lang) : v);
+  return {
+    ...record,
+    product: record.product
+      ? {
+          id: record.product.id,
+          code: record.product.code,
+          name: name(record.product.displayName),
+        }
+      : null,
+    productGrade: record.productGrade
+      ? {
+          id: record.productGrade.id,
+          gradeCode: record.productGrade.gradeCode,
+          name: name(record.productGrade.gradeDisplayName),
+        }
+      : null,
+    uom: record.uom
+      ? {
+          id: record.uom.id,
+          code: record.uom.code,
+          name: name(record.uom.displayName),
+        }
+      : null,
+    currency: record.currency
+      ? {
+          id: record.currency.id,
+          code: record.currency.code,
+          symbol: record.currency.symbol,
+          name: name(record.currency.name),
+        }
+      : null,
+  };
+}
+
 export const CustomerRateService = {
   async create(domainId: string, adminId: string, dto: CustomerRateDto) {
     return customerRateRepository.create({
@@ -51,6 +95,7 @@ export const CustomerRateService = {
       productId?: string;
       productGradeId?: string;
     },
+    lang?: string | null,
   ) {
     const { offset, limit } = normalizePagination(query);
     const [totalCount, data] = await customerRateRepository.listByDomain(
@@ -65,17 +110,23 @@ export const CustomerRateService = {
         productGradeId: query.productGradeId,
       },
     );
-    return { data, pagination: { totalCount, offset, limit } };
+    const normalized = data.map((r: any) => normalize(r, lang ?? null));
+    return { data: normalized, pagination: { totalCount, offset, limit } };
   },
 
-  async findOne(domainId: string, adminId: string, id: string) {
+  async findOne(
+    domainId: string,
+    adminId: string,
+    id: string,
+    lang: string = 'en',
+  ) {
     const record = await customerRateRepository.findByIdAndDomain(
       id,
       domainId,
       adminId,
     );
     if (!record) throw new Error(Messages.CUSTOMER_RATE.NOT_FOUND);
-    return record;
+    return normalize(record, lang);
   },
 
   async update(
