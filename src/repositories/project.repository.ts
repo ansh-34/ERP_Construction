@@ -306,6 +306,8 @@ export const projectRepository = {
       ...(options.filters && {
         ...(options.filters.spent && { spent: options.filters.spent }),
         ...(options.filters.budget && { budget: options.filters.budget }),
+        ...(options.filters.domainId && { domainId: options.filters.domainId }),
+        ...(options.filters.status && { status: options.filters.status }),
       }),
     };
 
