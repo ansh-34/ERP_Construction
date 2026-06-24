@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '@constants/httpStatus';
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { resolveHttpStatus } from '@/utils/httpError';
 import { projectUserDailyLogService } from './projectUserDailyLog.service';
 
@@ -15,10 +15,11 @@ export const projectUserDailyLogController = {
         date: string;
         projectId: string;
         userId: string;
-        startTime: string;
-        endTime: string;
+        startTime?: string | null;
+        endTime?: string | null;
         totalWorkingHours?: number;
         dayCharge: number;
+        attendanceStatus?: AttendanceStatusEnum;
         notes?: string | null;
         status?: StatusEnum;
       }[];
@@ -141,14 +142,16 @@ export const projectUserDailyLogController = {
         endTime,
         totalWorkingHours,
         dayCharge,
+        attendanceStatus,
         notes,
         status,
       } = req.body as {
         date?: string;
-        startTime?: string;
-        endTime?: string;
+        startTime?: string | null;
+        endTime?: string | null;
         totalWorkingHours?: number;
         dayCharge?: number;
+        attendanceStatus?: AttendanceStatusEnum;
         notes?: string | null;
         status?: StatusEnum;
       };
@@ -163,6 +166,7 @@ export const projectUserDailyLogController = {
           ...(endTime !== undefined && { endTime }),
           ...(totalWorkingHours !== undefined && { totalWorkingHours }),
           ...(dayCharge !== undefined && { dayCharge }),
+          ...(attendanceStatus !== undefined && { attendanceStatus }),
           ...(notes !== undefined && { notes }),
           ...(status !== undefined && { status }),
         },

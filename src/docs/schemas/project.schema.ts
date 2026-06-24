@@ -11,6 +11,13 @@ const activeStatus = {
   description: 'Allowed values: ACTIVE, INACTIVE',
 };
 
+const attendanceStatus = {
+  type: 'string',
+  enum: ['PRESENT', 'ABSENT', 'HALF_DAY', 'LEAVE'],
+  example: 'PRESENT',
+  description: 'Allowed values: PRESENT, ABSENT, HALF_DAY, LEAVE',
+};
+
 const taskStatus = {
   type: 'string',
   example: 'PENDING',
@@ -612,10 +619,11 @@ export const ProjectSchemas = {
       date: { type: 'string', example: '2026-05-18' },
       projectId: { type: 'string', format: 'uuid' },
       userId: { type: 'string', format: 'uuid' },
-      startTime: { type: 'string', example: '09:00' },
-      endTime: { type: 'string', example: '18:00' },
+      startTime: { type: 'string', nullable: true, example: null },
+      endTime: { type: 'string', nullable: true, example: null },
       totalWorkingHours: { type: 'number', example: 8 },
       dayCharge: { type: 'number', example: 1500 },
+      attendanceStatus,
       notes: { type: 'string', nullable: true },
       status: activeStatus,
     },
@@ -625,22 +633,16 @@ export const ProjectSchemas = {
     minItems: 1,
     items: {
       type: 'object',
-      required: [
-        'date',
-        'projectId',
-        'userId',
-        'startTime',
-        'endTime',
-        'dayCharge',
-      ],
+      required: ['date', 'projectId', 'userId', 'dayCharge'],
       properties: {
         date: { type: 'string', example: '2026-05-18' },
         projectId: { type: 'string', format: 'uuid' },
         userId: { type: 'string', format: 'uuid' },
-        startTime: { type: 'string', example: '09:00' },
-        endTime: { type: 'string', example: '18:00' },
+        startTime: { type: 'string', nullable: true, example: null },
+        endTime: { type: 'string', nullable: true, example: null },
         totalWorkingHours: { type: 'number', minimum: 0, example: 8 },
         dayCharge: { type: 'number', minimum: 0, example: 1500 },
+        attendanceStatus,
         notes: { type: 'string', nullable: true },
         status: activeStatus,
       },
@@ -650,10 +652,11 @@ export const ProjectSchemas = {
     type: 'object',
     properties: {
       date: { type: 'string', example: '2026-05-18' },
-      startTime: { type: 'string', example: '09:00' },
-      endTime: { type: 'string', example: '18:00' },
+      startTime: { type: 'string', nullable: true, example: null },
+      endTime: { type: 'string', nullable: true, example: null },
       totalWorkingHours: { type: 'number', minimum: 0, example: 8 },
       dayCharge: { type: 'number', minimum: 0, example: 1500 },
+      attendanceStatus,
       notes: { type: 'string', nullable: true },
       status: activeStatus,
     },

@@ -96,6 +96,42 @@ export const projectUserAssignmentController = {
     }
   },
 
+  getAvailability: async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const language =
+        (req.body as { language?: string }).language ||
+        (req.headers.language as string) ||
+        null;
+      const { date, projectId, userId } = req.query as {
+        date?: string;
+        projectId?: string;
+        userId?: string;
+      };
+
+      const availability = await projectUserAssignmentService.getAvailability(
+        req.user!.domainId,
+        req.user!.adminId,
+        {
+          date: date ?? '',
+          projectId,
+          userId,
+        },
+        language,
+      );
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Project user assignment availability fetched successfully',
+        data: availability,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch project user assignment availability';
+      return res.status(resolveHttpStatus(message)).json({ message });
+    }
+  },
+
   getById: async (req: Request, res: Response): Promise<Response> => {
     try {
       const language =

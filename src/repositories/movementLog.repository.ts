@@ -63,6 +63,18 @@ export interface CreateMovementLogInput {
   status: StatusEnum;
 }
 
+export interface MachineryRuntimeContext {
+  machineryId: string;
+  projectId: string;
+  domainId: string;
+  adminId: string;
+}
+
+export interface MachineryDailyRuntime {
+  usageDate: string;
+  totalHours: number;
+}
+
 const movementLogSelect = Prisma.sql`
   ml."id",
   ml."code",
@@ -301,5 +313,47 @@ export const movementLogRepository = {
     `);
 
     return result[0] ?? null;
+  },
+
+  findMachineryDailyRuntime(
+    context: MachineryRuntimeContext,
+    fromDate: Date,
+    toDate: Date,
+  ) {
+    return prisma.$queryRaw<MachineryDailyRuntime[]>(Prisma.sql`
+      SELECT
+        to_char(date_trunc('day', ml."startDateTime"), 'YYYY-MM-DD') AS "usageDate",
+        SUM(ml."hours")::double precision AS "totalHours"
+      FROM "MovementLog" ml
+      WHERE ml."machineryId" = ${context.machineryId}
+        AND ml."projectId" = ${context.projectId}
+        AND ml."domainId" = ${context.domainId}
+        AND ml."adminId" = ${context.adminId}
+        AND ml."assetType" = 'MACHINERY'::"MaintenanceAssetType"
+        AND ml."status" = 'ACTIVE'::"StatusEnum"
+        AND ml."isDeleted" = false
+        AND ml."startDateTime" >= ${fromDate}
+        AND ml."startDateTime" < ${toDate}
+      GROUP BY date_trunc('day', ml."startDateTime")
+      ORDER BY "usageDate" ASC
+    `);
+  },
+
+  findMachineryRuntimeContexts(fromDate: Date, toDate: Date) {
+    return prisma.$queryRaw<MachineryRuntimeContext[]>(Prisma.sql`
+      SELECT DISTINCT
+        ml."machineryId",
+        ml."projectId",
+        ml."domainId",
+        ml."adminId"
+      FROM "MovementLog" ml
+      WHERE ml."machineryId" IS NOT NULL
+        AND ml."projectId" IS NOT NULL
+        AND ml."assetType" = 'MACHINERY'::"MaintenanceAssetType"
+        AND ml."status" = 'ACTIVE'::"StatusEnum"
+        AND ml."isDeleted" = false
+        AND ml."startDateTime" >= ${fromDate}
+        AND ml."startDateTime" < ${toDate}
+    `);
   },
 };

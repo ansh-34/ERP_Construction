@@ -6,23 +6,23 @@ import {
   type ProjectUserDailyLogRecord,
   type UpdateProjectUserDailyLogInput as RepositoryUpdateProjectUserDailyLogInput,
 } from '@repositories/index';
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
   isNonEmptyString,
   isNonNegativeFiniteNumber,
-  isPositiveFiniteNumber,
 } from '@/utils/validation';
 
 type DailyLogInput = {
   date: string;
   projectId: string;
   userId: string;
-  startTime: string;
-  endTime: string;
+  startTime?: string | null;
+  endTime?: string | null;
   totalWorkingHours?: number;
   dayCharge: number;
+  attendanceStatus?: AttendanceStatusEnum;
   notes?: string | null;
   status?: StatusEnum;
 };
@@ -35,10 +35,11 @@ export interface CreateProjectUserDailyLogInput {
 
 export interface UpdateProjectUserDailyLogInput {
   date?: string;
-  startTime?: string;
-  endTime?: string;
+  startTime?: string | null;
+  endTime?: string | null;
   totalWorkingHours?: number;
   dayCharge?: number;
+  attendanceStatus?: AttendanceStatusEnum;
   notes?: string | null;
   status?: StatusEnum;
 }
@@ -138,11 +139,41 @@ function parseTime(value: string, date: Date, field: string): Date {
   return parsed;
 }
 
+function parseNullableTime(
+  value: string | null | undefined,
+  date: Date,
+  field: string,
+): Date | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return parseTime(value, date, field);
+}
+
 function parseOptionalDate(
   value: string | undefined,
   field: string,
 ): Date | undefined {
   return value === undefined ? undefined : parseDate(value, field);
+}
+
+function resolveListDateFilters(filters: {
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+}): { date?: Date; startDate?: Date; endDate?: Date } {
+  const date = parseOptionalDate(filters.date, 'date');
+  const startDate = parseOptionalDate(filters.startDate, 'startDate');
+  const endDate = parseOptionalDate(filters.endDate, 'endDate');
+
+  if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
+    throw new Error('endDate cannot be before startDate');
+  }
+
+  if (!date && !startDate && !endDate) {
+    return { date: new Date() };
+  }
+
+  return { date, startDate, endDate };
 }
 
 function assertStatus(status: StatusEnum | undefined): void {
@@ -152,6 +183,20 @@ function assertStatus(status: StatusEnum | undefined): void {
     status !== StatusEnum.INACTIVE
   ) {
     throw new Error('invalid status');
+  }
+}
+
+function assertAttendanceStatus(
+  attendanceStatus: AttendanceStatusEnum | undefined,
+): void {
+  if (
+    attendanceStatus !== undefined &&
+    attendanceStatus !== AttendanceStatusEnum.PRESENT &&
+    attendanceStatus !== AttendanceStatusEnum.ABSENT &&
+    attendanceStatus !== AttendanceStatusEnum.HALF_DAY &&
+    attendanceStatus !== AttendanceStatusEnum.LEAVE
+  ) {
+    throw new Error('invalid attendanceStatus');
   }
 }
 
@@ -165,6 +210,20 @@ function calculateWorkingHours(startTime: Date, endTime: Date): number {
   return Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
 }
 
+function calculateWorkingHoursIfTimed(
+  startTime: Date | null,
+  endTime: Date | null,
+): number | null {
+  if (!startTime || !endTime) return null;
+  return calculateWorkingHours(startTime, endTime);
+}
+
+function validateWorkingHoursForAttendance(totalWorkingHours: number): void {
+  if (!isNonNegativeFiniteNumber(totalWorkingHours)) {
+    throw new Error('invalid totalWorkingHours');
+  }
+}
+
 function validateLogRow(row: DailyLogInput): void {
   if (!isNonEmptyString(row.projectId)) {
     throw new Error('invalid projectId');
@@ -176,7 +235,7 @@ function validateLogRow(row: DailyLogInput): void {
 
   if (
     row.totalWorkingHours !== undefined &&
-    !isPositiveFiniteNumber(row.totalWorkingHours)
+    !isNonNegativeFiniteNumber(row.totalWorkingHours)
   ) {
     throw new Error('invalid totalWorkingHours');
   }
@@ -186,6 +245,7 @@ function validateLogRow(row: DailyLogInput): void {
   }
 
   assertStatus(row.status);
+  assertAttendanceStatus(row.attendanceStatus);
 }
 
 function assertNoDuplicateRows(
@@ -242,23 +302,41 @@ function buildUpdateData(
   existingLog: ProjectUserDailyLogRecord,
 ): RepositoryUpdateProjectUserDailyLogInput {
   const date = data.date ? parseDate(data.date, 'date') : existingLog.date;
-  const startTime = data.startTime
-    ? parseTime(data.startTime, date, 'startTime')
-    : existingLog.startTime;
-  const endTime = data.endTime
-    ? parseTime(data.endTime, date, 'endTime')
-    : existingLog.endTime;
+  const parsedStartTime = parseNullableTime(data.startTime, date, 'startTime');
+  const parsedEndTime = parseNullableTime(data.endTime, date, 'endTime');
+  const startTime =
+    parsedStartTime !== undefined ? parsedStartTime : existingLog.startTime;
+  const endTime =
+    parsedEndTime !== undefined ? parsedEndTime : existingLog.endTime;
+  const attendanceStatus =
+    data.attendanceStatus ??
+    existingLog.attendanceStatus ??
+    AttendanceStatusEnum.PRESENT;
+  const isNonWorkingAttendance =
+    attendanceStatus === AttendanceStatusEnum.ABSENT ||
+    attendanceStatus === AttendanceStatusEnum.LEAVE;
+  const hasTimeChange =
+    data.startTime !== undefined || data.endTime !== undefined;
+  const calculatedWorkingHours = calculateWorkingHoursIfTimed(
+    startTime,
+    endTime,
+  );
   const totalWorkingHours =
-    data.totalWorkingHours ?? calculateWorkingHours(startTime, endTime);
+    data.totalWorkingHours ??
+    (isNonWorkingAttendance
+      ? 0
+      : hasTimeChange && calculatedWorkingHours !== null
+        ? calculatedWorkingHours
+        : existingLog.totalWorkingHours);
+  const dayCharge =
+    data.dayCharge ??
+    (data.attendanceStatus !== undefined && isNonWorkingAttendance
+      ? 0
+      : existingLog.dayCharge);
 
-  if (!isPositiveFiniteNumber(totalWorkingHours)) {
-    throw new Error('invalid totalWorkingHours');
-  }
+  validateWorkingHoursForAttendance(totalWorkingHours);
 
-  if (
-    data.dayCharge !== undefined &&
-    !isNonNegativeFiniteNumber(data.dayCharge)
-  ) {
+  if (!isNonNegativeFiniteNumber(dayCharge)) {
     throw new Error('invalid dayCharge');
   }
 
@@ -268,10 +346,15 @@ function buildUpdateData(
     ...(data.endTime !== undefined && { endTime }),
     ...(data.startTime !== undefined ||
     data.endTime !== undefined ||
-    data.totalWorkingHours !== undefined
+    data.totalWorkingHours !== undefined ||
+    (data.attendanceStatus !== undefined && isNonWorkingAttendance)
       ? { totalWorkingHours }
       : {}),
-    ...(data.dayCharge !== undefined && { dayCharge: data.dayCharge }),
+    ...(data.dayCharge !== undefined ||
+    (data.attendanceStatus !== undefined && isNonWorkingAttendance)
+      ? { dayCharge }
+      : {}),
+    ...(data.attendanceStatus !== undefined && { attendanceStatus }),
     ...(data.notes !== undefined && { notes: data.notes }),
     ...(data.status !== undefined && { status: data.status }),
   };
@@ -295,10 +378,19 @@ export const projectUserDailyLogService = {
         validateLogRow(row);
 
         const date = parseDate(row.date, 'date');
-        const startTime = parseTime(row.startTime, date, 'startTime');
-        const endTime = parseTime(row.endTime, date, 'endTime');
+        const startTime =
+          parseNullableTime(row.startTime, date, 'startTime') ?? null;
+        const endTime = parseNullableTime(row.endTime, date, 'endTime') ?? null;
+        const calculatedWorkingHours = calculateWorkingHoursIfTimed(
+          startTime,
+          endTime,
+        );
         const totalWorkingHours =
-          row.totalWorkingHours ?? calculateWorkingHours(startTime, endTime);
+          row.totalWorkingHours ?? calculatedWorkingHours ?? 0;
+        const attendanceStatus =
+          row.attendanceStatus ?? AttendanceStatusEnum.PRESENT;
+
+        validateWorkingHoursForAttendance(totalWorkingHours);
 
         return {
           date,
@@ -308,6 +400,7 @@ export const projectUserDailyLogService = {
           endTime,
           totalWorkingHours,
           dayCharge: row.dayCharge,
+          attendanceStatus,
           notes: row.notes ?? null,
           domainId: data.domainId,
           adminId: data.adminId,
@@ -368,15 +461,16 @@ export const projectUserDailyLogService = {
 
     try {
       const { offset, limit } = normalizePagination(paginationQuery);
+      const dateFilters = resolveListDateFilters(filters);
       const logs = await projectUserDailyLogRepository.findMany(
         domainId,
         adminId,
         {
           projectId: filters.projectId,
           userId: filters.userId,
-          date: parseOptionalDate(filters.date, 'date'),
-          startDate: parseOptionalDate(filters.startDate, 'startDate'),
-          endDate: parseOptionalDate(filters.endDate, 'endDate'),
+          date: dateFilters.date,
+          startDate: dateFilters.startDate,
+          endDate: dateFilters.endDate,
           searchKey: filters.searchKey,
         },
       );
@@ -440,6 +534,7 @@ export const projectUserDailyLogService = {
     }
 
     assertStatus(data.status);
+    assertAttendanceStatus(data.attendanceStatus);
 
     try {
       const existingLog = await projectUserDailyLogRepository.findById(

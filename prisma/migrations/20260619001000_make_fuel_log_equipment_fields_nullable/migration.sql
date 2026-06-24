@@ -1,0 +1,4 @@
+ALTER TABLE "FuelLog"
+ALTER COLUMN "equipmentUniqueId" DROP NOT NULL,
+ALTER COLUMN "equipmentCategory" DROP NOT NULL,
+ALTER COLUMN "equipmentType" DROP NOT NULL;

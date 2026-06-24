@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { validate } from '@/middlewares/validate';
 import { projectUserAssignmentController } from './projectUserAssignment.controller';
 import {
+  availabilityProjectUserAssignmentQuery,
   createProjectUserAssignmentBody,
   idParams,
   listProjectUserAssignmentQuery,
@@ -19,6 +20,11 @@ projectUserAssignmentRouter.get(
   '/',
   validate(listProjectUserAssignmentQuery, 'query'),
   projectUserAssignmentController.getAll,
+);
+projectUserAssignmentRouter.get(
+  '/availability',
+  validate(availabilityProjectUserAssignmentQuery, 'query'),
+  projectUserAssignmentController.getAvailability,
 );
 projectUserAssignmentRouter.get(
   '/:id',

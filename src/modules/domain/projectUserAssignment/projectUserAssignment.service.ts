@@ -1,11 +1,12 @@
 import {
   projectRepository,
   projectUserAssignmentRepository,
+  projectUserDailyLogRepository,
   type CreateProjectUserAssignmentInput as RepositoryCreateProjectUserAssignmentInput,
   type ProjectUserAssignmentRecord,
   type UpdateProjectUserAssignmentInput as RepositoryUpdateProjectUserAssignmentInput,
 } from '@repositories/index';
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { normalizePagination, type PaginationQuery } from '@/utils/pagination';
 import {
@@ -49,6 +50,28 @@ type PaginatedProjectUserAssignments = {
   };
 };
 
+type ProjectUserAssignmentAvailability = {
+  fromDate: string;
+  toDate: string;
+  users: {
+    userId: string;
+    user: Record<string, unknown> | null | undefined;
+    assignedDates: string[];
+    assignments: {
+      id: string;
+      projectId: string;
+      project: Record<string, unknown> | null | undefined;
+      startDate: Date;
+      endDate: Date;
+      assignedDates: string[];
+      dailyWorkingHours: number;
+      dayCharge: number;
+      notes: string | null;
+      status: StatusEnum;
+    }[];
+  }[];
+};
+
 function parseDate(value: string, field: string): Date {
   if (!isNonEmptyString(value)) {
     throw new Error(`invalid ${field}`);
@@ -68,6 +91,63 @@ function parseOptionalDate(
   field: string,
 ): Date | undefined {
   return value === undefined ? undefined : parseDate(value, field);
+}
+
+function formatDateOnly(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function getMonthWindow(selectedDate: Date): { fromDate: Date; toDate: Date } {
+  const fromDate = new Date(
+    Date.UTC(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth(), 1),
+  );
+  const toDate = new Date(
+    Date.UTC(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth() + 3, 0),
+  );
+
+  return { fromDate, toDate };
+}
+
+function getDateRangeDates(startDate: Date, endDate: Date): string[] {
+  const dates: string[] = [];
+  const currentDate = new Date(
+    Date.UTC(
+      startDate.getUTCFullYear(),
+      startDate.getUTCMonth(),
+      startDate.getUTCDate(),
+    ),
+  );
+  const lastDate = new Date(
+    Date.UTC(
+      endDate.getUTCFullYear(),
+      endDate.getUTCMonth(),
+      endDate.getUTCDate(),
+    ),
+  );
+
+  while (currentDate.getTime() <= lastDate.getTime()) {
+    dates.push(formatDateOnly(currentDate));
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
+
+  return dates;
+}
+
+function getClippedAssignedDates(
+  assignment: ProjectUserAssignmentRecord,
+  fromDate: Date,
+  toDate: Date,
+): string[] {
+  const startDate =
+    assignment.startDate.getTime() > fromDate.getTime()
+      ? assignment.startDate
+      : fromDate;
+  const endDate =
+    assignment.endDate.getTime() < toDate.getTime()
+      ? assignment.endDate
+      : toDate;
+
+  return getDateRangeDates(startDate, endDate);
 }
 
 function assertStatus(status: StatusEnum | undefined): void {
@@ -221,6 +301,83 @@ async function assertUsersExist(
   }
 }
 
+function startOfUtcDay(date: Date): Date {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+}
+
+function addDays(date: Date, days: number): Date {
+  const nextDate = new Date(date);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+  return nextDate;
+}
+
+async function createMissingDailyLogsFromAssignments(
+  assignments: ProjectUserAssignmentRecord[],
+  domainId: string,
+  adminId: string,
+): Promise<void> {
+  const activeAssignments = assignments.filter(
+    (assignment) => assignment.status === StatusEnum.ACTIVE,
+  );
+
+  if (!activeAssignments.length) return;
+
+  const logs = activeAssignments.flatMap((assignment) => {
+    const startDate = startOfUtcDay(assignment.startDate);
+    const endDate = startOfUtcDay(assignment.endDate);
+    const rows = [];
+
+    for (
+      let currentDate = startDate;
+      currentDate.getTime() <= endDate.getTime();
+      currentDate = addDays(currentDate, 1)
+    ) {
+      const date = new Date(currentDate);
+      rows.push({
+        date,
+        projectId: assignment.projectId,
+        userId: assignment.userId,
+        startTime: null,
+        endTime: null,
+        totalWorkingHours: assignment.dailyWorkingHours,
+        dayCharge: assignment.dayCharge,
+        attendanceStatus: AttendanceStatusEnum.PRESENT,
+        notes: assignment.notes,
+        domainId,
+        adminId,
+        status: StatusEnum.ACTIVE,
+      });
+    }
+
+    return rows;
+  });
+
+  const duplicateLogs = await projectUserDailyLogRepository.findDuplicateLogs(
+    logs,
+    domainId,
+    adminId,
+  );
+  const duplicateKeys = new Set(
+    duplicateLogs.map((log) =>
+      [log.projectId, log.userId, startOfUtcDay(log.date).toISOString()].join(
+        ':',
+      ),
+    ),
+  );
+  const newLogs = logs.filter(
+    (log) =>
+      !duplicateKeys.has(
+        [log.projectId, log.userId, startOfUtcDay(log.date).toISOString()].join(
+          ':',
+        ),
+      ),
+  );
+
+  await projectUserDailyLogRepository.createMany(newLogs);
+}
+
 export const projectUserAssignmentService = {
   create: async (
     data: CreateProjectUserAssignmentInput,
@@ -278,6 +435,11 @@ export const projectUserAssignmentService = {
 
       const createdAssignments =
         await projectUserAssignmentRepository.createMany(assignments);
+      await createMissingDailyLogsFromAssignments(
+        createdAssignments,
+        data.domainId,
+        data.adminId,
+      );
 
       return createdAssignments.map((assignment) =>
         normalizeProjectUserAssignment(assignment, language),
@@ -330,6 +492,81 @@ export const projectUserAssignmentService = {
           offset,
           limit,
         },
+      };
+    } catch (error: unknown) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  getAvailability: async (
+    domainId: string,
+    adminId: string,
+    filters: {
+      date: string;
+      projectId?: string;
+      userId?: string;
+    },
+    language: string | null = null,
+  ): Promise<ProjectUserAssignmentAvailability> => {
+    if (!isNonEmptyString(domainId) || !isNonEmptyString(adminId)) {
+      throw new Error('invalid auth ids');
+    }
+
+    try {
+      const selectedDate = parseDate(filters.date, 'date');
+      const { fromDate, toDate } = getMonthWindow(selectedDate);
+      const assignments = await projectUserAssignmentRepository.findMany(
+        domainId,
+        adminId,
+        {
+          projectId: filters.projectId,
+          userId: filters.userId,
+          startDate: fromDate,
+          endDate: toDate,
+        },
+      );
+      const usersById = new Map<
+        string,
+        ProjectUserAssignmentAvailability['users'][number]
+      >();
+
+      for (const assignment of assignments) {
+        const assignedDates = getClippedAssignedDates(
+          assignment,
+          fromDate,
+          toDate,
+        );
+        const userEntry =
+          usersById.get(assignment.userId) ??
+          ({
+            userId: assignment.userId,
+            user: normalizeRelation(assignment.user, language),
+            assignedDates: [],
+            assignments: [],
+          } satisfies ProjectUserAssignmentAvailability['users'][number]);
+
+        userEntry.assignedDates = [
+          ...new Set([...userEntry.assignedDates, ...assignedDates]),
+        ].sort();
+        userEntry.assignments.push({
+          id: assignment.id,
+          projectId: assignment.projectId,
+          project: normalizeRelation(assignment.project, language),
+          startDate: assignment.startDate,
+          endDate: assignment.endDate,
+          assignedDates,
+          dailyWorkingHours: assignment.dailyWorkingHours,
+          dayCharge: assignment.dayCharge,
+          notes: assignment.notes,
+          status: assignment.status,
+        });
+        usersById.set(assignment.userId, userEntry);
+      }
+
+      return {
+        fromDate: formatDateOnly(fromDate),
+        toDate: formatDateOnly(toDate),
+        users: [...usersById.values()],
       };
     } catch (error: unknown) {
       throw normalizePrismaError(error);
@@ -451,6 +688,14 @@ export const projectUserAssignmentService = {
         adminId,
         updateData,
       );
+
+      if (assignment) {
+        await createMissingDailyLogsFromAssignments(
+          [assignment],
+          domainId,
+          adminId,
+        );
+      }
 
       return assignment
         ? normalizeProjectUserAssignment(assignment, language)

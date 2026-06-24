@@ -1,6 +1,6 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
 
 type RelationDetails = Record<string, unknown> | null;
@@ -10,10 +10,11 @@ export interface ProjectUserDailyLogRecord {
   date: Date;
   projectId: string;
   userId: string;
-  startTime: Date;
-  endTime: Date;
+  startTime: Date | null;
+  endTime: Date | null;
   totalWorkingHours: number;
   dayCharge: number;
+  attendanceStatus: AttendanceStatusEnum;
   notes: string | null;
   domainId: string;
   adminId: string;
@@ -31,10 +32,11 @@ export interface CreateProjectUserDailyLogInput {
   date: Date;
   projectId: string;
   userId: string;
-  startTime: Date;
-  endTime: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
   totalWorkingHours: number;
   dayCharge: number;
+  attendanceStatus?: AttendanceStatusEnum;
   notes?: string | null;
   domainId: string;
   adminId: string;
@@ -43,10 +45,11 @@ export interface CreateProjectUserDailyLogInput {
 
 export interface UpdateProjectUserDailyLogInput {
   date?: Date;
-  startTime?: Date;
-  endTime?: Date;
+  startTime?: Date | null;
+  endTime?: Date | null;
   totalWorkingHours?: number;
   dayCharge?: number;
+  attendanceStatus?: AttendanceStatusEnum;
   notes?: string | null;
   status?: StatusEnum;
 }
@@ -60,6 +63,7 @@ const projectUserDailyLogSelect = Prisma.sql`
   "endTime",
   "totalWorkingHours",
   "dayCharge",
+  "attendanceStatus",
   "notes",
   "domainId",
   "adminId",
@@ -91,6 +95,7 @@ const projectUserDailyLogListSelect = Prisma.sql`
   pudl."endTime",
   pudl."totalWorkingHours",
   pudl."dayCharge",
+  pudl."attendanceStatus",
   pudl."notes",
   pudl."domainId",
   pudl."adminId",
@@ -139,6 +144,7 @@ const projectUserDailyLogDetailSelect = Prisma.sql`
   pudl."endTime",
   pudl."totalWorkingHours",
   pudl."dayCharge",
+  pudl."attendanceStatus",
   pudl."notes",
   pudl."domainId",
   pudl."adminId",
@@ -190,6 +196,7 @@ export const projectUserDailyLogRepository = {
               "endTime",
               "totalWorkingHours",
               "dayCharge",
+              "attendanceStatus",
               "notes",
               "domainId",
               "adminId",
@@ -207,6 +214,7 @@ export const projectUserDailyLogRepository = {
               ${row.endTime},
               ${row.totalWorkingHours},
               ${row.dayCharge},
+              ${row.attendanceStatus ?? AttendanceStatusEnum.PRESENT}::"AttendanceStatus",
               ${row.notes},
               ${row.domainId},
               ${row.adminId},
@@ -367,6 +375,12 @@ export const projectUserDailyLogRepository = {
 
     if (data.dayCharge !== undefined) {
       assignments.unshift(Prisma.sql`"dayCharge" = ${data.dayCharge}`);
+    }
+
+    if (data.attendanceStatus !== undefined) {
+      assignments.unshift(
+        Prisma.sql`"attendanceStatus" = ${data.attendanceStatus}::"AttendanceStatus"`,
+      );
     }
 
     if (data.notes !== undefined) {

@@ -5,6 +5,8 @@ import { FuelLogService } from './fuelLog.service.js';
 import type {
   FuelType,
   FuelDirectionType,
+  FuelTransactionType,
+  FuelEntityType,
   MaintenanceAssetType,
 } from '../../../repositories/index.js';
 
@@ -17,21 +19,27 @@ export const createFuelLog = async (req: Request, res: Response) => {
       equipmentType,
       date,
       fuelDirectionType,
-      fuelValue,
+      transactionType,
+      fuelEntityType,
       fuelQuantity,
       fuelUomId,
       projectId,
+      vehicleId,
+      machineryId,
     } = req.body as {
       fuelType: FuelType;
-      equipmentUniqueId: string;
-      equipmentCategory: MaintenanceAssetType;
-      equipmentType: string;
+      equipmentUniqueId?: string | null;
+      equipmentCategory?: MaintenanceAssetType | null;
+      equipmentType?: string | null;
       date: string;
-      fuelDirectionType: FuelDirectionType;
-      fuelValue: number;
+      fuelDirectionType?: FuelDirectionType;
+      transactionType: FuelTransactionType;
+      fuelEntityType: FuelEntityType;
       fuelQuantity: number;
       fuelUomId: string;
-      projectId: string;
+      projectId?: string | null;
+      vehicleId?: string | null;
+      machineryId?: string | null;
     };
 
     const log = await FuelLogService.create({
@@ -41,10 +49,13 @@ export const createFuelLog = async (req: Request, res: Response) => {
       equipmentType,
       date,
       fuelDirectionType,
-      fuelValue,
+      transactionType,
+      fuelEntityType,
       fuelQuantity,
       fuelUomId,
       projectId,
+      vehicleId,
+      machineryId,
       domainId: req.user!.domainId,
       adminId: req.user!.adminId,
       status: StatusEnum.ACTIVE,

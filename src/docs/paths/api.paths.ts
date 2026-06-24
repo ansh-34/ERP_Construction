@@ -33,6 +33,9 @@ import { PaymentRequestPaths } from './paymentRequest.paths.js';
 import { UserMaintenanceMovementPaths } from './userMaintenanceMovement.paths.js';
 import { ReportPaths } from './report.paths.js';
 import { FuelLogPaths } from './fuelLog.paths.js';
+import { InventoryFuelStockPaths } from './inventoryFuelStock.paths.js';
+import { AlertPaths } from './alert.paths.js';
+import { NotificationPaths } from './notification.paths.js';
 import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
 import { LastPurchaseRatePaths } from './lastPurchaseRate.paths.js';
 
@@ -74,4 +77,7 @@ export const ApiPaths = {
   ...IndustryRoleTemplatePaths,
   ...FuelLogPaths,
   ...LastPurchaseRatePaths,
+  ...InventoryFuelStockPaths,
+  ...AlertPaths,
+  ...NotificationPaths,
 };

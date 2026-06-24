@@ -12,15 +12,29 @@ const isDomain = async (
       return;
     }
 
-    if (req.user.roleId) {
-      const role = await prisma.role.findUnique({
-        where: {
-          id: req.user.roleId,
-          isDeleted: false,
-          domainId: req.user.domainId,
-        },
-      });
-      if (role && role.code === 'domain') {
+    if (req.user) {
+      const [isValidDomain, isValidAdmin] = await Promise.all([
+        prisma.domain
+          .count({
+            where: {
+              id: req.user.userId,
+              adminId: req.user.adminId,
+              isDeleted: false,
+              status: 'ACTIVE',
+            },
+          })
+          .then((count) => count > 0),
+        prisma.admin
+          .count({
+            where: {
+              id: req.user.adminId,
+              isDeleted: false,
+              status: 'ACTIVE',
+            },
+          })
+          .then((count) => count > 0),
+      ]);
+      if (isValidDomain && isValidAdmin) {
         return next();
       }
     }

@@ -4,6 +4,16 @@ dotenv.config();
 const variables = {
   PORT: process.env.PORT || '5000',
   DATABASE_URL: process.env.DATABASE_URL,
+  PG_BOSS_MAX_CONNECTIONS: process.env.PG_BOSS_MAX_CONNECTIONS || '3',
+  PG_BOSS_CONNECTION_TIMEOUT_MS:
+    process.env.PG_BOSS_CONNECTION_TIMEOUT_MS || '30000',
+  PG_BOSS_KEEP_ALIVE_DELAY_MS:
+    process.env.PG_BOSS_KEEP_ALIVE_DELAY_MS || '10000',
+  PG_BOSS_MAX_LIFETIME_SECONDS:
+    process.env.PG_BOSS_MAX_LIFETIME_SECONDS || '300',
+  PG_BOSS_SSL: process.env.PG_BOSS_SSL,
+  PG_BOSS_SSL_REJECT_UNAUTHORIZED:
+    process.env.PG_BOSS_SSL_REJECT_UNAUTHORIZED || 'true',
   NODE_ENV: process.env.NODE_ENV || 'development',
   BASE_URL:
     process.env.BASE_URL || `http://localhost:${process.env.PORT || '5000'}`,

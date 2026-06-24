@@ -400,13 +400,119 @@ export const ProjectPaths = {
       searchQuery,
     ],
   }),
+  '/api/domain/project-user-assignments/availability': {
+    get: {
+      tags: ['Domain Project User Assignments'],
+      summary:
+        'Get project user assignment availability for selected month and next two months',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        languageHeader,
+        {
+          in: 'query',
+          name: 'date',
+          required: true,
+          schema: { type: 'string', example: '2026-06-18' },
+          description:
+            'Any date in the selected month. The API returns that month plus the next two months.',
+        },
+        projectIdQuery,
+        userIdQuery,
+      ],
+      responses: {
+        200: {
+          description:
+            'Project user assignment availability fetched successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: {
+                    type: 'string',
+                    example:
+                      'Project user assignment availability fetched successfully',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      fromDate: { type: 'string', example: '2026-06-01' },
+                      toDate: { type: 'string', example: '2026-08-31' },
+                      users: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            userId: { type: 'string', format: 'uuid' },
+                            user: {
+                              type: 'object',
+                              additionalProperties: true,
+                            },
+                            assignedDates: {
+                              type: 'array',
+                              items: { type: 'string', example: '2026-06-18' },
+                            },
+                            assignments: {
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  id: { type: 'string', format: 'uuid' },
+                                  projectId: { type: 'string', format: 'uuid' },
+                                  project: {
+                                    type: 'object',
+                                    additionalProperties: true,
+                                  },
+                                  startDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                  },
+                                  endDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                  },
+                                  assignedDates: {
+                                    type: 'array',
+                                    items: {
+                                      type: 'string',
+                                      example: '2026-06-18',
+                                    },
+                                  },
+                                  dailyWorkingHours: {
+                                    type: 'number',
+                                    example: 8,
+                                  },
+                                  dayCharge: { type: 'number', example: 1200 },
+                                  notes: { type: 'string', nullable: true },
+                                  status: {
+                                    type: 'string',
+                                    example: 'ACTIVE',
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
   ...crudPaths({
     basePath: '/api/domain/project-user-daily-logs',
     tag: 'Domain Project User Daily Logs',
     objectSchema: 'ProjectUserDailyLogObject',
     createSchema: 'CreateProjectUserDailyLogBody',
     updateSchema: 'UpdateProjectUserDailyLogBody',
-    entityName: 'Project user daily logs',
+    entityName:
+      'Project user daily logs. Defaults to the current date when date/startDate/endDate are not provided',
     listParameters: [
       projectIdQuery,
       userIdQuery,
