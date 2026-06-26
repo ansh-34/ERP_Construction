@@ -155,6 +155,45 @@ const buildInvoicePaths = (basePath: string, tags: string[]) => ({
       },
     },
   },
+  [`${basePath}/{id}/export`]: {
+    get: {
+      tags,
+      summary: 'Export invoice by ID',
+      description:
+        'Export a single invoice and its line items. Currently only Excel export is supported.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'exportType',
+          required: true,
+          schema: { type: 'string', enum: ['EXCEL'] },
+          example: 'EXCEL',
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Excel file containing invoice details and item rows',
+          content: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: {
+                  type: 'string',
+                  format: 'binary',
+                },
+              },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
   [`${basePath}/{id}/items`]: {
     get: {
       tags,

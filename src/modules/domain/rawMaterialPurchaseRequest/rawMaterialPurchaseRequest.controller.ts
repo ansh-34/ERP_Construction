@@ -1,9 +1,65 @@
 import type { Request, Response } from 'express';
+import ExcelJS from 'exceljs';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
-import { RawMaterialPurchaseRequestService } from './rawMaterialPurchaseRequest.service.js';
+import {
+  RawMaterialPurchaseRequestService,
+  type PurchaseOrderExcelWorksheet,
+} from './rawMaterialPurchaseRequest.service.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
+
+function buildWorkbook(
+  worksheets: PurchaseOrderExcelWorksheet[],
+): ExcelJS.Workbook {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Infoware Construction ERP';
+  workbook.created = new Date();
+
+  worksheets.forEach(({ name, columns, rows }) => {
+    const worksheet = workbook.addWorksheet(name);
+    worksheet.columns = columns.map((column) => ({
+      header: column,
+      key: column,
+      width: Math.max(15, Math.min(column.length + 8, 35)),
+    }));
+    worksheet.addRows(rows);
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: columns.length },
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1F4E78' },
+    };
+  });
+
+  return workbook;
+}
+
+async function sendWorkbook(
+  res: Response,
+  worksheets: PurchaseOrderExcelWorksheet[],
+  filenamePrefix: string,
+): Promise<Response> {
+  const workbook = buildWorkbook(worksheets);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const date = new Date().toISOString().slice(0, 10);
+
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${filenamePrefix}-${date}.xlsx"`,
+  );
+
+  return res.status(HttpStatus.OK).send(Buffer.from(buffer));
+}
 
 export const createRawMaterialPurchaseRequest = async (
   req: Request,
@@ -277,6 +333,25 @@ export const getPurchaseOrderById = async (req: Request, res: Response) => {
       message: Messages.PURCHASE_ORDER.RETRIEVED,
       data: po,
     });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.PURCHASE_ORDER.NOT_FOUND;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
+export const exportPurchaseOrderById = async (req: Request, res: Response) => {
+  try {
+    const { worksheets, filenamePrefix } =
+      await RawMaterialPurchaseRequestService.exportPurchaseOrderExcel(
+        req.user!.domainId,
+        req.params.poId,
+      );
+
+    return sendWorkbook(res, worksheets, filenamePrefix);
   } catch (error) {
     const message =
       error instanceof Error

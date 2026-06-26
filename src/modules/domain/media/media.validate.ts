@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const mediaCategory = z.enum(['IMAGE', 'DOCUMENT', 'VIDEO', 'PDF']);
+
 const singleLineName = z
   .string()
   .trim()
@@ -27,6 +29,7 @@ export const domainIdQuery = z.object({
   domainId: z.string().trim().min(1, { message: 'Domain id is required' }),
   searchKey: z.string().trim().optional(),
   type: z.string().trim().optional(),
+  category: mediaCategory.optional(),
 });
 
 export const idParams = z.object({

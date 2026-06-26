@@ -4,6 +4,7 @@ import {
   createGrn,
   listGrns,
   getGrnById,
+  exportGrnById,
   updateGrn,
   deleteGrn,
   approveOrRejectGrn,
@@ -17,6 +18,7 @@ import {
   updateGrnBodySchema,
   listGrnsQuerySchema,
   grnIdParamsSchema,
+  exportGrnQuerySchema,
   approveRejectGrnBodySchema,
   createGrnProductBodySchema,
   updateGrnProductBodySchema,
@@ -28,6 +30,13 @@ const router = Router();
 router.post('/', validate(createGrnBodySchema, 'body'), createGrn);
 
 router.get('/', validate(listGrnsQuerySchema, 'query'), listGrns);
+
+router.get(
+  '/:id/export',
+  validate(grnIdParamsSchema, 'params'),
+  validate(exportGrnQuerySchema, 'query'),
+  exportGrnById,
+);
 
 router.get('/:id', validate(grnIdParamsSchema, 'params'), getGrnById);
 

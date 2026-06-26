@@ -72,6 +72,28 @@ export const alertRepository = {
     });
   },
 
+  findActiveByEntity(
+    domainId: string,
+    adminId: string,
+    moduleCode: string,
+    alertCode: string,
+    entityType: string,
+    entityId: string,
+  ) {
+    return prisma.alert.findFirst({
+      where: {
+        domainId,
+        adminId,
+        moduleCode,
+        alertCode,
+        entityType,
+        entityId,
+        alertStatus: 'ACTIVE',
+      },
+      include: alertInclude,
+    });
+  },
+
   list(
     domainId: string,
     adminId: string,

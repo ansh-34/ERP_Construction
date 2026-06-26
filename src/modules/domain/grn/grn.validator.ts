@@ -100,6 +100,12 @@ export const listGrnsQuerySchema = paginationQuerySchema
 
 export const grnIdParamsSchema = idParamSchema;
 
+export const exportGrnQuerySchema = z.object({
+  exportType: z
+    .enum(['EXCEL', 'excel'])
+    .transform((value) => value.toUpperCase() as 'EXCEL'),
+});
+
 export const createGrnProductBodySchema = grnProductSchema;
 
 export const updateGrnProductBodySchema = grnProductSchema.partial();

@@ -12,6 +12,23 @@ const searchQuery = {
   schema: { type: 'string' },
 };
 
+const typeQuery = {
+  in: 'query' as const,
+  name: 'type',
+  schema: { type: 'string', example: 'image/png' },
+  description: 'Optional raw MIME type filter.',
+};
+
+const categoryQuery = {
+  in: 'query' as const,
+  name: 'category',
+  schema: {
+    type: 'string',
+    enum: ['IMAGE', 'DOCUMENT', 'VIDEO', 'PDF'],
+  },
+  description: 'Optional derived media category filter.',
+};
+
 const domainIdQuery = {
   in: 'query' as const,
   name: 'domainId',
@@ -107,6 +124,8 @@ const buildMediaPaths = ({
         languageHeader,
         ...(includeDomainId ? [domainIdQuery] : []),
         searchQuery,
+        typeQuery,
+        categoryQuery,
       ],
       responses: mediaListResponse('Media fetched successfully'),
     },

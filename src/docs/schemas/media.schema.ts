@@ -1,4 +1,9 @@
 export const MediaSchemas = {
+  SupportedMediaFileTypes: {
+    type: 'string',
+    example:
+      'Supported file extensions: jpg, jpeg, png, mp4, mov, avi, mkv, webm, pdf, doc, docx, xls, xlsx, csv, txt',
+  },
   MediaObject: {
     type: 'object',
     properties: {
@@ -28,13 +33,14 @@ export const MediaSchemas = {
           type: 'string',
           format: 'binary',
         },
-        description: 'Images to upload. Send one or more files.',
+        description:
+          'Supported media files to upload. Allowed extensions: jpg, jpeg, png, mp4, mov, avi, mkv, webm, pdf, doc, docx, xls, xlsx, csv, txt.',
       },
       name: {
         type: 'string',
         example: 'Site progress image',
         description:
-          'Optional compatibility field for a single uploaded image. Use names for multiple images.',
+          'Optional compatibility field for a single uploaded file. Use names for multiple files.',
       },
       names: {
         type: 'array',
@@ -63,13 +69,14 @@ export const MediaSchemas = {
           type: 'string',
           format: 'binary',
         },
-        description: 'Images to upload. Send one or more files.',
+        description:
+          'Supported media files to upload. Allowed extensions: jpg, jpeg, png, mp4, mov, avi, mkv, webm, pdf, doc, docx, xls, xlsx, csv, txt.',
       },
       name: {
         type: 'string',
         example: 'User site progress image',
         description:
-          'Optional compatibility field for a single uploaded image. Use names for multiple images.',
+          'Optional compatibility field for a single uploaded file. Use names for multiple files.',
       },
       names: {
         type: 'array',

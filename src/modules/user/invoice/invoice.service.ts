@@ -6,6 +6,29 @@ import { enqueuePdfGeneration } from '../../../queue/pdfQueue.js';
 import { PdfStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
 import { getSignedDownloadUrl } from '../../../utils/s3.utils.js';
 
+export interface InvoiceExcelWorksheet {
+  name: string;
+  columns: string[];
+  rows: Record<string, string | number | null>[];
+}
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+  }
+  return '';
+};
+
+const toDateString = (value: unknown): string => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value as string);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
 export const InvoiceService = {
   generateInvoiceCode(domainId: string): string {
     const timestamp = Date.now();
@@ -89,6 +112,72 @@ export const InvoiceService = {
     return invoice;
   },
 
+  async exportInvoiceExcel(domainId: string, id: string) {
+    const invoice: any = await InvoiceService.getInvoiceById(domainId, id);
+    const detailsColumns = ['Field', 'Value'];
+    const itemColumns = [
+      'Product',
+      'Product Code',
+      'Grade',
+      'Grade Code',
+      'Description',
+      'Quantity',
+      'UOM',
+      'Rate',
+      'Rate Difference',
+      'Tax Amount',
+      'Discount',
+      'Total Amount',
+    ];
+
+    const detailRows = [
+      { Field: 'Invoice Code', Value: invoice.invoiceCode },
+      { Field: 'Vendor', Value: invoice.vendorName ?? '' },
+      { Field: 'Project', Value: toDisplayString(invoice.project?.name) },
+      { Field: 'Project Code', Value: invoice.project?.code ?? '' },
+      { Field: 'Purchase Order', Value: invoice.purchaseOrder?.code ?? '' },
+      { Field: 'Invoice Date', Value: toDateString(invoice.invoiceDate) },
+      { Field: 'Due Date', Value: toDateString(invoice.dueDate) },
+      { Field: 'Invoice Type', Value: invoice.invoiceType ?? '' },
+      { Field: 'Lifecycle', Value: invoice.lifecycle ?? '' },
+      { Field: 'Payment Status', Value: invoice.paymentStatus ?? '' },
+      { Field: 'PDF Status', Value: invoice.pdfStatus ?? '' },
+      { Field: 'Status', Value: invoice.status ?? '' },
+      { Field: 'Total Items', Value: invoice.totalItems ?? 0 },
+      { Field: 'Total Tax', Value: invoice.totalTax ?? 0 },
+      { Field: 'Total Amount', Value: invoice.totalAmount ?? 0 },
+      { Field: 'Total GRNs', Value: invoice.totalGrns ?? 0 },
+      {
+        Field: 'Total Items Received',
+        Value: invoice.totalItemsReceived ?? 0,
+      },
+      { Field: 'Last GRN Date', Value: toDateString(invoice.lastGrnDate) },
+    ];
+
+    const itemRows = (invoice.items || []).map((item: any) => ({
+      Product: toDisplayString(item.product?.displayName),
+      'Product Code': item.product?.code ?? '',
+      Grade: toDisplayString(item.productGrade?.gradeDisplayName),
+      'Grade Code': item.productGrade?.gradeCode ?? '',
+      Description: item.description ?? '',
+      Quantity: item.quantity ?? 0,
+      UOM: item.uom?.code ?? toDisplayString(item.uom?.displayName),
+      Rate: item.rate ?? 0,
+      'Rate Difference': item.rateDifference ?? 0,
+      'Tax Amount': item.taxAmount ?? 0,
+      Discount: item.discount ?? 0,
+      'Total Amount': item.totalAmount ?? 0,
+    }));
+
+    return {
+      filenamePrefix: `invoice-${invoice.invoiceCode}`,
+      worksheets: [
+        { name: 'Invoice Details', columns: detailsColumns, rows: detailRows },
+        { name: 'Invoice Items', columns: itemColumns, rows: itemRows },
+      ] as InvoiceExcelWorksheet[],
+    };
+  },
+
   async getActiveInvoiceById(domainId: string, id: string) {
     const invoice: any = await invoiceRepository.findByIdAndDomain(
       id,
@@ -138,12 +227,14 @@ export const InvoiceService = {
       vendorProductPricingId: string;
     }[],
   ) {
-    return invoiceRepository.generateFromPurchaseOrder(
+    const result = await invoiceRepository.generateFromPurchaseOrder(
       poId,
       domainId,
       requestedBy,
       assignments,
     );
+
+    return result.invoices;
   },
 
   async finalizeInvoice(

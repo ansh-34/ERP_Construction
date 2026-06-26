@@ -5,6 +5,7 @@ import {
   listInvoices,
   listActiveInvoices,
   getInvoiceById,
+  exportInvoiceById,
   getActiveInvoiceById,
   deleteInvoice,
   listInvoiceItems,
@@ -17,6 +18,7 @@ import {
 import {
   listInvoicesQuerySchema,
   invoiceIdParamsSchema,
+  exportInvoiceQuerySchema,
   poIdParamsSchema,
   generateInvoicesBodySchema,
   finalizeInvoiceBodySchema,
@@ -88,6 +90,14 @@ router.get(
   authorize('INVOICE', 'READ'),
   validate(invoiceIdParamsSchema, 'params'),
   getInvoicePdfStatus,
+);
+
+router.get(
+  '/:id/export',
+  authorize('INVOICE', 'READ'),
+  validate(invoiceIdParamsSchema, 'params'),
+  validate(exportInvoiceQuerySchema, 'query'),
+  exportInvoiceById,
 );
 
 router.get(

@@ -67,6 +67,7 @@ export const listFuelLogQuery = paginationQuerySchema.extend({
   fromDate: z.string().trim().optional(),
   toDate: z.string().trim().optional(),
   searchKey: z.string().trim().optional(),
+  exportType: z.enum(['EXCEL']).optional(),
 });
 
 export const fuelLogIdParamsSchema = idParamSchema;

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const mediaCategory = z.enum(['IMAGE', 'DOCUMENT', 'VIDEO', 'PDF']);
+
 const singleLineName = z
   .string()
   .trim()
@@ -25,6 +27,7 @@ export const updateMediaBody = z
 export const listMediaQuery = z.object({
   searchKey: z.string().trim().optional(),
   type: z.string().trim().optional(),
+  category: mediaCategory.optional(),
 });
 
 export const idParams = z.object({

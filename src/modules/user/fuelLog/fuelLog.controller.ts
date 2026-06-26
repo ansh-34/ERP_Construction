@@ -1,7 +1,11 @@
 import type { Request, Response } from 'express';
+import ExcelJS from 'exceljs';
 import { HttpStatus, Messages, StatusEnum } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
-import { FuelLogService } from './fuelLog.service.js';
+import {
+  FuelLogService,
+  type FuelLogExcelWorksheet,
+} from './fuelLog.service.js';
 import type {
   FuelType,
   FuelDirectionType,
@@ -9,6 +13,56 @@ import type {
   FuelEntityType,
   MaintenanceAssetType,
 } from '../../../repositories/index.js';
+
+function buildWorkbook(worksheets: FuelLogExcelWorksheet[]): ExcelJS.Workbook {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Infoware Construction ERP';
+  workbook.created = new Date();
+
+  worksheets.forEach(({ name, columns, rows }) => {
+    const worksheet = workbook.addWorksheet(name);
+    worksheet.columns = columns.map((column) => ({
+      header: column,
+      key: column,
+      width: Math.max(15, Math.min(column.length + 8, 35)),
+    }));
+    worksheet.addRows(rows);
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: columns.length },
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1F4E78' },
+    };
+  });
+
+  return workbook;
+}
+
+async function sendWorkbook(
+  res: Response,
+  worksheets: FuelLogExcelWorksheet[],
+  filenamePrefix: string,
+): Promise<Response> {
+  const workbook = buildWorkbook(worksheets);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const date = new Date().toISOString().slice(0, 10);
+
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${filenamePrefix}-${date}.xlsx"`,
+  );
+
+  return res.status(HttpStatus.OK).send(Buffer.from(buffer));
+}
 
 export const createFuelLog = async (req: Request, res: Response) => {
   try {
@@ -76,6 +130,17 @@ export const createFuelLog = async (req: Request, res: Response) => {
 
 export const listFuelLogs = async (req: Request, res: Response) => {
   try {
+    if (req.query.exportType === 'EXCEL') {
+      const { worksheets, filenamePrefix } =
+        await FuelLogService.exportFuelLogsExcel(
+          req.user!.domainId,
+          req.user!.adminId,
+          req.query,
+        );
+
+      return sendWorkbook(res, worksheets, filenamePrefix);
+    }
+
     const { fuelLogs, pagination } = await FuelLogService.getAll(
       req.user!.domainId,
       req.user!.adminId,

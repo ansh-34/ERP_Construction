@@ -23,6 +23,29 @@ const toMaterialName = (value: unknown): string => {
   return 'Unknown Material';
 };
 
+export interface GrnExcelWorksheet {
+  name: string;
+  columns: string[];
+  rows: Record<string, string | number | null>[];
+}
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+  }
+  return '';
+};
+
+const toDateString = (value: unknown): string => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value as string);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
 export const GrnService = {
   async generateCode(): Promise<string> {
     const now = new Date();
@@ -315,6 +338,68 @@ export const GrnService = {
     const grn = await GrnRepository.findByIdWithDetails(id, domainId);
     if (!grn) throw new Error(Messages.GRN.NOT_FOUND);
     return grn;
+  },
+
+  async exportGrnExcel(domainId: string, id: string) {
+    const grn: any = await GrnService.getGrnById(domainId, id);
+    const detailsColumns = ['Field', 'Value'];
+    const productColumns = [
+      'Material',
+      'Quantity',
+      'UOM',
+      'Rate',
+      'Tax',
+      'Amount',
+      'Project',
+      'Invoice',
+      'Vendor',
+      'Date',
+      'Status',
+    ];
+
+    const detailRows = [
+      { Field: 'GRN Code', Value: grn.code },
+      { Field: 'Reference Type', Value: grn.referenceType },
+      { Field: 'Waybill Reference', Value: grn.wbReference ?? '' },
+      { Field: 'Product Order Code', Value: grn.productOrderCode ?? '' },
+      { Field: 'Vendor', Value: grn.vendorName ?? '' },
+      { Field: 'Project', Value: toDisplayString(grn.project?.name) },
+      { Field: 'Invoice', Value: grn.invoice?.invoiceCode ?? '' },
+      { Field: 'Date', Value: toDateString(grn.date) },
+      { Field: 'Approval Status', Value: grn.approvalStatus },
+      { Field: 'Status', Value: grn.status },
+      { Field: 'Total Items', Value: grn.totalItems ?? 0 },
+      { Field: 'Total Tax', Value: grn.totalTax ?? 0 },
+      { Field: 'Total Amount', Value: grn.totalAmount ?? 0 },
+    ];
+
+    const productRows = (grn.grnProducts || []).map((product: any) => ({
+      Material: product.material ?? '',
+      Quantity: product.quantity ?? 0,
+      UOM:
+        product.uom?.code ??
+        toDisplayString(product.uom?.displayName) ??
+        product.uomId ??
+        '',
+      Rate: product.rate ?? 0,
+      Tax: product.tax ?? 0,
+      Amount: product.amt ?? (product.quantity ?? 0) * (product.rate ?? 0),
+      Project:
+        toDisplayString(product.project?.name) ||
+        toDisplayString(grn.project?.name),
+      Invoice: product.invoice?.invoiceCode ?? grn.invoice?.invoiceCode ?? '',
+      Vendor: product.vendor ?? grn.vendorName ?? '',
+      Date: toDateString(product.date),
+      Status: product.status ?? '',
+    }));
+
+    return {
+      filenamePrefix: `grn-${grn.code}`,
+      worksheets: [
+        { name: 'GRN Details', columns: detailsColumns, rows: detailRows },
+        { name: 'GRN Products', columns: productColumns, rows: productRows },
+      ] as GrnExcelWorksheet[],
+    };
   },
 
   async updateGrn(

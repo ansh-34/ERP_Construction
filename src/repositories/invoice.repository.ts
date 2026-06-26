@@ -41,6 +41,30 @@ const generatePaymentRequestCode = (): string => {
   return `PR-${dd}${mm}${yyyy}${hh}${min}${ss}${ms}`;
 };
 
+export interface PriceIncreaseAlertCandidate {
+  invoiceId: string;
+  invoiceCode: string;
+  invoiceItemId: string;
+  purchaseOrderId: string;
+  productId: string;
+  productGradeId: string | null;
+  uomId: string;
+  uomCode: string | null;
+  productName: string;
+  productGradeName: string | null;
+  vendorName: string;
+  lastVendorName: string | null;
+  currentPrice: number;
+  lastPrice: number;
+  purchaseType: 'IMPORT' | 'LOCAL' | null;
+  purchaseDate: Date;
+}
+
+export interface GeneratePurchaseOrderInvoiceResult {
+  invoices: any[];
+  priceIncreaseAlerts: PriceIncreaseAlertCandidate[];
+}
+
 export const invoiceRepository = {
   async create(
     data: {
@@ -429,8 +453,10 @@ export const invoiceRepository = {
       purchaseOrderProductId: string;
       vendorProductPricingId: string;
     }[],
-  ) {
-    const invoices = await prisma.$transaction(async (tx) => {
+  ): Promise<GeneratePurchaseOrderInvoiceResult> {
+    const result = await prisma.$transaction(async (tx) => {
+      const priceIncreaseAlerts: PriceIncreaseAlertCandidate[] = [];
+
       // requestedBy must reference a real User. When the action is performed by a
       // domain owner (whose token id is the domain, not a User), store null.
       const prRequestedBy = await resolveRequestedBy(tx, requestedBy);
@@ -591,7 +617,7 @@ export const invoiceRepository = {
         for (const item of items) {
           const itemTotal = item.pricing.price * item.poProduct.quantity;
 
-          await tx.invoiceItem.create({
+          const invoiceItem = await tx.invoiceItem.create({
             data: {
               invoiceId: invoice.id,
               productId: item.pricing.productId,
@@ -644,8 +670,36 @@ export const invoiceRepository = {
               purchaseType,
               domainId,
             },
-            select: { id: true, lastPurchaseDate: true },
+            select: {
+              id: true,
+              lastPrice: true,
+              lastPurchaseDate: true,
+              vendorName: true,
+            },
           });
+
+          if (existingRate && item.pricing.price > existingRate.lastPrice) {
+            priceIncreaseAlerts.push({
+              invoiceId: invoice.id,
+              invoiceCode,
+              invoiceItemId: invoiceItem.id,
+              purchaseOrderId: poId,
+              productId: item.pricing.productId,
+              productGradeId: item.pricing.productGradeId ?? null,
+              uomId: item.pricing.uomId,
+              uomCode: item.pricing.uom?.code ?? null,
+              productName: toDisplayString(item.poProduct.productName),
+              productGradeName: item.poProduct.productGradeName
+                ? toDisplayString(item.poProduct.productGradeName)
+                : null,
+              vendorName,
+              lastVendorName: existingRate.vendorName ?? null,
+              currentPrice: item.pricing.price,
+              lastPrice: existingRate.lastPrice,
+              purchaseType,
+              purchaseDate: invoice.invoiceDate,
+            });
+          }
 
           if (!existingRate) {
             await tx.productGradeLastPurchaseRate.create({
@@ -693,10 +747,10 @@ export const invoiceRepository = {
         data: { orderStatus: 'INVOICED' },
       });
 
-      return invoices;
+      return { invoices, priceIncreaseAlerts };
     });
 
-    for (const inv of invoices) {
+    for (const inv of result.invoices) {
       if (inv?.id) {
         enqueuePdfGeneration(inv.id).catch((err) => {
           console.error(
@@ -707,7 +761,7 @@ export const invoiceRepository = {
       }
     }
 
-    return invoices;
+    return result;
   },
 
   // Issue the final (negotiated) invoice that supersedes a proforma. The official

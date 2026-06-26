@@ -1,9 +1,60 @@
 import type { Request, Response } from 'express';
+import ExcelJS from 'exceljs';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
-import { GrnService } from './grn.service.js';
+import { GrnService, type GrnExcelWorksheet } from './grn.service.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
+
+function buildWorkbook(worksheets: GrnExcelWorksheet[]): ExcelJS.Workbook {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Infoware Construction ERP';
+  workbook.created = new Date();
+
+  worksheets.forEach(({ name, columns, rows }) => {
+    const worksheet = workbook.addWorksheet(name);
+    worksheet.columns = columns.map((column) => ({
+      header: column,
+      key: column,
+      width: Math.max(15, Math.min(column.length + 8, 35)),
+    }));
+    worksheet.addRows(rows);
+    worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: columns.length },
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF1F4E78' },
+    };
+  });
+
+  return workbook;
+}
+
+async function sendWorkbook(
+  res: Response,
+  worksheets: GrnExcelWorksheet[],
+  filenamePrefix: string,
+): Promise<Response> {
+  const workbook = buildWorkbook(worksheets);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const date = new Date().toISOString().slice(0, 10);
+
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${filenamePrefix}-${date}.xlsx"`,
+  );
+
+  return res.status(HttpStatus.OK).send(Buffer.from(buffer));
+}
 
 export const createGrn = async (req: Request, res: Response) => {
   try {
@@ -51,6 +102,23 @@ export const getGrnById = async (req: Request, res: Response) => {
       message: Messages.GRN.RETRIEVED,
       data: grn,
     });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : Messages.GRN.NOT_FOUND;
+    return res
+      .status(resolveHttpStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const exportGrnById = async (req: Request, res: Response) => {
+  try {
+    const { worksheets, filenamePrefix } = await GrnService.exportGrnExcel(
+      req.user!.domainId,
+      req.params.id,
+    );
+
+    return sendWorkbook(res, worksheets, filenamePrefix);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : Messages.GRN.NOT_FOUND;

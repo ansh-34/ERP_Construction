@@ -31,6 +31,8 @@ export interface UpdateMediaInput {
   searchText?: string;
 }
 
+export type MediaCategory = 'IMAGE' | 'DOCUMENT' | 'VIDEO' | 'PDF';
+
 const mediaSelect = Prisma.sql`
   "id",
   "name",
@@ -62,6 +64,7 @@ export const mediaRepository = {
     adminId: string,
     searchKey?: string,
     type?: string,
+    category?: MediaCategory,
   ): Promise<MediaRecord[]> => {
     const filters = [
       Prisma.sql`"domainId" = ${domainId}`,
@@ -77,6 +80,26 @@ export const mediaRepository = {
 
     if (type) {
       filters.push(Prisma.sql`"type" ILIKE ${`%${type}%`}`);
+    }
+
+    if (category === 'IMAGE') {
+      filters.push(Prisma.sql`"type" ILIKE 'image/%'`);
+    }
+
+    if (category === 'VIDEO') {
+      filters.push(Prisma.sql`"type" ILIKE 'video/%'`);
+    }
+
+    if (category === 'PDF') {
+      filters.push(Prisma.sql`"type" ILIKE 'application/pdf'`);
+    }
+
+    if (category === 'DOCUMENT') {
+      filters.push(Prisma.sql`
+        "type" NOT ILIKE 'image/%'
+        AND "type" NOT ILIKE 'video/%'
+        AND "type" NOT ILIKE 'application/pdf'
+      `);
     }
 
     return prisma.$queryRaw<MediaRecord[]>(Prisma.sql`

@@ -18,6 +18,12 @@ export const listInvoicesQuerySchema = paginationQuerySchema
 
 export const invoiceIdParamsSchema = idParamSchema;
 
+export const exportInvoiceQuerySchema = z.object({
+  exportType: z
+    .enum(['EXCEL', 'excel'])
+    .transform((value) => value.toUpperCase() as 'EXCEL'),
+});
+
 // --- Finalize a proforma invoice (full item-list replacement) ---
 
 // The final invoice is built only from these items. Each line is uniquely

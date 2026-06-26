@@ -1,4 +1,8 @@
-import { mediaRepository, type MediaRecord } from '@repositories/index';
+import {
+  mediaRepository,
+  type MediaCategory,
+  type MediaRecord,
+} from '@repositories/index';
 import { normalizePrismaError } from '@/utils/prismaError';
 import { isNonEmptyString } from '@/utils/validation';
 
@@ -107,6 +111,7 @@ export const mediaService = {
     searchKey?: string,
     _language: string | null = null,
     type?: string,
+    category?: MediaCategory,
   ): Promise<MediaRecord[]> => {
     if (!isNonEmptyString(domainId) || !isNonEmptyString(adminId)) {
       throw new Error('invalid ids');
@@ -118,6 +123,7 @@ export const mediaService = {
         adminId,
         searchKey,
         type,
+        category,
       );
       return media;
     } catch (error: unknown) {

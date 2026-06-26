@@ -564,6 +564,45 @@ const buildRmprPaths = (basePath: string, tags: string[]) => ({
     },
   },
 
+  [`${basePath}/po/{poId}/export`]: {
+    get: {
+      tags,
+      summary: 'Export purchase order by ID',
+      description:
+        'Export a single purchase order with its product line items. Currently only EXCEL export is supported.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'poId',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'exportType',
+          required: false,
+          schema: { type: 'string', enum: ['EXCEL'], default: 'EXCEL' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Purchase order Excel file',
+          content: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              {
+                schema: {
+                  type: 'string',
+                  format: 'binary',
+                },
+              },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+
   [`${basePath}/po/{poId}/products`]: {
     get: {
       tags,

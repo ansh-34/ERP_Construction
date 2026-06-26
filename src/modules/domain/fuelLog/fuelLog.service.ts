@@ -20,6 +20,13 @@ import {
 } from '@/utils/validation';
 import { enqueueMachineryFuelUsageAlertCheck } from '@/queue/alertQueue';
 type FuelLogRecord = Awaited<ReturnType<typeof fuelLogRepository.findById>>;
+type FuelLogListRecord = NonNullable<FuelLogRecord>;
+
+export interface FuelLogExcelWorksheet {
+  name: string;
+  columns: string[];
+  rows: Record<string, string | number | null>[];
+}
 
 const fuelTypes: FuelType[] = ['PETROL', 'DIESEL'];
 const fuelDirectionTypes: FuelDirectionType[] = ['CONSUMED', 'FILLED'];
@@ -51,13 +58,48 @@ interface CreateFuelLogInput {
 }
 
 type PaginatedFuelLogs = {
-  fuelLogs: FuelLogRecord[];
+  fuelLogs: FuelLogListRecord[];
   pagination: {
     totalCount: number;
     currentCount: number;
     offset: number;
     limit: number;
   };
+};
+
+type ListFuelLogQuery = PaginationQuery & {
+  fuelType?: FuelType;
+  equipmentCategory?: MaintenanceAssetType;
+  fuelDirectionType?: FuelDirectionType;
+  transactionType?: FuelTransactionType;
+  fuelEntityType?: FuelEntityType;
+  equipmentUniqueId?: string;
+  projectId?: string;
+  fromDate?: string;
+  toDate?: string;
+  searchKey?: string;
+  exportType?: 'EXCEL';
+};
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+    const firstString = Object.values(record).find(
+      (item): item is string => typeof item === 'string',
+    );
+    if (firstString) return firstString;
+  }
+  return '';
+};
+
+const toDateString = (value: unknown): string => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value as string);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
 };
 
 function parseDate(value: string, field: string): Date {
@@ -238,18 +280,7 @@ export const FuelLogService = {
   async getAll(
     domainId: string,
     adminId: string,
-    query: PaginationQuery & {
-      fuelType?: FuelType;
-      equipmentCategory?: MaintenanceAssetType;
-      fuelDirectionType?: FuelDirectionType;
-      transactionType?: FuelTransactionType;
-      fuelEntityType?: FuelEntityType;
-      equipmentUniqueId?: string;
-      projectId?: string;
-      fromDate?: string;
-      toDate?: string;
-      searchKey?: string;
-    },
+    query: ListFuelLogQuery,
   ): Promise<PaginatedFuelLogs> {
     try {
       const { offset, limit } = normalizePagination(query);
@@ -286,6 +317,68 @@ export const FuelLogService = {
     } catch (error: unknown) {
       throw normalizePrismaError(error);
     }
+  },
+
+  async exportFuelLogsExcel(
+    domainId: string,
+    adminId: string,
+    query: ListFuelLogQuery,
+  ) {
+    const { fuelLogs, pagination } = await FuelLogService.getAll(
+      domainId,
+      adminId,
+      query,
+    );
+
+    const columns = [
+      'Date',
+      'Fuel Type',
+      'Transaction Type',
+      'Fuel Direction',
+      'Fuel Entity Type',
+      'Quantity',
+      'UOM',
+      'Project',
+      'Project Code',
+      'Vehicle',
+      'Machinery',
+      'Equipment Unique ID',
+      'Equipment Category',
+      'Equipment Type',
+      'Status',
+      'Created At',
+    ];
+
+    const rows = fuelLogs.map((log) => ({
+      Date: toDateString(log.date),
+      'Fuel Type': log.fuelType,
+      'Transaction Type': log.transactionType,
+      'Fuel Direction': log.fuelDirectionType,
+      'Fuel Entity Type': log.fuelEntityType,
+      Quantity: log.fuelQuantity,
+      UOM: log.fuelUom?.code ?? toDisplayString(log.fuelUom?.displayName) ?? '',
+      Project: toDisplayString(log.project?.name),
+      'Project Code': log.project?.code ?? '',
+      Vehicle: log.vehicle?.numberPlate ?? '',
+      Machinery: log.machinery?.code ?? '',
+      'Equipment Unique ID': log.equipmentUniqueId ?? '',
+      'Equipment Category': log.equipmentCategory ?? '',
+      'Equipment Type': log.equipmentType ?? '',
+      Status: log.status,
+      'Created At': toDateString(log.createdAt),
+    }));
+
+    return {
+      filenamePrefix: 'fuel-logs',
+      pagination,
+      worksheets: [
+        {
+          name: 'Fuel Logs',
+          columns,
+          rows,
+        },
+      ] as FuelLogExcelWorksheet[],
+    };
   },
 
   async getById(

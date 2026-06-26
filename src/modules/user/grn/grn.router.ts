@@ -5,6 +5,7 @@ import {
   createGrn,
   listGrns,
   getGrnById,
+  exportGrnById,
   updateGrn,
   deleteGrn,
   approveOrRejectGrn,
@@ -18,6 +19,7 @@ import {
   updateGrnBodySchema,
   listGrnsQuerySchema,
   grnIdParamsSchema,
+  exportGrnQuerySchema,
   approveRejectGrnBodySchema,
   createGrnProductBodySchema,
   updateGrnProductBodySchema,
@@ -38,6 +40,14 @@ router.get(
   authorize('GRN', 'READ'),
   validate(listGrnsQuerySchema, 'query'),
   listGrns,
+);
+
+router.get(
+  '/:id/export',
+  authorize('GRN', 'READ'),
+  validate(grnIdParamsSchema, 'params'),
+  validate(exportGrnQuerySchema, 'query'),
+  exportGrnById,
 );
 
 router.get(

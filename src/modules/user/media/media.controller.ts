@@ -3,6 +3,7 @@ import { HttpStatus } from '@constants/httpStatus';
 import { resolveHttpStatus } from '@/utils/httpError';
 import { deleteFromS3, uploadToS3 } from '@/utils/s3.utils';
 import { mediaService } from './media.service';
+import type { MediaCategory } from '@repositories/index';
 
 const getUploadedFiles = (req: Request): Express.Multer.File[] => {
   if (!req.files) {
@@ -97,9 +98,10 @@ export const mediaController = {
         (req.body as { language?: string }).language ||
         (req.headers.language as string) ||
         null;
-      const { searchKey, type } = req.query as {
+      const { searchKey, type, category } = req.query as {
         searchKey?: string;
         type?: string;
+        category?: MediaCategory;
       };
 
       const media = await mediaService.getAll(
@@ -108,6 +110,7 @@ export const mediaController = {
         searchKey,
         language,
         type,
+        category,
       );
 
       return res.status(HttpStatus.OK).json({

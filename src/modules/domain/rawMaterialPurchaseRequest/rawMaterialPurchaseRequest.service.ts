@@ -20,6 +20,33 @@ const editableStatuses: ApprovalStatus[] = [
   ApprovalStatus.REJECTED,
 ];
 
+export interface PurchaseOrderExcelWorksheet {
+  name: string;
+  columns: string[];
+  rows: Record<string, string | number | null>[];
+}
+
+const toDisplayString = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === 'string') return record.en;
+    if (typeof record.name === 'string') return record.name;
+    const firstString = Object.values(record).find(
+      (item): item is string => typeof item === 'string',
+    );
+    if (firstString) return firstString;
+  }
+  return '';
+};
+
+const toDateString = (value: unknown): string => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value as string);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
 const ensureRelationsBelongToDomain = async (
   domainId: string,
   data: {
@@ -740,6 +767,74 @@ export const RawMaterialPurchaseRequestService = {
       throw new Error(Messages.PURCHASE_ORDER.NOT_FOUND);
     }
     return po;
+  },
+
+  async exportPurchaseOrderExcel(domainId: string, poId: string) {
+    const po: any =
+      await RawMaterialPurchaseRequestService.getPurchaseOrderById(
+        domainId,
+        poId,
+      );
+
+    const detailRows = [
+      { Field: 'Purchase Order Code', Value: po.code ?? '' },
+      { Field: 'Source RMPR Code', Value: po.sourceRmprCode ?? '' },
+      { Field: 'Project', Value: toDisplayString(po.project?.name) },
+      { Field: 'Project Code', Value: po.project?.code ?? '' },
+      { Field: 'Order Status', Value: po.orderStatus ?? '' },
+      { Field: 'Status', Value: po.status ?? '' },
+      { Field: 'Created At', Value: toDateString(po.createdAt) },
+      { Field: 'Updated At', Value: toDateString(po.updatedAt) },
+      {
+        Field: 'Total Products',
+        Value: po.purchaseOrderProducts?.length ?? 0,
+      },
+    ];
+
+    const productColumns = [
+      'Product',
+      'Product Code',
+      'Grade',
+      'Grade Code',
+      'Quantity',
+      'UOM',
+      'Last Purchase Price',
+      'Last Purchase Vendor',
+      'Status',
+    ];
+
+    const productRows = (po.purchaseOrderProducts || []).map(
+      (product: any) => ({
+        Product: toDisplayString(product.productName),
+        'Product Code': product.productCode ?? '',
+        Grade: toDisplayString(product.productGradeName),
+        'Grade Code': product.productGradeCode ?? '',
+        Quantity: product.quantity ?? 0,
+        UOM:
+          product.uomCode ??
+          product.uom?.code ??
+          toDisplayString(product.uom?.displayName),
+        'Last Purchase Price': product.lastPurchasePrice ?? 0,
+        'Last Purchase Vendor': product.lastPurchaseVendorName ?? '',
+        Status: product.status ?? '',
+      }),
+    );
+
+    return {
+      filenamePrefix: `purchase-order-${po.code}`,
+      worksheets: [
+        {
+          name: 'Purchase Order Details',
+          columns: ['Field', 'Value'],
+          rows: detailRows,
+        },
+        {
+          name: 'Purchase Order Products',
+          columns: productColumns,
+          rows: productRows,
+        },
+      ] as PurchaseOrderExcelWorksheet[],
+    };
   },
 
   // async updatePurchaseOrder(domainId: string, poId: string, data: any) {

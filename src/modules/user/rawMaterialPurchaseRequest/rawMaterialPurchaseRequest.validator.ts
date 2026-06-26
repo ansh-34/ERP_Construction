@@ -82,6 +82,10 @@ export const poIdParamsSchema = z.object({
   poId: z.string().uuid(),
 });
 
+export const exportPurchaseOrderQuerySchema = z.object({
+  exportType: z.enum(['EXCEL']).default('EXCEL'),
+});
+
 export const poProductIdParamsSchema = z.object({
   poId: z.string().uuid(),
   productId: z.string().uuid(),

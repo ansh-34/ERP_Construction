@@ -199,6 +199,13 @@ const listQueryParams = [
     description: 'Filter logs on/before this date',
   },
   { in: 'query', name: 'searchKey', schema: { type: 'string' } },
+  {
+    in: 'query',
+    name: 'exportType',
+    schema: { type: 'string', enum: ['EXCEL'] },
+    description:
+      'When set to EXCEL, downloads the filtered fuel logs as an Excel file instead of returning JSON.',
+  },
 ];
 
 const idParam = {
@@ -281,6 +288,13 @@ function buildFuelLogPaths(
                   },
                 },
               },
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                {
+                  schema: {
+                    type: 'string',
+                    format: 'binary',
+                  },
+                },
             },
           },
           ...errors,

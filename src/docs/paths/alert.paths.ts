@@ -2,6 +2,11 @@ import { errors } from './responses.js';
 
 const alertStatusEnum = ['ACTIVE', 'RESOLVED', 'DISMISSED'];
 const alertSeverityEnum = ['INFO', 'WARNING', 'CRITICAL'];
+const alertCodeExamples = [
+  'MACHINE_FUEL_USAGE_VARIANCE',
+  'MACHINE_RUNTIME_VARIANCE',
+  'PURCHASE_PRICE_INCREASE',
+];
 
 const idParam = {
   in: 'path',
@@ -14,15 +19,19 @@ const alertObject = {
   type: 'object',
   properties: {
     id: { type: 'string', format: 'uuid' },
-    moduleCode: { type: 'string', example: 'MACHINERY' },
+    moduleCode: { type: 'string', example: 'PO' },
     alertCode: {
       type: 'string',
-      example: 'MACHINE_FUEL_USAGE_VARIANCE',
+      example: 'PURCHASE_PRICE_INCREASE',
     },
-    entityType: { type: 'string', example: 'MACHINERY' },
+    entityType: { type: 'string', example: 'INVOICE_ITEM' },
     entityId: { type: 'string', format: 'uuid' },
-    title: { type: 'string', example: 'Machine Fuel Usage High' },
-    message: { type: 'string' },
+    title: { type: 'string', example: 'Purchase Price Increased' },
+    message: {
+      type: 'string',
+      example:
+        'Bricks - Grade A purchase price increased from 50/LITERS to 65/LITERS (30% higher).',
+    },
     severity: { type: 'string', enum: alertSeverityEnum, example: 'WARNING' },
     alertStatus: { type: 'string', enum: alertStatusEnum, example: 'ACTIVE' },
     metadata: { type: 'object', nullable: true },
@@ -48,8 +57,20 @@ export const AlertPaths = {
           name: 'limit',
           schema: { type: 'integer', minimum: 1, maximum: 100 },
         },
-        { in: 'query', name: 'moduleCode', schema: { type: 'string' } },
-        { in: 'query', name: 'alertCode', schema: { type: 'string' } },
+        {
+          in: 'query',
+          name: 'moduleCode',
+          schema: { type: 'string' },
+          example: 'PO',
+          description:
+            'Use PO for purchase price alerts, MACHINERY for machinery variance alerts.',
+        },
+        {
+          in: 'query',
+          name: 'alertCode',
+          schema: { type: 'string', enum: alertCodeExamples },
+          example: 'PURCHASE_PRICE_INCREASE',
+        },
         {
           in: 'query',
           name: 'alertStatus',

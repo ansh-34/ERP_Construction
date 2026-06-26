@@ -12,6 +12,7 @@ import {
   approveOrRejectRawMaterialPurchaseRequests,
   listPurchaseOrders,
   getPurchaseOrderById,
+  exportPurchaseOrderById,
   // updatePurchaseOrder,
   listPoProducts,
   // updatePoProduct,
@@ -27,6 +28,7 @@ import {
   approveRejectBodySchema,
   listPurchaseOrdersQuerySchema,
   poIdParamsSchema,
+  exportPurchaseOrderQuerySchema,
   // updatePurchaseOrderBodySchema,
   // createPoProductBodySchema,
   // updatePoProductBodySchema,
@@ -84,6 +86,13 @@ router.get(
   '/po',
   validate(listPurchaseOrdersQuerySchema, 'query'),
   listPurchaseOrders,
+);
+
+router.get(
+  '/po/:poId/export',
+  validate(poIdParamsSchema, 'params'),
+  validate(exportPurchaseOrderQuerySchema, 'query'),
+  exportPurchaseOrderById,
 );
 
 router.get(
