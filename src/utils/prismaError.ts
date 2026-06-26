@@ -32,6 +32,10 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid uomId' ||
       error.message === 'invalid quantity' ||
       error.message === 'invalid transactionType' ||
+      error.message === 'invalid userTypeCode' ||
+      error.message === 'invalid system user type code' ||
+      error.message === 'user type not found' ||
+      error.message === 'user type code already exists' ||
       error.message === 'not found' ||
       error.message === 'unauthorized' ||
       error.message === 'task not completed' ||

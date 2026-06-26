@@ -264,6 +264,8 @@ export const projectUserAssignmentService = {
       endDate?: string;
       currentDate?: string;
       searchKey?: string;
+      userTypeCode?: string;
+      userTypeId?: string;
     },
     paginationQuery: PaginationQuery = {},
     language: string | null = null,
@@ -284,6 +286,8 @@ export const projectUserAssignmentService = {
           endDate: parseOptionalDate(filters.endDate, 'endDate'),
           currentDate: parseOptionalDate(filters.currentDate, 'currentDate'),
           searchKey: filters.searchKey,
+          userTypeCode: filters.userTypeCode,
+          userTypeId: filters.userTypeId,
         },
       );
       const paginatedAssignments = assignments.slice(offset, offset + limit);

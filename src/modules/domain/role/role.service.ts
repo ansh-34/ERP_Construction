@@ -5,6 +5,7 @@ import {
   RoleRepository,
   UserRepository,
   RoleModulePermissionRepository,
+  adminUserTypeRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
@@ -22,7 +23,13 @@ export const RoleService = {
 
   async createRole(
     domainId: string,
-    data: { name: Record<string, string>; level?: number },
+    adminId: string,
+    data: {
+      name: Record<string, string>;
+      code?: string;
+      userTypeCode?: string;
+      level?: number;
+    },
     langCode: string = 'en',
   ) {
     const incomingLanguageCodes: string[] = Object.keys(data.name || {});
@@ -31,7 +38,20 @@ export const RoleService = {
     }
 
     const searchText = Object.values(data.name).join(' ').toLowerCase();
-    const code = data.name.en.toString().trim().toLowerCase();
+    const code = (data.code ?? data.name.en).toString().trim().toLowerCase();
+    const userTypeCode = data.userTypeCode
+      ? data.userTypeCode.toString().trim().toLowerCase()
+      : null;
+    const userType = userTypeCode
+      ? await adminUserTypeRepository.findActiveByCodeAndAdmin(
+          userTypeCode,
+          adminId,
+        )
+      : null;
+
+    if (userTypeCode && !userType) {
+      throw new Error('invalid userTypeCode');
+    }
 
     const existing = await RoleRepository.findActiveByCodeAndDomain(
       code,
@@ -47,6 +67,9 @@ export const RoleService = {
       searchText,
       level: data.level ?? 0,
       domainId,
+      adminId,
+      userTypeId: userType?.id ?? null,
+      userTypeCode: userType?.code ?? userTypeCode,
     });
 
     return {
@@ -178,6 +201,8 @@ export const RoleService = {
     query: PaginationQuery & {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
+      userTypeCode?: string;
+      userTypeId?: string;
     },
     langCode: string,
   ) {
@@ -190,6 +215,8 @@ export const RoleService = {
       {
         status: query.status,
         searchKey: query.searchKey,
+        userTypeCode: query.userTypeCode,
+        userTypeId: query.userTypeId,
       },
     );
 
@@ -254,10 +281,12 @@ export const RoleService = {
 
   async updateRole(
     domainId: string,
+    adminId: string,
     id: string,
     data: {
       name?: Record<string, string>;
       code?: string;
+      userTypeCode?: string | null;
       level?: number;
       status?: 'ACTIVE' | 'INACTIVE';
     },
@@ -293,11 +322,32 @@ export const RoleService = {
     const searchText = data.name
       ? Object.values(data.name).join(' ').toLowerCase()
       : null;
+    const userTypeCode =
+      data.userTypeCode === undefined || data.userTypeCode === null
+        ? data.userTypeCode
+        : data.userTypeCode.toString().trim().toLowerCase();
+    const userType =
+      typeof userTypeCode === 'string'
+        ? await adminUserTypeRepository.findActiveByCodeAndAdmin(
+            userTypeCode,
+            adminId,
+          )
+        : null;
+
+    if (typeof userTypeCode === 'string' && !userType) {
+      throw new Error('invalid userTypeCode');
+    }
 
     const record = await RoleRepository.update(id, {
       ...data,
       ...(code ? { code } : {}),
       ...(searchText ? { searchText } : {}),
+      ...(data.userTypeCode !== undefined
+        ? {
+            userTypeId: userType?.id ?? null,
+            userTypeCode: userType?.code ?? null,
+          }
+        : {}),
     });
 
     return {

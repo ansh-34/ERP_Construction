@@ -9,6 +9,7 @@ export const createRole = async (req: Request, res: Response) => {
     const { language = 'en' } = req.headers;
     const role = await RoleService.createRole(
       req.user!.domainId,
+      req.user!.adminId,
       req.body,
       language as string,
     );
@@ -55,6 +56,8 @@ export const listRoles = async (req: Request, res: Response) => {
       req.query as PaginationQuery & {
         status?: 'ACTIVE' | 'INACTIVE';
         searchKey?: string;
+        userTypeCode?: string;
+        userTypeId?: string;
       },
       language as string,
     );
@@ -103,6 +106,7 @@ export const updateRole = async (req: Request, res: Response) => {
     const { language = 'en' } = req.headers;
     const role = await RoleService.updateRole(
       req.user!.domainId,
+      req.user!.adminId,
       req.params.id,
       req.body,
       language as string,

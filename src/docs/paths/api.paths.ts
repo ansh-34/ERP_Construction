@@ -39,6 +39,7 @@ import { AlertPaths } from './alert.paths.js';
 import { NotificationPaths } from './notification.paths.js';
 import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
 import { LastPurchaseRatePaths } from './lastPurchaseRate.paths.js';
+import { UserTypePaths } from './userType.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -82,4 +83,5 @@ export const ApiPaths = {
   ...MachineryInventoryPaths,
   ...AlertPaths,
   ...NotificationPaths,
+  ...UserTypePaths,
 };

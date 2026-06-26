@@ -15,6 +15,8 @@ export const RoleRepository = {
       searchKey?: string;
       roleIds?: string[];
       adminId?: string;
+      userTypeCode?: string;
+      userTypeId?: string;
     };
   }) {
     const whereClause: any = {
@@ -27,6 +29,12 @@ export const RoleRepository = {
         }),
         ...(options.filters.roleIds && { id: { in: options.filters.roleIds } }),
         ...(options.filters.adminId && { adminId: options.filters.adminId }),
+        ...(options.filters.userTypeCode && {
+          userTypeCode: options.filters.userTypeCode,
+        }),
+        ...(options.filters.userTypeId && {
+          userTypeId: options.filters.userTypeId,
+        }),
       }),
     };
 
@@ -49,6 +57,7 @@ export const RoleRepository = {
             },
           },
         },
+        userType: true,
       },
     });
   },
@@ -81,13 +90,20 @@ export const RoleRepository = {
     domainId: string,
     limit: number,
     offset: number,
-    filter?: { status?: 'ACTIVE' | 'INACTIVE'; searchKey?: string },
+    filter?: {
+      status?: 'ACTIVE' | 'INACTIVE';
+      searchKey?: string;
+      userTypeCode?: string;
+      userTypeId?: string;
+    },
   ) {
     const searchKey = filter?.searchKey?.trim() || '';
     const where: Prisma.RoleWhereInput = {
       domainId,
       isDeleted: false,
       ...(filter?.status && { status: filter.status }),
+      ...(filter?.userTypeCode && { userTypeCode: filter.userTypeCode }),
+      ...(filter?.userTypeId && { userTypeId: filter.userTypeId }),
       ...(searchKey && {
         searchText: { contains: searchKey, mode: 'insensitive' as const },
       }),
@@ -101,6 +117,7 @@ export const RoleRepository = {
           roleModulePermissions: {
             include: { module: { select: { name: true, code: true } } },
           },
+          userType: true,
         },
         orderBy: { createdAt: 'desc' },
         skip: offset,

@@ -42,6 +42,8 @@ export * from './admin.repository.js';
 export * from './adminCurrency.repository.js';
 export * from './adminLanguage.repository.js';
 export * from './adminIndustryRoleTemplate.repository.js';
+export * from './systemUserType.repository.js';
+export * from './adminUserType.repository.js';
 export * from './grn.repository.js';
 export * from './vendorProductPrice.repository.js';
 export * from './vendor.repository.js';

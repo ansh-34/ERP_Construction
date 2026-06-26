@@ -82,7 +82,9 @@ const projectUserAssignmentListSelect = Prisma.sql`
     'email', u."email",
     'phoneCode', u."phoneCode",
     'phone', u."phone",
-    'roleId', u."roleId"
+    'roleId', u."roleId",
+    'userTypeId', r."userTypeId",
+    'userTypeCode', r."userTypeCode"
   ) AS "user",
   pua."dailyWorkingHours",
   pua."dayCharge",
@@ -128,6 +130,8 @@ const projectUserAssignmentDetailSelect = Prisma.sql`
     'phoneCode', u."phoneCode",
     'phone', u."phone",
     'roleId', u."roleId",
+    'userTypeId', r."userTypeId",
+    'userTypeCode', r."userTypeCode",
     'industry', u."industry",
     'status', u."status"
   ) AS "user",
@@ -224,6 +228,8 @@ export const projectUserAssignmentRepository = {
       endDate?: Date;
       currentDate?: Date;
       searchKey?: string;
+      userTypeCode?: string;
+      userTypeId?: string;
     } = {},
   ): Promise<ProjectUserAssignmentRecord[]> => {
     const where = [
@@ -253,6 +259,14 @@ export const projectUserAssignmentRepository = {
       where.push(Prisma.sql`pua."endDate" >= ${filters.currentDate}`);
     }
 
+    if (filters.userTypeCode) {
+      where.push(Prisma.sql`r."userTypeCode" = ${filters.userTypeCode}`);
+    }
+
+    if (filters.userTypeId) {
+      where.push(Prisma.sql`r."userTypeId" = ${filters.userTypeId}`);
+    }
+
     if (filters.searchKey) {
       const search = `%${filters.searchKey.toLowerCase()}%`;
       where.push(Prisma.sql`(
@@ -268,6 +282,7 @@ export const projectUserAssignmentRepository = {
       FROM "ProjectUserAssignment" pua
       INNER JOIN "Project" p ON p."id" = pua."projectId"
       INNER JOIN "User" u ON u."id" = pua."userId"
+      LEFT JOIN "Role" r ON r."id" = u."roleId" AND r."isDeleted" = false
       INNER JOIN "Domain" d ON d."id" = pua."domainId"
       INNER JOIN "Admin" a ON a."id" = pua."adminId"
       WHERE ${Prisma.join(where, ' AND ')}
@@ -287,6 +302,7 @@ export const projectUserAssignmentRepository = {
       FROM "ProjectUserAssignment" pua
       INNER JOIN "Project" p ON p."id" = pua."projectId"
       INNER JOIN "User" u ON u."id" = pua."userId"
+      LEFT JOIN "Role" r ON r."id" = u."roleId" AND r."isDeleted" = false
       INNER JOIN "Domain" d ON d."id" = pua."domainId"
       INNER JOIN "Admin" a ON a."id" = pua."adminId"
       WHERE pua."id" = ${id}

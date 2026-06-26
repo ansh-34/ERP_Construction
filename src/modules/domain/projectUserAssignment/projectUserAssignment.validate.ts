@@ -46,6 +46,8 @@ export const listProjectUserAssignmentQuery = z.object({
   endDate: z.string().trim().min(1).optional(),
   currentDate: z.string().trim().min(1).optional(),
   searchKey: z.string().trim().optional(),
+  userTypeCode: z.string().trim().min(1).optional(),
+  userTypeId: z.string().trim().uuid().optional(),
   offset: z.string().trim().optional(),
   limit: z.string().trim().optional(),
 });

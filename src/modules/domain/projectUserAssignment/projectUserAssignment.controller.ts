@@ -57,6 +57,8 @@ export const projectUserAssignmentController = {
         endDate,
         currentDate,
         searchKey,
+        userTypeCode,
+        userTypeId,
         offset,
         limit,
       } = req.query as {
@@ -66,6 +68,8 @@ export const projectUserAssignmentController = {
         endDate?: string;
         currentDate?: string;
         searchKey?: string;
+        userTypeCode?: string;
+        userTypeId?: string;
         offset?: string;
         limit?: string;
       };
@@ -74,7 +78,16 @@ export const projectUserAssignmentController = {
         await projectUserAssignmentService.getAll(
           req.user!.domainId,
           req.user!.adminId,
-          { projectId, userId, startDate, endDate, currentDate, searchKey },
+          {
+            projectId,
+            userId,
+            startDate,
+            endDate,
+            currentDate,
+            searchKey,
+            userTypeCode,
+            userTypeId,
+          },
           { offset, limit },
           language,
         );

@@ -9,6 +9,14 @@ export const seedDefaultRolesForDomain = async (
     const rolesData = [];
 
     for (const role of roles) {
+      const userType = await prisma.adminUserType.findFirst({
+        where: {
+          adminId,
+          code: role.code,
+          status: 'ACTIVE',
+          isDeleted: false,
+        },
+      });
       const existingRole = await prisma.role.findFirst({
         where: {
           isDeleted: false,
@@ -25,6 +33,8 @@ export const seedDefaultRolesForDomain = async (
           searchText: Object.values(role.name).join(' ').toLowerCase(),
           domainId,
           adminId,
+          userTypeId: userType?.id ?? null,
+          userTypeCode: userType?.code ?? role.code,
         });
       }
     }

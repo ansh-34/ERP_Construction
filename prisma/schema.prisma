@@ -137,6 +137,7 @@ model Admin {
   mediaFiles                 Media[]                     @relation("AdminMediaFiles")
   users                      User[]
   roles                      Role[]
+  adminUserTypes             AdminUserType[]
   adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
   vendorProductPricings  VendorProductPricing[]
   customers              Customer[]
@@ -377,9 +378,12 @@ model Role {
   usersCount            Int     @default(0)
   domainId              String  @db.Uuid
   adminId               String? @db.Uuid
+  userTypeId            String? @db.Uuid
+  userTypeCode          String?
 
   admin     Admin?     @relation(fields: [adminId], references: [id])
   domain    Domain     @relation(fields: [domainId], references: [id])
+  userType  AdminUserType? @relation(fields: [userTypeId], references: [id], onDelete: SetNull)
   status    StatusEnum @default(ACTIVE)
   isDeleted Boolean    @default(false)
   createdAt DateTime   @default(now())
@@ -392,6 +396,45 @@ model Role {
   @@index([createdAt, isDeleted])
   @@index([createdAt, isDeleted, status])
   @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, userTypeCode])
+  @@index([userTypeId])
+}
+
+model SystemUserType {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  searchText  String     @default("")
+  description Json?      @db.JsonB
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([code, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+}
+
+model AdminUserType {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        Json       @db.JsonB
+  code        String
+  searchText  String     @default("")
+  description Json?      @db.JsonB
+  adminId     String     @db.Uuid
+  admin       Admin      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  status      StatusEnum @default(ACTIVE)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  roles Role[]
+
+  @@unique([adminId, code, isDeleted])
+  @@index([createdAt, isDeleted])
+  @@index([createdAt, isDeleted, status])
+  @@index([adminId, status, isDeleted])
 }
 
 model AdminIndustryRoleTemplate {

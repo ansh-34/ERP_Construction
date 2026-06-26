@@ -7,6 +7,7 @@ import onboardingRouter from './onboarding/onboarding.router.js';
 import domainRouter from './domain/domain.router.js';
 import profileRouter from './profile/profile.router.js';
 import industryRoleTemplateRouter from './industryRoleTemplate/industryRoleTemplate.router.js';
+import adminUserTypeRouter from './adminUserType/adminUserType.router.js';
 import reportRouter from './report/report.router.js';
 
 const adminRouter = Router();
@@ -18,6 +19,7 @@ adminRouter.use('/onboarding', onboardingRouter);
 adminRouter.use('/domain', domainRouter);
 adminRouter.use('/profile', profileRouter);
 adminRouter.use('/industry-role-templates', industryRoleTemplateRouter);
+adminRouter.use('/admin-user-types', adminUserTypeRouter);
 adminRouter.use('/report', reportRouter);
 
 export default adminRouter;
