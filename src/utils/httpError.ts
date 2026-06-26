@@ -6,6 +6,10 @@ export function resolveHttpStatus(message: string): HttpStatus {
     return HttpStatus.SERVICE_UNAVAILABLE;
   }
 
+  if (message === 'Database schema is not migrated') {
+    return HttpStatus.INTERNAL_SERVER_ERROR;
+  }
+
   if (message === 'not found' || message.toLowerCase().includes('not found')) {
     return HttpStatus.NOT_FOUND;
   }

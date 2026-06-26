@@ -129,6 +129,8 @@ model Admin {
   movementLogs               MovementLog[]
   fuelLogs                   FuelLog[]
   inventoryFuelStocks        InventoryFuelStock[]
+  machineryInventories       MachineryInventory[]
+  machineryInventoryLogs     MachineryInventoryLog[]
   alertRules                 AlertRule[]
   alerts                     Alert[]
   notifications              Notification[]
@@ -229,6 +231,8 @@ model Domain {
   movementLogs                MovementLog[]
   fuelLogs                    FuelLog[]
   inventoryFuelStocks         InventoryFuelStock[]
+  machineryInventories        MachineryInventory[]
+  machineryInventoryLogs      MachineryInventoryLog[]
   alertRules                  AlertRule[]
   alerts                      Alert[]
   notifications               Notification[]
@@ -641,6 +645,8 @@ model Uom {
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   customerRates               CustomerRate[]
   inventoryFuelStocks         InventoryFuelStock[]
+  machineryInventories        MachineryInventory[]
+  machineryInventoryLogs      MachineryInventoryLog[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -941,6 +947,11 @@ enum FuelEntityType {
   MACHINERY
 }
 
+enum MachineryInventoryTransactionType {
+  INWARD
+  OUTWARD
+}
+
 model InventoryFuelStock {
   id                    String     @id @default(uuid()) @db.Uuid
   fuelType              FuelType
@@ -963,6 +974,65 @@ model InventoryFuelStock {
   @@unique([fuelType, uomId, domainId, isDeleted])
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, fuelType])
+  @@index([adminId])
+}
+
+model MachineryInventory {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String
+  searchText   String     @default("")
+  machineId    String     @db.Uuid
+  machine      Machinery  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  quantity     Float      @default(0)
+  restockLevel Float      @default(0)
+  uomId        String     @db.Uuid
+  uom          Uom        @relation(fields: [uomId], references: [id], onDelete: Restrict)
+  domainId     String     @db.Uuid
+  domain       Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId      String     @db.Uuid
+  admin        Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status       StatusEnum @default(ACTIVE)
+  isDeleted    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  logs MachineryInventoryLog[]
+
+  @@unique([name, machineId, domainId, isDeleted])
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, machineId])
+  @@index([domainId, uomId])
+  @@index([adminId])
+}
+
+model MachineryInventoryLog {
+  id                   String                            @id @default(uuid()) @db.Uuid
+  date                 DateTime
+  transactionType      MachineryInventoryTransactionType
+  name                 String
+  searchText           String                            @default("")
+  notes                String?
+  quantity             Float
+  machineryInventoryId String                            @db.Uuid
+  machineryInventory   MachineryInventory                @relation(fields: [machineryInventoryId], references: [id], onDelete: Cascade)
+  machineId            String                            @db.Uuid
+  machine              Machinery                         @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  uomId                String                            @db.Uuid
+  uom                  Uom                               @relation(fields: [uomId], references: [id], onDelete: Restrict)
+  domainId             String                            @db.Uuid
+  domain               Domain                            @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId              String                            @db.Uuid
+  admin                Admin                             @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status               StatusEnum                        @default(ACTIVE)
+  isDeleted            Boolean                           @default(false)
+  createdAt            DateTime                          @default(now())
+  updatedAt            DateTime                          @updatedAt
+
+  @@index([createdAt, isDeleted, domainId])
+  @@index([domainId, transactionType])
+  @@index([domainId, machineryInventoryId])
+  @@index([domainId, machineId])
+  @@index([date])
   @@index([adminId])
 }
 
@@ -1643,6 +1713,8 @@ model Machinery {
   movementLogs         MovementLog[]
   fuelLogs             FuelLog[]
   machineReadings      MachineReading[]
+  machineryInventories MachineryInventory[]
+  machineryInventoryLogs MachineryInventoryLog[]
 
   @@index([createdAt, isDeleted, domainId])
   @@index([createdAt, isDeleted, domainId, status])

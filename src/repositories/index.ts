@@ -55,6 +55,7 @@ export * from './fuelLog.repository.js';
 export * from './customer.repository.js';
 export * from './customerRate.repository.js';
 export * from './inventoryFuelStock.repository.js';
+export * from './machineryInventory.repository.js';
 export * from './alert.repository.js';
 export * from './alertRule.repository.js';
 export * from './notification.repository.js';

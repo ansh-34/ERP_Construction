@@ -26,12 +26,20 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid assignee' ||
       error.message === 'invalid ids' ||
       error.message === 'invalid date' ||
+      error.message === 'invalid domainId' ||
+      error.message === 'invalid adminId' ||
+      error.message === 'invalid machineId' ||
+      error.message === 'invalid uomId' ||
+      error.message === 'invalid quantity' ||
+      error.message === 'invalid transactionType' ||
       error.message === 'not found' ||
       error.message === 'unauthorized' ||
       error.message === 'task not completed' ||
       error.message === 'task plannedEndDate is required' ||
       error.message === 'request already actioned' ||
       error.message === 'empty update payload' ||
+      error.message === 'Machinery inventory not found' ||
+      error.message === 'Insufficient machinery inventory quantity' ||
       error.message === 'endDateTime must be after startDateTime' ||
       error.message ===
         'endMeterReading must be greater than startMeterReading' ||
@@ -63,6 +71,10 @@ export function normalizePrismaError(error: unknown): Error {
 
     if (error.code === 'P2003') {
       return new Error('invalid relation');
+    }
+
+    if (error.code === 'P2021' || error.code === 'P2022') {
+      return new Error('Database schema is not migrated');
     }
 
     if (error.code === 'P2025') {

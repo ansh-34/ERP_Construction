@@ -34,6 +34,7 @@ import { UserMaintenanceMovementPaths } from './userMaintenanceMovement.paths.js
 import { ReportPaths } from './report.paths.js';
 import { FuelLogPaths } from './fuelLog.paths.js';
 import { InventoryFuelStockPaths } from './inventoryFuelStock.paths.js';
+import { MachineryInventoryPaths } from './machineryInventory.paths.js';
 import { AlertPaths } from './alert.paths.js';
 import { NotificationPaths } from './notification.paths.js';
 import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
@@ -78,6 +79,7 @@ export const ApiPaths = {
   ...FuelLogPaths,
   ...LastPurchaseRatePaths,
   ...InventoryFuelStockPaths,
+  ...MachineryInventoryPaths,
   ...AlertPaths,
   ...NotificationPaths,
 };

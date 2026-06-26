@@ -7,6 +7,8 @@ import maintenanceScheduleRouter from './maintenanceSchedule/maintenanceSchedule
 import movementLogRouter from './movementLog/movementLog.routes';
 import fuelLogRouter from './fuelLog/fuelLog.routes';
 import inventoryFuelStockRouter from './inventoryFuelStock/inventoryFuelStock.routes';
+import machineryInventoryRouter from './machineryInventory/machineryInventory.routes';
+import machineryInventoryLogRouter from './machineryInventoryLog/machineryInventoryLog.routes';
 import alertRouter from './alert/alert.routes';
 import notificationRouter from './notification/notification.routes';
 import movementReportRouter from './movementReport/movementReport.routes';
@@ -89,6 +91,8 @@ domainRouter.use('/movement-logs', movementLogRouter);
 domainRouter.use('/movement-reports', movementReportRouter);
 domainRouter.use('/fuel-logs', fuelLogRouter);
 domainRouter.use('/inventory-fuel-stocks', inventoryFuelStockRouter);
+domainRouter.use('/machinery-inventory', machineryInventoryRouter);
+domainRouter.use('/machinery-inventory-logs', machineryInventoryLogRouter);
 domainRouter.use('/alerts', alertRouter);
 domainRouter.use('/notifications', notificationRouter);
 domainRouter.use('/locations', locationRouter);
