@@ -298,6 +298,8 @@ export const Messages = Object.freeze({
       'One or more languages in the sheet do not belong to your domain',
     NO_DOMAIN_LANGUAGES: 'No languages are configured for your domain',
     INVALID_CURRENCY: 'Currency does not belong to your domain',
+    LOW_STOCK_RETRIEVED: 'Low stock inventory retrieved successfully',
+    LOW_STOCK_LIST_FAILED: 'Failed to retrieve low stock inventory',
   },
   JOURNEY_SCHEDULE: {
     CREATED: 'Journey schedule created',
@@ -598,5 +600,17 @@ export const Messages = Object.freeze({
     CANNOT_DELETE_INVOICED: 'Invoiced sale orders cannot be deleted',
     PRODUCT_NOT_FOUND: 'Sale order product not found',
     PRODUCT_REMOVED: 'Sale order product removed successfully',
+  },
+  WEIGH_BRIDGE: {
+    CREATED: 'Weigh bridge record created successfully',
+    RETRIEVED: 'Weigh bridge record retrieved successfully',
+    LIST_RETRIEVED: 'Weigh bridge records retrieved successfully',
+    UPDATED: 'Weigh bridge record updated successfully',
+    DELETED: 'Weigh bridge record deleted successfully',
+    NOT_FOUND: 'Weigh bridge record not found',
+    CREATE_FAILED: 'Failed to create weigh bridge record',
+    LIST_FAILED: 'Failed to retrieve weigh bridge records',
+    UPDATE_FAILED: 'Failed to update weigh bridge record',
+    DELETE_FAILED: 'Failed to delete weigh bridge record',
   },
 });

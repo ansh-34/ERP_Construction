@@ -48,6 +48,7 @@ import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
 import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
 import saleOrderRouter from './saleOrder/saleOrder.router.js';
+import weighBridgeRouter from './weighBridge/weighBridge.router.js';
 
 const userRouter = Router();
 
@@ -97,6 +98,7 @@ userRouter.use('/payment-requests', paymentRequestRouter);
 userRouter.use('/customers', customerRouter);
 userRouter.use('/customer-rates', customerRateRouter);
 userRouter.use('/sale-orders', saleOrderRouter);
+userRouter.use('/weigh-bridges', weighBridgeRouter);
 userRouter.use('/grades', allGradesRouter());
 userRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 

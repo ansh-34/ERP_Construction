@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Uom" ADD COLUMN "symbol" TEXT NOT NULL DEFAULT '';

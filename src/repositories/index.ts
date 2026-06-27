@@ -60,3 +60,4 @@ export * from './alertRule.repository.js';
 export * from './notification.repository.js';
 export * from './alertRecipient.repository.js';
 export * from './saleOrder.repository.js';
+export * from './weighBridge.repository.js';

@@ -36,6 +36,7 @@ import { LastPurchaseRateSchemas } from './lastPurchaseRate.schema.js';
 import { CustomerSchemas } from './customer.schema.js';
 import { CustomerRateSchemas } from './customerRate.schema.js';
 import { SaleOrderSchemas } from './saleOrder.schema.js';
+import { WeighBridgeSchemas } from './weighBridge.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -74,4 +75,5 @@ export const ApiSchemas = {
   ...CustomerSchemas,
   ...CustomerRateSchemas,
   ...SaleOrderSchemas,
+  ...WeighBridgeSchemas,
 };

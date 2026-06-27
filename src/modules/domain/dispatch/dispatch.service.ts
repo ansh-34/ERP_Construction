@@ -45,16 +45,26 @@ export const DispatchService = {
     data: {
       vehicleId: string;
       journeyScheduleId: string;
+      referenceNumber?: string;
+      notes?: string;
       description?: string;
       actualFuelValue: number;
+      emptyVehicleWeight?: number;
+      loadedVehicleWeight?: number;
+      vehicleWeightUomId?: string;
       journeyStatus: string;
     },
   ) {
     const {
       vehicleId,
       journeyScheduleId,
+      referenceNumber,
+      notes,
       description,
       actualFuelValue,
+      emptyVehicleWeight,
+      loadedVehicleWeight,
+      vehicleWeightUomId,
       journeyStatus,
     } = data;
 
@@ -98,8 +108,11 @@ export const DispatchService = {
 
     return DispatchRepository.create({
       vehicleId,
+      referenceNumber: referenceNumber || null,
+      notes: notes || null,
       code,
       journeyScheduleId,
+      journeyScheduleCode: schedule.code,
       description: description || null,
       date: new Date(),
       driverName: schedule.driverName,
@@ -110,6 +123,9 @@ export const DispatchService = {
       expectedFuelValue: schedule.expectedFuelValue,
       actualFuelValue,
       fuelAlertThreshold: schedule.fuelAlertThreshold,
+      emptyVehicleWeight: emptyVehicleWeight ?? 0,
+      loadedVehicleWeight: loadedVehicleWeight ?? 0,
+      vehicleWeightUomId: vehicleWeightUomId || null,
       loadedQuantity: schedule.loadedQuantity,
       loadedQuantityUomId: schedule.loadedQuantityUomId,
       loadedAt: schedule.loadedAt,

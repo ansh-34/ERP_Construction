@@ -141,6 +141,7 @@ model Admin {
   customerRates          CustomerRate[]
   saleOrders             SaleOrder[]
   saleOrderProducts      SaleOrderProduct[]
+  weighBridges           WeighBridge[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -247,6 +248,7 @@ model Domain {
   customerRates               CustomerRate[]
   saleOrders                  SaleOrder[]
   saleOrderProducts           SaleOrderProduct[]
+  weighBridges                WeighBridge[]
   admin                       Admin                        @relation(fields: [adminId], references: [id])
   adminId                     String                       @db.Uuid
 
@@ -288,6 +290,7 @@ model User {
   paymentRequestsRequested             PaymentRequest[]             @relation("PaymentRequestedByUser")
   projectUserAssignments               ProjectUserAssignment[]
   projectUserDailyLogs                 ProjectUserDailyLog[]
+  weighBridges                         WeighBridge[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -622,6 +625,7 @@ model Uom {
   searchText  String  @default("")
   baseUomId   String? @db.Uuid
 
+  symbol         String @default("")
   conversionRate Float
   domainId       String @db.Uuid
 
@@ -635,6 +639,7 @@ model Uom {
   vehicleLoadCapacity         Vehicle[]                    @relation("VehicleLoadCapacityUom")
   journeyScheduleLoadedQty    VehicleJourneySchedule[]     @relation("JourneyScheduleLoadedQtyUom")
   dispatchLoadedQty           DispatchVehicle[]            @relation("DispatchLoadedQtyUom")
+  dispatchVehicleWeight       DispatchVehicle[]            @relation("DispatchVehicleWeightUom")
   inventories                 Inventory[]                  @relation("InventoryUom")
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
   grnProducts                 GrnProduct[]
@@ -719,23 +724,30 @@ model DispatchVehicle {
   vehicleId String @db.Uuid
 
   vehicle           Vehicle @relation(fields: [vehicleId], references: [id])
+  referenceNumber   String?
+  notes             String?
   code              String
   journeyScheduleId String? @db.Uuid
 
-  journeySchedule     VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
-  description         String?
-  date                DateTime?
-  driverName          String?
-  startLocation       String?
-  endLocation         String?
-  distance            Float                   @default(0)
-  average             Float                   @default(0)
-  expectedFuelValue   Float                   @default(0)
-  actualFuelValue     Float                   @default(0)
-  fuelAlertThreshold  Float                   @default(0)
-  loadedQuantity      Float                   @default(0)
-  loadedQuantityUomId String?                 @db.Uuid
+  journeySchedule      VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
+  journeyScheduleCode  String?
+  description          String?
+  date                 DateTime?
+  driverName           String?
+  startLocation        String?
+  endLocation          String?
+  distance             Float                   @default(0)
+  average              Float                   @default(0)
+  expectedFuelValue    Float                   @default(0)
+  actualFuelValue      Float                   @default(0)
+  fuelAlertThreshold   Float                   @default(0)
+  emptyVehicleWeight   Float                   @default(0)
+  loadedVehicleWeight  Float                   @default(0)
+  vehicleWeightUomId   String?                 @db.Uuid
+  loadedQuantity       Float                   @default(0)
+  loadedQuantityUomId  String?                 @db.Uuid
 
+  vehicleWeightUom       Uom?      @relation("DispatchVehicleWeightUom", fields: [vehicleWeightUomId], references: [id])
   loadedQuantityUom      Uom?      @relation("DispatchLoadedQtyUom", fields: [loadedQuantityUomId], references: [id])
   loadedAt               DateTime?
   loadingStatus          String    @default("PENDING")
@@ -1476,6 +1488,7 @@ model Project {
   invoices                    Invoice[]
   paymentRequests             PaymentRequest[]
   fuelLogs                    FuelLog[]
+  weighBridges                WeighBridge[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -2133,4 +2146,38 @@ model SaleOrderProduct {
   @@index([uomId])
   @@index([domainId, isDeleted])
   @@index([adminId])
+}
+
+model WeighBridge {
+  id               String     @id @default(uuid()) @db.Uuid
+  ticketNumber     String 
+  date             DateTime   @default(now())
+  driverName       String
+  vehicleNo        String
+  supplier         String
+  material         String
+  gateNoteNo       String
+  tareWeight       String
+  grossWeight      String
+  weighBridgeStatus String    @default("PENDING")
+  operatorId       String     @db.Uuid
+  operator         User       @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  operatorName     String
+  remarks          String?
+  projectId        String?    @db.Uuid
+  project          Project?   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId         String     @db.Uuid
+  domain           Domain     @relation(fields: [domainId], references: [id])
+  adminId          String     @db.Uuid
+  admin            Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status           StatusEnum @default(ACTIVE)
+  isDeleted        Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([operatorId])
+  @@index([projectId])
+  @@index([createdAt, isDeleted, domainId])
 }

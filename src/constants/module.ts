@@ -203,4 +203,10 @@ export const modules = [
     },
     code: 'PAYMENT_REQUEST',
   },
+  {
+    name: {
+      en: 'Weigh Bridge',
+    },
+    code: 'WEIGH_BRIDGE',
+  },
 ];

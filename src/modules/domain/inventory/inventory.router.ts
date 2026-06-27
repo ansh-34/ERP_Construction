@@ -9,6 +9,7 @@ import {
   updateReorderLevel,
   deleteInventoryEntry,
   getInventoryAnalytics,
+  getLowStockInventory,
   importInventory,
   exportInventory,
 } from './inventory.controller.js';
@@ -23,6 +24,13 @@ const router = Router();
 
 // analytics
 router.get('/analytics', getInventoryAnalytics);
+
+// low stock items
+router.get(
+  '/low-stock',
+  validate(inventoryListQuerySchema, 'query'),
+  getLowStockInventory,
+);
 
 // aggregate statistics
 router.get('/stats', /* authorize('inventory', 'read'), */ getInventoryStats);

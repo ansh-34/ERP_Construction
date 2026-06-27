@@ -66,6 +66,8 @@ export const swaggerSpec = {
     { name: 'User Customer Rates' },
     { name: 'Domain Sale Orders' },
     { name: 'User Sale Orders' },
+    { name: 'Domain Weigh Bridges' },
+    { name: 'User Weigh Bridges' },
   ],
   paths: {
     ...ApiPaths,
