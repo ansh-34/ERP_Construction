@@ -40,6 +40,7 @@ import { NotificationPaths } from './notification.paths.js';
 import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
 import { LastPurchaseRatePaths } from './lastPurchaseRate.paths.js';
 import { UserTypePaths } from './userType.paths.js';
+import { CustomerPaymentPaths } from './customerPayment.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -84,4 +85,5 @@ export const ApiPaths = {
   ...AlertPaths,
   ...NotificationPaths,
   ...UserTypePaths,
+  ...CustomerPaymentPaths,
 };

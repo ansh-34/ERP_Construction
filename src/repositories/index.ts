@@ -56,6 +56,7 @@ export * from './dbAnalytics.repository.js';
 export * from './fuelLog.repository.js';
 export * from './customer.repository.js';
 export * from './customerRate.repository.js';
+export * from './customerPayment.repository.js';
 export * from './inventoryFuelStock.repository.js';
 export * from './machineryInventory.repository.js';
 export * from './alert.repository.js';
