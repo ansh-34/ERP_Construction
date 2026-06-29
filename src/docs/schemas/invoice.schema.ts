@@ -82,7 +82,11 @@ export const InvoiceSchemas = {
               nullable: true,
             },
             uomId: { type: 'string', format: 'uuid' },
-            quantity: { type: 'number', example: 100, description: 'Must be > 0' },
+            quantity: {
+              type: 'number',
+              example: 100,
+              description: 'Must be > 0',
+            },
             rate: { type: 'number', example: 450, description: 'Must be >= 0' },
           },
         },
@@ -106,8 +110,10 @@ export const InvoiceSchemas = {
       downloadUrl: {
         type: 'string',
         nullable: true,
-        description: 'Signed, time-limited URL to download the PDF (only when READY).',
-        example: 'https://s3.amazonaws.com/bucket/invoices/...?X-Amz-Signature=...',
+        description:
+          'Signed, time-limited URL to download the PDF (only when READY).',
+        example:
+          'https://s3.amazonaws.com/bucket/invoices/...?X-Amz-Signature=...',
       },
       pdfGeneratedAt: {
         type: 'string',
