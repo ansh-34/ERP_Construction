@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
-import { CustomerRateService } from './customerRate.service.js';
+import { AccountService } from './account.service.js';
 
 const errorResponse = (res: Response, error: unknown, fallback: string) => {
   const message = error instanceof Error ? error.message : fallback;
@@ -10,65 +10,61 @@ const errorResponse = (res: Response, error: unknown, fallback: string) => {
     .json({ success: false, message });
 };
 
-export const createCustomerRate = async (req: Request, res: Response) => {
+export const createAccount = async (req: Request, res: Response) => {
   try {
-    const data = await CustomerRateService.create(
+    const data = await AccountService.create(
       req.user!.domainId,
       req.user!.adminId,
       req.body,
     );
     return res.status(HttpStatus.CREATED).json({
       success: true,
-      message: Messages.CUSTOMER_RATE.CREATED,
+      message: Messages.ACCOUNT.CREATED,
       data,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.CUSTOMER_RATE.CREATE_FAILED);
+    return errorResponse(res, error, Messages.ACCOUNT.CREATE_FAILED);
   }
 };
 
-export const listCustomerRates = async (req: Request, res: Response) => {
+export const listAccounts = async (req: Request, res: Response) => {
   try {
-    const lang = (req.headers.lang as string) || 'en';
-    const { data, pagination } = await CustomerRateService.findAll(
+    const { data, pagination } = await AccountService.findAll(
       req.user!.domainId,
       req.user!.adminId,
       req.query,
-      lang,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.CUSTOMER_RATE.LIST_RETRIEVED,
+      message: Messages.ACCOUNT.LIST_RETRIEVED,
       pagination: { currentCount: data.length, ...pagination },
       data,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.CUSTOMER_RATE.LIST_FAILED);
+    return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
   }
 };
 
-export const getCustomerRateById = async (req: Request, res: Response) => {
+export const getAccountById = async (req: Request, res: Response) => {
   try {
-    const lang = (req.headers.lang as string) || null;
-    const data = await CustomerRateService.findOne(
+    const data = await AccountService.findOne(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
-      lang,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.CUSTOMER_RATE.RETRIEVED,
+      message: Messages.ACCOUNT.RETRIEVED,
       data,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.CUSTOMER_RATE.LIST_FAILED);
+    return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
   }
 };
 
-export const updateCustomerRate = async (req: Request, res: Response) => {
+export const updateAccount = async (req: Request, res: Response) => {
   try {
-    const data = await CustomerRateService.update(
+    const data = await AccountService.update(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
@@ -76,27 +72,27 @@ export const updateCustomerRate = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.CUSTOMER_RATE.UPDATED,
+      message: Messages.ACCOUNT.UPDATED,
       data,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.CUSTOMER_RATE.UPDATE_FAILED);
+    return errorResponse(res, error, Messages.ACCOUNT.UPDATE_FAILED);
   }
 };
 
-export const deleteCustomerRate = async (req: Request, res: Response) => {
+export const deleteAccount = async (req: Request, res: Response) => {
   try {
-    await CustomerRateService.softDelete(
+    await AccountService.softDelete(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.CUSTOMER_RATE.DELETED,
+      message: Messages.ACCOUNT.DELETED,
       data: null,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.CUSTOMER_RATE.DELETE_FAILED);
+    return errorResponse(res, error, Messages.ACCOUNT.DELETE_FAILED);
   }
 };

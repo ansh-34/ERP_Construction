@@ -209,4 +209,16 @@ export const modules = [
     },
     code: 'WEIGH_BRIDGE',
   },
+  {
+    name: {
+      en: 'Account Category',
+    },
+    code: 'ACCOUNT_CATEGORY',
+  },
+  {
+    name: {
+      en: 'Account',
+    },
+    code: 'ACCOUNT',
+  },
 ];

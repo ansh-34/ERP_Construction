@@ -53,7 +53,7 @@ export const listSaleOrders = async (req: Request, res: Response) => {
 
 export const getSaleOrderById = async (req: Request, res: Response) => {
   try {
-    const lang = (req.headers.lang as string) || 'en';
+    const lang = (req.headers.lang as string) || null;
     const saleOrder = await SaleOrderService.findOne(
       req.user!.domainId,
       req.user!.adminId,

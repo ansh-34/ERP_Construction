@@ -118,7 +118,7 @@ export const CustomerRateService = {
     domainId: string,
     adminId: string,
     id: string,
-    lang: string = 'en',
+    lang: string | null = null,
   ) {
     const record = await customerRateRepository.findByIdAndDomain(
       id,

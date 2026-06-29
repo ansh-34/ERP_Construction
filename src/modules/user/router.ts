@@ -49,6 +49,8 @@ import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
 import saleOrderRouter from './saleOrder/saleOrder.router.js';
 import weighBridgeRouter from './weighBridge/weighBridge.router.js';
+import accountCategoryRouter from './accountCategory/accountCategory.router.js';
+import accountRouter from './account/account.router.js';
 
 const userRouter = Router();
 
@@ -99,6 +101,8 @@ userRouter.use('/customers', customerRouter);
 userRouter.use('/customer-rates', customerRateRouter);
 userRouter.use('/sale-orders', saleOrderRouter);
 userRouter.use('/weigh-bridges', weighBridgeRouter);
+userRouter.use('/account-categories', accountCategoryRouter);
+userRouter.use('/accounts', accountRouter);
 userRouter.use('/grades', allGradesRouter());
 userRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 

@@ -17,7 +17,6 @@ enum PaymentTermsEnum {
   CREDIT
 }
 
-
 enum AttendanceStatus {
   PRESENT
   ABSENT
@@ -136,12 +135,15 @@ model Admin {
   users                      User[]
   roles                      Role[]
   adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
-  vendorProductPricings  VendorProductPricing[]
-  customers              Customer[]
-  customerRates          CustomerRate[]
-  saleOrders             SaleOrder[]
-  saleOrderProducts      SaleOrderProduct[]
-  weighBridges           WeighBridge[]
+  accountCategories          AccountCategory[]
+  accounts                   Account[]
+  costCenters                CostCenter[]
+  vendorProductPricings      VendorProductPricing[]
+  customers                  Customer[]
+  customerRates              CustomerRate[]
+  saleOrders                 SaleOrder[]
+  saleOrderProducts          SaleOrderProduct[]
+  weighBridges               WeighBridge[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -197,60 +199,63 @@ model Domain {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  users                       User[]
-  tokens                      Token[]
-  otps                        Otp[]
-  roles                       Role[]
-  roleModulePermissions       RoleModulePermission[]
-  inventories                 Inventory[]
-  appErrors                   AppError[]
-  vehicles                    Vehicle[]
-  vehicleJourneySchedules     VehicleJourneySchedule[]
-  grns                        Grn[]
-  grnProducts                 GrnProduct[]
-  dispatchVehicles            DispatchVehicle[]
-  uoms                        Uom[]
-  products                    Product[]
-  productUoms                 ProductUom[]
-  productGrades               ProductGrades[]
+  users                         User[]
+  tokens                        Token[]
+  otps                          Otp[]
+  roles                         Role[]
+  roleModulePermissions         RoleModulePermission[]
+  inventories                   Inventory[]
+  appErrors                     AppError[]
+  vehicles                      Vehicle[]
+  vehicleJourneySchedules       VehicleJourneySchedule[]
+  grns                          Grn[]
+  grnProducts                   GrnProduct[]
+  dispatchVehicles              DispatchVehicle[]
+  uoms                          Uom[]
+  products                      Product[]
+  productUoms                   ProductUom[]
+  productGrades                 ProductGrades[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
-  apiKeys                     ApiKey[]
-  locations                   Location[]
-  media                       Media[]
-  projects                    Project[]
-  projectCategories           ProjectCategory[]
-  projectStages               ProjectStage[]
-  projectTasks                ProjectTask[]
-  projectTaskImages           ProjectTaskImage[]
-  projectTaskDelays           ProjectTaskDelay[]
-  projectUserAssignments      ProjectUserAssignment[]
-  projectUserDailyLogs        ProjectUserDailyLog[]
-  machineries                 Machinery[]
-  machineReadings             MachineReading[]
-  maintenanceSchedules        MaintenanceSchedule[]
-  maintenanceLogs             MaintenanceLog[]
-  movementLogs                MovementLog[]
-  fuelLogs                    FuelLog[]
-  inventoryFuelStocks         InventoryFuelStock[]
-  alertRules                  AlertRule[]
-  alerts                      Alert[]
-  notifications               Notification[]
-  rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  purchaseOrders              PurchaseOrder[]
-  vendors                     Vendor[]
-  vendorProductPricings       VendorProductPricing[]
-  purchaseOrderProducts       PurchaseOrderProduct[]
-  invoices                    Invoice[]
-  invoiceItems                InvoiceItem[]
-  invoiceTemplates            InvoiceTemplate[]
-  paymentRequests             PaymentRequest[]
-  customers                   Customer[]
-  customerRates               CustomerRate[]
-  saleOrders                  SaleOrder[]
-  saleOrderProducts           SaleOrderProduct[]
-  weighBridges                WeighBridge[]
-  admin                       Admin                        @relation(fields: [adminId], references: [id])
-  adminId                     String                       @db.Uuid
+  apiKeys                       ApiKey[]
+  locations                     Location[]
+  media                         Media[]
+  projects                      Project[]
+  projectCategories             ProjectCategory[]
+  projectStages                 ProjectStage[]
+  projectTasks                  ProjectTask[]
+  projectTaskImages             ProjectTaskImage[]
+  projectTaskDelays             ProjectTaskDelay[]
+  projectUserAssignments        ProjectUserAssignment[]
+  projectUserDailyLogs          ProjectUserDailyLog[]
+  machineries                   Machinery[]
+  machineReadings               MachineReading[]
+  maintenanceSchedules          MaintenanceSchedule[]
+  maintenanceLogs               MaintenanceLog[]
+  movementLogs                  MovementLog[]
+  fuelLogs                      FuelLog[]
+  inventoryFuelStocks           InventoryFuelStock[]
+  alertRules                    AlertRule[]
+  alerts                        Alert[]
+  notifications                 Notification[]
+  rawMaterialPurchaseRequests   RawMaterialPurchaseRequest[]
+  purchaseOrders                PurchaseOrder[]
+  vendors                       Vendor[]
+  vendorProductPricings         VendorProductPricing[]
+  purchaseOrderProducts         PurchaseOrderProduct[]
+  invoices                      Invoice[]
+  invoiceItems                  InvoiceItem[]
+  invoiceTemplates              InvoiceTemplate[]
+  paymentRequests               PaymentRequest[]
+  customers                     Customer[]
+  customerRates                 CustomerRate[]
+  saleOrders                    SaleOrder[]
+  saleOrderProducts             SaleOrderProduct[]
+  weighBridges                  WeighBridge[]
+  accountCategories             AccountCategory[]
+  accounts                      Account[]
+  costCenters                   CostCenter[]
+  admin                         Admin                          @relation(fields: [adminId], references: [id])
+  adminId                       String                         @db.Uuid
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -350,22 +355,23 @@ model RefreshToken {
 }
 
 model Currency {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  name                  Json
-  code                  String
-  searchText            String                 @default("")
-  symbol                String
-  flag                  String
-  status                StatusEnum             @default(ACTIVE)
-  isDeleted             Boolean                @default(false)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  adminCurrencies       AdminCurrencies[]
-  vendorProductPricings VendorProductPricing[]
-  inventories           Inventory[]
+  id                            String                         @id @default(uuid()) @db.Uuid
+  name                          Json
+  code                          String
+  searchText                    String                         @default("")
+  symbol                        String
+  flag                          String
+  status                        StatusEnum                     @default(ACTIVE)
+  isDeleted                     Boolean                        @default(false)
+  createdAt                     DateTime                       @default(now())
+  updatedAt                     DateTime                       @updatedAt
+  adminCurrencies               AdminCurrencies[]
+  vendorProductPricings         VendorProductPricing[]
+  inventories                   Inventory[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
-  grnProducts           GrnProduct[]
-  customerRates         CustomerRate[]
+  grnProducts                   GrnProduct[]
+  customerRates                 CustomerRate[]
+  accounts                      Account[]
 
   @@map("currency")
 }
@@ -635,22 +641,22 @@ model Uom {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
-  productUoms                 ProductUom[]                 @relation("ProductUom")
-  vehicleLoadCapacity         Vehicle[]                    @relation("VehicleLoadCapacityUom")
-  journeyScheduleLoadedQty    VehicleJourneySchedule[]     @relation("JourneyScheduleLoadedQtyUom")
-  dispatchLoadedQty           DispatchVehicle[]            @relation("DispatchLoadedQtyUom")
-  dispatchVehicleWeight       DispatchVehicle[]            @relation("DispatchVehicleWeightUom")
-  inventories                 Inventory[]                  @relation("InventoryUom")
-  rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  grnProducts                 GrnProduct[]
-  purchaseOrderProducts       PurchaseOrderProduct[]
-  vendorProductPricings       VendorProductPricing[]
-  invoiceItems                InvoiceItem[]
-  fuelLogs                    FuelLog[]
+  productUoms                   ProductUom[]                   @relation("ProductUom")
+  vehicleLoadCapacity           Vehicle[]                      @relation("VehicleLoadCapacityUom")
+  journeyScheduleLoadedQty      VehicleJourneySchedule[]       @relation("JourneyScheduleLoadedQtyUom")
+  dispatchLoadedQty             DispatchVehicle[]              @relation("DispatchLoadedQtyUom")
+  dispatchVehicleWeight         DispatchVehicle[]              @relation("DispatchVehicleWeightUom")
+  inventories                   Inventory[]                    @relation("InventoryUom")
+  rawMaterialPurchaseRequests   RawMaterialPurchaseRequest[]
+  grnProducts                   GrnProduct[]
+  purchaseOrderProducts         PurchaseOrderProduct[]
+  vendorProductPricings         VendorProductPricing[]
+  invoiceItems                  InvoiceItem[]
+  fuelLogs                      FuelLog[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
-  customerRates               CustomerRate[]
-  inventoryFuelStocks         InventoryFuelStock[]
-  saleOrderProducts           SaleOrderProduct[]
+  customerRates                 CustomerRate[]
+  inventoryFuelStocks           InventoryFuelStock[]
+  saleOrderProducts             SaleOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -729,23 +735,23 @@ model DispatchVehicle {
   code              String
   journeyScheduleId String? @db.Uuid
 
-  journeySchedule      VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
-  journeyScheduleCode  String?
-  description          String?
-  date                 DateTime?
-  driverName           String?
-  startLocation        String?
-  endLocation          String?
-  distance             Float                   @default(0)
-  average              Float                   @default(0)
-  expectedFuelValue    Float                   @default(0)
-  actualFuelValue      Float                   @default(0)
-  fuelAlertThreshold   Float                   @default(0)
-  emptyVehicleWeight   Float                   @default(0)
-  loadedVehicleWeight  Float                   @default(0)
-  vehicleWeightUomId   String?                 @db.Uuid
-  loadedQuantity       Float                   @default(0)
-  loadedQuantityUomId  String?                 @db.Uuid
+  journeySchedule     VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
+  journeyScheduleCode String?
+  description         String?
+  date                DateTime?
+  driverName          String?
+  startLocation       String?
+  endLocation         String?
+  distance            Float                   @default(0)
+  average             Float                   @default(0)
+  expectedFuelValue   Float                   @default(0)
+  actualFuelValue     Float                   @default(0)
+  fuelAlertThreshold  Float                   @default(0)
+  emptyVehicleWeight  Float                   @default(0)
+  loadedVehicleWeight Float                   @default(0)
+  vehicleWeightUomId  String?                 @db.Uuid
+  loadedQuantity      Float                   @default(0)
+  loadedQuantityUomId String?                 @db.Uuid
 
   vehicleWeightUom       Uom?      @relation("DispatchVehicleWeightUom", fields: [vehicleWeightUomId], references: [id])
   loadedQuantityUom      Uom?      @relation("DispatchLoadedQtyUom", fields: [loadedQuantityUomId], references: [id])
@@ -774,14 +780,14 @@ model Product {
   searchText  String          @default("")
   domainId    String          @db.Uuid
 
-  domain               Domain                 @relation(fields: [domainId], references: [id])
-  productGrades        ProductGrades[]
+  domain                        Domain                         @relation(fields: [domainId], references: [id])
+  productGrades                 ProductGrades[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
-  inventories          Inventory[]
-  status               StatusEnum             @default(ACTIVE)
-  isDeleted            Boolean                @default(false)
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  inventories                   Inventory[]
+  status                        StatusEnum                     @default(ACTIVE)
+  isDeleted                     Boolean                        @default(false)
+  createdAt                     DateTime                       @default(now())
+  updatedAt                     DateTime                       @updatedAt
 
   productUoms                 ProductUom[]
   rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
@@ -817,26 +823,26 @@ model ProductUom {
 }
 
 model ProductGrades {
-  id                          String                       @id @default(uuid()) @db.Uuid
-  productId                   String                       @db.Uuid
-  gradeDisplayName            Json
-  gradeCode                   String
-  searchText                  String                       @default("")
-  domainId                    String                       @db.Uuid
-  domain                      Domain                       @relation(fields: [domainId], references: [id])
-  product                     Product                      @relation(fields: [productId], references: [id])
+  id                            String                         @id @default(uuid()) @db.Uuid
+  productId                     String                         @db.Uuid
+  gradeDisplayName              Json
+  gradeCode                     String
+  searchText                    String                         @default("")
+  domainId                      String                         @db.Uuid
+  domain                        Domain                         @relation(fields: [domainId], references: [id])
+  product                       Product                        @relation(fields: [productId], references: [id])
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
-  inventories                 Inventory[]
-  rawMaterialPurchaseRequests RawMaterialPurchaseRequest[]
-  vendorProductPricings       VendorProductPricing[]
-  invoiceItems                InvoiceItem[]
-  grnProducts                 GrnProduct[]
-  customerRates               CustomerRate[]
-  saleOrderProducts           SaleOrderProduct[]
-  status                      StatusEnum                   @default(ACTIVE)
-  isDeleted                   Boolean
-  createdAt                   DateTime                     @default(now())
-  updatedAt                   DateTime                     @updatedAt
+  inventories                   Inventory[]
+  rawMaterialPurchaseRequests   RawMaterialPurchaseRequest[]
+  vendorProductPricings         VendorProductPricing[]
+  invoiceItems                  InvoiceItem[]
+  grnProducts                   GrnProduct[]
+  customerRates                 CustomerRate[]
+  saleOrderProducts             SaleOrderProduct[]
+  status                        StatusEnum                     @default(ACTIVE)
+  isDeleted                     Boolean
+  createdAt                     DateTime                       @default(now())
+  updatedAt                     DateTime                       @updatedAt
 
   @@unique([gradeCode, productId, domainId, isDeleted])
   @@index([isDeleted])
@@ -845,30 +851,30 @@ model ProductGrades {
 }
 
 model ProductGradeLastPurchaseRate {
-  id               String        @id @default(uuid()) @db.Uuid
-  productId        String        @db.Uuid
-  product          Product       @relation(fields: [productId], references: [id])
-  productGradeId   String        @db.Uuid
-  productGrade     ProductGrades @relation(fields: [productGradeId], references: [id])
-  uomId            String        @db.Uuid
-  uom              Uom           @relation(fields: [uomId], references: [id])
+  id               String               @id @default(uuid()) @db.Uuid
+  productId        String               @db.Uuid
+  product          Product              @relation(fields: [productId], references: [id])
+  productGradeId   String               @db.Uuid
+  productGrade     ProductGrades        @relation(fields: [productGradeId], references: [id])
+  uomId            String               @db.Uuid
+  uom              Uom                  @relation(fields: [uomId], references: [id])
   lastPrice        Float
   purchaseType     PurchaseRequestType?
-  currencyId       String?       @db.Uuid
-  currency         Currency?     @relation(fields: [currencyId], references: [id])
-  vendorId         String?       @db.Uuid
-  vendor           Vendor?       @relation(fields: [vendorId], references: [id])
+  currencyId       String?              @db.Uuid
+  currency         Currency?            @relation(fields: [currencyId], references: [id])
+  vendorId         String?              @db.Uuid
+  vendor           Vendor?              @relation(fields: [vendorId], references: [id])
   vendorName       String
-  lastInvoiceId    String?       @db.Uuid
-  lastInvoice      Invoice?      @relation(fields: [lastInvoiceId], references: [id])
+  lastInvoiceId    String?              @db.Uuid
+  lastInvoice      Invoice?             @relation(fields: [lastInvoiceId], references: [id])
   lastPurchaseDate DateTime
-  searchText       String        @default("")
-  domainId         String        @db.Uuid
-  domain           Domain        @relation(fields: [domainId], references: [id])
-  status           StatusEnum    @default(ACTIVE)
-  isDeleted        Boolean       @default(false)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  searchText       String               @default("")
+  domainId         String               @db.Uuid
+  domain           Domain               @relation(fields: [domainId], references: [id])
+  status           StatusEnum           @default(ACTIVE)
+  isDeleted        Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
   @@unique([productId, productGradeId, uomId, purchaseType, domainId])
   @@index([isDeleted])
@@ -1126,29 +1132,29 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderProduct {
-  id                      String        @id @default(uuid()) @db.Uuid
-  purchaseOrderId         String        @db.Uuid
-  purchaseOrder           PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
-  orderCode               String
-  productName             Json
-  productGradeName        Json?
-  quantity                Float
-  tax                     Float         @default(0)
-  uomId                   String        @db.Uuid
-  uom                     Uom           @relation(fields: [uomId], references: [id])
-  rate                    Float         @default(0)
-  lastPurchasePrice       Float?
-  lastPurchaseCurrencyId  String?       @db.Uuid
-  lastPurchaseVendorId    String?       @db.Uuid
-  lastPurchaseVendorName  String?
-  projectId               String?       @db.Uuid
-  project                 Project?      @relation(fields: [projectId], references: [id])
-  domainId                String        @db.Uuid
-  domain                  Domain        @relation(fields: [domainId], references: [id])
-  status                  StatusEnum    @default(ACTIVE)
-  isDeleted               Boolean       @default(false)
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
+  id                     String        @id @default(uuid()) @db.Uuid
+  purchaseOrderId        String        @db.Uuid
+  purchaseOrder          PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  orderCode              String
+  productName            Json
+  productGradeName       Json?
+  quantity               Float
+  tax                    Float         @default(0)
+  uomId                  String        @db.Uuid
+  uom                    Uom           @relation(fields: [uomId], references: [id])
+  rate                   Float         @default(0)
+  lastPurchasePrice      Float?
+  lastPurchaseCurrencyId String?       @db.Uuid
+  lastPurchaseVendorId   String?       @db.Uuid
+  lastPurchaseVendorName String?
+  projectId              String?       @db.Uuid
+  project                Project?      @relation(fields: [projectId], references: [id])
+  domainId               String        @db.Uuid
+  domain                 Domain        @relation(fields: [domainId], references: [id])
+  status                 StatusEnum    @default(ACTIVE)
+  isDeleted              Boolean       @default(false)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
   @@index([purchaseOrderId])
   @@index([createdAt, isDeleted, domainId])
@@ -1182,17 +1188,17 @@ model Invoice {
   totalItems         Int                   @default(0)
   totalItemsReceived Float                 @default(0)
 
-  invoiceType        InvoiceType           @default(PROFORMA)
-  lifecycle          RecordLifecycle       @default(ACTIVE)
+  invoiceType InvoiceType     @default(PROFORMA)
+  lifecycle   RecordLifecycle @default(ACTIVE)
 
   pdfUrl         String?
   pdfStatus      PdfStatus @default(PENDING)
   pdfGeneratedAt DateTime?
   pdfVersion     Int       @default(0)
 
-  items       InvoiceItem[]
-  grns        Grn[]
-  grnProducts GrnProduct[]
+  items                         InvoiceItem[]
+  grns                          Grn[]
+  grnProducts                   GrnProduct[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@unique([invoiceCode, domainId, isDeleted])
@@ -1250,7 +1256,7 @@ model Grn {
   id               String                @id @default(uuid()) @db.Uuid
   code             String
   productOrderCode String?
-  referenceType    GrnReferenceType @default(NA)
+  referenceType    GrnReferenceType      @default(NA)
   date             DateTime
   vendorId         String?               @db.Uuid
   vendor           VendorProductPricing? @relation(fields: [vendorId], references: [id])
@@ -1306,10 +1312,10 @@ model GrnProduct {
   domain         Domain         @relation(fields: [domainId], references: [id])
   invoiceId      String?        @db.Uuid
   invoice        Invoice?       @relation(fields: [invoiceId], references: [id])
-  status    StatusEnum @default(ACTIVE)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  status         StatusEnum     @default(ACTIVE)
+  isDeleted      Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([grnId])
   @@index([createdAt, isDeleted, domainId])
@@ -1354,23 +1360,23 @@ model VendorProductPricing {
 }
 
 model Vendor {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  code                  String
-  name                  String
-  email                 String
-  contactPerson         String?
-  phoneCode             String?
-  phone                 String?
-  industry              String?
-  address               String?
-  searchText            String                 @default("")
-  domainId              String                 @db.Uuid
-  domain                Domain                 @relation(fields: [domainId], references: [id])
-  status                StatusEnum             @default(ACTIVE)
-  isDeleted             Boolean                @default(false)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  vendorProductPricings VendorProductPricing[]
+  id                            String                         @id @default(uuid()) @db.Uuid
+  code                          String
+  name                          String
+  email                         String
+  contactPerson                 String?
+  phoneCode                     String?
+  phone                         String?
+  industry                      String?
+  address                       String?
+  searchText                    String                         @default("")
+  domainId                      String                         @db.Uuid
+  domain                        Domain                         @relation(fields: [domainId], references: [id])
+  status                        StatusEnum                     @default(ACTIVE)
+  isDeleted                     Boolean                        @default(false)
+  createdAt                     DateTime                       @default(now())
+  updatedAt                     DateTime                       @updatedAt
+  vendorProductPricings         VendorProductPricing[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
 
   @@unique([code, domainId, isDeleted])
@@ -1489,6 +1495,8 @@ model Project {
   paymentRequests             PaymentRequest[]
   fuelLogs                    FuelLog[]
   weighBridges                WeighBridge[]
+  accounts                    Account[]
+  costCenters                 CostCenter[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -2107,7 +2115,7 @@ model SaleOrder {
   createdAt                  DateTime             @default(now())
   updatedAt                  DateTime             @updatedAt
 
-  saleOrderProducts          SaleOrderProduct[]
+  saleOrderProducts SaleOrderProduct[]
 
   @@index([domainId, isDeleted])
   @@index([adminId])
@@ -2149,35 +2157,157 @@ model SaleOrderProduct {
 }
 
 model WeighBridge {
-  id               String     @id @default(uuid()) @db.Uuid
-  ticketNumber     String 
-  date             DateTime   @default(now())
-  driverName       String
-  vehicleNo        String
-  supplier         String
-  material         String
-  gateNoteNo       String
-  tareWeight       String
-  grossWeight      String
-  weighBridgeStatus String    @default("PENDING")
-  operatorId       String     @db.Uuid
-  operator         User       @relation(fields: [operatorId], references: [id], onDelete: Restrict)
-  operatorName     String
-  remarks          String?
-  projectId        String?    @db.Uuid
-  project          Project?   @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  domainId         String     @db.Uuid
-  domain           Domain     @relation(fields: [domainId], references: [id])
-  adminId          String     @db.Uuid
-  admin            Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status           StatusEnum @default(ACTIVE)
-  isDeleted        Boolean    @default(false)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id                String     @id @default(uuid()) @db.Uuid
+  ticketNumber      String
+  date              DateTime   @default(now())
+  driverName        String
+  vehicleNo         String
+  supplier          String
+  material          String
+  gateNoteNo        String
+  tareWeight        String
+  grossWeight       String
+  weighBridgeStatus String     @default("PENDING")
+  operatorId        String     @db.Uuid
+  operator          User       @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  operatorName      String
+  remarks           String?
+  projectId         String?    @db.Uuid
+  project           Project?   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id])
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   @@index([domainId, isDeleted])
   @@index([adminId])
   @@index([operatorId])
   @@index([projectId])
   @@index([createdAt, isDeleted, domainId])
+}
+
+enum AccountCategoryTypeEnum {
+  ASSET
+  LIABILITY
+  REVENUE
+  EXPENSE
+}
+
+enum NormalBalanceEnum {
+  DEBIT
+  CREDIT
+}
+
+model AccountCategory {
+  id               String                  @id @default(uuid()) @db.Uuid
+  name             Json                    @db.JsonB
+  code             String
+  searchText       String                  @default("")
+  categoryType     AccountCategoryTypeEnum
+  normalBalance    NormalBalanceEnum
+  parentId         String?                 @db.Uuid
+  parent           AccountCategory?        @relation("AccountCategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children         AccountCategory[]       @relation("AccountCategoryHierarchy")
+  path             String                  @default("")
+  level            Int                     @default(0)
+  childrenCount    Int                     @default(0)
+  sortOrder        Int                     @default(0)
+  isPostingAllowed Boolean                 @default(false)
+  isSystem         Boolean                 @default(false)
+  domainId         String                  @db.Uuid
+  domain           Domain                  @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId          String                  @db.Uuid
+  admin            Admin                   @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  accounts         Account[]
+  status           StatusEnum              @default(ACTIVE)
+  isDeleted        Boolean                 @default(false)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([categoryType])
+}
+
+model Account {
+  id                String          @id @default(uuid()) @db.Uuid
+  name              Json            @db.JsonB
+  code              String
+  searchText        String          @default("")
+  description       String?
+  parentId          String?         @db.Uuid
+  parent            Account?        @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children          Account[]       @relation("AccountHierarchy")
+  path              String          @default("")
+  level             Int             @default(0)
+  childrenCount     Int             @default(0)
+  accountCategoryId String          @db.Uuid
+  accountCategory   AccountCategory @relation(fields: [accountCategoryId], references: [id], onDelete: Restrict)
+  currencyId        String?         @db.Uuid
+  currency          Currency?       @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  isCashOrBank      Boolean         @default(false)
+  isPostingAllowed  Boolean         @default(true)
+  isSystem          Boolean         @default(false)
+  isActive          Boolean         @default(true)
+  sortOrder         Int             @default(0)
+  costCenterId      String?         @db.Uuid
+  projectId         String?         @db.Uuid
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId          String          @db.Uuid
+  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String          @db.Uuid
+  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum      @default(ACTIVE)
+  isDeleted         Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([accountCategoryId])
+  @@index([projectId])
+}
+
+model CostCenter {
+  id                  String       @id @default(uuid()) @db.Uuid
+  name                Json         @db.JsonB
+  code                String
+  description         String?
+  parentId            String?      @db.Uuid
+  parent              CostCenter?  @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children            CostCenter[] @relation("CostCenterHierarchy")
+  path                String       @default("")
+  level               Int          @default(0)
+  childrenCount       Int          @default(0)
+  industryIds         String[]     @default([])
+  industryCategoryIds String[]     @default([])
+  isSystem            Boolean      @default(false)
+  costCenterId        String?      @db.Uuid
+  costCenter          CostCenter?  @relation("CostCenterRef", fields: [costCenterId], references: [id], onDelete: Restrict)
+  linkedCostCenters   CostCenter[] @relation("CostCenterRef")
+  projectId           String?      @db.Uuid
+  project             Project?     @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId            String       @db.Uuid
+  domain              Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId             String       @db.Uuid
+  admin               Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status              StatusEnum   @default(ACTIVE)
+  isDeleted           Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([costCenterId])
+  @@index([projectId])
 }

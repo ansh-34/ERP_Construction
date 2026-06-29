@@ -172,7 +172,7 @@ export const SaleOrderService = {
     domainId: string,
     adminId: string,
     id: string,
-    lang: string = 'en',
+    lang: string | null = null,
   ) {
     const saleOrder = await saleOrderRepository.findByIdAndDomain(
       id,
