@@ -211,12 +211,6 @@ export const modules = [
   },
   {
     name: {
-      en: 'Fiscal Year',
-    },
-    code: 'FISCAL_YEAR',
-  },
-  {
-    name: {
       en: 'Accounting Period',
     },
     code: 'ACCOUNTING_PERIOD',
