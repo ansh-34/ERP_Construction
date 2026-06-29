@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
-import { AccountService } from './account.service.js';
+import { CostCenterService } from './costCenter.service.js';
 import { translateResponse } from '../../../utils/translation.js';
 
 const errorResponse = (res: Response, error: unknown, fallback: string) => {
@@ -11,65 +11,65 @@ const errorResponse = (res: Response, error: unknown, fallback: string) => {
     .json({ success: false, message });
 };
 
-export const createAccount = async (req: Request, res: Response) => {
+export const createCostCenter = async (req: Request, res: Response) => {
   try {
     const language = req.headers.language as string | undefined;
-    const data = await AccountService.create(
+    const data = await CostCenterService.create(
       req.user!.domainId,
       req.user!.adminId,
       req.body,
     );
     return res.status(HttpStatus.CREATED).json({
       success: true,
-      message: Messages.ACCOUNT.CREATED,
+      message: Messages.COST_CENTER.CREATED,
       data: translateResponse(data, language),
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.ACCOUNT.CREATE_FAILED);
+    return errorResponse(res, error, Messages.COST_CENTER.CREATE_FAILED);
   }
 };
 
-export const listAccounts = async (req: Request, res: Response) => {
+export const listCostCenters = async (req: Request, res: Response) => {
   try {
     const language = req.headers.language as string | undefined;
-    const { data, pagination } = await AccountService.findAll(
+    const { data, pagination } = await CostCenterService.findAll(
       req.user!.domainId,
       req.user!.adminId,
       req.query,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.ACCOUNT.LIST_RETRIEVED,
+      message: Messages.COST_CENTER.LIST_RETRIEVED,
       pagination: { currentCount: data.length, ...pagination },
       data: translateResponse(data, language || 'en'),
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
+    return errorResponse(res, error, Messages.COST_CENTER.LIST_FAILED);
   }
 };
 
-export const getAccountById = async (req: Request, res: Response) => {
+export const getCostCenterById = async (req: Request, res: Response) => {
   try {
     const language = req.headers.language as string | undefined;
-    const data = await AccountService.findOne(
+    const data = await CostCenterService.findOne(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.ACCOUNT.RETRIEVED,
+      message: Messages.COST_CENTER.RETRIEVED,
       data: translateResponse(data, language),
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
+    return errorResponse(res, error, Messages.COST_CENTER.LIST_FAILED);
   }
 };
 
-export const updateAccount = async (req: Request, res: Response) => {
+export const updateCostCenter = async (req: Request, res: Response) => {
   try {
     const language = req.headers.language as string | undefined;
-    const data = await AccountService.update(
+    const data = await CostCenterService.update(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
@@ -77,27 +77,27 @@ export const updateAccount = async (req: Request, res: Response) => {
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.ACCOUNT.UPDATED,
+      message: Messages.COST_CENTER.UPDATED,
       data: translateResponse(data, language),
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.ACCOUNT.UPDATE_FAILED);
+    return errorResponse(res, error, Messages.COST_CENTER.UPDATE_FAILED);
   }
 };
 
-export const deleteAccount = async (req: Request, res: Response) => {
+export const deleteCostCenter = async (req: Request, res: Response) => {
   try {
-    await AccountService.softDelete(
+    await CostCenterService.softDelete(
       req.user!.domainId,
       req.user!.adminId,
       req.params.id,
     );
     return res.status(HttpStatus.OK).json({
       success: true,
-      message: Messages.ACCOUNT.DELETED,
+      message: Messages.COST_CENTER.DELETED,
       data: null,
     });
   } catch (error) {
-    return errorResponse(res, error, Messages.ACCOUNT.DELETE_FAILED);
+    return errorResponse(res, error, Messages.COST_CENTER.DELETE_FAILED);
   }
 };

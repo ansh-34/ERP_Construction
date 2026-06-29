@@ -71,3 +71,6 @@ export * from './saleOrder.repository.js';
 export * from './weighBridge.repository.js';
 export * from './accountCategory.repository.js';
 export * from './account.repository.js';
+export * from './generalLedgerEntry.repository.js';
+export * from './accountBalance.repository.js';
+export * from './costCenter.repository.js';

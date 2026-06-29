@@ -10,7 +10,6 @@ type LocalizedName = Record<string, string>;
 
 type AccountDto = {
   name: LocalizedName;
-  code: string;
   description?: string;
   accountCategoryId: string;
   parentId?: string;
@@ -28,8 +27,10 @@ type AccountDto = {
 const buildSearchText = (name: LocalizedName, code: string) =>
   [...Object.values(name), code].filter(Boolean).join(' ').toLowerCase();
 
+const codeFromName = (name: LocalizedName) =>
+  (name.en ?? '').toString().trim().toUpperCase().replace(/\s+/g, '_');
+
 const mutableFields = (dto: Partial<AccountDto>) => ({
-  ...(dto.code !== undefined && { code: dto.code }),
   ...(dto.description !== undefined && { description: dto.description }),
   ...(dto.accountCategoryId !== undefined && {
     accountCategoryId: dto.accountCategoryId,
@@ -65,12 +66,12 @@ const assertLeafCategory = async (
 
 export const AccountService = {
   async create(domainId: string, adminId: string, dto: AccountDto) {
-    const duplicate = await accountRepository.findByCode(dto.code, domainId);
+    const code = codeFromName(dto.name);
+    const duplicate = await accountRepository.findByCode(code, domainId);
     if (duplicate) throw new Error(Messages.ACCOUNT.DUPLICATE_CODE);
 
     await assertLeafCategory(dto.accountCategoryId, domainId, adminId);
 
-    let path = '';
     let level = 0;
     let parent = null;
     if (dto.parentId) {
@@ -84,19 +85,23 @@ export const AccountService = {
     }
 
     const id = randomUUID();
-    path = parent ? `${parent.path}/${id}` : id;
+    const siblingIndex = await accountRepository.countSiblings(
+      domainId,
+      dto.parentId ?? null,
+    );
+    const path = parent ? `${parent.path}/${siblingIndex}` : `${siblingIndex}`;
 
     const created = await accountRepository.create({
       id,
       ...mutableFields(dto),
       name: dto.name,
-      code: dto.code,
+      code,
       accountCategoryId: dto.accountCategoryId,
       parentId: dto.parentId ?? null,
       path,
       level,
       status: dto.status ?? 'ACTIVE',
-      searchText: buildSearchText(dto.name, dto.code),
+      searchText: buildSearchText(dto.name, code),
       domainId,
       adminId,
       isDeleted: false,
@@ -157,8 +162,11 @@ export const AccountService = {
   ) {
     const existing = await AccountService.findOne(domainId, adminId, id);
 
-    if (dto.code !== undefined && dto.code !== existing.code) {
-      const duplicate = await accountRepository.findByCode(dto.code, domainId);
+    const name = dto.name ?? (existing.name as LocalizedName);
+    const code = dto.name ? codeFromName(dto.name) : existing.code;
+
+    if (dto.name && code !== existing.code) {
+      const duplicate = await accountRepository.findByCode(code, domainId);
       if (duplicate && duplicate.id !== id) {
         throw new Error(Messages.ACCOUNT.DUPLICATE_CODE);
       }
@@ -171,12 +179,9 @@ export const AccountService = {
       await assertLeafCategory(dto.accountCategoryId, domainId, adminId);
     }
 
-    const name = dto.name ?? (existing.name as LocalizedName);
-    const code = dto.code ?? existing.code;
-
     return accountRepository.update(id, {
       ...mutableFields(dto),
-      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.name !== undefined && { name: dto.name, code }),
       ...(dto.status !== undefined && { status: dto.status }),
       searchText: buildSearchText(name, code),
     });
@@ -186,6 +191,10 @@ export const AccountService = {
     const existing = await AccountService.findOne(domainId, adminId, id);
     if (existing.childrenCount > 0) {
       throw new Error(Messages.ACCOUNT.HAS_CHILDREN);
+    }
+    const ledgerReferences = await accountRepository.countLedgerReferences(id);
+    if (ledgerReferences > 0) {
+      throw new Error(Messages.ACCOUNT.HAS_LEDGER_ENTRIES);
     }
     const deleted = await accountRepository.softDelete(id);
     if (existing.parentId) {

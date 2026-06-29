@@ -23,6 +23,13 @@ export const IndustryAccountCategoryRepository = {
     });
   },
 
+  findManyByIds(ids: string[]) {
+    return prisma.industryAccountCategory.findMany({
+      where: { id: { in: ids }, isDeleted: false },
+      orderBy: [{ level: 'asc' }, { sortOrder: 'asc' }],
+    });
+  },
+
   countAccounts(id: string) {
     return prisma.industryAccount.count({
       where: {

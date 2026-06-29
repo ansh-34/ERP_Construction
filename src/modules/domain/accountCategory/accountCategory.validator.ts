@@ -14,12 +14,17 @@ const localizedName = z
     },
   );
 
-const categoryTypeSchema = z.enum(['ASSET', 'LIABILITY', 'REVENUE', 'EXPENSE']);
+const categoryTypeSchema = z.enum([
+  'ASSET',
+  'LIABILITY',
+  'EQUITY',
+  'REVENUE',
+  'EXPENSE',
+]);
 const normalBalanceSchema = z.enum(['DEBIT', 'CREDIT']);
 
 export const createAccountCategoryBodySchema = z.object({
   name: localizedName,
-  code: z.string().trim().min(1, 'Account category code is required'),
   categoryType: categoryTypeSchema,
   normalBalance: normalBalanceSchema,
   parentId: z.string().uuid('Invalid parent ID').optional(),
@@ -31,7 +36,6 @@ export const createAccountCategoryBodySchema = z.object({
 
 export const updateAccountCategoryBodySchema = z.object({
   name: localizedName.optional(),
-  code: z.string().trim().min(1).optional(),
   categoryType: categoryTypeSchema.optional(),
   normalBalance: normalBalanceSchema.optional(),
   sortOrder: z.coerce.number().int().min(0).optional(),

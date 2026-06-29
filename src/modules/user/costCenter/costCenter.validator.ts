@@ -15,48 +15,36 @@ const localizedName = z
   );
 
 const optionalText = z.string().trim().min(1).optional();
+const uuidArray = z.array(z.string().uuid()).optional();
 
-export const createAccountBodySchema = z.object({
+export const createCostCenterBodySchema = z.object({
   name: localizedName,
   description: optionalText,
-  accountCategoryId: z.string().uuid('Invalid account category ID'),
   parentId: z.string().uuid('Invalid parent ID').optional(),
-  currencyId: z.string().uuid('Invalid currency ID').optional(),
   costCenterId: z.string().uuid('Invalid cost center ID').optional(),
   projectId: z.string().uuid('Invalid project ID').optional(),
-  isCashOrBank: z.boolean().optional(),
-  isPostingAllowed: z.boolean().optional(),
+  industryIds: uuidArray,
+  industryCategoryIds: uuidArray,
   isSystem: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  sortOrder: z.coerce.number().int().min(0).optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
 });
 
-export const updateAccountBodySchema = z.object({
+export const updateCostCenterBodySchema = z.object({
   name: localizedName.optional(),
   description: optionalText,
-  accountCategoryId: z.string().uuid('Invalid account category ID').optional(),
-  currencyId: z.string().uuid('Invalid currency ID').optional(),
   costCenterId: z.string().uuid('Invalid cost center ID').optional(),
   projectId: z.string().uuid('Invalid project ID').optional(),
-  isCashOrBank: z.boolean().optional(),
-  isPostingAllowed: z.boolean().optional(),
+  industryIds: uuidArray,
+  industryCategoryIds: uuidArray,
   isSystem: z.boolean().optional(),
-  isActive: z.boolean().optional(),
-  sortOrder: z.coerce.number().int().min(0).optional(),
   status: statusFilterSchema.shape.status.optional(),
 });
 
-export const listAccountsQuerySchema = paginationQuerySchema
+export const listCostCentersQuerySchema = paginationQuerySchema
   .merge(statusFilterSchema)
   .extend({
     searchKey: z.string().optional(),
-    accountCategoryId: z
-      .string()
-      .uuid('Invalid account category ID')
-      .optional(),
     parentId: z.string().uuid('Invalid parent ID').optional(),
-    isCashOrBank: z.coerce.boolean().optional(),
   });
 
-export const accountIdParamSchema = idParamSchema;
+export const costCenterIdParamSchema = idParamSchema;

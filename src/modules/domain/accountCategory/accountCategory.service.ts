@@ -3,14 +3,13 @@ import { Messages } from '../../../constants/index.js';
 import { accountCategoryRepository } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 
-type CategoryType = 'ASSET' | 'LIABILITY' | 'REVENUE' | 'EXPENSE';
+type CategoryType = 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE';
 type NormalBalance = 'DEBIT' | 'CREDIT';
 
 type LocalizedName = Record<string, string>;
 
 type AccountCategoryDto = {
   name: LocalizedName;
-  code: string;
   categoryType: CategoryType;
   normalBalance: NormalBalance;
   parentId?: string;
@@ -23,8 +22,10 @@ type AccountCategoryDto = {
 const buildSearchText = (name: LocalizedName, code: string) =>
   [...Object.values(name), code].filter(Boolean).join(' ').toLowerCase();
 
+const codeFromName = (name: LocalizedName) =>
+  (name.en ?? '').toString().trim().toUpperCase().replace(/\s+/g, '_');
+
 const mutableFields = (dto: Partial<AccountCategoryDto>) => ({
-  ...(dto.code !== undefined && { code: dto.code }),
   ...(dto.categoryType !== undefined && { categoryType: dto.categoryType }),
   ...(dto.normalBalance !== undefined && { normalBalance: dto.normalBalance }),
   ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
@@ -36,13 +37,13 @@ const mutableFields = (dto: Partial<AccountCategoryDto>) => ({
 
 export const AccountCategoryService = {
   async create(domainId: string, adminId: string, dto: AccountCategoryDto) {
+    const code = codeFromName(dto.name);
     const duplicate = await accountCategoryRepository.findByCode(
-      dto.code,
+      code,
       domainId,
     );
     if (duplicate) throw new Error(Messages.ACCOUNT_CATEGORY.DUPLICATE_CODE);
 
-    let path = '';
     let level = 0;
     let parent = null;
     if (dto.parentId) {
@@ -52,24 +53,37 @@ export const AccountCategoryService = {
         adminId,
       );
       if (!parent) throw new Error(Messages.ACCOUNT_CATEGORY.PARENT_NOT_FOUND);
+      if (parent.categoryType !== dto.categoryType) {
+        throw new Error(Messages.ACCOUNT_CATEGORY.CATEGORY_TYPE_MISMATCH);
+      }
+      const parentAccountCount = await accountCategoryRepository.countAccounts(
+        parent.id,
+      );
+      if (parentAccountCount > 0) {
+        throw new Error(Messages.ACCOUNT_CATEGORY.PARENT_HAS_ACCOUNTS);
+      }
       level = parent.level + 1;
     }
 
     const id = randomUUID();
-    path = parent ? `${parent.path}/${id}` : id;
+    const siblingIndex = await accountCategoryRepository.countSiblings(
+      domainId,
+      dto.parentId ?? null,
+    );
+    const path = parent ? `${parent.path}/${siblingIndex}` : `${siblingIndex}`;
 
     const created = await accountCategoryRepository.create({
       id,
       ...mutableFields(dto),
       name: dto.name,
-      code: dto.code,
+      code,
       categoryType: dto.categoryType,
       normalBalance: dto.normalBalance,
       parentId: dto.parentId ?? null,
       path,
       level,
       status: dto.status ?? 'ACTIVE',
-      searchText: buildSearchText(dto.name, dto.code),
+      searchText: buildSearchText(dto.name, code),
       domainId,
       adminId,
       isDeleted: false,
@@ -132,9 +146,12 @@ export const AccountCategoryService = {
       id,
     );
 
-    if (dto.code !== undefined && dto.code !== existing.code) {
+    const name = dto.name ?? (existing.name as LocalizedName);
+    const code = dto.name ? codeFromName(dto.name) : existing.code;
+
+    if (dto.name && code !== existing.code) {
       const duplicate = await accountCategoryRepository.findByCode(
-        dto.code,
+        code,
         domainId,
       );
       if (duplicate && duplicate.id !== id) {
@@ -142,12 +159,9 @@ export const AccountCategoryService = {
       }
     }
 
-    const name = dto.name ?? (existing.name as LocalizedName);
-    const code = dto.code ?? existing.code;
-
     return accountCategoryRepository.update(id, {
       ...mutableFields(dto),
-      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.name !== undefined && { name: dto.name, code }),
       ...(dto.status !== undefined && { status: dto.status }),
       searchText: buildSearchText(name, code),
     });

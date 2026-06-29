@@ -251,4 +251,22 @@ export const modules = [
     },
     code: 'ACCOUNT',
   },
+  {
+    name: {
+      en: 'Cost Center',
+    },
+    code: 'COST_CENTER',
+  },
+  {
+    name: {
+      en: 'General Ledger',
+    },
+    code: 'GENERAL_LEDGER',
+  },
+  {
+    name: {
+      en: 'Account Balance',
+    },
+    code: 'ACCOUNT_BALANCE',
+  },
 ];
