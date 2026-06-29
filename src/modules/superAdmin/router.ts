@@ -12,6 +12,8 @@ import moduleDependencyPermissionRouter from './moduleDependencyPermission/modul
 import adminRouter from './admin/admin.router.js';
 import logsRouter from './logs/logs.router.js';
 import systemUserTypeRouter from './systemUserType/systemUserType.routes.js';
+import industryAccountCategoryRouter from './industryAccountCategory/industryAccountCategory.router.js';
+import industryAccountRouter from './industryAccount/industryAccount.router.js';
 
 const superAdminRouter = Router();
 
@@ -30,5 +32,10 @@ superAdminRouter.use('/currency', currencyRouter);
 superAdminRouter.use('/admin', adminRouter);
 superAdminRouter.use('/log', logsRouter);
 superAdminRouter.use('/system-user-types', systemUserTypeRouter);
+superAdminRouter.use(
+  '/industry-account-categories',
+  industryAccountCategoryRouter,
+);
+superAdminRouter.use('/industry-accounts', industryAccountRouter);
 
 export default superAdminRouter;

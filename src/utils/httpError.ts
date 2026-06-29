@@ -65,6 +65,9 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('Only pending') ||
     message.includes('already approved') ||
     message.includes('already created') ||
+    message.includes('already closed') ||
+    message.includes('overlap') ||
+    message.includes('must be inside') ||
     message.includes('not generated yet') ||
     message === 'request already actioned'
   ) {

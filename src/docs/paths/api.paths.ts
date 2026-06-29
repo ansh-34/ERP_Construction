@@ -41,6 +41,9 @@ import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
 import { LastPurchaseRatePaths } from './lastPurchaseRate.paths.js';
 import { UserTypePaths } from './userType.paths.js';
 import { CustomerPaymentPaths } from './customerPayment.paths.js';
+import { FiscalYearPaths } from './fiscalYear.paths.js';
+import { AccountingPeriodPaths } from './accountingPeriod.paths.js';
+import { IndustryAccountPaths } from './industryAccount.paths.js';
 import { CustomerPaths } from './customer.paths.js';
 import { CustomerRatePaths } from './customerRate.paths.js';
 import { SaleOrderPaths } from './saleOrder.paths.js';
@@ -90,6 +93,9 @@ export const ApiPaths = {
   ...NotificationPaths,
   ...UserTypePaths,
   ...CustomerPaymentPaths,
+  ...FiscalYearPaths,
+  ...AccountingPeriodPaths,
+  ...IndustryAccountPaths,
   ...CustomerPaths,
   ...CustomerRatePaths,
   ...SaleOrderPaths,

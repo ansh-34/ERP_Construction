@@ -205,6 +205,36 @@ export const modules = [
   },
   {
     name: {
+      en: 'Fiscal Year',
+    },
+    code: 'FISCAL_YEAR',
+  },
+  {
+    name: {
+      en: 'Fiscal Year',
+    },
+    code: 'FISCAL_YEAR',
+  },
+  {
+    name: {
+      en: 'Accounting Period',
+    },
+    code: 'ACCOUNTING_PERIOD',
+  },
+  {
+    name: {
+      en: 'Industry Account Category',
+    },
+    code: 'INDUSTRY_ACCOUNT_CATEGORY',
+  },
+  {
+    name: {
+      en: 'Industry Account',
+    },
+    code: 'INDUSTRY_ACCOUNT',
+  },
+  {
+    name: {
       en: 'Weigh Bridge',
     },
     code: 'WEIGH_BRIDGE',

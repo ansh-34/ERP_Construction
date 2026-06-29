@@ -35,4 +35,10 @@ export const permissions = [
     },
     code: 'REJECT',
   },
+  {
+    name: {
+      en: 'Close',
+    },
+    code: 'CLOSE',
+  },
 ];

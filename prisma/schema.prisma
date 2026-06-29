@@ -65,6 +65,19 @@ enum IndustryEnum {
   PROPERTY
 }
 
+enum AccountCategoryType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum NormalBalance {
+  DEBIT
+  CREDIT
+}
+
 enum UserTypeEnum {
   DOMAIN
   USER
@@ -152,6 +165,10 @@ model Admin {
   saleOrderProducts          SaleOrderProduct[]
   weighBridges               WeighBridge[]
   customerPayments           CustomerPayment[]
+  fiscalYearsCreated         FiscalYear[]                  @relation("FiscalYearCreatedBy")
+  fiscalYearsClosed          FiscalYear[]                  @relation("FiscalYearClosedBy")
+  accountingPeriodsCreated   AccountingPeriod[]            @relation("AccountingPeriodCreatedBy")
+  accountingPeriodsClosed    AccountingPeriod[]            @relation("AccountingPeriodClosedBy")
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -265,6 +282,8 @@ model Domain {
   machineryInventories          MachineryInventory[]
   machineryInventoryLogs        MachineryInventoryLog[]
   customerPayments              CustomerPayment[]
+  fiscalYears                   FiscalYear[]
+  accountingPeriods             AccountingPeriod[]
   admin                         Admin                          @relation(fields: [adminId], references: [id])
   adminId                       String                         @db.Uuid
 
@@ -285,6 +304,8 @@ model User {
   roleId       String?      @db.Uuid
 
   role    Role?   @relation(fields: [roleId], references: [id])
+  fiscalYearsClosed       FiscalYear[]       @relation("FiscalYearClosedByUser")
+  accountingPeriodsClosed AccountingPeriod[] @relation("AccountingPeriodClosedByUser")
   mediaId String? @db.Uuid
 
   isEmailVerified Boolean @default(false)
@@ -382,6 +403,7 @@ model Currency {
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
   grnProducts                   GrnProduct[]
   customerRates                 CustomerRate[]
+  industryAccounts              IndustryAccount[]
   accounts                      Account[]
 
   @@map("currency")
@@ -475,6 +497,71 @@ model AdminIndustryRoleTemplate {
   @@index([createdAt, isDeleted])
   @@index([createdAt, isDeleted, status])
   @@index([adminId, industry, isDeleted])
+}
+
+model IndustryAccountCategory {
+  id               String              @id @default(uuid()) @db.Uuid
+  name             Json                @db.JsonB
+  code             String
+  searchText       String              @default("")
+  categoryType     AccountCategoryType
+  normalBalance    NormalBalance
+  parentId         String?             @db.Uuid
+  path             String
+  level            Int                 @default(0)
+  childrenCount    Int                 @default(0)
+  industryType     IndustryEnum
+  sortOrder        Int                 @default(0)
+  isPostingAllowed Boolean             @default(false)
+  isSystem         Boolean             @default(true)
+  status           StatusEnum          @default(ACTIVE)
+  isDeleted        Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  parent   IndustryAccountCategory?  @relation("IndustryAccountCategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children IndustryAccountCategory[] @relation("IndustryAccountCategoryHierarchy")
+  accounts IndustryAccount[]
+
+  @@unique([industryType, code, isDeleted])
+  @@index([industryType, status, isDeleted])
+  @@index([parentId, isDeleted])
+  @@index([path])
+}
+
+model IndustryAccount {
+  id                        String   @id @default(uuid()) @db.Uuid
+  name                      Json     @db.JsonB
+  code                      String
+  searchText                String   @default("")
+  description               String?
+  parentId                  String?  @db.Uuid
+  path                      String
+  level                     Int      @default(0)
+  childrenCount             Int      @default(0)
+  industryAccountCategoryId String   @db.Uuid
+  currencyId                String?  @db.Uuid
+  isCashOrBank              Boolean  @default(false)
+  isPostingAllowed          Boolean  @default(true)
+  isSystem                  Boolean  @default(true)
+  sortOrder                 Int      @default(0)
+  industryType              IndustryEnum
+  status                    StatusEnum @default(ACTIVE)
+  isDeleted                 Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  category IndustryAccountCategory @relation(fields: [industryAccountCategoryId], references: [id], onDelete: Restrict)
+  currency Currency?       @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  parent   IndustryAccount?  @relation("IndustryAccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children IndustryAccount[] @relation("IndustryAccountHierarchy")
+
+  @@unique([industryType, code, isDeleted])
+  @@index([industryType, status, isDeleted])
+  @@index([industryAccountCategoryId, isDeleted])
+  @@index([parentId, isDeleted])
+  @@index([currencyId])
+  @@index([path])
 }
 
 model Module {
@@ -2192,6 +2279,63 @@ model CustomerPayment {
   @@index([paidDate])
   @@index([adminId])
   @@index([createdBy])
+}
+
+model FiscalYear {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  isClosed  Boolean  @default(false)
+  closedAt  DateTime?
+  closedBy  String?  @db.Uuid
+  closedByUserId String? @db.Uuid
+  adminId   String   @db.Uuid
+  domainId  String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  domain Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  admin  Admin  @relation("FiscalYearCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
+  closer Admin? @relation("FiscalYearClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
+  closingUser User? @relation("FiscalYearClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  accountingPeriods AccountingPeriod[]
+
+  @@unique([name, domainId])
+  @@index([domainId, isClosed])
+  @@index([adminId])
+  @@index([closedBy])
+  @@index([closedByUserId])
+}
+
+model AccountingPeriod {
+  id           String   @id @default(uuid()) @db.Uuid
+  fiscalYearId String   @db.Uuid
+  name         String
+  periodNo     Int
+  startDate    DateTime @db.Date
+  endDate      DateTime @db.Date
+  isClosed     Boolean  @default(false)
+  closedAt     DateTime?
+  closedBy     String?  @db.Uuid
+  closedByUserId String? @db.Uuid
+  domainId     String   @db.Uuid
+  adminId      String   @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  fiscalYear FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+  domain     Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  admin      Admin      @relation("AccountingPeriodCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
+  closer     Admin?     @relation("AccountingPeriodClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
+  closingUser User?     @relation("AccountingPeriodClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([fiscalYearId, periodNo])
+  @@unique([fiscalYearId, name])
+  @@index([domainId, isClosed])
+  @@index([adminId])
+  @@index([closedBy])
+  @@index([closedByUserId])
 }
 
 model CustomerRate {
