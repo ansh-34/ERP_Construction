@@ -211,12 +211,6 @@ export const modules = [
   },
   {
     name: {
-      en: 'Fiscal Year',
-    },
-    code: 'FISCAL_YEAR',
-  },
-  {
-    name: {
       en: 'Accounting Period',
     },
     code: 'ACCOUNTING_PERIOD',
@@ -250,5 +244,17 @@ export const modules = [
       en: 'Account',
     },
     code: 'ACCOUNT',
+  },
+  {
+    name: {
+      en: 'Journal Entry',
+    },
+    code: 'JOURNAL_ENTRY',
+  },
+  {
+    name: {
+      en: 'Journal Entry Line',
+    },
+    code: 'JOURNAL_ENTRY_LINE',
   },
 ];

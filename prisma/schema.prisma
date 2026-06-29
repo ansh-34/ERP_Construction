@@ -96,6 +96,22 @@ enum OnboardingStatusEnum {
   COMPLETED
 }
 
+enum JournalEntryStatus {
+  DRAFT
+  POSTED
+  REVERSED
+}
+
+enum JournalEntryType {
+  AUTO
+  MANUAL
+}
+
+enum JournalEntryLineStatus {
+  ACTIVE
+  REVERSED
+}
+
 model Admin {
   id String @id @default(uuid()) @db.Uuid
 
@@ -165,10 +181,15 @@ model Admin {
   saleOrderProducts          SaleOrderProduct[]
   weighBridges               WeighBridge[]
   customerPayments           CustomerPayment[]
-  fiscalYearsCreated         FiscalYear[]                  @relation("FiscalYearCreatedBy")
-  fiscalYearsClosed          FiscalYear[]                  @relation("FiscalYearClosedBy")
-  accountingPeriodsCreated   AccountingPeriod[]            @relation("AccountingPeriodCreatedBy")
-  accountingPeriodsClosed    AccountingPeriod[]            @relation("AccountingPeriodClosedBy")
+  fiscalYearsCreated         FiscalYear[]                @relation("FiscalYearCreatedBy")
+  fiscalYearsClosed          FiscalYear[]                @relation("FiscalYearClosedBy")
+  accountingPeriodsCreated   AccountingPeriod[]          @relation("AccountingPeriodCreatedBy")
+  accountingPeriodsClosed    AccountingPeriod[]          @relation("AccountingPeriodClosedBy")
+  journalEntriesCreated      JournalEntry[]              @relation("JournalEntryCreatedBy")
+  journalEntriesApproved     JournalEntry[]              @relation("JournalEntryApprovedBy")
+  journalEntriesPosted       JournalEntry[]              @relation("JournalEntryPostedBy")
+  journalEntries             JournalEntry[]              @relation("JournalEntryOwner")
+  journalEntryLines          JournalEntryLine[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -284,6 +305,8 @@ model Domain {
   customerPayments              CustomerPayment[]
   fiscalYears                   FiscalYear[]
   accountingPeriods             AccountingPeriod[]
+  journalEntries                JournalEntry[]
+  journalEntryLines             JournalEntryLine[]
   admin                         Admin                          @relation(fields: [adminId], references: [id])
   adminId                       String                         @db.Uuid
 
@@ -303,10 +326,10 @@ model User {
   minDayCharge Decimal?     @db.Decimal(15, 2)
   roleId       String?      @db.Uuid
 
-  role    Role?   @relation(fields: [roleId], references: [id])
+  role                    Role?              @relation(fields: [roleId], references: [id])
   fiscalYearsClosed       FiscalYear[]       @relation("FiscalYearClosedByUser")
   accountingPeriodsClosed AccountingPeriod[] @relation("AccountingPeriodClosedByUser")
-  mediaId String? @db.Uuid
+  mediaId                 String?            @db.Uuid
 
   isEmailVerified Boolean @default(false)
 
@@ -404,6 +427,7 @@ model Currency {
   grnProducts                   GrnProduct[]
   customerRates                 CustomerRate[]
   industryAccounts              IndustryAccount[]
+  journalEntries                JournalEntry[]
   accounts                      Account[]
 
   @@map("currency")
@@ -530,31 +554,31 @@ model IndustryAccountCategory {
 }
 
 model IndustryAccount {
-  id                        String   @id @default(uuid()) @db.Uuid
-  name                      Json     @db.JsonB
+  id                        String       @id @default(uuid()) @db.Uuid
+  name                      Json         @db.JsonB
   code                      String
-  searchText                String   @default("")
+  searchText                String       @default("")
   description               String?
-  parentId                  String?  @db.Uuid
+  parentId                  String?      @db.Uuid
   path                      String
-  level                     Int      @default(0)
-  childrenCount             Int      @default(0)
-  industryAccountCategoryId String   @db.Uuid
-  currencyId                String?  @db.Uuid
-  isCashOrBank              Boolean  @default(false)
-  isPostingAllowed          Boolean  @default(true)
-  isSystem                  Boolean  @default(true)
-  sortOrder                 Int      @default(0)
+  level                     Int          @default(0)
+  childrenCount             Int          @default(0)
+  industryAccountCategoryId String       @db.Uuid
+  currencyId                String?      @db.Uuid
+  isCashOrBank              Boolean      @default(false)
+  isPostingAllowed          Boolean      @default(true)
+  isSystem                  Boolean      @default(true)
+  sortOrder                 Int          @default(0)
   industryType              IndustryEnum
-  status                    StatusEnum @default(ACTIVE)
-  isDeleted                 Boolean  @default(false)
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  status                    StatusEnum   @default(ACTIVE)
+  isDeleted                 Boolean      @default(false)
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
 
   category IndustryAccountCategory @relation(fields: [industryAccountCategoryId], references: [id], onDelete: Restrict)
-  currency Currency?       @relation(fields: [currencyId], references: [id], onDelete: Restrict)
-  parent   IndustryAccount?  @relation("IndustryAccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children IndustryAccount[] @relation("IndustryAccountHierarchy")
+  currency Currency?               @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  parent   IndustryAccount?        @relation("IndustryAccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children IndustryAccount[]       @relation("IndustryAccountHierarchy")
 
   @@unique([industryType, code, isDeleted])
   @@index([industryType, status, isDeleted])
@@ -1584,6 +1608,8 @@ model Vendor {
   updatedAt                     DateTime                       @updatedAt
   vendorProductPricings         VendorProductPricing[]
   productGradeLastPurchaseRates ProductGradeLastPurchaseRate[]
+  journalEntries                JournalEntry[]
+  journalEntryLines             JournalEntryLine[]
 
   @@unique([code, domainId, isDeleted])
   @@unique([email, domainId, isDeleted])
@@ -1703,6 +1729,8 @@ model Project {
   weighBridges                WeighBridge[]
   accounts                    Account[]
   costCenters                 CostCenter[]
+  journalEntries              JournalEntry[]
+  journalEntryLines           JournalEntryLine[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -2223,29 +2251,31 @@ model PaymentRequest {
 }
 
 model Customer {
-  id              String           @id @default(uuid()) @db.Uuid
-  name            String
-  phoneCode       String?
-  phone           String?
-  paymentTerms    PaymentTermsEnum @default(CASH)
-  gstNumber       String?
-  billingName     String?
-  billingAddress  String?
-  shippingAddress String?
-  searchText      String           @default("")
-  locationId      String?          @db.Uuid
-  location        Location?        @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId        String           @db.Uuid
-  domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId         String           @db.Uuid
-  admin           Admin            @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status          StatusEnum       @default(ACTIVE)
-  isDeleted       Boolean          @default(false)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  customerRates   CustomerRate[]
-  saleOrders      SaleOrder[]
-  customerPayments CustomerPayment[]
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String
+  phoneCode         String?
+  phone             String?
+  paymentTerms      PaymentTermsEnum   @default(CASH)
+  gstNumber         String?
+  billingName       String?
+  billingAddress    String?
+  shippingAddress   String?
+  searchText        String             @default("")
+  locationId        String?            @db.Uuid
+  location          Location?          @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId          String             @db.Uuid
+  domain            Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String             @db.Uuid
+  admin             Admin              @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum         @default(ACTIVE)
+  isDeleted         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  customerRates     CustomerRate[]
+  saleOrders        SaleOrder[]
+  customerPayments  CustomerPayment[]
+  journalEntries    JournalEntry[]
+  journalEntryLines JournalEntryLine[]
 
   @@index([domainId, isDeleted])
   @@index([adminId])
@@ -2282,24 +2312,25 @@ model CustomerPayment {
 }
 
 model FiscalYear {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  startDate DateTime @db.Date
-  endDate   DateTime @db.Date
-  isClosed  Boolean  @default(false)
-  closedAt  DateTime?
-  closedBy  String?  @db.Uuid
-  closedByUserId String? @db.Uuid
-  adminId   String   @db.Uuid
-  domainId  String   @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String
+  startDate      DateTime  @db.Date
+  endDate        DateTime  @db.Date
+  isClosed       Boolean   @default(false)
+  closedAt       DateTime?
+  closedBy       String?   @db.Uuid
+  closedByUserId String?   @db.Uuid
+  adminId        String    @db.Uuid
+  domainId       String    @db.Uuid
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  domain Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  admin  Admin  @relation("FiscalYearCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
-  closer Admin? @relation("FiscalYearClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
-  closingUser User? @relation("FiscalYearClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  domain            Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  admin             Admin              @relation("FiscalYearCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
+  closer            Admin?             @relation("FiscalYearClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
+  closingUser       User?              @relation("FiscalYearClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
   accountingPeriods AccountingPeriod[]
+  journalEntries    JournalEntry[]
 
   @@unique([name, domainId])
   @@index([domainId, isClosed])
@@ -2309,26 +2340,27 @@ model FiscalYear {
 }
 
 model AccountingPeriod {
-  id           String   @id @default(uuid()) @db.Uuid
-  fiscalYearId String   @db.Uuid
-  name         String
-  periodNo     Int
-  startDate    DateTime @db.Date
-  endDate      DateTime @db.Date
-  isClosed     Boolean  @default(false)
-  closedAt     DateTime?
-  closedBy     String?  @db.Uuid
-  closedByUserId String? @db.Uuid
-  domainId     String   @db.Uuid
-  adminId      String   @db.Uuid
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String    @id @default(uuid()) @db.Uuid
+  fiscalYearId   String    @db.Uuid
+  name           String
+  periodNo       Int
+  startDate      DateTime  @db.Date
+  endDate        DateTime  @db.Date
+  isClosed       Boolean   @default(false)
+  closedAt       DateTime?
+  closedBy       String?   @db.Uuid
+  closedByUserId String?   @db.Uuid
+  domainId       String    @db.Uuid
+  adminId        String    @db.Uuid
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  fiscalYear FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
-  domain     Domain     @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  admin      Admin      @relation("AccountingPeriodCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
-  closer     Admin?     @relation("AccountingPeriodClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
-  closingUser User?     @relation("AccountingPeriodClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  fiscalYear     FiscalYear     @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+  domain         Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  admin          Admin          @relation("AccountingPeriodCreatedBy", fields: [adminId], references: [id], onDelete: Restrict)
+  closer         Admin?         @relation("AccountingPeriodClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
+  closingUser    User?          @relation("AccountingPeriodClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  journalEntries JournalEntry[]
 
   @@unique([fiscalYearId, periodNo])
   @@unique([fiscalYearId, name])
@@ -2336,6 +2368,117 @@ model AccountingPeriod {
   @@index([adminId])
   @@index([closedBy])
   @@index([closedByUserId])
+}
+
+model JournalEntry {
+  id                  String             @id @default(uuid()) @db.Uuid
+  voucherNo           String
+  voucherType         String
+  transactionDate     DateTime           @db.Date
+  postingDate         DateTime           @db.Date
+  referenceNo         String?
+  externalReferenceNo String?
+  narration           String?
+  totalDebit          Decimal            @default(0) @db.Decimal(20, 6)
+  totalCredit         Decimal            @default(0) @db.Decimal(20, 6)
+  currencyId          String             @db.Uuid
+  exchangeRate        Decimal            @default(1) @db.Decimal(20, 10)
+  status              JournalEntryStatus @default(DRAFT)
+  entryType           JournalEntryType
+  sourceDocumentId    String?            @db.Uuid
+  sourceDocumentType  String?
+  reversalJournalId   String?            @db.Uuid
+  reversalDate        DateTime?          @db.Date
+  isAdjustment        Boolean            @default(false)
+  isYearEndClosing    Boolean            @default(false)
+  fiscalYearId        String             @db.Uuid
+  accountingPeriodId  String             @db.Uuid
+  vendorId            String?            @db.Uuid
+  customerId          String?            @db.Uuid
+  domainId            String             @db.Uuid
+  adminId             String             @db.Uuid
+  createdBy           String             @db.Uuid
+  approvedBy          String?            @db.Uuid
+  approvedAt          DateTime?
+  postedBy            String?            @db.Uuid
+  postedAt            DateTime?
+  costCenterId        String             @db.Uuid
+  projectId           String             @db.Uuid
+  isDeleted           Boolean            @default(false)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  currency         Currency           @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  fiscalYear       FiscalYear         @relation(fields: [fiscalYearId], references: [id], onDelete: Restrict)
+  accountingPeriod AccountingPeriod   @relation(fields: [accountingPeriodId], references: [id], onDelete: Restrict)
+  vendor           Vendor?            @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  customer         Customer?          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  domain           Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  admin            Admin              @relation("JournalEntryOwner", fields: [adminId], references: [id], onDelete: Restrict)
+  creatingAdmin    Admin              @relation("JournalEntryCreatedBy", fields: [createdBy], references: [id], onDelete: Restrict)
+  approvingAdmin   Admin?             @relation("JournalEntryApprovedBy", fields: [approvedBy], references: [id], onDelete: Restrict)
+  postingAdmin     Admin?             @relation("JournalEntryPostedBy", fields: [postedBy], references: [id], onDelete: Restrict)
+  project          Project            @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  costCenter       CostCenter         @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  reversalJournal  JournalEntry?      @relation("JournalEntryReversal", fields: [reversalJournalId], references: [id], onDelete: Restrict)
+  reversedEntries  JournalEntry[]     @relation("JournalEntryReversal")
+  lines            JournalEntryLine[]
+
+  @@unique([voucherNo, domainId, fiscalYearId, isDeleted])
+  @@index([domainId, status, isDeleted])
+  @@index([fiscalYearId, accountingPeriodId])
+  @@index([transactionDate])
+  @@index([postingDate])
+  @@index([currencyId])
+  @@index([vendorId])
+  @@index([customerId])
+  @@index([projectId])
+  @@index([costCenterId])
+  @@index([adminId])
+  @@index([createdBy])
+}
+
+model JournalEntryLine {
+  id                        String                 @id @default(uuid()) @db.Uuid
+  journalEntryId            String                 @db.Uuid
+  lineNo                    Int
+  accountId                 String                 @db.Uuid
+  debitAmount               Decimal                @default(0) @db.Decimal(20, 6)
+  creditAmount              Decimal                @default(0) @db.Decimal(20, 6)
+  transactionCurrencyDebit  Decimal                @default(0) @db.Decimal(20, 6)
+  transactionCurrencyCredit Decimal                @default(0) @db.Decimal(20, 6)
+  exchangeRate              Decimal                @default(1) @db.Decimal(20, 10)
+  description               String?
+  referenceNo               String?
+  costCenterId              String                 @db.Uuid
+  projectId                 String                 @db.Uuid
+  reconciledAmount          Decimal                @default(0) @db.Decimal(20, 6)
+  isReconciled              Boolean                @default(false)
+  status                    JournalEntryLineStatus @default(ACTIVE)
+  vendorId                  String?                @db.Uuid
+  customerId                String?                @db.Uuid
+  adminId                   String                 @db.Uuid
+  domainId                  String                 @db.Uuid
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  costCenter   CostCenter   @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  vendor       Vendor?      @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  customer     Customer?    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  admin        Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  domain       Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  @@unique([journalEntryId, lineNo])
+  @@index([accountId])
+  @@index([costCenterId])
+  @@index([projectId])
+  @@index([vendorId])
+  @@index([customerId])
+  @@index([adminId])
+  @@index([domainId, status])
 }
 
 model CustomerRate {
@@ -2531,37 +2674,38 @@ model AccountCategory {
 }
 
 model Account {
-  id                String          @id @default(uuid()) @db.Uuid
-  name              Json            @db.JsonB
+  id                String             @id @default(uuid()) @db.Uuid
+  name              Json               @db.JsonB
   code              String
-  searchText        String          @default("")
+  searchText        String             @default("")
   description       String?
-  parentId          String?         @db.Uuid
-  parent            Account?        @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children          Account[]       @relation("AccountHierarchy")
-  path              String          @default("")
-  level             Int             @default(0)
-  childrenCount     Int             @default(0)
-  accountCategoryId String          @db.Uuid
-  accountCategory   AccountCategory @relation(fields: [accountCategoryId], references: [id], onDelete: Restrict)
-  currencyId        String?         @db.Uuid
-  currency          Currency?       @relation(fields: [currencyId], references: [id], onDelete: Restrict)
-  isCashOrBank      Boolean         @default(false)
-  isPostingAllowed  Boolean         @default(true)
-  isSystem          Boolean         @default(false)
-  isActive          Boolean         @default(true)
-  sortOrder         Int             @default(0)
-  costCenterId      String?         @db.Uuid
-  projectId         String?         @db.Uuid
-  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  domainId          String          @db.Uuid
-  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId           String          @db.Uuid
-  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status            StatusEnum      @default(ACTIVE)
-  isDeleted         Boolean         @default(false)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  parentId          String?            @db.Uuid
+  parent            Account?           @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children          Account[]          @relation("AccountHierarchy")
+  path              String             @default("")
+  level             Int                @default(0)
+  childrenCount     Int                @default(0)
+  accountCategoryId String             @db.Uuid
+  accountCategory   AccountCategory    @relation(fields: [accountCategoryId], references: [id], onDelete: Restrict)
+  currencyId        String?            @db.Uuid
+  currency          Currency?          @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  isCashOrBank      Boolean            @default(false)
+  isPostingAllowed  Boolean            @default(true)
+  isSystem          Boolean            @default(false)
+  isActive          Boolean            @default(true)
+  sortOrder         Int                @default(0)
+  costCenterId      String?            @db.Uuid
+  projectId         String?            @db.Uuid
+  project           Project?           @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId          String             @db.Uuid
+  domain            Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String             @db.Uuid
+  admin             Admin              @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum         @default(ACTIVE)
+  isDeleted         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  journalEntryLines JournalEntryLine[]
 
   @@unique([code, domainId, isDeleted])
   @@index([domainId, isDeleted])
@@ -2572,32 +2716,34 @@ model Account {
 }
 
 model CostCenter {
-  id                  String       @id @default(uuid()) @db.Uuid
-  name                Json         @db.JsonB
+  id                  String             @id @default(uuid()) @db.Uuid
+  name                Json               @db.JsonB
   code                String
   description         String?
-  parentId            String?      @db.Uuid
-  parent              CostCenter?  @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children            CostCenter[] @relation("CostCenterHierarchy")
-  path                String       @default("")
-  level               Int          @default(0)
-  childrenCount       Int          @default(0)
-  industryIds         String[]     @default([])
-  industryCategoryIds String[]     @default([])
-  isSystem            Boolean      @default(false)
-  costCenterId        String?      @db.Uuid
-  costCenter          CostCenter?  @relation("CostCenterRef", fields: [costCenterId], references: [id], onDelete: Restrict)
-  linkedCostCenters   CostCenter[] @relation("CostCenterRef")
-  projectId           String?      @db.Uuid
-  project             Project?     @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  domainId            String       @db.Uuid
-  domain              Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId             String       @db.Uuid
-  admin               Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status              StatusEnum   @default(ACTIVE)
-  isDeleted           Boolean      @default(false)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  parentId            String?            @db.Uuid
+  parent              CostCenter?        @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children            CostCenter[]       @relation("CostCenterHierarchy")
+  path                String             @default("")
+  level               Int                @default(0)
+  childrenCount       Int                @default(0)
+  industryIds         String[]           @default([])
+  industryCategoryIds String[]           @default([])
+  isSystem            Boolean            @default(false)
+  costCenterId        String?            @db.Uuid
+  costCenter          CostCenter?        @relation("CostCenterRef", fields: [costCenterId], references: [id], onDelete: Restrict)
+  linkedCostCenters   CostCenter[]       @relation("CostCenterRef")
+  projectId           String?            @db.Uuid
+  project             Project?           @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId            String             @db.Uuid
+  domain              Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId             String             @db.Uuid
+  admin               Admin              @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status              StatusEnum         @default(ACTIVE)
+  isDeleted           Boolean            @default(false)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  journalEntries      JournalEntry[]
+  journalEntryLines   JournalEntryLine[]
 
   @@unique([code, domainId, isDeleted])
   @@index([domainId, isDeleted])

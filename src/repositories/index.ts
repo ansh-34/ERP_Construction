@@ -61,6 +61,8 @@ export * from './fiscalYear.repository.js';
 export * from './accountingPeriod.repository.js';
 export * from './industryAccountCategory.repository.js';
 export * from './industryAccount.repository.js';
+export * from './journalEntry.repository.js';
+export * from './journalEntryLine.repository.js';
 export * from './inventoryFuelStock.repository.js';
 export * from './machineryInventory.repository.js';
 export * from './alert.repository.js';

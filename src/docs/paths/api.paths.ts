@@ -48,6 +48,8 @@ import { CustomerPaths } from './customer.paths.js';
 import { CustomerRatePaths } from './customerRate.paths.js';
 import { SaleOrderPaths } from './saleOrder.paths.js';
 import { WeighBridgePaths } from './weighBridge.paths.js';
+import { JournalEntryPaths } from './journalEntry.paths.js';
+import { JournalEntryLinePaths } from './journalEntryLine.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -100,4 +102,6 @@ export const ApiPaths = {
   ...CustomerRatePaths,
   ...SaleOrderPaths,
   ...WeighBridgePaths,
+  ...JournalEntryPaths,
+  ...JournalEntryLinePaths,
 };
