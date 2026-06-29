@@ -26,6 +26,8 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid assignee' ||
       error.message === 'invalid ids' ||
       error.message === 'invalid date' ||
+      error.message === 'invalid code' ||
+      error.message === 'invalid closing actor' ||
       error.message === 'invalid domainId' ||
       error.message === 'invalid adminId' ||
       error.message === 'invalid machineId' ||
@@ -42,6 +44,15 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'task plannedEndDate is required' ||
       error.message === 'request already actioned' ||
       error.message === 'empty update payload' ||
+      error.message === 'Fiscal year name already exists' ||
+      error.message === 'Fiscal year dates overlap an existing fiscal year' ||
+      error.message === 'Fiscal year is already closed' ||
+      error.message === 'Accounting period name already exists' ||
+      error.message === 'Accounting period number already exists' ||
+      error.message === 'Accounting period dates overlap an existing period' ||
+      error.message ===
+        'Accounting period dates must be inside the fiscal year' ||
+      error.message === 'Accounting period is already closed' ||
       error.message === 'Machinery inventory not found' ||
       error.message === 'Insufficient machinery inventory quantity' ||
       error.message === 'endDateTime must be after startDateTime' ||

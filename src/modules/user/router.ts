@@ -47,6 +47,8 @@ import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRa
 import paymentRequestRouter from './paymentRequest/paymentRequest.router.js';
 import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
+import fiscalYearRouter from './fiscalYear/fiscalYear.router.js';
+import accountingPeriodRouter from './accountingPeriod/accountingPeriod.router.js';
 
 import { validate } from '../../middlewares/validate.js';
 import { z } from 'zod';
@@ -111,6 +113,8 @@ userRouter.use('/roles', roleRouter);
 userRouter.use('/payment-requests', paymentRequestRouter);
 userRouter.use('/customers', customerRouter);
 userRouter.use('/customer-rates', customerRateRouter);
+userRouter.use('/fiscal-years', fiscalYearRouter);
+userRouter.use('/accounting-periods', accountingPeriodRouter);
 
 // New flat query APIs
 userRouter.get(

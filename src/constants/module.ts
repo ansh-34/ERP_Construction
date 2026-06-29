@@ -203,4 +203,28 @@ export const modules = [
     },
     code: 'PAYMENT_REQUEST',
   },
+  {
+    name: {
+      en: 'Fiscal Year',
+    },
+    code: 'FISCAL_YEAR',
+  },
+  {
+    name: {
+      en: 'Accounting Period',
+    },
+    code: 'ACCOUNTING_PERIOD',
+  },
+  {
+    name: {
+      en: 'Industry Account Category',
+    },
+    code: 'INDUSTRY_ACCOUNT_CATEGORY',
+  },
+  {
+    name: {
+      en: 'Industry Account',
+    },
+    code: 'INDUSTRY_ACCOUNT',
+  },
 ];
