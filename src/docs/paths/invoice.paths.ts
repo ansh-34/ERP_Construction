@@ -141,53 +141,6 @@ const buildInvoicePaths = (
       },
     },
   },
-  [`${basePath}/active`]: {
-    get: {
-      tags,
-      summary: 'List active invoices',
-      description:
-        'Get a paginated list of invoices restricted to the ACTIVE lifecycle.',
-      security: [{ bearerAuth: [] }],
-      parameters: invoiceListParams,
-      responses: {
-        200: listResponse,
-        ...errors,
-      },
-    },
-  },
-  [`${basePath}/active/{id}`]: {
-    get: {
-      tags,
-      summary: 'Get active invoice by ID',
-      description: 'Fetch a single invoice restricted to the ACTIVE lifecycle.',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          in: 'path',
-          name: 'id',
-          required: true,
-          schema: { type: 'string', format: 'uuid' },
-        },
-      ],
-      responses: {
-        200: {
-          description: 'Invoice retrieved successfully',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  success: { type: 'boolean', example: true },
-                  data: { $ref: '#/components/schemas/InvoiceObject' },
-                },
-              },
-            },
-          },
-        },
-        ...errors,
-      },
-    },
-  },
   ...(options.includeAllItems
     ? {
         [`${basePath}/items`]: {
