@@ -181,7 +181,7 @@ export const deleteInvoice = async (req: Request, res: Response) => {
 
 export const listInvoiceItems = async (req: Request, res: Response) => {
   try {
-    const langCode = req.headers.language as string | undefined;
+    const langCode = (req.headers.language as string) || 'en';
     const items = await InvoiceService.listInvoiceItems(
       req.user!.domainId,
       req.params.id,

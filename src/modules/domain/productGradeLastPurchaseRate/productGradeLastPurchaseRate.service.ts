@@ -81,8 +81,8 @@ export const ProductGradeLastPurchaseRateService = {
   ) {
     const { offset, limit } = normalizePagination(query);
 
-    // null → return raw JSON objects; string → flatten to that language (default en)
-    const lang: string | null = query.lang ? query.lang || 'en' : null;
+    // List defaults to 'en'; a specific lang query flattens to that language.
+    const lang: string = query.lang || 'en';
 
     const where = {
       domainId,

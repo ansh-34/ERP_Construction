@@ -41,6 +41,10 @@ import { IndustryRoleTemplatePaths } from './industryRoleTemplate.paths.js';
 import { LastPurchaseRatePaths } from './lastPurchaseRate.paths.js';
 import { UserTypePaths } from './userType.paths.js';
 import { CustomerPaymentPaths } from './customerPayment.paths.js';
+import { CustomerPaths } from './customer.paths.js';
+import { CustomerRatePaths } from './customerRate.paths.js';
+import { SaleOrderPaths } from './saleOrder.paths.js';
+import { WeighBridgePaths } from './weighBridge.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -86,4 +90,8 @@ export const ApiPaths = {
   ...NotificationPaths,
   ...UserTypePaths,
   ...CustomerPaymentPaths,
+  ...CustomerPaths,
+  ...CustomerRatePaths,
+  ...SaleOrderPaths,
+  ...WeighBridgePaths,
 };

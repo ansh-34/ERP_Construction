@@ -33,6 +33,10 @@ import { MovementReportSchemas } from './movementReport.schema.js';
 import { PaymentRequestSchemas } from './paymentRequest.schema.js';
 import { IndustryRoleTemplateSchemas } from './industryRoleTemplate.schema.js';
 import { LastPurchaseRateSchemas } from './lastPurchaseRate.schema.js';
+import { CustomerSchemas } from './customer.schema.js';
+import { CustomerRateSchemas } from './customerRate.schema.js';
+import { SaleOrderSchemas } from './saleOrder.schema.js';
+import { WeighBridgeSchemas } from './weighBridge.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -68,4 +72,8 @@ export const ApiSchemas = {
   ...PaymentRequestSchemas,
   ...IndustryRoleTemplateSchemas,
   ...LastPurchaseRateSchemas,
+  ...CustomerSchemas,
+  ...CustomerRateSchemas,
+  ...SaleOrderSchemas,
+  ...WeighBridgeSchemas,
 };

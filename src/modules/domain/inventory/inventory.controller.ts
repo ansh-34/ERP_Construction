@@ -236,6 +236,33 @@ export const exportInventory = async (req: Request, res: Response) => {
   }
 };
 
+// GET /inventory/low-stock
+export const getLowStockInventory = async (req: Request, res: Response) => {
+  try {
+    const { items, pagination } = await InventoryService.listLowStockItems(
+      req.user!.domainId,
+      req.query as PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
+    );
+
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: Messages.INVENTORY.LOW_STOCK_RETRIEVED,
+      pagination: {
+        currentCount: items.length,
+        ...pagination,
+      },
+      data: items,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : Messages.INVENTORY.LOW_STOCK_LIST_FAILED;
+    const statusCode = resolveHttpStatus(message);
+    return res.status(statusCode).json({ success: false, message });
+  }
+};
+
 // GET /inventory/analytics
 export const getInventoryAnalytics = async (req: Request, res: Response) => {
   try {

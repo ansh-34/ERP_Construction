@@ -203,4 +203,22 @@ export const modules = [
     },
     code: 'PAYMENT_REQUEST',
   },
+  {
+    name: {
+      en: 'Weigh Bridge',
+    },
+    code: 'WEIGH_BRIDGE',
+  },
+  {
+    name: {
+      en: 'Account Category',
+    },
+    code: 'ACCOUNT_CATEGORY',
+  },
+  {
+    name: {
+      en: 'Account',
+    },
+    code: 'ACCOUNT',
+  },
 ];

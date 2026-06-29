@@ -16,6 +16,7 @@ export const UomService = {
     domainId: string,
     dto: {
       displayName: Record<string, string>;
+      symbol?: string;
       baseUomId?: string;
       conversionRate: number;
       status?: 'ACTIVE' | 'INACTIVE';
@@ -36,13 +37,14 @@ export const UomService = {
       throw new Error(Messages.UOM.CODE_ALREADY_EXISTS);
     }
 
-    const { displayName, baseUomId, conversionRate, status } = dto;
+    const { displayName, symbol, baseUomId, conversionRate, status } = dto;
     const searchText = Object.values(displayName || {})
       .join(' ')
       .toLowerCase();
 
     const record = await uomRepository.create({
       displayName,
+      symbol: symbol ?? '',
       baseUomId,
       conversionRate,
       status: status ? normalizeStatus(status) : 'ACTIVE',
@@ -168,6 +170,7 @@ export const UomService = {
     id: string,
     dto: {
       displayName?: Record<string, string>;
+      symbol?: string;
       code?: string;
       baseUomId?: string;
       conversionRate?: number;
@@ -206,10 +209,11 @@ export const UomService = {
       ? Object.values(dto.displayName).join(' ').toLowerCase()
       : null;
 
-    const { displayName, baseUomId, conversionRate, status } = dto;
+    const { displayName, symbol, baseUomId, conversionRate, status } = dto;
 
     const record = await uomRepository.update(id, {
       ...(displayName ? { displayName } : {}),
+      ...(symbol !== undefined ? { symbol } : {}),
       ...(baseUomId ? { baseUomId } : {}),
       ...(conversionRate ? { conversionRate } : {}),
       ...(status ? { status: normalizeStatus(status) } : {}),
