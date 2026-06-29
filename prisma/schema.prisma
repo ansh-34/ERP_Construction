@@ -155,9 +155,15 @@ model Admin {
   roles                      Role[]
   adminUserTypes             AdminUserType[]
   adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
+  accountCategories          AccountCategory[]
+  accounts                   Account[]
+  costCenters                CostCenter[]
   vendorProductPricings      VendorProductPricing[]
   customers                  Customer[]
   customerRates              CustomerRate[]
+  saleOrders                 SaleOrder[]
+  saleOrderProducts          SaleOrderProduct[]
+  weighBridges               WeighBridge[]
   customerPayments           CustomerPayment[]
   fiscalYearsCreated         FiscalYear[]                  @relation("FiscalYearCreatedBy")
   fiscalYearsClosed          FiscalYear[]                  @relation("FiscalYearClosedBy")
@@ -253,8 +259,6 @@ model Domain {
   movementLogs                  MovementLog[]
   fuelLogs                      FuelLog[]
   inventoryFuelStocks           InventoryFuelStock[]
-  machineryInventories          MachineryInventory[]
-  machineryInventoryLogs        MachineryInventoryLog[]
   alertRules                    AlertRule[]
   alerts                        Alert[]
   notifications                 Notification[]
@@ -269,6 +273,14 @@ model Domain {
   paymentRequests               PaymentRequest[]
   customers                     Customer[]
   customerRates                 CustomerRate[]
+  saleOrders                    SaleOrder[]
+  saleOrderProducts             SaleOrderProduct[]
+  weighBridges                  WeighBridge[]
+  accountCategories             AccountCategory[]
+  accounts                      Account[]
+  costCenters                   CostCenter[]
+  machineryInventories          MachineryInventory[]
+  machineryInventoryLogs        MachineryInventoryLog[]
   customerPayments              CustomerPayment[]
   fiscalYears                   FiscalYear[]
   accountingPeriods             AccountingPeriod[]
@@ -315,6 +327,7 @@ model User {
   paymentRequestsRequested             PaymentRequest[]             @relation("PaymentRequestedByUser")
   projectUserAssignments               ProjectUserAssignment[]
   projectUserDailyLogs                 ProjectUserDailyLog[]
+  weighBridges                         WeighBridge[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -391,6 +404,7 @@ model Currency {
   grnProducts                   GrnProduct[]
   customerRates                 CustomerRate[]
   industryAccounts              IndustryAccount[]
+  accounts                      Account[]
 
   @@map("currency")
 }
@@ -757,6 +771,7 @@ model Uom {
   searchText  String  @default("")
   baseUomId   String? @db.Uuid
 
+  symbol         String @default("")
   conversionRate Float
   domainId       String @db.Uuid
 
@@ -770,6 +785,7 @@ model Uom {
   vehicleLoadCapacity           Vehicle[]                      @relation("VehicleLoadCapacityUom")
   journeyScheduleLoadedQty      VehicleJourneySchedule[]       @relation("JourneyScheduleLoadedQtyUom")
   dispatchLoadedQty             DispatchVehicle[]              @relation("DispatchLoadedQtyUom")
+  dispatchVehicleWeight         DispatchVehicle[]              @relation("DispatchVehicleWeightUom")
   inventories                   Inventory[]                    @relation("InventoryUom")
   rawMaterialPurchaseRequests   RawMaterialPurchaseRequest[]
   grnProducts                   GrnProduct[]
@@ -782,6 +798,7 @@ model Uom {
   inventoryFuelStocks           InventoryFuelStock[]
   machineryInventories          MachineryInventory[]
   machineryInventoryLogs        MachineryInventoryLog[]
+  saleOrderProducts             SaleOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([createdAt, isDeleted])
@@ -855,10 +872,13 @@ model DispatchVehicle {
   vehicleId String @db.Uuid
 
   vehicle           Vehicle @relation(fields: [vehicleId], references: [id])
+  referenceNumber   String?
+  notes             String?
   code              String
   journeyScheduleId String? @db.Uuid
 
   journeySchedule     VehicleJourneySchedule? @relation(fields: [journeyScheduleId], references: [id])
+  journeyScheduleCode String?
   description         String?
   date                DateTime?
   driverName          String?
@@ -869,9 +889,13 @@ model DispatchVehicle {
   expectedFuelValue   Float                   @default(0)
   actualFuelValue     Float                   @default(0)
   fuelAlertThreshold  Float                   @default(0)
+  emptyVehicleWeight  Float                   @default(0)
+  loadedVehicleWeight Float                   @default(0)
+  vehicleWeightUomId  String?                 @db.Uuid
   loadedQuantity      Float                   @default(0)
   loadedQuantityUomId String?                 @db.Uuid
 
+  vehicleWeightUom       Uom?      @relation("DispatchVehicleWeightUom", fields: [vehicleWeightUomId], references: [id])
   loadedQuantityUom      Uom?      @relation("DispatchLoadedQtyUom", fields: [loadedQuantityUomId], references: [id])
   loadedAt               DateTime?
   loadingStatus          String    @default("PENDING")
@@ -913,6 +937,7 @@ model Product {
   invoiceItems                InvoiceItem[]
   grnProducts                 GrnProduct[]
   customerRates               CustomerRate[]
+  saleOrderProducts           SaleOrderProduct[]
 
   @@unique([code, domainId, isDeleted])
   @@index([isDeleted])
@@ -955,6 +980,7 @@ model ProductGrades {
   invoiceItems                  InvoiceItem[]
   grnProducts                   GrnProduct[]
   customerRates                 CustomerRate[]
+  saleOrderProducts             SaleOrderProduct[]
   status                        StatusEnum                     @default(ACTIVE)
   isDeleted                     Boolean
   createdAt                     DateTime                       @default(now())
@@ -1674,6 +1700,9 @@ model Project {
   invoices                    Invoice[]
   paymentRequests             PaymentRequest[]
   fuelLogs                    FuelLog[]
+  weighBridges                WeighBridge[]
+  accounts                    Account[]
+  costCenters                 CostCenter[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -2194,27 +2223,28 @@ model PaymentRequest {
 }
 
 model Customer {
-  id               String            @id @default(uuid()) @db.Uuid
-  name             String
-  phoneCode        String?
-  phone            String?
-  paymentTerms     PaymentTermsEnum  @default(CASH)
-  gstNumber        String?
-  billingName      String?
-  billingAddress   String?
-  shippingAddress  String?
-  searchText       String            @default("")
-  locationId       String?           @db.Uuid
-  location         Location?         @relation(fields: [locationId], references: [id], onDelete: Restrict)
-  domainId         String            @db.Uuid
-  domain           Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  adminId          String            @db.Uuid
-  admin            Admin             @relation(fields: [adminId], references: [id], onDelete: Restrict)
-  status           StatusEnum        @default(ACTIVE)
-  isDeleted        Boolean           @default(false)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  customerRates    CustomerRate[]
+  id              String           @id @default(uuid()) @db.Uuid
+  name            String
+  phoneCode       String?
+  phone           String?
+  paymentTerms    PaymentTermsEnum @default(CASH)
+  gstNumber       String?
+  billingName     String?
+  billingAddress  String?
+  shippingAddress String?
+  searchText      String           @default("")
+  locationId      String?          @db.Uuid
+  location        Location?        @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  domainId        String           @db.Uuid
+  domain          Domain           @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId         String           @db.Uuid
+  admin           Admin            @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status          StatusEnum       @default(ACTIVE)
+  isDeleted       Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  customerRates   CustomerRate[]
+  saleOrders      SaleOrder[]
   customerPayments CustomerPayment[]
 
   @@index([domainId, isDeleted])
@@ -2337,4 +2367,242 @@ model CustomerRate {
   @@index([productId])
   @@index([productGradeId])
   @@index([adminId])
+}
+
+enum SaleOrderEntryType {
+  PLANT_ENTRY
+  MANUAL
+}
+
+enum SaleOrderPaymentType {
+  CASH
+  CREDIT
+}
+
+enum SaleOrderStatus {
+  PENDING
+  INPROGRESS
+  INVOICED
+}
+
+model SaleOrder {
+  id                         String               @id @default(uuid()) @db.Uuid
+  ticketNumber               String
+  date                       DateTime             @default(now())
+  entryType                  SaleOrderEntryType   @default(MANUAL)
+  customerId                 String?              @db.Uuid
+  customer                   Customer?            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerName               String
+  customerPhone              String
+  totalAmount                Float                @default(0)
+  totalTaxAmount             Float                @default(0)
+  totalTransportationCharges Float                @default(0)
+  totalRoyaltyCharges        Float                @default(0)
+  paymentType                SaleOrderPaymentType @default(CASH)
+  orderStatus                SaleOrderStatus      @default(PENDING)
+  remarks                    String?
+  domainId                   String               @db.Uuid
+  domain                     Domain               @relation(fields: [domainId], references: [id])
+  adminId                    String               @db.Uuid
+  admin                      Admin                @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status                     StatusEnum           @default(ACTIVE)
+  isDeleted                  Boolean              @default(false)
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  saleOrderProducts SaleOrderProduct[]
+
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([customerId])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+model SaleOrderProduct {
+  id                   String         @id @default(uuid()) @db.Uuid
+  saleOrderId          String         @db.Uuid
+  saleOrder            SaleOrder      @relation(fields: [saleOrderId], references: [id])
+  productId            String         @db.Uuid
+  product              Product        @relation(fields: [productId], references: [id])
+  productGradeId       String?        @db.Uuid
+  productGrade         ProductGrades? @relation(fields: [productGradeId], references: [id])
+  quantity             Float
+  uomId                String         @db.Uuid
+  uom                  Uom            @relation(fields: [uomId], references: [id])
+  unitRate             Float          @default(0)
+  amount               Float          @default(0)
+  taxAmount            Float          @default(0)
+  transportationCharge Float          @default(0)
+  royaltyAmount        Float          @default(0)
+  domainId             String         @db.Uuid
+  domain               Domain         @relation(fields: [domainId], references: [id])
+  adminId              String         @db.Uuid
+  admin                Admin          @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status               StatusEnum     @default(ACTIVE)
+  isDeleted            Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([saleOrderId])
+  @@index([productId])
+  @@index([productGradeId])
+  @@index([uomId])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+}
+
+model WeighBridge {
+  id                String     @id @default(uuid()) @db.Uuid
+  ticketNumber      String
+  date              DateTime   @default(now())
+  driverName        String
+  vehicleNo         String
+  supplier          String
+  material          String
+  gateNoteNo        String
+  tareWeight        String
+  grossWeight       String
+  weighBridgeStatus String     @default("PENDING")
+  operatorId        String     @db.Uuid
+  operator          User       @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  operatorName      String
+  remarks           String?
+  projectId         String?    @db.Uuid
+  project           Project?   @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId          String     @db.Uuid
+  domain            Domain     @relation(fields: [domainId], references: [id])
+  adminId           String     @db.Uuid
+  admin             Admin      @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum @default(ACTIVE)
+  isDeleted         Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([operatorId])
+  @@index([projectId])
+  @@index([createdAt, isDeleted, domainId])
+}
+
+enum AccountCategoryTypeEnum {
+  ASSET
+  LIABILITY
+  REVENUE
+  EXPENSE
+}
+
+enum NormalBalanceEnum {
+  DEBIT
+  CREDIT
+}
+
+model AccountCategory {
+  id               String                  @id @default(uuid()) @db.Uuid
+  name             Json                    @db.JsonB
+  code             String
+  searchText       String                  @default("")
+  categoryType     AccountCategoryTypeEnum
+  normalBalance    NormalBalanceEnum
+  parentId         String?                 @db.Uuid
+  parent           AccountCategory?        @relation("AccountCategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children         AccountCategory[]       @relation("AccountCategoryHierarchy")
+  path             String                  @default("")
+  level            Int                     @default(0)
+  childrenCount    Int                     @default(0)
+  sortOrder        Int                     @default(0)
+  isPostingAllowed Boolean                 @default(false)
+  isSystem         Boolean                 @default(false)
+  domainId         String                  @db.Uuid
+  domain           Domain                  @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId          String                  @db.Uuid
+  admin            Admin                   @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  accounts         Account[]
+  status           StatusEnum              @default(ACTIVE)
+  isDeleted        Boolean                 @default(false)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([categoryType])
+}
+
+model Account {
+  id                String          @id @default(uuid()) @db.Uuid
+  name              Json            @db.JsonB
+  code              String
+  searchText        String          @default("")
+  description       String?
+  parentId          String?         @db.Uuid
+  parent            Account?        @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children          Account[]       @relation("AccountHierarchy")
+  path              String          @default("")
+  level             Int             @default(0)
+  childrenCount     Int             @default(0)
+  accountCategoryId String          @db.Uuid
+  accountCategory   AccountCategory @relation(fields: [accountCategoryId], references: [id], onDelete: Restrict)
+  currencyId        String?         @db.Uuid
+  currency          Currency?       @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  isCashOrBank      Boolean         @default(false)
+  isPostingAllowed  Boolean         @default(true)
+  isSystem          Boolean         @default(false)
+  isActive          Boolean         @default(true)
+  sortOrder         Int             @default(0)
+  costCenterId      String?         @db.Uuid
+  projectId         String?         @db.Uuid
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId          String          @db.Uuid
+  domain            Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId           String          @db.Uuid
+  admin             Admin           @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status            StatusEnum      @default(ACTIVE)
+  isDeleted         Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([accountCategoryId])
+  @@index([projectId])
+}
+
+model CostCenter {
+  id                  String       @id @default(uuid()) @db.Uuid
+  name                Json         @db.JsonB
+  code                String
+  description         String?
+  parentId            String?      @db.Uuid
+  parent              CostCenter?  @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children            CostCenter[] @relation("CostCenterHierarchy")
+  path                String       @default("")
+  level               Int          @default(0)
+  childrenCount       Int          @default(0)
+  industryIds         String[]     @default([])
+  industryCategoryIds String[]     @default([])
+  isSystem            Boolean      @default(false)
+  costCenterId        String?      @db.Uuid
+  costCenter          CostCenter?  @relation("CostCenterRef", fields: [costCenterId], references: [id], onDelete: Restrict)
+  linkedCostCenters   CostCenter[] @relation("CostCenterRef")
+  projectId           String?      @db.Uuid
+  project             Project?     @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  domainId            String       @db.Uuid
+  domain              Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  adminId             String       @db.Uuid
+  admin               Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  status              StatusEnum   @default(ACTIVE)
+  isDeleted           Boolean      @default(false)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([code, domainId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId])
+  @@index([parentId])
+  @@index([costCenterId])
+  @@index([projectId])
 }

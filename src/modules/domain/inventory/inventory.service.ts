@@ -420,6 +420,29 @@ export const InventoryService = {
     }
   },
 
+  async listLowStockItems(
+    domainId: string,
+    query: PaginationQuery & { status?: 'ACTIVE' | 'INACTIVE' },
+  ) {
+    const { offset, limit } = normalizePagination(query);
+
+    const [totalCount, items] = await InventoryRepository.listLowStock(
+      domainId,
+      limit,
+      offset,
+      query.status,
+    );
+
+    return {
+      items: items.map(withCurrencyCode),
+      pagination: {
+        totalCount,
+        offset,
+        limit,
+      },
+    };
+  },
+
   async getAnalytics(domainId: string) {
     const [
       rawMaterials,

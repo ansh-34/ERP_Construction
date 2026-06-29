@@ -29,6 +29,7 @@ export const DispatchRepository = {
             },
           },
           loadedQuantityUom: true,
+          vehicleWeightUom: true,
         },
         orderBy: { createdAt: 'desc' },
         skip: offset,

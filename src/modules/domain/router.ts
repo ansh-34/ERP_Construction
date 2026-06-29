@@ -47,6 +47,10 @@ import customerPaymentRouter from './customerPayment/customerPayment.router.js';
 import fiscalYearRouter from './fiscalYear/fiscalYear.router.js';
 import accountingPeriodRouter from './accountingPeriod/accountingPeriod.router.js';
 import adminUserTypeRouter from './adminUserType/adminUserType.routes';
+import saleOrderRouter from './saleOrder/saleOrder.router.js';
+import weighBridgeRouter from './weighBridge/weighBridge.router.js';
+import accountCategoryRouter from './accountCategory/accountCategory.router.js';
+import accountRouter from './account/account.router.js';
 import reportRouter from './report/report.routes';
 import authMiddleware from '../../middlewares/auth.js';
 import isDomain from '../../middlewares/isDomain.js';
@@ -55,23 +59,8 @@ import modulePermissionRouter from './modulePermission/modulePermission.router';
 import onboardingRouter from './onboarding/onboarding.router.js';
 import dashboardRouter from './dashboard/dashboard.router.js';
 
-import { listAllDomainProductGrades } from './productGrade/productGrade.controller.js';
+import { allGradesRouter } from './productGrade/productGrade.router.js';
 import { productGradeLastPurchaseRateRouter } from './productGradeLastPurchaseRate/productGradeLastPurchaseRate.router.js';
-import { validate } from '../../middlewares/validate.js';
-import { z } from 'zod';
-import {
-  pageBasedPaginationQuerySchema,
-  statusFilterSchema,
-} from '../common/common.validator.js';
-
-const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
-  .merge(statusFilterSchema)
-  .extend({
-    searchKey: z.string().optional(),
-    productId: z.string().uuid().optional().or(z.literal('')),
-    gradeId: z.string().uuid().optional().or(z.literal('')),
-    productGradeId: z.string().uuid().optional().or(z.literal('')),
-  });
 
 const domainRouter = Router();
 
@@ -131,15 +120,14 @@ domainRouter.use('/customer-payments', customerPaymentRouter);
 domainRouter.use('/fiscal-years', fiscalYearRouter);
 domainRouter.use('/accounting-periods', accountingPeriodRouter);
 domainRouter.use('/admin-user-types', adminUserTypeRouter);
+domainRouter.use('/sale-orders', saleOrderRouter);
+domainRouter.use('/weigh-bridges', weighBridgeRouter);
+domainRouter.use('/account-categories', accountCategoryRouter);
+domainRouter.use('/accounts', accountRouter);
 domainRouter.use('/report', reportRouter);
 domainRouter.use('/modules', moduleRouter);
 domainRouter.use('/module-permissions', modulePermissionRouter);
-// New flat query APIs
-domainRouter.get(
-  '/grades',
-  validate(listAllGradesAndRatesQuerySchema, 'query'),
-  listAllDomainProductGrades,
-);
+domainRouter.use('/grades', allGradesRouter());
 domainRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
 
 export default domainRouter;

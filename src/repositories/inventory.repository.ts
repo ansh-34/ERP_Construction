@@ -8,12 +8,6 @@ const inventoryIncludes = {
       displayName: true,
       code: true,
       productType: true,
-      _count: {
-        select: {
-          productGrades: { where: { isDeleted: false } },
-          productUoms: { where: { isDeleted: false } },
-        },
-      },
     },
   },
   productGrade: {
@@ -22,22 +16,6 @@ const inventoryIncludes = {
       gradeDisplayName: true,
       gradeCode: true,
       status: true,
-      productGradeLastPurchaseRates: {
-        where: { isDeleted: false },
-        orderBy: { lastPurchaseDate: 'desc' as const },
-        select: {
-          id: true,
-          lastPrice: true,
-          purchaseType: true,
-          currencyId: true,
-          vendorId: true,
-          vendorName: true,
-          lastPurchaseDate: true,
-          uomId: true,
-          uom: { select: { id: true, code: true, displayName: true } },
-          status: true,
-        },
-      },
     },
   },
   uom: {
@@ -45,6 +23,7 @@ const inventoryIncludes = {
       id: true,
       displayName: true,
       code: true,
+      symbol: true,
       conversionRate: true,
     },
   },
@@ -250,6 +229,33 @@ export const InventoryRepository = {
       outOfStockCount,
       totalQuantity: aggregation._sum.quantity ?? 0,
     };
+  },
+
+  async listLowStock(
+    domainId: string,
+    limit: number,
+    offset: number,
+    status?: 'ACTIVE' | 'INACTIVE',
+  ) {
+    const where: Prisma.InventoryWhereInput = {
+      domainId,
+      isDeleted: false,
+      ...(status ? { status } : {}),
+      quantity: { lte: prisma.inventory.fields.reorderLevel as any },
+    };
+
+    const [totalCount, items] = await prisma.$transaction([
+      prisma.inventory.count({ where }),
+      prisma.inventory.findMany({
+        where,
+        include: inventoryIncludes,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    return [totalCount, items] as const;
   },
 
   async countUniqueProducts(domainId: string) {

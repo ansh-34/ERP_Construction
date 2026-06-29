@@ -5,6 +5,7 @@ import {
   createProductGrade,
   listProductGrades,
   listProductGradesWithLastPurchaseRates,
+  listAllProductGrades,
   getProductGradeById,
   updateProductGrade,
   deleteProductGrade,
@@ -13,6 +14,7 @@ import {
   createProductGradeBodySchema,
   updateProductGradeBodySchema,
   listProductGradeQuerySchema,
+  listAllGradesAndRatesQuerySchema,
   productGradeProductIdParamSchema,
   productGradeIdParamSchema,
 } from './productGrade.validation.js';
@@ -61,5 +63,15 @@ export const productGradeRouter = (): Router => {
     deleteProductGrade,
   );
 
+  return router;
+};
+
+export const allGradesRouter = (): Router => {
+  const router = Router();
+  router.get(
+    '/',
+    validate(listAllGradesAndRatesQuerySchema, 'query'),
+    listAllProductGrades,
+  );
   return router;
 };

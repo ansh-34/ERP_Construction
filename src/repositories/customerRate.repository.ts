@@ -7,10 +7,14 @@ export const customerRateRepository = {
       data,
       include: {
         customer: { select: { id: true, name: true } },
-        product: { select: { id: true, code: true } },
-        productGrade: { select: { id: true, gradeCode: true } },
-        uom: { select: { id: true, code: true } },
-        currency: { select: { id: true, code: true, symbol: true } },
+        product: { select: { id: true, code: true, displayName: true } },
+        productGrade: {
+          select: { id: true, gradeCode: true, gradeDisplayName: true },
+        },
+        uom: { select: { id: true, code: true, displayName: true } },
+        currency: {
+          select: { id: true, code: true, symbol: true, name: true },
+        },
       },
     });
   },
@@ -46,10 +50,14 @@ export const customerRateRepository = {
         orderBy: { createdAt: 'desc' },
         include: {
           customer: { select: { id: true, name: true } },
-          product: { select: { id: true, code: true } },
-          productGrade: { select: { id: true, gradeCode: true } },
-          uom: { select: { id: true, code: true } },
-          currency: { select: { id: true, code: true, symbol: true } },
+          product: { select: { id: true, code: true, displayName: true } },
+          productGrade: {
+            select: { id: true, gradeCode: true, gradeDisplayName: true },
+          },
+          uom: { select: { id: true, code: true, displayName: true } },
+          currency: {
+            select: { id: true, code: true, symbol: true, name: true },
+          },
         },
       }),
     ]);
@@ -60,10 +68,14 @@ export const customerRateRepository = {
       where: { id, domainId, adminId, isDeleted: false },
       include: {
         customer: { select: { id: true, name: true } },
-        product: { select: { id: true, code: true } },
-        productGrade: { select: { id: true, gradeCode: true } },
-        uom: { select: { id: true, code: true } },
-        currency: { select: { id: true, code: true, symbol: true } },
+        product: { select: { id: true, code: true, displayName: true } },
+        productGrade: {
+          select: { id: true, gradeCode: true, gradeDisplayName: true },
+        },
+        uom: { select: { id: true, code: true, displayName: true } },
+        currency: {
+          select: { id: true, code: true, symbol: true, name: true },
+        },
       },
     });
   },

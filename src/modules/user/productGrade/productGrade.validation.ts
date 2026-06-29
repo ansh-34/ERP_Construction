@@ -35,6 +35,15 @@ export const listProductGradeQuerySchema = pageBasedPaginationQuerySchema
     searchKey: z.string().optional(),
   });
 
+export const listAllGradesAndRatesQuerySchema = pageBasedPaginationQuerySchema
+  .merge(statusFilterSchema)
+  .extend({
+    searchKey: z.string().optional(),
+    productId: z.string().uuid().optional().or(z.literal('')),
+    gradeId: z.string().uuid().optional().or(z.literal('')),
+    productGradeId: z.string().uuid().optional().or(z.literal('')),
+  });
+
 //  Param schemas
 export const productGradeProductIdParamSchema = z.object({
   productId: z.string().uuid(),

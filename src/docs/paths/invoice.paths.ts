@@ -46,47 +46,178 @@ const listResponse = {
   },
 };
 
-const buildInvoicePaths = (basePath: string, tags: string[]) => ({
+const invoiceListParams = [
+  ...paginationParams,
+  {
+    in: 'query' as const,
+    name: 'status',
+    schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+  },
+  {
+    in: 'query' as const,
+    name: 'searchKey',
+    schema: { type: 'string' },
+  },
+  {
+    in: 'query' as const,
+    name: 'vendorName',
+    schema: { type: 'string' },
+  },
+  {
+    in: 'query' as const,
+    name: 'purchaseOrderId',
+    schema: { type: 'string', format: 'uuid' },
+  },
+  {
+    in: 'query' as const,
+    name: 'projectId',
+    schema: { type: 'string', format: 'uuid' },
+  },
+  {
+    in: 'query' as const,
+    name: 'invoiceType',
+    description: 'Defaults to FINAL when omitted.',
+    schema: { type: 'string', enum: ['PROFORMA', 'FINAL'] },
+  },
+  {
+    in: 'query' as const,
+    name: 'lifecycle',
+    description: 'Defaults to ACTIVE when omitted.',
+    schema: { type: 'string', enum: ['ACTIVE', 'VOID'] },
+  },
+];
+
+const itemsListResponse = {
+  description: 'Invoice items retrieved',
+  content: {
+    'application/json': {
+      schema: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: true },
+          message: {
+            type: 'string',
+            example: 'Invoice items retrieved successfully',
+          },
+          data: {
+            type: 'object',
+            properties: {
+              items: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/InvoiceItemObject' },
+              },
+              pagination: {
+                type: 'object',
+                properties: {
+                  totalCount: { type: 'integer' },
+                  currentCount: { type: 'integer' },
+                  offset: { type: 'integer' },
+                  limit: { type: 'integer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const buildInvoicePaths = (
+  basePath: string,
+  tags: string[],
+  options: { includeAllItems?: boolean } = {},
+) => ({
   [`${basePath}`]: {
     get: {
       tags,
       summary: 'List invoices',
       description: 'Get a paginated list of invoices with filters.',
       security: [{ bearerAuth: [] }],
-      parameters: [
-        ...paginationParams,
-        {
-          in: 'query',
-          name: 'status',
-          schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
-        },
-        {
-          in: 'query',
-          name: 'searchKey',
-          schema: { type: 'string' },
-        },
-        {
-          in: 'query',
-          name: 'vendorName',
-          schema: { type: 'string' },
-        },
-        {
-          in: 'query',
-          name: 'purchaseOrderId',
-          schema: { type: 'string', format: 'uuid' },
-        },
-        {
-          in: 'query',
-          name: 'projectId',
-          schema: { type: 'string', format: 'uuid' },
-        },
-      ],
+      parameters: invoiceListParams,
       responses: {
         200: listResponse,
         ...errors,
       },
     },
   },
+  [`${basePath}/active`]: {
+    get: {
+      tags,
+      summary: 'List active invoices',
+      description:
+        'Get a paginated list of invoices restricted to the ACTIVE lifecycle.',
+      security: [{ bearerAuth: [] }],
+      parameters: invoiceListParams,
+      responses: {
+        200: listResponse,
+        ...errors,
+      },
+    },
+  },
+  [`${basePath}/active/{id}`]: {
+    get: {
+      tags,
+      summary: 'Get active invoice by ID',
+      description: 'Fetch a single invoice restricted to the ACTIVE lifecycle.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Invoice retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: { $ref: '#/components/schemas/InvoiceObject' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  ...(options.includeAllItems
+    ? {
+        [`${basePath}/items`]: {
+          get: {
+            tags,
+            summary: 'List all invoice items',
+            description:
+              'Get a paginated list of invoice line items across invoices, optionally filtered by invoice.',
+            security: [{ bearerAuth: [] }],
+            parameters: [
+              ...paginationParams,
+              {
+                in: 'query',
+                name: 'invoiceId',
+                schema: { type: 'string', format: 'uuid' },
+              },
+              {
+                in: 'query',
+                name: 'searchKey',
+                schema: { type: 'string' },
+              },
+            ],
+            responses: {
+              200: itemsListResponse,
+              ...errors,
+            },
+          },
+        },
+      }
+    : {}),
   [`${basePath}/{id}`]: {
     get: {
       tags,
@@ -99,6 +230,18 @@ const buildInvoicePaths = (basePath: string, tags: string[]) => ({
           name: 'id',
           required: true,
           schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'invoiceType',
+          description: 'Defaults to FINAL when omitted.',
+          schema: { type: 'string', enum: ['PROFORMA', 'FINAL'] },
+        },
+        {
+          in: 'query',
+          name: 'lifecycle',
+          description: 'Defaults to ACTIVE when omitted.',
+          schema: { type: 'string', enum: ['ACTIVE', 'VOID'] },
         },
       ],
       responses: {
@@ -279,9 +422,142 @@ const buildInvoicePaths = (basePath: string, tags: string[]) => ({
       },
     },
   },
+  [`${basePath}/{id}/finalize`]: {
+    post: {
+      tags,
+      summary: 'Finalize a proforma invoice',
+      description:
+        'Convert a PROFORMA invoice into a FINAL invoice. The final invoice is rebuilt entirely from the supplied items (full replacement).',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/FinalizeInvoiceBody' },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: 'Invoice finalized successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Invoice finalized successfully',
+                  },
+                  data: { $ref: '#/components/schemas/InvoiceObject' },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
+  [`${basePath}/{id}/pdf`]: {
+    post: {
+      tags,
+      summary: 'Request invoice PDF generation',
+      description:
+        'Queue asynchronous PDF generation for an invoice. Returns immediately with the current pdfStatus; poll GET /{id}/pdf for the result.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        202: {
+          description: 'PDF generation queued',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Invoice PDF generation queued',
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      pdfStatus: {
+                        type: 'string',
+                        enum: ['PENDING', 'PROCESSING', 'READY', 'FAILED'],
+                        example: 'PENDING',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+    get: {
+      tags,
+      summary: 'Get invoice PDF status',
+      description:
+        'Get the current PDF generation status. When READY, a signed, time-limited downloadUrl is returned.',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          in: 'path',
+          name: 'id',
+          required: true,
+          schema: { type: 'string', format: 'uuid' },
+        },
+      ],
+      responses: {
+        200: {
+          description: 'Invoice PDF status retrieved',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: {
+                    type: 'string',
+                    example: 'Invoice PDF status retrieved',
+                  },
+                  data: {
+                    $ref: '#/components/schemas/InvoicePdfStatusObject',
+                  },
+                },
+              },
+            },
+          },
+        },
+        ...errors,
+      },
+    },
+  },
 });
 
 export const InvoicePaths = {
   ...buildInvoicePaths('/api/domain/invoices', ['Invoices']),
-  ...buildInvoicePaths('/api/user/invoices', ['User Invoices']),
+  ...buildInvoicePaths('/api/user/invoices', ['User Invoices'], {
+    includeAllItems: true,
+  }),
 };
