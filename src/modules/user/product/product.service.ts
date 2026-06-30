@@ -2,6 +2,7 @@ import { Messages } from '../../../constants/index.js';
 import {
   ProductRepository,
   productUomRepository,
+  ProductGradeRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizeStatus } from '../../../utils/validation.js';
@@ -87,8 +88,8 @@ export const ProductService = {
             .join(' ')
             .toLowerCase();
 
-          await tx.productGrades.create({
-            data: {
+          await ProductGradeRepository.create(
+            {
               productId: product.id,
               gradeDisplayName: g.gradeDisplayName,
               gradeCode: gCode,
@@ -97,7 +98,8 @@ export const ProductService = {
               domainId,
               isDeleted: false,
             },
-          });
+            tx,
+          );
         }
       }
 
@@ -407,19 +409,20 @@ export const ProductService = {
 
         if (grade.id) {
           // Update existing
-          await tx.productGrades.update({
-            where: { id: grade.id },
-            data: {
+          await ProductGradeRepository.update(
+            grade.id,
+            {
               gradeDisplayName: grade.gradeDisplayName,
               gradeCode: gCode,
               searchText,
               status: grade.status ? normalizeStatus(grade.status) : undefined,
             },
-          });
+            tx,
+          );
         } else {
           // Create new
-          await tx.productGrades.create({
-            data: {
+          await ProductGradeRepository.create(
+            {
               productId,
               domainId,
               gradeDisplayName: grade.gradeDisplayName,
@@ -428,7 +431,8 @@ export const ProductService = {
               status: normalizeStatus(grade.status),
               isDeleted: false,
             },
-          });
+            tx,
+          );
         }
       }
     });
@@ -470,10 +474,13 @@ export const ProductService = {
 
   async bulkDeleteGrades(domainId: string, productId: string, ids: string[]) {
     await transaction(async (tx: any) => {
-      await tx.productGrades.updateMany({
-        where: { id: { in: ids }, productId, domainId },
-        data: { isDeleted: true },
-      });
+      await ProductGradeRepository.updateMany(
+        {
+          where: { id: { in: ids }, productId, domainId },
+          data: { isDeleted: true },
+        },
+        tx,
+      );
     });
   },
 

@@ -42,6 +42,12 @@ export const VehicleRepository = {
     });
   },
 
+  findFirstByDomain(domainId: string) {
+    return prisma.vehicle.findFirst({
+      where: { domainId, isDeleted: false },
+    });
+  },
+
   findByIdWithDetails(id: string, domainId: string) {
     return prisma.vehicle.findFirst({
       where: { id, domainId, isDeleted: false },

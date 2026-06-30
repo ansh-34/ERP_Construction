@@ -942,4 +942,30 @@ export const invoiceRepository = {
   countWhere(args: any) {
     return prisma.invoice.count(args);
   },
+
+  findByIdWithDetailsOnly(id: string) {
+    return prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: true,
+            uom: true,
+          },
+        },
+        project: true,
+        domain: true,
+      },
+    });
+  },
+
+  findActiveTemplate(domainId: string) {
+    return prisma.invoiceTemplate.findFirst({
+      where: {
+        domainId,
+        isDeleted: false,
+        status: 'ACTIVE',
+      },
+    });
+  },
 };

@@ -95,8 +95,9 @@ export const ProductGradeRepository = {
     return prisma.productGrades.count(args);
   },
 
-  create(data: any) {
-    return prisma.productGrades.create({ data });
+  create(data: any, tx?: any) {
+    const client = tx || prisma;
+    return client.productGrades.create({ data });
   },
 
   update(id: string, data: any, tx?: any) {
