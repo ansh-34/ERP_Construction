@@ -86,13 +86,7 @@ export const cloneIndustryTemplates = async ({
     const parentInfo = ic.parentId ? categoryMap.get(ic.parentId) : null;
     const id = randomUUID();
     const level = parentInfo ? parentInfo.level + 1 : 0;
-    const siblingIndex = await accountCategoryRepository.countSiblings(
-      domainId,
-      parentInfo?.id ?? null,
-    );
-    const path = parentInfo
-      ? `${parentInfo.path}/${siblingIndex}`
-      : `${siblingIndex}`;
+    const path = parentInfo ? `${parentInfo.path}/${id}` : id;
 
     await accountCategoryRepository.create({
       id,
@@ -140,13 +134,7 @@ export const cloneIndustryTemplates = async ({
     const parentInfo = ia.parentId ? accountMap.get(ia.parentId) : null;
     const id = randomUUID();
     const level = parentInfo ? parentInfo.level + 1 : 0;
-    const siblingIndex = await accountRepository.countSiblings(
-      domainId,
-      parentInfo?.id ?? null,
-    );
-    const path = parentInfo
-      ? `${parentInfo.path}/${siblingIndex}`
-      : `${siblingIndex}`;
+    const path = parentInfo ? `${parentInfo.path}/${id}` : id;
 
     await accountRepository.create({
       id,

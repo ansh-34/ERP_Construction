@@ -60,7 +60,9 @@ export interface CreateFuelLogInput {
 }
 
 const fuelLogInclude = {
-  fuelUom: { select: { id: true, code: true, displayName: true } },
+  fuelUom: {
+    select: { symbol: true, id: true, code: true, displayName: true },
+  },
   project: { select: { id: true, code: true, name: true, status: true } },
   inventoryFuelStock: true,
   vehicle: { select: { id: true, numberPlate: true, vehicleType: true } },

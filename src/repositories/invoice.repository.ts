@@ -155,7 +155,7 @@ export const invoiceRepository = {
               productGrade: {
                 select: { gradeDisplayName: true, gradeCode: true },
               },
-              uom: { select: { displayName: true, code: true } },
+              uom: { select: { symbol: true, displayName: true, code: true } },
             },
           },
           purchaseOrder: { select: { id: true, code: true } },
@@ -222,7 +222,7 @@ export const invoiceRepository = {
             productGrade: {
               select: { gradeDisplayName: true, gradeCode: true },
             },
-            uom: { select: { displayName: true, code: true } },
+            uom: { select: { symbol: true, displayName: true, code: true } },
           },
         },
         purchaseOrder: { select: { id: true, code: true } },
@@ -283,7 +283,7 @@ export const invoiceRepository = {
               productGrade: {
                 select: { gradeDisplayName: true, gradeCode: true },
               },
-              uom: { select: { displayName: true, code: true } },
+              uom: { select: { symbol: true, displayName: true, code: true } },
             },
           },
           purchaseOrder: { select: { id: true, code: true } },
@@ -305,7 +305,7 @@ export const invoiceRepository = {
             productGrade: {
               select: { gradeDisplayName: true, gradeCode: true },
             },
-            uom: { select: { displayName: true, code: true } },
+            uom: { select: { symbol: true, displayName: true, code: true } },
           },
         },
         purchaseOrder: { select: { id: true, code: true } },
@@ -331,7 +331,7 @@ export const invoiceRepository = {
         productGrade: {
           select: { gradeDisplayName: true, gradeCode: true },
         },
-        uom: { select: { displayName: true, code: true } },
+        uom: { select: { symbol: true, displayName: true, code: true } },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -423,7 +423,7 @@ export const invoiceRepository = {
         productGrade: {
           select: { gradeDisplayName: true, gradeCode: true },
         },
-        uom: { select: { displayName: true, code: true } },
+        uom: { select: { symbol: true, displayName: true, code: true } },
       },
     });
   },
@@ -436,7 +436,7 @@ export const invoiceRepository = {
         productGrade: {
           select: { gradeDisplayName: true, gradeCode: true },
         },
-        uom: { select: { displayName: true, code: true } },
+        uom: { select: { symbol: true, displayName: true, code: true } },
       },
     });
   },
@@ -540,7 +540,7 @@ export const invoiceRepository = {
           },
           include: {
             vendor: { select: { id: true, name: true } },
-            uom: { select: { code: true, displayName: true } },
+            uom: { select: { symbol: true, code: true, displayName: true } },
           },
         });
         if (!pricing) {
@@ -731,7 +731,9 @@ export const invoiceRepository = {
                 productGrade: {
                   select: { gradeDisplayName: true, gradeCode: true },
                 },
-                uom: { select: { displayName: true, code: true } },
+                uom: {
+                  select: { symbol: true, displayName: true, code: true },
+                },
               },
             },
             purchaseOrder: { select: { id: true, code: true } },
@@ -919,7 +921,7 @@ export const invoiceRepository = {
               productGrade: {
                 select: { gradeDisplayName: true, gradeCode: true },
               },
-              uom: { select: { displayName: true, code: true } },
+              uom: { select: { symbol: true, displayName: true, code: true } },
             },
           },
           purchaseOrder: { select: { id: true, code: true } },

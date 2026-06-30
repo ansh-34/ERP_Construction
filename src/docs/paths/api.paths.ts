@@ -48,6 +48,11 @@ import { CustomerPaths } from './customer.paths.js';
 import { CustomerRatePaths } from './customerRate.paths.js';
 import { SaleOrderPaths } from './saleOrder.paths.js';
 import { WeighBridgePaths } from './weighBridge.paths.js';
+import { AccountCategoryPaths } from './accountCategory.paths.js';
+import { AccountPaths } from './account.paths.js';
+import { CostCenterPaths } from './costCenter.paths.js';
+import { GeneralLedgerPaths } from './generalLedger.paths.js';
+import { AccountBalancePaths } from './accountBalance.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -100,4 +105,9 @@ export const ApiPaths = {
   ...CustomerRatePaths,
   ...SaleOrderPaths,
   ...WeighBridgePaths,
+  ...AccountCategoryPaths,
+  ...AccountPaths,
+  ...CostCenterPaths,
+  ...GeneralLedgerPaths,
+  ...AccountBalancePaths,
 };

@@ -1547,7 +1547,14 @@ async function getProductInventoryReport(
             where: { isDeleted: false },
             orderBy: { lastPurchaseDate: 'desc' },
             include: {
-              uom: { select: { id: true, code: true, displayName: true } },
+              uom: {
+                select: {
+                  symbol: true,
+                  id: true,
+                  code: true,
+                  displayName: true,
+                },
+              },
             },
           },
         },

@@ -94,7 +94,7 @@ export const GrnService = {
 
         const vendorPricing = (await vendorProductPriceRepository.findFirst({
           where: {
-            vendorName: invoice.vendorName,
+            vendor: { name: invoice.vendorName },
             productId: p.productId,
             productGradeId: invoiceItem.productGradeId ?? undefined,
             uomId: invoiceItem.uomId,

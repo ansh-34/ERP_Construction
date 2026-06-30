@@ -283,7 +283,14 @@ export const ProductGradeService = {
               vendorId: true,
               vendorName: true,
               uomId: true,
-              uom: { select: { id: true, code: true, displayName: true } },
+              uom: {
+                select: {
+                  symbol: true,
+                  id: true,
+                  code: true,
+                  displayName: true,
+                },
+              },
               lastPurchaseDate: true,
             },
           },
@@ -349,7 +356,14 @@ export const ProductGradeService = {
               where: { isDeleted: false },
               orderBy: { lastPurchaseDate: 'desc' },
               include: {
-                uom: { select: { id: true, code: true, displayName: true } },
+                uom: {
+                  select: {
+                    symbol: true,
+                    id: true,
+                    code: true,
+                    displayName: true,
+                  },
+                },
               },
             },
           },

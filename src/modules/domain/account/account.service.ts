@@ -85,11 +85,7 @@ export const AccountService = {
     }
 
     const id = randomUUID();
-    const siblingIndex = await accountRepository.countSiblings(
-      domainId,
-      dto.parentId ?? null,
-    );
-    const path = parent ? `${parent.path}/${siblingIndex}` : `${siblingIndex}`;
+    const path = parent ? `${parent.path}/${id}` : id;
 
     const created = await accountRepository.create({
       id,
