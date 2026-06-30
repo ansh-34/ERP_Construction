@@ -14,6 +14,22 @@ export const ProductSchemas = {
         example: 'RAW_MATERIAL',
       },
       status: { type: 'string', default: 'active' },
+      uoms: {
+        type: 'array',
+        description:
+          'Optional array of UOM assignments to create with the product.',
+        items: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              example: '55555555-5555-5555-5555-555555555501',
+            },
+          },
+        },
+      },
       grades: {
         type: 'array',
         description:
@@ -34,6 +50,22 @@ export const ProductSchemas = {
         enum: ['RAW_MATERIAL', 'FINISHED_PRODUCT'],
       },
       status: { type: 'string', example: 'inactive' },
+      uoms: {
+        type: 'array',
+        description:
+          'Optional array of UOM assignments to associate with the product.',
+        items: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              example: '55555555-5555-5555-5555-555555555501',
+            },
+          },
+        },
+      },
       grades: {
         type: 'array',
         description:
@@ -420,32 +452,36 @@ export const ProductSchemas = {
         type: 'string',
         example: 'Product grade retrieved successfully.',
       },
-      data: {
+      pagination: {
         type: 'object',
         properties: {
-          data: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string', format: 'uuid' },
-                gradeCode: { type: 'string', example: 'MS_ROD' },
-                gradeDisplayName: { type: 'string', example: 'MS Rod' },
-                product: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    code: { type: 'string', example: 'AGGRO_STEEL' },
-                    displayName: { type: 'string', example: 'Aggro Steel' },
-                  },
-                },
-              },
-            },
-          },
           total: { type: 'integer', example: 14 },
           page: { type: 'integer', example: 1 },
           limit: { type: 'integer', example: 10 },
           totalPages: { type: 'integer', example: 2 },
+        },
+      },
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            gradeCode: { type: 'string', example: 'MS_ROD' },
+            gradeDisplayName: { type: 'string', example: 'MS Rod' },
+            status: { type: 'string', example: 'ACTIVE' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            productId: { type: 'string', format: 'uuid' },
+            product: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                code: { type: 'string', example: 'AGGRO_STEEL' },
+                displayName: { type: 'string', example: 'Aggro Steel' },
+              },
+            },
+          },
         },
       },
     },
@@ -459,69 +495,160 @@ export const ProductSchemas = {
         type: 'string',
         example: 'Product grade retrieved successfully.',
       },
+      product: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          code: { type: 'string', example: 'AGGRO_STEEL' },
+          displayName: { type: 'string', example: 'Aggro Steel' },
+        },
+      },
+      pagination: {
+        type: 'object',
+        properties: {
+          total: { type: 'integer', example: 2 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 1 },
+        },
+      },
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            gradeCode: { type: 'string', example: 'FINAL_B' },
+            gradeDisplayName: {
+              type: 'string',
+              example: 'Final Grade B',
+            },
+            status: { type: 'string', example: 'ACTIVE' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            lastPurchaseRates: {
+              type: 'array',
+              description: 'Latest purchase rate per UOM',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  vendorName: {
+                    type: 'string',
+                    example: 'ABC Traders',
+                  },
+                  lastPrice: { type: 'number', example: 90000 },
+                  purchaseType: {
+                    type: 'string',
+                    enum: ['IMPORT', 'LOCAL'],
+                    nullable: true,
+                    example: 'LOCAL',
+                  },
+                  lastPurchaseDate: {
+                    type: 'string',
+                    format: 'date-time',
+                  },
+                  uomId: { type: 'string', format: 'uuid' },
+                  uomCode: { type: 'string', example: 'KG' },
+                  uomName: {
+                    type: 'object',
+                    example: { en: 'Kilogram' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
+  ProductGradeDetailResponse: {
+    type: 'object',
+    properties: {
+      success: { type: 'boolean', example: true },
+      message: {
+        type: 'string',
+        example: 'Product grade retrieved successfully',
+      },
       data: {
         type: 'object',
         properties: {
-          product: {
+          id: { type: 'string', format: 'uuid' },
+          displayName: {
+            oneOf: [{ type: 'object' }, { type: 'string' }],
+            example: 'Portland Cement',
+          },
+          code: { type: 'string', example: 'PRD-001' },
+          productType: {
+            type: 'string',
+            enum: ['RAW_MATERIAL', 'FINISHED_PRODUCT'],
+            example: 'RAW_MATERIAL',
+          },
+          status: { type: 'string', example: 'ACTIVE' },
+          domainId: { type: 'string', format: 'uuid' },
+          searchText: { type: 'string', example: 'portland cement' },
+          isDeleted: { type: 'boolean', example: false },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          productGrade: {
             type: 'object',
             properties: {
               id: { type: 'string', format: 'uuid' },
-              code: { type: 'string', example: 'AGGRO_STEEL' },
-              displayName: { type: 'string', example: 'Aggro Steel' },
-            },
-          },
-          grades: {
-            type: 'object',
-            properties: {
-              data: {
+              gradeDisplayName: {
+                oneOf: [{ type: 'object' }, { type: 'string' }],
+                example: 'Grade 43',
+              },
+              gradeCode: { type: 'string', example: 'GRD-43' },
+              status: { type: 'string', example: 'ACTIVE' },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' },
+              lastPurchaseRates: {
                 type: 'array',
+                description: 'Latest purchase rate per UOM',
                 items: {
                   type: 'object',
                   properties: {
                     id: { type: 'string', format: 'uuid' },
-                    gradeCode: { type: 'string', example: 'FINAL_B' },
-                    gradeDisplayName: {
+                    lastPrice: { type: 'number', example: 420 },
+                    purchaseType: {
                       type: 'string',
-                      example: 'Final Grade B',
+                      enum: ['IMPORT', 'LOCAL'],
+                      nullable: true,
+                      example: 'LOCAL',
                     },
-                    lastPurchaseRates: {
-                      type: 'array',
-                      description: 'Latest purchase rate per UOM',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          id: { type: 'string', format: 'uuid' },
-                          vendorName: {
-                            type: 'string',
-                            example: 'ABC Traders',
-                          },
-                          lastPrice: { type: 'number', example: 90000 },
-                          purchaseType: {
-                            type: 'string',
-                            enum: ['IMPORT', 'LOCAL'],
-                            nullable: true,
-                            example: 'LOCAL',
-                          },
-                          lastPurchaseDate: {
-                            type: 'string',
-                            format: 'date-time',
-                          },
-                          uomId: { type: 'string', format: 'uuid' },
-                          uomCode: { type: 'string', example: 'KG' },
-                          uomName: {
-                            type: 'object',
-                            example: { en: 'Kilogram' },
-                          },
+                    currencyId: { type: 'string', format: 'uuid' },
+                    vendorId: { type: 'string', format: 'uuid' },
+                    vendorName: { type: 'string', example: 'Shree Cement Ltd' },
+                    lastInvoiceId: {
+                      type: 'string',
+                      format: 'uuid',
+                      nullable: true,
+                    },
+                    lastPurchaseDate: { type: 'string', format: 'date-time' },
+                    uomId: { type: 'string', format: 'uuid' },
+                    uom: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        displayName: {
+                          oneOf: [{ type: 'object' }, { type: 'string' }],
+                          example: 'Bag',
                         },
+                        code: { type: 'string', example: 'BAG' },
+                        symbol: { type: 'string', example: 'bg' },
                       },
+                    },
+                    status: { type: 'string', example: 'ACTIVE' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    uomCode: { type: 'string', example: 'BAG' },
+                    uomName: {
+                      oneOf: [{ type: 'object' }, { type: 'string' }],
+                      example: 'Bag',
                     },
                   },
                 },
               },
-              total: { type: 'integer', example: 2 },
-              page: { type: 'integer', example: 1 },
-              limit: { type: 'integer', example: 10 },
-              totalPages: { type: 'integer', example: 1 },
             },
           },
         },
