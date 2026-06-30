@@ -170,3 +170,30 @@ export const NotificationPaths = {
     },
   },
 };
+
+Object.assign(NotificationPaths, {
+  '/api/user/notifications': {
+    get: {
+      ...NotificationPaths['/api/domain/notifications'].get,
+      tags: ['User Notifications'],
+    },
+  },
+  '/api/user/notifications/read-all': {
+    put: {
+      ...NotificationPaths['/api/domain/notifications/read-all'].put,
+      tags: ['User Notifications'],
+    },
+  },
+  '/api/user/notifications/{id}': {
+    get: {
+      ...NotificationPaths['/api/domain/notifications/{id}'].get,
+      tags: ['User Notifications'],
+    },
+  },
+  '/api/user/notifications/{id}/read': {
+    put: {
+      ...NotificationPaths['/api/domain/notifications/{id}/read'].put,
+      tags: ['User Notifications'],
+    },
+  },
+});

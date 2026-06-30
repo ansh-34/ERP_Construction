@@ -184,3 +184,24 @@ export const AlertPaths = {
     },
   },
 };
+
+Object.assign(AlertPaths, {
+  '/api/user/alerts': {
+    get: {
+      ...AlertPaths['/api/domain/alerts'].get,
+      tags: ['User Alerts'],
+    },
+  },
+  '/api/user/alerts/{id}': {
+    get: {
+      ...AlertPaths['/api/domain/alerts/{id}'].get,
+      tags: ['User Alerts'],
+    },
+  },
+  '/api/user/alerts/{id}/status': {
+    put: {
+      ...AlertPaths['/api/domain/alerts/{id}/status'].put,
+      tags: ['User Alerts'],
+    },
+  },
+});

@@ -1,23 +1,12 @@
 import prisma from '../infra/database/prisma/prisma.client.js';
 import { ApprovalStatus } from '../infra/database/prisma/generated/prisma/client/enums.js';
 
-const toDisplayString = (value: unknown): string => {
-  if (typeof value === 'string') return value;
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    if (typeof record.en === 'string') return record.en;
-    if (typeof record.name === 'string') return record.name;
-  }
-  return JSON.stringify(value ?? '');
-};
-
 export const GrnRepository = {
   mapGrnProduct(product: any) {
     if (!product) return product;
     const quantity = product.quantity ?? 0;
     const rate = product.rate ?? 0;
-    const tax = product.tax ?? 0;
-    product.amt = quantity * rate + tax;
+    product.amt = quantity * rate;
     return product;
   },
 
@@ -77,7 +66,7 @@ export const GrnRepository = {
 
       const res = await tx.grn.findFirst({
         where: { id: grn.id },
-        include: { grnProducts: { include: { uom: true } } },
+        include: { grnProducts: { include: { uom: true, product: true } } },
       });
       return GrnRepository.mapGrn(res);
     });
@@ -117,7 +106,6 @@ export const GrnRepository = {
 
     const invoiceItems = await tx.invoiceItem.findMany({
       where: { invoiceId, domainId },
-      include: { product: true },
     });
 
     const totalItems = invoiceItems.reduce(
@@ -126,13 +114,9 @@ export const GrnRepository = {
     );
 
     for (const item of invoiceItems) {
-      const materialName =
-        item.description ||
-        toDisplayString(item.product?.displayName) ||
-        'Unknown Material';
       const receivedQuantity = grnProducts
         .filter(
-          (p: any) => p.uomId === item.uomId && p.material === materialName,
+          (p: any) => p.uomId === item.uomId && p.productId === item.productId,
         )
         .reduce((sum: number, p: any) => sum + p.quantity, 0);
 
@@ -156,9 +140,6 @@ export const GrnRepository = {
   async recalculateGrnTotals(tx: any, grnId: string, domainId: string) {
     const totals = await tx.grnProduct.aggregate({
       where: { grnId, domainId, isDeleted: false },
-      _sum: {
-        tax: true,
-      },
       _count: {
         _all: true,
       },
@@ -169,17 +150,15 @@ export const GrnRepository = {
       select: { quantity: true, rate: true },
     });
 
-    const totalAmount =
-      products.reduce((sum: number, p: any) => sum + p.quantity * p.rate, 0) +
-      (totals._sum.tax || 0);
-
-    const totalTax = totals._sum.tax || 0;
+    const totalAmount = products.reduce(
+      (sum: number, p: any) => sum + p.quantity * p.rate,
+      0,
+    );
 
     const updatedGrn = await tx.grn.update({
       where: { id: grnId },
       data: {
         totalItems: totals._count._all,
-        totalTax,
         totalAmount,
       },
       select: { invoiceId: true },
@@ -210,7 +189,7 @@ export const GrnRepository = {
           invoice: true,
           grnProducts: {
             where: { isDeleted: false },
-            include: { uom: true, project: true, invoice: true },
+            include: { uom: true, product: true, project: true, invoice: true },
           },
         },
       });
@@ -279,7 +258,7 @@ export const GrnRepository = {
           invoice: true,
           grnProducts: {
             where: { isDeleted: false },
-            include: { uom: true, invoice: true },
+            include: { uom: true, product: true, invoice: true },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -444,6 +423,7 @@ export const GrnRepository = {
           grnId,
           domainId,
         },
+        include: { uom: true, product: true },
       });
       await GrnRepository.recalculateGrnTotals(tx, grnId, domainId);
       return GrnRepository.mapGrnProduct(product);
@@ -453,7 +433,7 @@ export const GrnRepository = {
   async listGrnProducts(grnId: string, domainId: string) {
     const products = await prisma.grnProduct.findMany({
       where: { grnId, domainId, isDeleted: false },
-      include: { uom: true },
+      include: { uom: true, product: true },
       orderBy: { createdAt: 'asc' },
     });
     return products.map(GrnRepository.mapGrnProduct);
@@ -476,6 +456,7 @@ export const GrnRepository = {
       const product = await tx.grnProduct.update({
         where: { id },
         data,
+        include: { uom: true, product: true },
       });
       await GrnRepository.recalculateGrnTotals(tx, grnId, domainId);
       return GrnRepository.mapGrnProduct(product);

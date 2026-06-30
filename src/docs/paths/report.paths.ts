@@ -2889,3 +2889,85 @@ export const ReportPaths = {
     },
   },
 };
+
+Object.assign(ReportPaths, {
+  '/api/user/report/machine-summary': {
+    get: {
+      ...ReportPaths['/api/domain/report/machine-summary'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/machine-summary/summary': {
+    get: {
+      ...ReportPaths['/api/domain/report/machine-summary/summary'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/machine-summary/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/machine-summary/export'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/project-summary': {
+    get: {
+      ...ReportPaths['/api/domain/report/project-summary'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/project-summary/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/project-summary/export'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/project-user-task': {
+    get: {
+      ...ReportPaths['/api/domain/report/project-user-task'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/project-user-task/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/project-user-task/export'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/product-inventory': {
+    get: {
+      ...ReportPaths['/api/domain/report/product-inventory'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/product-inventory/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/product-inventory/export'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/vendor-purchase-history': {
+    get: {
+      ...ReportPaths['/api/domain/report/vendor-purchase-history'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/vendor-purchase-history/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/vendor-purchase-history/export'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/product-transaction-history': {
+    get: {
+      ...ReportPaths['/api/domain/report/product-transaction-history'].get,
+      tags: ['User Reports'],
+    },
+  },
+  '/api/user/report/product-transaction-history/export': {
+    get: {
+      ...ReportPaths['/api/domain/report/product-transaction-history/export']
+        .get,
+      tags: ['User Reports'],
+    },
+  },
+});

@@ -10,17 +10,6 @@ import {
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { ApprovalStatus } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
-import { transaction } from '../../../infra/database/prisma/transaction.js';
-
-const toMaterialName = (value: unknown): string => {
-  if (typeof value === 'string') return value;
-  if (value && typeof value === 'object') {
-    const r = value as Record<string, unknown>;
-    if (typeof r.en === 'string') return r.en;
-    if (typeof r.name === 'string') return r.name;
-  }
-  return 'Unknown Material';
-};
 
 export interface GrnExcelWorksheet {
   name: string;
@@ -110,13 +99,9 @@ export const GrnService = {
             : 0;
 
         grnProducts.push({
-          material:
-            invoiceItem.description ||
-            toMaterialName(invoiceItem.product?.displayName),
           productId: invoiceItem.productId,
           productGradeId: invoiceItem.productGradeId ?? null,
           quantity: p.quantity,
-          tax: 0,
           rate,
           uomId: invoiceItem.uomId,
           projectId: invoice.projectId,
@@ -138,7 +123,6 @@ export const GrnService = {
           referenceType: 'INVOICE',
           invoiceId: invoice.id,
           totalItems,
-          totalTax: 0,
           totalAmount,
           code,
           domainId,
@@ -198,11 +182,9 @@ export const GrnService = {
             : null;
 
         grnProducts.push({
-          material: toMaterialName(poItem.productName),
           productId: product?.id ?? null,
           productGradeId: productGrade?.id ?? null,
           quantity: p.quantity,
-          tax: 0,
           rate: p.rate,
           currencyId: p.currencyId,
           uomId: poItem.uomId,
@@ -225,7 +207,6 @@ export const GrnService = {
           referenceType: 'PO',
           invoiceId: null,
           totalItems,
-          totalTax: 0,
           totalAmount,
           code,
           domainId,
@@ -255,11 +236,9 @@ export const GrnService = {
       if (!product) throw new Error(`Product ${p.productId} not found`);
 
       grnProducts.push({
-        material: toMaterialName(product.displayName),
         productId: product.id,
         productGradeId: p.productGradeId,
         quantity: p.quantity,
-        tax: 0,
         rate: p.rate ?? 0,
         currencyId: p.currencyId,
         uomId: p.uomId,
@@ -282,7 +261,6 @@ export const GrnService = {
         referenceType: 'NA',
         invoiceId: null,
         totalItems,
-        totalTax: 0,
         totalAmount,
         code,
         domainId,
@@ -342,11 +320,10 @@ export const GrnService = {
     const grn: any = await GrnService.getGrnById(domainId, id);
     const detailsColumns = ['Field', 'Value'];
     const productColumns = [
-      'Material',
+      'Product',
       'Quantity',
       'UOM',
       'Rate',
-      'Tax',
       'Amount',
       'Project',
       'Invoice',
@@ -367,12 +344,11 @@ export const GrnService = {
       { Field: 'Approval Status', Value: grn.approvalStatus },
       { Field: 'Status', Value: grn.status },
       { Field: 'Total Items', Value: grn.totalItems ?? 0 },
-      { Field: 'Total Tax', Value: grn.totalTax ?? 0 },
       { Field: 'Total Amount', Value: grn.totalAmount ?? 0 },
     ];
 
     const productRows = (grn.grnProducts || []).map((product: any) => ({
-      Material: product.material ?? '',
+      Product: toDisplayString(product.product?.displayName),
       Quantity: product.quantity ?? 0,
       UOM:
         product.uom?.code ??
@@ -380,7 +356,6 @@ export const GrnService = {
         product.uomId ??
         '',
       Rate: product.rate ?? 0,
-      Tax: product.tax ?? 0,
       Amount: product.amt ?? (product.quantity ?? 0) * (product.rate ?? 0),
       Project:
         toDisplayString(product.project?.name) ||
@@ -405,10 +380,6 @@ export const GrnService = {
     id: string,
     data: {
       wbReference?: string;
-      totalItems?: number;
-      totalTax?: number;
-      totalAmount?: number;
-      grnProducts?: any[];
       status?: 'ACTIVE' | 'INACTIVE';
     },
   ) {
@@ -421,77 +392,25 @@ export const GrnService = {
       throw new Error(Messages.GRN.CANNOT_UPDATE_NON_PENDING);
     }
 
-    const { grnProducts, ...grnData } = data;
+    await GrnRepository.update(id, data);
 
-    return transaction(async (tx) => {
-      const updatedGrn = await GrnRepository.update(id, { ...grnData }, tx);
-
-      if (grnProducts !== undefined) {
-        const finalInvoice = updatedGrn.invoiceId
-          ? ((await invoiceRepository.findFirst(
-              { where: { id: updatedGrn.invoiceId, domainId } },
-              tx,
-            )) as any)
-          : null;
-        const finalVendor = finalInvoice
-          ? finalInvoice.vendorName
-          : updatedGrn.vendorName;
-        const finalProjectId = finalInvoice
-          ? finalInvoice.projectId
-          : updatedGrn.projectId;
-
-        for (const p of grnProducts) {
-          const productData = {
-            material: p.material,
-            quantity: p.quantity,
-            rate: p.rate ?? 0,
-            tax: p.tax ?? 0,
-            uomId: p.uomId,
-          };
-
-          if (p.id) {
-            await GrnRepository.updateGrnProductRaw(
-              p.id,
-              { ...productData, isDeleted: false, status: 'ACTIVE' },
-              tx,
-            );
-          } else {
-            await GrnRepository.createGrnProductRaw(
-              {
-                ...productData,
-                grnId: id,
-                grnCode: updatedGrn.code,
-                date: new Date(),
-                vendor: finalVendor,
-                projectId: finalProjectId,
-                invoiceId: updatedGrn.invoiceId ?? null,
-                domainId,
-                status: 'ACTIVE',
-              },
-              tx,
-            );
-          }
-        }
-
-        await GrnRepository.recalculateGrnTotals(tx, id, domainId);
-      }
-
-      const res = await GrnRepository.findFirst(
-        {
-          where: { id },
+    const res = await GrnRepository.findFirst({
+      where: { id },
+      include: {
+        project: true,
+        invoice: true,
+        grnProducts: {
+          where: { isDeleted: false },
           include: {
+            uom: true,
+            product: true,
             project: true,
             invoice: true,
-            grnProducts: {
-              where: { isDeleted: false },
-              include: { uom: true, project: true, invoice: true },
-            },
           },
         },
-        tx,
-      );
-      return GrnRepository.mapGrn(res);
+      },
     });
+    return GrnRepository.mapGrn(res);
   },
 
   async deleteGrn(domainId: string, id: string) {

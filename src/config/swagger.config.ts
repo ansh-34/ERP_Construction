@@ -78,6 +78,11 @@ export const swaggerSpec = {
     { name: 'User General Ledger' },
     { name: 'Domain Account Balances' },
     { name: 'User Account Balances' },
+    { name: 'Alerts' },
+    { name: 'User Alerts' },
+    { name: 'Notifications' },
+    { name: 'User Notifications' },
+    { name: 'User Reports' },
   ],
   paths: {
     ...ApiPaths,

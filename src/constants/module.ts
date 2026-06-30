@@ -263,4 +263,22 @@ export const modules = [
     },
     code: 'ACCOUNT_BALANCE',
   },
+  {
+    name: {
+      en: 'Alert',
+    },
+    code: 'ALERTS',
+  },
+  {
+    name: {
+      en: 'Notification',
+    },
+    code: 'NOTIFICATIONS',
+  },
+  {
+    name: {
+      en: 'Report',
+    },
+    code: 'REPORT',
+  },
 ];
