@@ -182,13 +182,27 @@ export const ProductService = {
             orderBy: { createdAt: 'desc' },
             select: {
               id: true,
+              gradeDisplayName: true,
+              gradeCode: true,
+              status: true,
             },
           },
           productUoms: {
             where: { isDeleted: false },
             orderBy: { createdAt: 'desc' },
             select: {
+              id: true,
+              status: true,
               uomId: true,
+              uom: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  code: true,
+                  symbol: true,
+                  conversionRate: true,
+                },
+              },
             },
           },
           inventories: {
@@ -228,6 +242,25 @@ export const ProductService = {
         uomsCount: _count?.productUoms || 0,
         gradeIds: (productGrades || []).map((grade: any) => grade.id),
         uomIds: (productUoms || []).map((productUom: any) => productUom.uomId),
+        grades: (productGrades || []).map((grade: any) => ({
+          ...grade,
+          gradeDisplayName: ProductService.localizeName(
+            grade.gradeDisplayName,
+            langCode,
+          ),
+        })),
+        uoms: (productUoms || []).map((productUom: any) => ({
+          ...productUom,
+          uom: productUom.uom
+            ? {
+                ...productUom.uom,
+                displayName: ProductService.localizeName(
+                  productUom.uom.displayName,
+                  langCode,
+                ),
+              }
+            : productUom.uom,
+        })),
         inventories: (inventories || []).map((inv: any) => ({
           ...inv,
           productId: inv.productId,
