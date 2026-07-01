@@ -9,6 +9,13 @@ export const RoleSchemas = {
         example: { en: 'Site Engineer', hi: 'साइट इंजीनियर' },
         additionalProperties: { type: 'string' },
       },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          "//new: Optional. Attaches the role to a DomainUserType mapped to this domain. Validated against the domain's mapped user types. Omit for a standalone role.",
+        example: 'SAFETY_OFFICER_90926',
+      },
       level: { type: 'integer', example: 3 },
     },
   },
@@ -23,6 +30,13 @@ export const RoleSchemas = {
         additionalProperties: { type: 'string' },
       },
       code: { type: 'string', example: 'SENIOR_SITE_ENGINEER' },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          '//new: Set to attach the role to a mapped DomainUserType (validated), or `null` to detach and make it standalone.',
+        example: 'SAFETY_OFFICER_90926',
+      },
       level: { type: 'integer', example: 4 },
       status: {
         type: 'string',
@@ -69,6 +83,13 @@ export const RoleSchemas = {
       name: { type: 'string', example: 'Site Engineer' },
       code: { type: 'string', example: 'site_engineer' },
       searchText: { type: 'string', example: 'site engineer साइट इंजीनियर' },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          '//new: The DomainUserType code this role is attached to, or `null` for a standalone role.',
+        example: 'SAFETY_OFFICER_90926',
+      },
       level: { type: 'integer', example: 3 },
       domainId: {
         type: 'string',

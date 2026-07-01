@@ -95,6 +95,8 @@ export const RoleRepository = {
       searchKey?: string;
       userTypeCode?: string;
       userTypeId?: string;
+      domainUserTypeCode?: string;
+      standalone?: boolean;
     },
   ) {
     const searchKey = filter?.searchKey?.trim() || '';
@@ -104,6 +106,10 @@ export const RoleRepository = {
       ...(filter?.status && { status: filter.status }),
       ...(filter?.userTypeCode && { userTypeCode: filter.userTypeCode }),
       ...(filter?.userTypeId && { userTypeId: filter.userTypeId }),
+      ...(filter?.domainUserTypeCode && {
+        domainUserTypeCode: filter.domainUserTypeCode,
+      }),
+      ...(filter?.standalone === true && { domainUserTypeCode: null }),
       ...(searchKey && {
         searchText: { contains: searchKey, mode: 'insensitive' as const },
       }),

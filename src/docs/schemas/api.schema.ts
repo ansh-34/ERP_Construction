@@ -40,6 +40,7 @@ import { WeighBridgeSchemas } from './weighBridge.schema.js';
 import { AccountCategorySchemas } from './accountCategory.schema.js';
 import { AccountSchemas } from './account.schema.js';
 import { CostCenterSchemas } from './costCenter.schema.js';
+import { DomainUserTypeSchemas } from './domainUserType.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -82,4 +83,5 @@ export const ApiSchemas = {
   ...AccountCategorySchemas,
   ...AccountSchemas,
   ...CostCenterSchemas,
+  ...DomainUserTypeSchemas,
 };

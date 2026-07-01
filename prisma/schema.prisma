@@ -63,6 +63,7 @@ enum IndustryEnum {
   MANUFACTURING
   MINING
   PROPERTY
+  PROPERTY_MANAGEMENT
 }
 
 enum AccountCategoryType {
@@ -170,6 +171,7 @@ model Admin {
   users                      User[]
   roles                      Role[]
   adminUserTypes             AdminUserType[]
+  domainUserTypes            DomainUserType[]
   adminIndustryRoleTemplates AdminIndustryRoleTemplate[]
   accountCategories          AccountCategory[]
   accounts                   Account[]
@@ -311,6 +313,7 @@ model Domain {
   journalEntryLines             JournalEntryLine[]
   generalLedgerEntries          GeneralLedgerEntry[]
   accountBalances               AccountBalance[]
+  domainUserTypes               DomainUserType[]
   admin                         Admin                          @relation(fields: [adminId], references: [id])
   adminId                       String                         @db.Uuid
 
@@ -449,14 +452,15 @@ model Role {
   adminId               String? @db.Uuid
   userTypeId            String? @db.Uuid
   userTypeCode          String?
+  domainUserTypeCode    String?
 
-  admin     Admin?         @relation(fields: [adminId], references: [id])
-  domain    Domain         @relation(fields: [domainId], references: [id])
+  admin     Admin?        @relation(fields: [adminId], references: [id])
+  domain    Domain        @relation(fields: [domainId], references: [id])
   userType  AdminUserType? @relation(fields: [userTypeId], references: [id], onDelete: SetNull)
-  status    StatusEnum     @default(ACTIVE)
-  isDeleted Boolean        @default(false)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  status    StatusEnum    @default(ACTIVE)
+  isDeleted Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   users                 User[]
   roleModulePermissions RoleModulePermission[]
@@ -466,6 +470,7 @@ model Role {
   @@index([createdAt, isDeleted, status])
   @@index([createdAt, isDeleted, domainId])
   @@index([domainId, userTypeCode])
+  @@index([domainId, domainUserTypeCode])
   @@index([userTypeId])
 }
 
@@ -504,6 +509,44 @@ model AdminUserType {
   @@index([createdAt, isDeleted])
   @@index([createdAt, isDeleted, status])
   @@index([adminId, status, isDeleted])
+}
+
+
+model UserType {
+  id           String       @id @default(uuid()) @db.Uuid
+  name         Json         @db.JsonB
+  code         String
+  description  String?
+  industryType IndustryEnum
+  isDeleted    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  domainUserTypes DomainUserType[]
+
+  @@unique([industryType, code, isDeleted])
+  @@index([industryType, isDeleted])
+  @@index([createdAt, isDeleted])
+}
+
+
+model DomainUserType {
+  id         String   @id @default(uuid()) @db.Uuid
+  domainId   String   @db.Uuid
+  domain     Domain   @relation(fields: [domainId], references: [id])
+  adminId    String   @db.Uuid
+  admin      Admin    @relation(fields: [adminId], references: [id])
+  userTypeId String   @db.Uuid
+  userType   UserType @relation(fields: [userTypeId], references: [id])
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([domainId, userTypeId, isDeleted])
+  @@index([domainId, isDeleted])
+  @@index([adminId, isDeleted])
+  @@index([userTypeId, isDeleted])
+  @@index([createdAt, isDeleted])
 }
 
 model AdminIndustryRoleTemplate {

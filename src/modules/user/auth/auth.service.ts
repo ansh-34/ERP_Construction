@@ -566,6 +566,7 @@ export const UserService = {
         id: role.id,
         name: role.name,
         code: (role.code || 'USER').toUpperCase(),
+        domainUserTypeCode: (role as any).domainUserTypeCode ?? null,
       },
       modules,
     };

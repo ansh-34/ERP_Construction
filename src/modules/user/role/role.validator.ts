@@ -18,12 +18,14 @@ const localizedName = z
 
 export const createRoleBodySchema = z.object({
   name: localizedName,
+  domainUserTypeCode: z.string().min(1).optional(),
   level: z.number().optional(),
 });
 
 export const updateRoleBodySchema = z.object({
   name: localizedName.optional(),
   code: z.string().min(1).optional(),
+  domainUserTypeCode: z.string().min(1).nullable().optional(),
   level: z.number().optional(),
   status: statusFilterSchema.shape.status.optional(),
 });
@@ -43,6 +45,10 @@ export const listRolesQuerySchema = paginationQuerySchema
   .merge(statusFilterSchema)
   .extend({
     searchKey: z.string().optional(),
+    domainUserTypeCode: z.string().optional(),
+    standalone: z
+      .preprocess((v) => v === 'true' || v === true, z.boolean())
+      .optional(),
   });
 
 export const roleIdParamsSchema = idParamSchema;

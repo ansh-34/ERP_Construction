@@ -22,6 +22,8 @@ export const swaggerSpec = {
     { name: 'User Auth' },
     { name: 'Domain Users' },
     { name: 'Roles' },
+    { name: 'User Types' },
+    { name: 'Domain User Types' },
     { name: 'Language' },
     { name: 'Vehicles' },
     { name: 'Inventory' },
