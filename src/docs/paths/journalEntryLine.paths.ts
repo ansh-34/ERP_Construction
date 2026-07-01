@@ -1,5 +1,13 @@
 import { errors } from './responses.js';
 
+type SwaggerOperation = {
+  tags?: string[];
+  description?: string;
+  [key: string]: unknown;
+};
+
+type SwaggerPathItem = Record<string, SwaggerOperation>;
+
 const id = {
   in: 'path',
   name: 'id',
@@ -65,7 +73,7 @@ const response = (description: string) => ({
   },
 });
 
-export const JournalEntryLinePaths = {
+const domainJournalEntryLinePaths: Record<string, SwaggerPathItem> = {
   '/api/domain/journal-entry-lines': {
     post: {
       tags: ['Journal Entry Lines'],
@@ -147,4 +155,30 @@ export const JournalEntryLinePaths = {
       },
     },
   },
+};
+
+const userJournalEntryLinePaths = Object.fromEntries(
+  Object.entries(domainJournalEntryLinePaths).map(([path, pathItem]) => [
+    path.replace('/api/domain/', '/api/user/'),
+    Object.fromEntries(
+      Object.entries(pathItem).map(([method, operation]) => [
+        method,
+        {
+          ...operation,
+          tags: ['User Journal Entry Lines'],
+          description: [
+            operation.description,
+            'Requires the corresponding JOURNAL_ENTRY_LINE role permission.',
+          ]
+            .filter(Boolean)
+            .join(' '),
+        },
+      ]),
+    ),
+  ]),
+);
+
+export const JournalEntryLinePaths = {
+  ...domainJournalEntryLinePaths,
+  ...userJournalEntryLinePaths,
 };

@@ -145,6 +145,7 @@ const crudPaths = ({
   createSchema,
   updateSchema,
   entityName,
+  createDescription,
   listParameters,
   detailParameters = [],
 }: {
@@ -154,6 +155,7 @@ const crudPaths = ({
   createSchema: string;
   updateSchema?: string;
   entityName: string;
+  createDescription?: string;
   listParameters: any[];
   detailParameters?: any[];
 }) => ({
@@ -168,6 +170,7 @@ const crudPaths = ({
     post: {
       tags: [tag],
       summary: `Create ${entityName}`,
+      description: createDescription,
       security: [{ bearerAuth: [] }],
       parameters: [languageHeader],
       requestBody: {
@@ -391,6 +394,8 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectUserAssignmentBody',
     updateSchema: 'UpdateProjectUserAssignmentBody',
     entityName: 'Project user assignments',
+    createDescription:
+      'Creates each assignment and one ProjectUserDailyLog row for every date in its inclusive startDate/endDate range. Assignment and generated logs are committed atomically; any generated-log failure rolls back the assignment.',
     listParameters: [
       projectIdQuery,
       userIdQuery,
@@ -735,6 +740,8 @@ export const ProjectPaths = {
     createSchema: 'CreateProjectUserAssignmentBody',
     updateSchema: 'UpdateProjectUserAssignmentBody',
     entityName: 'User project user assignments',
+    createDescription:
+      'Creates each assignment and one ProjectUserDailyLog row for every date in its inclusive startDate/endDate range. Assignment and generated logs are committed atomically; any generated-log failure rolls back the assignment. Requires PROJECT_USER_ASSIGNMENT CREATE permission.',
     listParameters: [
       projectIdQuery,
       userIdQuery,

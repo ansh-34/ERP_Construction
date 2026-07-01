@@ -579,6 +579,8 @@ export const ProjectSchemas = {
   CreateProjectUserAssignmentBody: {
     type: 'array',
     minItems: 1,
+    description:
+      'Each ACTIVE assignment generates one daily-log row per calendar date, including both startDate and endDate.',
     items: {
       type: 'object',
       required: [
@@ -592,8 +594,8 @@ export const ProjectSchemas = {
       properties: {
         projectId: { type: 'string', format: 'uuid' },
         userId: { type: 'string', format: 'uuid' },
-        startDate: { type: 'string', example: '2026-05-18' },
-        endDate: { type: 'string', example: '2026-06-18' },
+        startDate: { type: 'string', example: '2026-07-12' },
+        endDate: { type: 'string', example: '2026-07-14' },
         dailyWorkingHours: { type: 'number', minimum: 0, example: 8 },
         dayCharge: { type: 'number', minimum: 0, example: 1500 },
         notes: { type: 'string', nullable: true },
