@@ -14,7 +14,7 @@ export const accountCategoryRepository = {
     filter?: {
       status?: 'ACTIVE' | 'INACTIVE';
       searchKey?: string;
-      categoryType?: 'ASSET' | 'LIABILITY' | 'REVENUE' | 'EXPENSE';
+      categoryType?: 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE';
       parentId?: string | null;
     },
   ) {
@@ -53,6 +53,12 @@ export const accountCategoryRepository = {
   findByCode(code: string, domainId: string) {
     return prisma.accountCategory.findFirst({
       where: { code, domainId, isDeleted: false },
+    });
+  },
+
+  countSiblings(domainId: string, parentId: string | null) {
+    return prisma.accountCategory.count({
+      where: { domainId, parentId: parentId ?? null },
     });
   },
 

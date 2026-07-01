@@ -62,6 +62,12 @@ export const accountRepository = {
     });
   },
 
+  countSiblings(domainId: string, parentId: string | null) {
+    return prisma.account.count({
+      where: { domainId, parentId: parentId ?? null },
+    });
+  },
+
   update(id: string, data: Prisma.AccountUncheckedUpdateInput) {
     return prisma.account.update({ where: { id }, data });
   },
@@ -69,8 +75,19 @@ export const accountRepository = {
   incrementChildrenCount(id: string, delta: number) {
     return prisma.account.update({
       where: { id },
-      data: { childrenCount: { increment: delta } },
+      data: {
+        childrenCount: { increment: delta },
+        ...(delta > 0 && { isPostingAllowed: false }),
+      },
     });
+  },
+
+  async countLedgerReferences(accountId: string) {
+    const [ledgerCount, balanceCount] = await prisma.$transaction([
+      prisma.generalLedgerEntry.count({ where: { accountId } }),
+      prisma.accountBalance.count({ where: { accountId } }),
+    ]);
+    return ledgerCount + balanceCount;
   },
 
   softDelete(id: string) {

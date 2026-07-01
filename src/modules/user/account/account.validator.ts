@@ -18,7 +18,6 @@ const optionalText = z.string().trim().min(1).optional();
 
 export const createAccountBodySchema = z.object({
   name: localizedName,
-  code: z.string().trim().min(1, 'Account code is required'),
   description: optionalText,
   accountCategoryId: z.string().uuid('Invalid account category ID'),
   parentId: z.string().uuid('Invalid parent ID').optional(),
@@ -35,7 +34,6 @@ export const createAccountBodySchema = z.object({
 
 export const updateAccountBodySchema = z.object({
   name: localizedName.optional(),
-  code: z.string().trim().min(1).optional(),
   description: optionalText,
   accountCategoryId: z.string().uuid('Invalid account category ID').optional(),
   currencyId: z.string().uuid('Invalid currency ID').optional(),

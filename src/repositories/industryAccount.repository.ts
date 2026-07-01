@@ -23,6 +23,13 @@ export const IndustryAccountRepository = {
     });
   },
 
+  findManyByIds(ids: string[]) {
+    return prisma.industryAccount.findMany({
+      where: { id: { in: ids }, isDeleted: false },
+      orderBy: [{ level: 'asc' }, { sortOrder: 'asc' }],
+    });
+  },
+
   currencyExists(id: string) {
     return prisma.currency.findFirst({
       where: { id, status: 'ACTIVE', isDeleted: false },

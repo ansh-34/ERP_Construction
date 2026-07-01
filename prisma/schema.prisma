@@ -190,6 +190,8 @@ model Admin {
   journalEntriesPosted       JournalEntry[]              @relation("JournalEntryPostedBy")
   journalEntries             JournalEntry[]              @relation("JournalEntryOwner")
   journalEntryLines          JournalEntryLine[]
+  generalLedgerEntries       GeneralLedgerEntry[]
+  accountBalances            AccountBalance[]
 
   @@unique([email, isDeleted])
   @@unique([phone, isDeleted])
@@ -307,6 +309,8 @@ model Domain {
   accountingPeriods             AccountingPeriod[]
   journalEntries                JournalEntry[]
   journalEntryLines             JournalEntryLine[]
+  generalLedgerEntries          GeneralLedgerEntry[]
+  accountBalances               AccountBalance[]
   admin                         Admin                          @relation(fields: [adminId], references: [id])
   adminId                       String                         @db.Uuid
 
@@ -2628,25 +2632,14 @@ model WeighBridge {
   @@index([createdAt, isDeleted, domainId])
 }
 
-enum AccountCategoryTypeEnum {
-  ASSET
-  LIABILITY
-  REVENUE
-  EXPENSE
-}
-
-enum NormalBalanceEnum {
-  DEBIT
-  CREDIT
-}
 
 model AccountCategory {
   id               String                  @id @default(uuid()) @db.Uuid
   name             Json                    @db.JsonB
   code             String
   searchText       String                  @default("")
-  categoryType     AccountCategoryTypeEnum
-  normalBalance    NormalBalanceEnum
+  categoryType     AccountCategoryType
+  normalBalance    NormalBalance
   parentId         String?                 @db.Uuid
   parent           AccountCategory?        @relation("AccountCategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   children         AccountCategory[]       @relation("AccountCategoryHierarchy")
@@ -2695,6 +2688,7 @@ model Account {
   isActive          Boolean            @default(true)
   sortOrder         Int                @default(0)
   costCenterId      String?            @db.Uuid
+  costCenter        CostCenter?        @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
   projectId         String?            @db.Uuid
   project           Project?           @relation(fields: [projectId], references: [id], onDelete: Restrict)
   domainId          String             @db.Uuid
@@ -2707,11 +2701,15 @@ model Account {
   updatedAt         DateTime           @updatedAt
   journalEntryLines JournalEntryLine[]
 
+  generalLedgerEntries GeneralLedgerEntry[]
+  accountBalances      AccountBalance[]
+
   @@unique([code, domainId, isDeleted])
   @@index([domainId, isDeleted])
   @@index([adminId])
   @@index([parentId])
   @@index([accountCategoryId])
+  @@index([costCenterId])
   @@index([projectId])
 }
 
@@ -2719,6 +2717,7 @@ model CostCenter {
   id                  String             @id @default(uuid()) @db.Uuid
   name                Json               @db.JsonB
   code                String
+  searchText          String       @default("")
   description         String?
   parentId            String?            @db.Uuid
   parent              CostCenter?        @relation("CostCenterHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
@@ -2738,6 +2737,7 @@ model CostCenter {
   domain              Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
   adminId             String             @db.Uuid
   admin               Admin              @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  accounts            Account[]
   status              StatusEnum         @default(ACTIVE)
   isDeleted           Boolean            @default(false)
   createdAt           DateTime           @default(now())
@@ -2749,6 +2749,71 @@ model CostCenter {
   @@index([domainId, isDeleted])
   @@index([adminId])
   @@index([parentId])
+  @@index([costCenterId])
+  @@index([projectId])
+}
+
+model GeneralLedgerEntry {
+  id                 String   @id @default(uuid()) @db.Uuid
+  journalEntryId     String   @db.Uuid
+  journalEntryLineId String   @db.Uuid
+  accountId          String   @db.Uuid
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  transactionDate    DateTime @db.Date
+  postingDate        DateTime @db.Date
+  fiscalYearId       String   @db.Uuid
+  accountingPeriodId String   @db.Uuid
+  debitAmount        Decimal  @default(0) @db.Decimal(20, 6)
+  creditAmount       Decimal  @default(0) @db.Decimal(20, 6)
+  runningBalance     Decimal? @db.Decimal(20, 6)
+  costCenterId       String?  @db.Uuid
+  projectId          String?  @db.Uuid
+  sourceDocumentId   String?
+  sourceDocumentType String?
+  adminId            String   @db.Uuid
+  admin              Admin    @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  domainId           String   @db.Uuid
+  domain             Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+
+  @@index([accountId, postingDate])
+  @@index([journalEntryId])
+  @@index([journalEntryLineId])
+  @@index([fiscalYearId])
+  @@index([accountingPeriodId])
+  @@index([domainId])
+  @@index([adminId])
+  @@index([costCenterId])
+  @@index([projectId])
+}
+
+model AccountBalance {
+  id                 String   @id @default(uuid()) @db.Uuid
+  accountId          String   @db.Uuid
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  fiscalYearId       String   @db.Uuid
+  accountingPeriodId String   @db.Uuid
+  costCenterId       String?  @db.Uuid
+  projectId          String?  @db.Uuid
+  openingDebit       Decimal  @default(0) @db.Decimal(20, 6)
+  openingCredit      Decimal  @default(0) @db.Decimal(20, 6)
+  periodDebit        Decimal  @default(0) @db.Decimal(20, 6)
+  periodCredit       Decimal  @default(0) @db.Decimal(20, 6)
+  closingDebit       Decimal  @default(0) @db.Decimal(20, 6)
+  closingCredit      Decimal  @default(0) @db.Decimal(20, 6)
+  lastJournalEntryId String?  @db.Uuid
+  adminId            String   @db.Uuid
+  admin              Admin    @relation(fields: [adminId], references: [id], onDelete: Restrict)
+  domainId           String   @db.Uuid
+  domain             Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([accountId, fiscalYearId, accountingPeriodId, costCenterId, projectId, domainId])
+  @@index([domainId])
+  @@index([adminId])
+  @@index([accountingPeriodId])
+  @@index([fiscalYearId])
   @@index([costCenterId])
   @@index([projectId])
 }

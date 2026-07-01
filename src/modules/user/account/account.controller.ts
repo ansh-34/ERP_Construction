@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { HttpStatus, Messages } from '../../../constants/index.js';
 import { resolveHttpStatus } from '../../../utils/httpError.js';
 import { AccountService } from './account.service.js';
+import { translateResponse } from '../../../utils/translation.js';
 
 const errorResponse = (res: Response, error: unknown, fallback: string) => {
   const message = error instanceof Error ? error.message : fallback;
@@ -12,6 +13,7 @@ const errorResponse = (res: Response, error: unknown, fallback: string) => {
 
 export const createAccount = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const data = await AccountService.create(
       req.user!.domainId,
       req.user!.adminId,
@@ -20,7 +22,7 @@ export const createAccount = async (req: Request, res: Response) => {
     return res.status(HttpStatus.CREATED).json({
       success: true,
       message: Messages.ACCOUNT.CREATED,
-      data,
+      data: translateResponse(data, language),
     });
   } catch (error) {
     return errorResponse(res, error, Messages.ACCOUNT.CREATE_FAILED);
@@ -29,6 +31,7 @@ export const createAccount = async (req: Request, res: Response) => {
 
 export const listAccounts = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const { data, pagination } = await AccountService.findAll(
       req.user!.domainId,
       req.user!.adminId,
@@ -38,7 +41,7 @@ export const listAccounts = async (req: Request, res: Response) => {
       success: true,
       message: Messages.ACCOUNT.LIST_RETRIEVED,
       pagination: { currentCount: data.length, ...pagination },
-      data,
+      data: translateResponse(data, language),
     });
   } catch (error) {
     return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
@@ -47,6 +50,7 @@ export const listAccounts = async (req: Request, res: Response) => {
 
 export const getAccountById = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const data = await AccountService.findOne(
       req.user!.domainId,
       req.user!.adminId,
@@ -55,7 +59,7 @@ export const getAccountById = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.ACCOUNT.RETRIEVED,
-      data,
+      data: translateResponse(data, language),
     });
   } catch (error) {
     return errorResponse(res, error, Messages.ACCOUNT.LIST_FAILED);
@@ -64,6 +68,7 @@ export const getAccountById = async (req: Request, res: Response) => {
 
 export const updateAccount = async (req: Request, res: Response) => {
   try {
+    const language = req.headers.language as string | undefined;
     const data = await AccountService.update(
       req.user!.domainId,
       req.user!.adminId,
@@ -73,7 +78,7 @@ export const updateAccount = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json({
       success: true,
       message: Messages.ACCOUNT.UPDATED,
-      data,
+      data: translateResponse(data, language),
     });
   } catch (error) {
     return errorResponse(res, error, Messages.ACCOUNT.UPDATE_FAILED);
