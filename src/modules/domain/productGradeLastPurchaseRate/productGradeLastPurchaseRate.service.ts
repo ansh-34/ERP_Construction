@@ -59,7 +59,7 @@ const includeRelations = {
   productGrade: {
     select: { id: true, gradeCode: true, gradeDisplayName: true },
   },
-  uom: { select: { id: true, code: true, displayName: true } },
+  uom: { select: { symbol: true, id: true, code: true, displayName: true } },
   currency: { select: { id: true, code: true, symbol: true, name: true } },
 };
 

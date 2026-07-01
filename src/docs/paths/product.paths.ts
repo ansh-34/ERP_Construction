@@ -114,7 +114,10 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
             },
           },
         },
-        responses: { ...createdMsg('Product created'), ...errors },
+        responses: {
+          ...createdMsg('Product created', 'ProductDetailResponse'),
+          ...errors,
+        },
       },
     },
     [`${basePath}/{id}`]: {
@@ -164,7 +167,10 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
             },
           },
         },
-        responses: { ...dataMsg('Product updated'), ...errors },
+        responses: {
+          ...dataMsg('Product updated', 'ProductDetailResponse'),
+          ...errors,
+        },
       },
       delete: {
         tags: [productsTag],
@@ -287,7 +293,57 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
             schema: { type: 'integer', minimum: 1, maximum: 100 },
           },
         ],
-        responses: { ...dataMsg('Product grades retrieved'), ...errors },
+        responses: {
+          200: {
+            description: 'Product grades retrieved',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/DomainProductGradesListResponse',
+                },
+              },
+            },
+          },
+          ...errors,
+        },
+      },
+      [`${basePath}/{productId}/grades/last-purchase-rates`]: {
+        get: {
+          tags: [gradesTag],
+          summary: 'List product grades with last purchase rates',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: 'path',
+              name: 'productId',
+              required: true,
+              schema: { type: 'string', format: 'uuid' },
+            },
+            {
+              in: 'query',
+              name: 'page',
+              schema: { type: 'integer', minimum: 1 },
+            },
+            {
+              in: 'query',
+              name: 'limit',
+              schema: { type: 'integer', minimum: 1, maximum: 100 },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Product grades with last purchase rates retrieved',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/ProductGradesNestedLastPurchaseRatesResponse',
+                  },
+                },
+              },
+            },
+            ...errors,
+          },
+        },
       },
       post: {
         tags: [gradesTag],
@@ -360,7 +416,19 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
             schema: { type: 'string', format: 'uuid' },
           },
         ],
-        responses: { ...dataMsg('Product grade retrieved'), ...errors },
+        responses: {
+          200: {
+            description: 'Product grade retrieved',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ProductGradeDetailResponse',
+                },
+              },
+            },
+          },
+          ...errors,
+        },
       },
       put: {
         tags: [gradesTag],

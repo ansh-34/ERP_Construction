@@ -1497,7 +1497,6 @@ model Grn {
   vendorName       String
   wbReference      String?
   totalItems       Int                   @default(0)
-  totalTax         Float                 @default(0)
   totalAmount      Float                 @default(0)
   approvalStatus   ApprovalStatus        @default(PENDING)
   approvedAt       DateTime?
@@ -1528,13 +1527,11 @@ model GrnProduct {
   grnCode        String
   date           DateTime
   vendor         String
-  material       String
   productId      String?        @db.Uuid
   product        Product?       @relation(fields: [productId], references: [id])
   productGradeId String?        @db.Uuid
   productGrade   ProductGrades? @relation(fields: [productGradeId], references: [id])
   quantity       Float
-  tax            Float          @default(0)
   uomId          String?        @db.Uuid
   uom            Uom?           @relation(fields: [uomId], references: [id])
   rate           Float          @default(0)

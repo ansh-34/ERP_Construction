@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 import Handlebars from 'handlebars';
-import prisma from '../infra/database/prisma/prisma.client.js';
+import { invoiceRepository, VehicleRepository } from '../repositories/index.js';
 import { uploadBufferToS3 } from '../utils/s3.utils.js';
 
 // Hard cap on how long a single PDF render may take. A hung Chromium page
@@ -271,19 +271,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
   );
 
   // 1. Fetch Invoice with complete details
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId },
-    include: {
-      items: {
-        include: {
-          product: true,
-          uom: true,
-        },
-      },
-      project: true,
-      domain: true,
-    },
-  });
+  const invoice = await invoiceRepository.findByIdWithDetailsOnly(invoiceId);
 
   if (!invoice) {
     throw new Error(`Invoice with ID ${invoiceId} not found`);
@@ -291,31 +279,21 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
 
   try {
     // Set status to PROCESSING
-    await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: { pdfStatus: 'PROCESSING' },
-    });
+    await invoiceRepository.update(invoiceId, { pdfStatus: 'PROCESSING' });
 
     // 2. Resolve Active Template (fallback to seeded default)
-    const activeTemplate = await prisma.invoiceTemplate.findFirst({
-      where: {
-        domainId: invoice.domainId,
-        isDeleted: false,
-        status: 'ACTIVE',
-      },
-    });
+    const activeTemplate = await invoiceRepository.findActiveTemplate(
+      invoice.domainId,
+    );
 
     const htmlContent = activeTemplate
       ? activeTemplate.htmlContent
       : DEFAULT_CONSTRUCTION_TEMPLATE;
 
     // 3. Try to resolve domain vehicle or fall back to a mock one
-    const dbVehicle = await prisma.vehicle.findFirst({
-      where: {
-        domainId: invoice.domainId,
-        isDeleted: false,
-      },
-    });
+    const dbVehicle = await VehicleRepository.findFirstByDomain(
+      invoice.domainId,
+    );
     const vehicleNumber = dbVehicle ? dbVehicle.numberPlate : '9677BR01';
 
     // 4. Calculate Weights
@@ -427,14 +405,11 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     );
 
     // 9. Save PDF URL and update status to READY in DB
-    await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: {
-        pdfUrl: s3Url,
-        pdfStatus: 'READY',
-        pdfGeneratedAt: new Date(),
-        pdfVersion: { increment: 1 },
-      },
+    await invoiceRepository.update(invoiceId, {
+      pdfUrl: s3Url,
+      pdfStatus: 'READY',
+      pdfGeneratedAt: new Date(),
+      pdfVersion: { increment: 1 },
     });
 
     console.log(`[PdfService] PDF generated and uploaded to S3: ${s3Url}`);
@@ -446,11 +421,8 @@ export async function generateInvoicePdf(invoiceId: string): Promise<string> {
     );
 
     // Set status to FAILED in DB
-    await prisma.invoice.update({
-      where: { id: invoiceId },
-      data: {
-        pdfStatus: 'FAILED',
-      },
+    await invoiceRepository.update(invoiceId, {
+      pdfStatus: 'FAILED',
     });
 
     throw error;

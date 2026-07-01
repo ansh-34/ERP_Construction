@@ -2,6 +2,7 @@ import { Messages } from '../../../constants/index.js';
 import {
   ProductRepository,
   productUomRepository,
+  ProductGradeRepository,
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizeStatus } from '../../../utils/validation.js';
@@ -106,8 +107,8 @@ export const ProductService = {
             .join(' ')
             .toLowerCase();
 
-          const created = await tx.productGrades.create({
-            data: {
+          const created = await ProductGradeRepository.create(
+            {
               productId: product.id,
               gradeDisplayName: g.gradeDisplayName,
               gradeCode: gCode,
@@ -116,7 +117,8 @@ export const ProductService = {
               domainId,
               isDeleted: false,
             },
-          });
+            tx,
+          );
           gradeMap.set(gCode, created.id);
         }
       }
@@ -182,13 +184,27 @@ export const ProductService = {
             orderBy: { createdAt: 'desc' },
             select: {
               id: true,
+              gradeDisplayName: true,
+              gradeCode: true,
+              status: true,
             },
           },
           productUoms: {
             where: { isDeleted: false },
             orderBy: { createdAt: 'desc' },
             select: {
+              id: true,
+              status: true,
               uomId: true,
+              uom: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  code: true,
+                  symbol: true,
+                  conversionRate: true,
+                },
+              },
             },
           },
           inventories: {
@@ -228,6 +244,25 @@ export const ProductService = {
         uomsCount: _count?.productUoms || 0,
         gradeIds: (productGrades || []).map((grade: any) => grade.id),
         uomIds: (productUoms || []).map((productUom: any) => productUom.uomId),
+        grades: (productGrades || []).map((grade: any) => ({
+          ...grade,
+          gradeDisplayName: ProductService.localizeName(
+            grade.gradeDisplayName,
+            langCode,
+          ),
+        })),
+        uoms: (productUoms || []).map((productUom: any) => ({
+          ...productUom,
+          uom: productUom.uom
+            ? {
+                ...productUom.uom,
+                displayName: ProductService.localizeName(
+                  productUom.uom.displayName,
+                  langCode,
+                ),
+              }
+            : productUom.uom,
+        })),
         inventories: (inventories || []).map((inv: any) => ({
           ...inv,
           productId: inv.productId,
@@ -436,19 +471,20 @@ export const ProductService = {
 
         if (grade.id) {
           // Update existing
-          await tx.productGrades.update({
-            where: { id: grade.id },
-            data: {
+          await ProductGradeRepository.update(
+            grade.id,
+            {
               gradeDisplayName: grade.gradeDisplayName,
               gradeCode: gCode,
               searchText,
               status: grade.status ? normalizeStatus(grade.status) : undefined,
             },
-          });
+            tx,
+          );
         } else {
           // Create new
-          await tx.productGrades.create({
-            data: {
+          await ProductGradeRepository.create(
+            {
               productId,
               domainId,
               gradeDisplayName: grade.gradeDisplayName,
@@ -457,7 +493,8 @@ export const ProductService = {
               status: normalizeStatus(grade.status),
               isDeleted: false,
             },
-          });
+            tx,
+          );
         }
       }
     });

@@ -10,7 +10,7 @@ export interface InventoryFuelStockFilters {
 }
 
 const inventoryFuelStockInclude = {
-  uom: { select: { id: true, code: true, displayName: true } },
+  uom: { select: { symbol: true, id: true, code: true, displayName: true } },
 } as const;
 
 export const inventoryFuelStockRepository = {

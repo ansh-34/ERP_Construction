@@ -6,9 +6,9 @@ import {
 } from '../../common/common.validator.js';
 
 export const grnProductSchema = z.object({
-  material: z.string().min(1),
+  productId: z.string().uuid(),
+  productGradeId: z.string().uuid().optional(),
   quantity: z.number().positive(),
-  tax: z.number().nonnegative().optional().default(0),
   uomId: z.string().uuid().optional(),
   rate: z.number().nonnegative().optional().default(0),
 });
@@ -71,16 +71,6 @@ export const createGrnBodySchema = z.discriminatedUnion('referenceType', [
 
 export const updateGrnBodySchema = z.object({
   wbReference: z.string().optional(),
-  totalItems: z.number().int().nonnegative().optional(),
-  totalTax: z.number().nonnegative().optional(),
-  totalAmount: z.number().nonnegative().optional(),
-  grnProducts: z
-    .array(
-      grnProductSchema.extend({
-        id: z.string().uuid().optional(),
-      }),
-    )
-    .optional(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 

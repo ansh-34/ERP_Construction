@@ -62,7 +62,7 @@ const inventoryInclude = {
       status: true,
     },
   },
-  uom: { select: { id: true, code: true, displayName: true } },
+  uom: { select: { symbol: true, id: true, code: true, displayName: true } },
 } as const;
 
 const logInclude = {
@@ -85,7 +85,7 @@ const logInclude = {
       status: true,
     },
   },
-  uom: { select: { id: true, code: true, displayName: true } },
+  uom: { select: { symbol: true, id: true, code: true, displayName: true } },
 } as const;
 
 function buildInventoryWhere(

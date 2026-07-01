@@ -24,7 +24,9 @@ const productWithDetails = {
           lastInvoiceId: true,
           lastPurchaseDate: true,
           uomId: true,
-          uom: { select: { id: true, code: true, displayName: true } },
+          uom: {
+            select: { symbol: true, id: true, code: true, displayName: true },
+          },
           status: true,
           createdAt: true,
         },

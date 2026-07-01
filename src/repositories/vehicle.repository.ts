@@ -42,6 +42,12 @@ export const VehicleRepository = {
     });
   },
 
+  findFirstByDomain(domainId: string) {
+    return prisma.vehicle.findFirst({
+      where: { domainId, isDeleted: false },
+    });
+  },
+
   findByIdWithDetails(id: string, domainId: string) {
     return prisma.vehicle.findFirst({
       where: { id, domainId, isDeleted: false },
@@ -68,7 +74,7 @@ export const VehicleRepository = {
             status: true,
             createdAt: true,
             loadedQuantityUom: {
-              select: { id: true, displayName: true, code: true },
+              select: { id: true, displayName: true, code: true, symbol: true },
             },
           },
         },
@@ -95,7 +101,7 @@ export const VehicleRepository = {
             status: true,
             createdAt: true,
             loadedQuantityUom: {
-              select: { id: true, displayName: true, code: true },
+              select: { id: true, displayName: true, code: true, symbol: true },
             },
             journeySchedule: {
               select: { id: true, code: true },
@@ -178,7 +184,12 @@ export const VehicleRepository = {
               expectedFuelValue: true,
               date: true,
               loadedQuantityUom: {
-                select: { id: true, displayName: true, code: true },
+                select: {
+                  id: true,
+                  displayName: true,
+                  code: true,
+                  symbol: true,
+                },
               },
             },
           },
@@ -202,7 +213,12 @@ export const VehicleRepository = {
               expectedFuelValue: true,
               date: true,
               loadedQuantityUom: {
-                select: { id: true, displayName: true, code: true },
+                select: {
+                  id: true,
+                  displayName: true,
+                  code: true,
+                  symbol: true,
+                },
               },
             },
           },

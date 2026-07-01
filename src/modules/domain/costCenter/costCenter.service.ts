@@ -54,11 +54,7 @@ export const CostCenterService = {
     }
 
     const id = randomUUID();
-    const siblingIndex = await costCenterRepository.countSiblings(
-      domainId,
-      dto.parentId ?? null,
-    );
-    const path = parent ? `${parent.path}/${siblingIndex}` : `${siblingIndex}`;
+    const path = parent ? `${parent.path}/${id}` : id;
 
     const created = await costCenterRepository.create({
       id,

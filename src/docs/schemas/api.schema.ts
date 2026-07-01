@@ -37,6 +37,9 @@ import { CustomerSchemas } from './customer.schema.js';
 import { CustomerRateSchemas } from './customerRate.schema.js';
 import { SaleOrderSchemas } from './saleOrder.schema.js';
 import { WeighBridgeSchemas } from './weighBridge.schema.js';
+import { AccountCategorySchemas } from './accountCategory.schema.js';
+import { AccountSchemas } from './account.schema.js';
+import { CostCenterSchemas } from './costCenter.schema.js';
 
 export const ApiSchemas = {
   ...CommonSchemas,
@@ -76,4 +79,7 @@ export const ApiSchemas = {
   ...CustomerRateSchemas,
   ...SaleOrderSchemas,
   ...WeighBridgeSchemas,
+  ...AccountCategorySchemas,
+  ...AccountSchemas,
+  ...CostCenterSchemas,
 };

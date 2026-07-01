@@ -132,7 +132,7 @@ export const VendorProductPriceService = {
           status: true,
           product: { select: { displayName: true, code: true } },
           productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
-          uom: { select: { displayName: true, code: true } },
+          uom: { select: { symbol: true, displayName: true, code: true } },
           createdAt: true,
           updatedAt: true,
           vendor: { select: { name: true, email: true, contactPerson: true } },
@@ -191,7 +191,7 @@ export const VendorProductPriceService = {
           status: true,
           product: { select: { displayName: true, code: true } },
           productGrade: { select: { gradeDisplayName: true, gradeCode: true } },
-          uom: { select: { displayName: true, code: true } },
+          uom: { select: { symbol: true, displayName: true, code: true } },
           createdAt: true,
           updatedAt: true,
           vendor: { select: { name: true, email: true, contactPerson: true } },
@@ -490,7 +490,7 @@ export const VendorProductPriceService = {
             },
           },
           uom: {
-            select: { code: true, displayName: true },
+            select: { code: true, displayName: true, symbol: true },
           },
           currency: {
             select: { code: true, name: true },

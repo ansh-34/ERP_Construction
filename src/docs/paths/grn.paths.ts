@@ -139,9 +139,9 @@ const buildGrnPaths = (basePath: string, tags: string[]) => ({
     },
     put: {
       tags,
-      summary: 'Update GRN and associated Products',
+      summary: 'Update GRN waybill reference and status',
       description:
-        'Update the general details (such as waybill reference) and sync/update the product line items of a PENDING or REJECTED GRN. Within the grnProducts array, product items can be passed with an id (updates existing line item) or without an id (creates a new line item).',
+        'Update the waybill reference and status of a PENDING or REJECTED GRN.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -331,7 +331,7 @@ const buildGrnPaths = (basePath: string, tags: string[]) => ({
       tags,
       summary: 'Update GRN Product Line Item',
       description:
-        'Update the quantity, rate, tax, or material name of a specific product line item. The parent GRN totals will automatically recalculate.',
+        'Update the product, quantity, rate, or UOM of a specific product line item. The parent GRN totals will automatically recalculate.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {

@@ -57,6 +57,9 @@ import accountRouter from './account/account.router.js';
 import generalLedgerRouter from './generalLedger/generalLedger.router.js';
 import accountBalanceRouter from './accountBalance/accountBalance.router.js';
 import costCenterRouter from './costCenter/costCenter.router.js';
+import alertRouter from './alert/alert.routes.js';
+import notificationRouter from './notification/notification.routes.js';
+import reportRouter from './report/report.routes.js';
 
 const userRouter = Router();
 
@@ -117,5 +120,8 @@ userRouter.use('/account-balances', accountBalanceRouter);
 userRouter.use('/cost-centers', costCenterRouter);
 userRouter.use('/grades', allGradesRouter());
 userRouter.use('/last-purchase-rates', productGradeLastPurchaseRateRouter());
+userRouter.use('/alerts', alertRouter);
+userRouter.use('/notifications', notificationRouter);
+userRouter.use('/report', reportRouter);
 
 export default userRouter;
