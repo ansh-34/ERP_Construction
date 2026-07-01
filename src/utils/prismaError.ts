@@ -39,6 +39,21 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'Customer not found' ||
       error.message === 'Transaction date must be inside the fiscal year' ||
       error.message === 'Posting date must be inside the accounting period' ||
+      error.message === 'DRAFT journal entry not found' ||
+      error.message === 'POSTED journal entry not found' ||
+      error.message === 'Journal entry cannot post to a closed fiscal year' ||
+      error.message ===
+        'Journal entry cannot post to a closed or invalid accounting period' ||
+      error.message ===
+        'Journal entry must contain at least two active lines' ||
+      error.message === 'Journal entry must contain at least one active line' ||
+      error.message === 'Journal entry contains an invalid posting account' ||
+      error.message ===
+        'Each journal line must contain either debit or credit' ||
+      error.message === 'Journal entry total debit must equal total credit' ||
+      error.message === 'Journal entry has already created ledger entries' ||
+      error.message === 'Journal entry has already been posted' ||
+      error.message === 'Journal entry has already been reversed' ||
       error.message === 'invalid domainId' ||
       error.message === 'invalid adminId' ||
       error.message === 'invalid machineId' ||

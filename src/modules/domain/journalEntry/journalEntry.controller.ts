@@ -96,3 +96,37 @@ export const deleteJournalEntry = async (req: Request, res: Response) => {
     return failure(res, error, 'Failed to delete journal entry');
   }
 };
+
+export const postJournalEntry = async (req: Request, res: Response) => {
+  try {
+    const data = await JournalEntryService.post(
+      req.user!.domainId,
+      req.user!.adminId,
+      req.params.id,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Journal entry posted successfully',
+      data,
+    });
+  } catch (error) {
+    return failure(res, error, 'Failed to post journal entry');
+  }
+};
+
+export const reverseJournalEntry = async (req: Request, res: Response) => {
+  try {
+    const data = await JournalEntryService.reverse(
+      req.user!.domainId,
+      req.user!.adminId,
+      req.params.id,
+    );
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Journal entry debit and credit reversed successfully',
+      data,
+    });
+  } catch (error) {
+    return failure(res, error, 'Failed to reverse journal entry');
+  }
+};

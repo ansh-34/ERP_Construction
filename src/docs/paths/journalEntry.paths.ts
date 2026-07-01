@@ -158,4 +158,32 @@ export const JournalEntryPaths = {
       },
     },
   },
+  '/api/domain/journal-entries/{id}/post': {
+    post: {
+      tags: ['Journal Entries'],
+      summary: 'Post a DRAFT journal entry',
+      description:
+        'Validates balanced active lines, creates GeneralLedgerEntry rows, and permanently changes the journal to POSTED.',
+      security: [{ bearerAuth: [] }],
+      parameters: [id],
+      responses: {
+        200: response('Journal entry posted successfully'),
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/journal-entries/{id}/reverse': {
+    post: {
+      tags: ['Journal Entries'],
+      summary: 'Reverse a POSTED journal entry',
+      description:
+        'Creates new REVERSED lines with swapped debit/credit, creates opposite GeneralLedgerEntry rows, offsets AccountBalance, and changes the journal to REVERSED.',
+      security: [{ bearerAuth: [] }],
+      parameters: [id],
+      responses: {
+        200: response('Journal entry debit and credit reversed successfully'),
+        ...errors,
+      },
+    },
+  },
 };

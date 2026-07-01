@@ -1735,6 +1735,7 @@ model Project {
   costCenters                 CostCenter[]
   journalEntries              JournalEntry[]
   journalEntryLines           JournalEntryLine[]
+  generalLedgerEntries        GeneralLedgerEntry[]
 
   @@unique([code, isDeleted, domainId])
   @@index([locationId])
@@ -2335,6 +2336,7 @@ model FiscalYear {
   closingUser       User?              @relation("FiscalYearClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
   accountingPeriods AccountingPeriod[]
   journalEntries    JournalEntry[]
+  generalLedgerEntries GeneralLedgerEntry[]
 
   @@unique([name, domainId])
   @@index([domainId, isClosed])
@@ -2365,6 +2367,7 @@ model AccountingPeriod {
   closer         Admin?         @relation("AccountingPeriodClosedBy", fields: [closedBy], references: [id], onDelete: Restrict)
   closingUser    User?          @relation("AccountingPeriodClosedByUser", fields: [closedByUserId], references: [id], onDelete: Restrict)
   journalEntries JournalEntry[]
+  generalLedgerEntries GeneralLedgerEntry[]
 
   @@unique([fiscalYearId, periodNo])
   @@unique([fiscalYearId, name])
@@ -2427,6 +2430,7 @@ model JournalEntry {
   reversalJournal  JournalEntry?      @relation("JournalEntryReversal", fields: [reversalJournalId], references: [id], onDelete: Restrict)
   reversedEntries  JournalEntry[]     @relation("JournalEntryReversal")
   lines            JournalEntryLine[]
+  generalLedgerEntries GeneralLedgerEntry[]
 
   @@unique([voucherNo, domainId, fiscalYearId, isDeleted])
   @@index([domainId, status, isDeleted])
@@ -2474,6 +2478,7 @@ model JournalEntryLine {
   customer     Customer?    @relation(fields: [customerId], references: [id], onDelete: Restrict)
   admin        Admin        @relation(fields: [adminId], references: [id], onDelete: Restrict)
   domain       Domain       @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  generalLedgerEntries GeneralLedgerEntry[]
 
   @@unique([journalEntryId, lineNo])
   @@index([accountId])
@@ -2744,6 +2749,7 @@ model CostCenter {
   updatedAt           DateTime           @updatedAt
   journalEntries      JournalEntry[]
   journalEntryLines   JournalEntryLine[]
+  generalLedgerEntries GeneralLedgerEntry[]
 
   @@unique([code, domainId, isDeleted])
   @@index([domainId, isDeleted])
@@ -2757,17 +2763,23 @@ model GeneralLedgerEntry {
   id                 String   @id @default(uuid()) @db.Uuid
   journalEntryId     String   @db.Uuid
   journalEntryLineId String   @db.Uuid
+  journalEntry       JournalEntry     @relation(fields: [journalEntryId], references: [id], onDelete: Restrict)
+  journalEntryLine   JournalEntryLine @relation(fields: [journalEntryLineId], references: [id], onDelete: Restrict)
   accountId          String   @db.Uuid
   account            Account  @relation(fields: [accountId], references: [id], onDelete: Restrict)
   transactionDate    DateTime @db.Date
   postingDate        DateTime @db.Date
   fiscalYearId       String   @db.Uuid
   accountingPeriodId String   @db.Uuid
+  fiscalYear         FiscalYear       @relation(fields: [fiscalYearId], references: [id], onDelete: Restrict)
+  accountingPeriod   AccountingPeriod @relation(fields: [accountingPeriodId], references: [id], onDelete: Restrict)
   debitAmount        Decimal  @default(0) @db.Decimal(20, 6)
   creditAmount       Decimal  @default(0) @db.Decimal(20, 6)
   runningBalance     Decimal? @db.Decimal(20, 6)
   costCenterId       String?  @db.Uuid
   projectId          String?  @db.Uuid
+  costCenter         CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  project            Project?    @relation(fields: [projectId], references: [id], onDelete: Restrict)
   sourceDocumentId   String?
   sourceDocumentType String?
   adminId            String   @db.Uuid
@@ -2809,7 +2821,7 @@ model AccountBalance {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  @@unique([accountId, fiscalYearId, accountingPeriodId, costCenterId, projectId, domainId])
+  @@unique([domainId, fiscalYearId, accountingPeriodId, accountId, costCenterId], map: "AccountBalance_balance_key")
   @@index([domainId])
   @@index([adminId])
   @@index([accountingPeriodId])

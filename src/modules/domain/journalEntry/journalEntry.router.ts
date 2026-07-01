@@ -5,6 +5,8 @@ import {
   deleteJournalEntry,
   getJournalEntry,
   listJournalEntries,
+  postJournalEntry,
+  reverseJournalEntry,
   updateJournalEntry,
 } from './journalEntry.controller.js';
 import {
@@ -41,6 +43,16 @@ router.delete(
   '/:id',
   validate(journalEntryIdParamSchema, 'params'),
   deleteJournalEntry,
+);
+router.post(
+  '/:id/post',
+  validate(journalEntryIdParamSchema, 'params'),
+  postJournalEntry,
+);
+router.post(
+  '/:id/reverse',
+  validate(journalEntryIdParamSchema, 'params'),
+  reverseJournalEntry,
 );
 
 export default router;

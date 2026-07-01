@@ -268,4 +268,20 @@ export const JournalEntryService = {
       throw normalizePrismaError(error);
     }
   },
+
+  async post(domainId: string, adminId: string, id: string) {
+    try {
+      return await journalEntryRepository.postDraft(id, domainId, adminId);
+    } catch (error) {
+      throw normalizePrismaError(error);
+    }
+  },
+
+  async reverse(domainId: string, adminId: string, id: string) {
+    try {
+      return await journalEntryRepository.reversePosted(id, domainId, adminId);
+    } catch (error) {
+      throw normalizePrismaError(error);
+    }
+  },
 };

@@ -62,9 +62,13 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('cannot be') ||
     message.includes('must be after') ||
     message.includes('must be greater than') ||
+    message.includes('must contain') ||
+    message.includes('must equal') ||
     message.includes('Only pending') ||
     message.includes('already approved') ||
     message.includes('already created') ||
+    message.includes('already been posted') ||
+    message.includes('already been reversed') ||
     message.includes('already closed') ||
     message.includes('overlap') ||
     message.includes('must be inside') ||
