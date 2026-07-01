@@ -247,6 +247,18 @@ export const modules = [
   },
   {
     name: {
+      en: 'Journal Entry',
+    },
+    code: 'JOURNAL_ENTRY',
+  },
+  {
+    name: {
+      en: 'Journal Entry Line',
+    },
+    code: 'JOURNAL_ENTRY_LINE',
+  },
+  {
+    name: {
       en: 'Cost Center',
     },
     code: 'COST_CENTER',

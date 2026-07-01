@@ -53,6 +53,8 @@ import { AccountPaths } from './account.paths.js';
 import { CostCenterPaths } from './costCenter.paths.js';
 import { GeneralLedgerPaths } from './generalLedger.paths.js';
 import { AccountBalancePaths } from './accountBalance.paths.js';
+import { JournalEntryPaths } from './journalEntry.paths.js';
+import { JournalEntryLinePaths } from './journalEntryLine.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -110,4 +112,6 @@ export const ApiPaths = {
   ...CostCenterPaths,
   ...GeneralLedgerPaths,
   ...AccountBalancePaths,
+  ...JournalEntryPaths,
+  ...JournalEntryLinePaths,
 };

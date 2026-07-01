@@ -28,6 +28,17 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid date' ||
       error.message === 'invalid code' ||
       error.message === 'invalid closing actor' ||
+      error.message === 'duplicate voucher number' ||
+      error.message === 'Journal entry not found' ||
+      error.message === 'Fiscal year not found' ||
+      error.message === 'Accounting period not found' ||
+      error.message === 'Currency not found' ||
+      error.message === 'Project not found' ||
+      error.message === 'Cost center not found' ||
+      error.message === 'Vendor not found' ||
+      error.message === 'Customer not found' ||
+      error.message === 'Transaction date must be inside the fiscal year' ||
+      error.message === 'Posting date must be inside the accounting period' ||
       error.message === 'invalid domainId' ||
       error.message === 'invalid adminId' ||
       error.message === 'invalid machineId' ||
