@@ -49,6 +49,8 @@ import customerRouter from './customer/customer.router.js';
 import customerRateRouter from './customerRate/customerRate.router.js';
 import fiscalYearRouter from './fiscalYear/fiscalYear.router.js';
 import accountingPeriodRouter from './accountingPeriod/accountingPeriod.router.js';
+import journalEntryRouter from './journalEntry/journalEntry.router.js';
+import journalEntryLineRouter from './journalEntryLine/journalEntryLine.router.js';
 
 import saleOrderRouter from './saleOrder/saleOrder.router.js';
 import weighBridgeRouter from './weighBridge/weighBridge.router.js';
@@ -110,6 +112,8 @@ userRouter.use('/customers', customerRouter);
 userRouter.use('/customer-rates', customerRateRouter);
 userRouter.use('/fiscal-years', fiscalYearRouter);
 userRouter.use('/accounting-periods', accountingPeriodRouter);
+userRouter.use('/journal-entries', journalEntryRouter);
+userRouter.use('/journal-entry-lines', journalEntryLineRouter);
 
 userRouter.use('/sale-orders', saleOrderRouter);
 userRouter.use('/weigh-bridges', weighBridgeRouter);
