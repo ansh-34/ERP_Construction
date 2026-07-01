@@ -1,7 +1,8 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client';
 import prisma from '@/infra/database/prisma/prisma.client';
-import { StatusEnum } from '@constants/index';
+import { AttendanceStatusEnum, StatusEnum } from '@constants/index';
 import { randomUUID } from 'crypto';
+import type { CreateProjectUserDailyLogInput } from './projectUserDailyLog.repository.js';
 
 type RelationDetails = Record<string, unknown> | null;
 
@@ -164,6 +165,111 @@ const projectUserAssignmentDetailSelect = Prisma.sql`
 `;
 
 export const projectUserAssignmentRepository = {
+  createManyWithDailyLogs: async (
+    data: CreateProjectUserAssignmentInput[],
+    dailyLogs: CreateProjectUserDailyLogInput[],
+  ): Promise<ProjectUserAssignmentRecord[]> => {
+    if (!data.length) return [];
+
+    const assignmentRows = data.map((item) => ({
+      id: randomUUID(),
+      ...item,
+      notes: item.notes ?? null,
+    }));
+    const dailyLogRows = dailyLogs.map((item) => ({
+      id: randomUUID(),
+      ...item,
+      notes: item.notes ?? null,
+    }));
+
+    return prisma.$transaction(async (transaction) => {
+      const assignmentResults = await Promise.all(
+        assignmentRows.map((row) =>
+          transaction.$queryRaw<ProjectUserAssignmentRecord[]>(Prisma.sql`
+            INSERT INTO "ProjectUserAssignment" (
+              "id",
+              "startDate",
+              "endDate",
+              "projectId",
+              "userId",
+              "dailyWorkingHours",
+              "dayCharge",
+              "notes",
+              "domainId",
+              "adminId",
+              "status",
+              "isDeleted",
+              "createdAt",
+              "updatedAt"
+            )
+            VALUES (
+              ${row.id},
+              ${row.startDate},
+              ${row.endDate},
+              ${row.projectId},
+              ${row.userId},
+              ${row.dailyWorkingHours},
+              ${row.dayCharge},
+              ${row.notes},
+              ${row.domainId},
+              ${row.adminId},
+              ${row.status},
+              false,
+              NOW(),
+              NOW()
+            )
+            RETURNING ${projectUserAssignmentSelect}
+          `),
+        ),
+      );
+
+      await Promise.all(
+        dailyLogRows.map((row) =>
+          transaction.$executeRaw(Prisma.sql`
+            INSERT INTO "ProjectUserDailyLog" (
+              "id",
+              "date",
+              "projectId",
+              "userId",
+              "startTime",
+              "endTime",
+              "totalWorkingHours",
+              "dayCharge",
+              "attendanceStatus",
+              "notes",
+              "domainId",
+              "adminId",
+              "status",
+              "isDeleted",
+              "createdAt",
+              "updatedAt"
+            )
+            VALUES (
+              ${row.id},
+              ${row.date},
+              ${row.projectId},
+              ${row.userId},
+              ${row.startTime},
+              ${row.endTime},
+              ${row.totalWorkingHours},
+              ${row.dayCharge},
+              ${row.attendanceStatus ?? AttendanceStatusEnum.PRESENT}::"AttendanceStatus",
+              ${row.notes},
+              ${row.domainId},
+              ${row.adminId},
+              ${row.status},
+              false,
+              NOW(),
+              NOW()
+            )
+          `),
+        ),
+      );
+
+      return assignmentResults.flat();
+    });
+  },
+
   createMany: async (
     data: CreateProjectUserAssignmentInput[],
   ): Promise<ProjectUserAssignmentRecord[]> => {
