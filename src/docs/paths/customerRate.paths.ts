@@ -189,7 +189,14 @@ const buildPaths = (base: string, tags: string[]) => ({
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/CustomerRateUpdateBody' },
-            example: { rate: 400, effectiveFrom: '2026-07-01T00:00:00.000Z' },
+            example: {
+              rate: 400,
+              currencyId: 'cc000000-0000-0000-0000-000000000001',
+              uomId: '55555555-5555-5555-5555-555555555501',
+              effectiveFrom: '2026-07-01T00:00:00.000Z',
+              effectiveTo: '2026-12-31T00:00:00.000Z',
+              status: 'ACTIVE',
+            },
           },
         },
       },

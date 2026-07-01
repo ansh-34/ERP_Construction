@@ -90,6 +90,14 @@ export const DomainUserTypePaths = {
           description: 'User type created successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: { $ref: '#/components/schemas/UserTypeObject' },
+                },
+              },
               example: {
                 success: true,
                 message: 'User type created successfully',
@@ -121,6 +129,26 @@ export const DomainUserTypePaths = {
           description: 'User types fetched successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/UserTypeObject' },
+                  },
+                },
+              },
               example: {
                 success: true,
                 message: 'User types fetched successfully',
@@ -157,6 +185,14 @@ export const DomainUserTypePaths = {
           description: 'User type fetched successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: { $ref: '#/components/schemas/UserTypeObject' },
+                },
+              },
               example: {
                 success: true,
                 message: 'User type fetched successfully',
@@ -199,6 +235,14 @@ export const DomainUserTypePaths = {
           description: 'User type updated successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: { $ref: '#/components/schemas/UserTypeObject' },
+                },
+              },
               example: {
                 success: true,
                 message: 'User type updated successfully',
@@ -257,6 +301,26 @@ export const DomainUserTypePaths = {
           description: 'Available user types fetched successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/UserTypeObject' },
+                  },
+                },
+              },
               example: {
                 success: true,
                 message: 'Available user types fetched successfully',
@@ -298,12 +362,25 @@ export const DomainUserTypePaths = {
       },
       responses: {
         201: {
-          description: 'User types mapped successfully',
+          description: 'User types mapped to domain successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/DomainUserTypeObject',
+                    },
+                  },
+                },
+              },
               example: {
                 success: true,
-                message: 'User types mapped successfully',
+                message: 'User types mapped to domain successfully',
                 data: [domainUserTypeExample],
               },
             },
@@ -324,6 +401,28 @@ export const DomainUserTypePaths = {
           description: 'Domain user types fetched successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      currentCount: { type: 'integer' },
+                      totalCount: { type: 'integer' },
+                      offset: { type: 'integer' },
+                      limit: { type: 'integer' },
+                    },
+                  },
+                  data: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/DomainUserTypeObject',
+                    },
+                  },
+                },
+              },
               example: {
                 success: true,
                 message: 'Domain user types fetched successfully',
@@ -360,6 +459,16 @@ export const DomainUserTypePaths = {
           description: 'Domain user type fetched successfully',
           content: {
             'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  message: { type: 'string' },
+                  data: {
+                    $ref: '#/components/schemas/DomainUserTypeObject',
+                  },
+                },
+              },
               example: {
                 success: true,
                 message: 'Domain user type fetched successfully',

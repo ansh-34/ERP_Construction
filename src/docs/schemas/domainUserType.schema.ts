@@ -9,6 +9,51 @@ const industryEnum = [
 ];
 
 export const DomainUserTypeSchemas = {
+  // Full response object for a global user type — every field the API returns.
+  UserTypeObject: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      name: {
+        type: 'object',
+        description: 'Localized name object.',
+        example: { en: 'Site Engineer', ar: 'مهندس موقع' },
+        additionalProperties: { type: 'string' },
+      },
+      code: {
+        type: 'string',
+        description: 'Auto-derived from name.en.',
+        example: 'SITE_ENGINEER',
+      },
+      description: {
+        type: 'string',
+        nullable: true,
+        example: 'On-site engineer',
+      },
+      industryType: {
+        type: 'string',
+        enum: industryEnum,
+        example: 'CONSTRUCTION',
+      },
+      isDeleted: { type: 'boolean', example: false },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+    },
+  },
+  // Full response object for a domain↔user-type mapping, incl. embedded userType.
+  DomainUserTypeObject: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      domainId: { type: 'string', format: 'uuid' },
+      adminId: { type: 'string', format: 'uuid' },
+      userTypeId: { type: 'string', format: 'uuid' },
+      isDeleted: { type: 'boolean', example: false },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+      userType: { $ref: '#/components/schemas/UserTypeObject' },
+    },
+  },
   CreateUserTypeBody: {
     type: 'object',
     required: ['name', 'industryType'],

@@ -103,4 +103,63 @@ export const CostCenterSchemas = {
       },
     },
   },
+
+  CostCenterCreateBody: {
+    type: 'object',
+    description:
+      'code and searchText are auto-generated from name — do not send them.',
+    required: ['name'],
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required.',
+        example: { en: 'Head Office' },
+      },
+      description: { type: 'string', example: 'Corporate cost center' },
+      parentId: { type: 'string', format: 'uuid' },
+      costCenterId: { type: 'string', format: 'uuid' },
+      projectId: { type: 'string', format: 'uuid' },
+      industryIds: {
+        type: 'array',
+        items: { type: 'string', format: 'uuid' },
+        example: [],
+      },
+      industryCategoryIds: {
+        type: 'array',
+        items: { type: 'string', format: 'uuid' },
+        example: [],
+      },
+      isSystem: { type: 'boolean' },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        default: 'ACTIVE',
+      },
+    },
+  },
+
+  CostCenterUpdateBody: {
+    type: 'object',
+    description: 'All fields optional.',
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required when sent.',
+        example: { en: 'Head Office' },
+      },
+      description: { type: 'string', example: 'Corporate cost center' },
+      costCenterId: { type: 'string', format: 'uuid' },
+      projectId: { type: 'string', format: 'uuid' },
+      industryIds: {
+        type: 'array',
+        items: { type: 'string', format: 'uuid' },
+      },
+      industryCategoryIds: {
+        type: 'array',
+        items: { type: 'string', format: 'uuid' },
+      },
+      isSystem: { type: 'boolean' },
+      status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+    },
+  },
 };

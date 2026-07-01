@@ -309,6 +309,7 @@ export const SaleOrderSchemas = {
         default: 'PENDING',
       },
       remarks: { type: 'string', example: 'First order for this customer' },
+      status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
       products: {
         type: 'array',
         minItems: 1,

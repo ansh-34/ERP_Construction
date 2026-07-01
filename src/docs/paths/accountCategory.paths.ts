@@ -12,13 +12,18 @@ export const AccountCategoryPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCategoryCreateBody' },
             example: {
               name: {
                 en: 'Cash And Bank',
               },
               categoryType: 'ASSET',
               normalBalance: 'DEBIT',
+              parentId: '<parent-category-uuid>',
               isPostingAllowed: true,
+              isSystem: false,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
@@ -421,12 +426,17 @@ export const AccountCategoryPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCategoryUpdateBody' },
             example: {
               name: {
                 en: 'Cash And Bank',
               },
-              status: 'ACTIVE',
+              categoryType: 'ASSET',
+              normalBalance: 'DEBIT',
+              isPostingAllowed: true,
+              isSystem: false,
               sortOrder: 5,
+              status: 'ACTIVE',
             },
           },
         },
@@ -618,13 +628,18 @@ export const AccountCategoryPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCategoryCreateBody' },
             example: {
               name: {
                 en: 'Cash And Bank',
               },
               categoryType: 'ASSET',
               normalBalance: 'DEBIT',
+              parentId: '<parent-category-uuid>',
               isPostingAllowed: true,
+              isSystem: false,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
@@ -1027,12 +1042,17 @@ export const AccountCategoryPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCategoryUpdateBody' },
             example: {
               name: {
                 en: 'Cash And Bank',
               },
-              status: 'ACTIVE',
+              categoryType: 'ASSET',
+              normalBalance: 'DEBIT',
+              isPostingAllowed: true,
+              isSystem: false,
               sortOrder: 5,
+              status: 'ACTIVE',
             },
           },
         },

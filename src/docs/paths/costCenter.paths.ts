@@ -12,13 +12,19 @@ export const CostCenterPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/CostCenterCreateBody' },
             example: {
               name: {
                 en: 'Head Office',
               },
               description: 'Corporate cost center',
-              industryCategoryIds: [],
+              parentId: '<parent-cost-center-uuid>',
+              costCenterId: '<linked-cost-center-uuid>',
+              projectId: '<project-uuid>',
               industryIds: [],
+              industryCategoryIds: [],
+              isSystem: false,
+              status: 'ACTIVE',
             },
           },
         },
@@ -394,8 +400,18 @@ export const CostCenterPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/CostCenterUpdateBody' },
             example: {
+              name: {
+                en: 'Head Office',
+              },
               description: 'Updated corporate cost center',
+              costCenterId: '<linked-cost-center-uuid>',
+              projectId: '<project-uuid>',
+              industryIds: [],
+              industryCategoryIds: [],
+              isSystem: false,
+              status: 'ACTIVE',
             },
           },
         },
@@ -587,13 +603,19 @@ export const CostCenterPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/CostCenterCreateBody' },
             example: {
               name: {
                 en: 'Head Office',
               },
               description: 'Corporate cost center',
-              industryCategoryIds: [],
+              parentId: '<parent-cost-center-uuid>',
+              costCenterId: '<linked-cost-center-uuid>',
+              projectId: '<project-uuid>',
               industryIds: [],
+              industryCategoryIds: [],
+              isSystem: false,
+              status: 'ACTIVE',
             },
           },
         },
@@ -969,8 +991,18 @@ export const CostCenterPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/CostCenterUpdateBody' },
             example: {
+              name: {
+                en: 'Head Office',
+              },
               description: 'Updated corporate cost center',
+              costCenterId: '<linked-cost-center-uuid>',
+              projectId: '<project-uuid>',
+              industryIds: [],
+              industryCategoryIds: [],
+              isSystem: false,
+              status: 'ACTIVE',
             },
           },
         },

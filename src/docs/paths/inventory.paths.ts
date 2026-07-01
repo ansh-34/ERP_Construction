@@ -26,7 +26,7 @@ const buildInventoryPaths = (basePath: string, tags: string[]) => ({
       tags,
       summary: 'List inventory items',
       description:
-        'Returns paginated list. Each entry includes enriched product (with productType and _count), product grade (with std rates), and UOM (with conversionRate).',
+        'Returns paginated list. Each entry includes enriched product (with productType and _count), product grade (with last purchase rates), and UOM (with conversionRate).',
       security: [{ bearerAuth: [] }],
       parameters: [
         {
@@ -62,7 +62,7 @@ const buildInventoryPaths = (basePath: string, tags: string[]) => ({
       tags,
       summary: 'Create inventory entry',
       description:
-        'Creates a new inventory record. Response includes enriched product, product grade (with std rates), and UOM (with conversion rate).',
+        'Creates a new inventory record. Response includes enriched product, product grade (with last purchase rates), and UOM (with conversion rate).',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,

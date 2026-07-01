@@ -12,13 +12,23 @@ export const AccountPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCreateBody' },
             example: {
               name: {
                 en: 'Cash In Hand',
               },
-              accountCategoryId: '<leaf-category-uuid>',
-              isCashOrBank: true,
               description: 'Petty cash account',
+              accountCategoryId: '<leaf-category-uuid>',
+              parentId: '<parent-account-uuid>',
+              currencyId: '<currency-uuid>',
+              costCenterId: '<cost-center-uuid>',
+              projectId: '<project-uuid>',
+              isCashOrBank: true,
+              isPostingAllowed: true,
+              isSystem: false,
+              isActive: true,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
@@ -466,9 +476,22 @@ export const AccountPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountUpdateBody' },
             example: {
+              name: {
+                en: 'Cash In Hand',
+              },
               description: 'Updated petty cash',
+              accountCategoryId: '<leaf-category-uuid>',
+              currencyId: '<currency-uuid>',
+              costCenterId: '<cost-center-uuid>',
+              projectId: '<project-uuid>',
+              isCashOrBank: true,
+              isPostingAllowed: true,
+              isSystem: false,
               isActive: true,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
@@ -664,13 +687,23 @@ export const AccountPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountCreateBody' },
             example: {
               name: {
                 en: 'Cash In Hand',
               },
-              accountCategoryId: '<leaf-category-uuid>',
-              isCashOrBank: true,
               description: 'Petty cash account',
+              accountCategoryId: '<leaf-category-uuid>',
+              parentId: '<parent-account-uuid>',
+              currencyId: '<currency-uuid>',
+              costCenterId: '<cost-center-uuid>',
+              projectId: '<project-uuid>',
+              isCashOrBank: true,
+              isPostingAllowed: true,
+              isSystem: false,
+              isActive: true,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
@@ -1118,9 +1151,22 @@ export const AccountPaths = {
         required: true,
         content: {
           'application/json': {
+            schema: { $ref: '#/components/schemas/AccountUpdateBody' },
             example: {
+              name: {
+                en: 'Cash In Hand',
+              },
               description: 'Updated petty cash',
+              accountCategoryId: '<leaf-category-uuid>',
+              currencyId: '<currency-uuid>',
+              costCenterId: '<cost-center-uuid>',
+              projectId: '<project-uuid>',
+              isCashOrBank: true,
+              isPostingAllowed: true,
+              isSystem: false,
               isActive: true,
+              sortOrder: 0,
+              status: 'ACTIVE',
             },
           },
         },
