@@ -258,21 +258,21 @@ export const modules = [
     code: 'JOURNAL_ENTRY_LINE',
   },
   {
-  name: {
-    en: 'Cost Center',
+    name: {
+      en: 'Cost Center',
+    },
+    code: 'COST_CENTER',
   },
-  code: 'COST_CENTER',
-},
-{
-  name: {
-    en: 'General Ledger',
+  {
+    name: {
+      en: 'General Ledger',
+    },
+    code: 'GENERAL_LEDGER',
   },
-  code: 'GENERAL_LEDGER',
-},
-{
-  name: {
-    en: 'Account Balance',
+  {
+    name: {
+      en: 'Account Balance',
+    },
+    code: 'ACCOUNT_BALANCE',
   },
-  code: 'ACCOUNT_BALANCE',
-},
 ];
