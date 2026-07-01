@@ -3,6 +3,7 @@ import {
   projectUserAssignmentRepository,
   projectUserDailyLogRepository,
   type CreateProjectUserAssignmentInput as RepositoryCreateProjectUserAssignmentInput,
+  type CreateProjectUserDailyLogInput as RepositoryCreateProjectUserDailyLogInput,
   type ProjectUserAssignmentRecord,
   type UpdateProjectUserAssignmentInput as RepositoryUpdateProjectUserAssignmentInput,
 } from '@repositories/index';
@@ -318,11 +319,34 @@ async function createMissingDailyLogsFromAssignments(
   domainId: string,
   adminId: string,
 ): Promise<void> {
+  const newLogs = await getMissingDailyLogsFromAssignments(
+    assignments,
+    domainId,
+    adminId,
+  );
+  await projectUserDailyLogRepository.createMany(newLogs);
+}
+
+async function getMissingDailyLogsFromAssignments(
+  assignments: Pick<
+    ProjectUserAssignmentRecord,
+    | 'startDate'
+    | 'endDate'
+    | 'projectId'
+    | 'userId'
+    | 'dailyWorkingHours'
+    | 'dayCharge'
+    | 'notes'
+    | 'status'
+  >[],
+  domainId: string,
+  adminId: string,
+): Promise<RepositoryCreateProjectUserDailyLogInput[]> {
   const activeAssignments = assignments.filter(
     (assignment) => assignment.status === StatusEnum.ACTIVE,
   );
 
-  if (!activeAssignments.length) return;
+  if (!activeAssignments.length) return [];
 
   const logs = activeAssignments.flatMap((assignment) => {
     const startDate = startOfUtcDay(assignment.startDate);
@@ -375,7 +399,7 @@ async function createMissingDailyLogsFromAssignments(
       ),
   );
 
-  await projectUserDailyLogRepository.createMany(newLogs);
+  return newLogs;
 }
 
 export const projectUserAssignmentService = {
@@ -433,13 +457,16 @@ export const projectUserAssignmentService = {
         throw new Error('assignment already exists for this date range');
       }
 
-      const createdAssignments =
-        await projectUserAssignmentRepository.createMany(assignments);
-      await createMissingDailyLogsFromAssignments(
-        createdAssignments,
+      const dailyLogs = await getMissingDailyLogsFromAssignments(
+        assignments,
         data.domainId,
         data.adminId,
       );
+      const createdAssignments =
+        await projectUserAssignmentRepository.createManyWithDailyLogs(
+          assignments,
+          dailyLogs,
+        );
 
       return createdAssignments.map((assignment) =>
         normalizeProjectUserAssignment(assignment, language),

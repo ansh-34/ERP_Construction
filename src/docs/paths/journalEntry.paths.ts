@@ -1,5 +1,13 @@
 import { errors } from './responses.js';
 
+type SwaggerOperation = {
+  tags?: string[];
+  description?: string;
+  [key: string]: unknown;
+};
+
+type SwaggerPathItem = Record<string, SwaggerOperation>;
+
 const id = {
   in: 'path',
   name: 'id',
@@ -71,7 +79,7 @@ const response = (description: string) => ({
   },
 });
 
-export const JournalEntryPaths = {
+const domainJournalEntryPaths: Record<string, SwaggerPathItem> = {
   '/api/domain/journal-entries': {
     post: {
       tags: ['Journal Entries'],
@@ -186,4 +194,30 @@ export const JournalEntryPaths = {
       },
     },
   },
+};
+
+const userJournalEntryPaths = Object.fromEntries(
+  Object.entries(domainJournalEntryPaths).map(([path, pathItem]) => [
+    path.replace('/api/domain/', '/api/user/'),
+    Object.fromEntries(
+      Object.entries(pathItem).map(([method, operation]) => [
+        method,
+        {
+          ...operation,
+          tags: ['User Journal Entries'],
+          description: [
+            operation.description,
+            'Requires the corresponding JOURNAL_ENTRY role permission. Posting and reversal require APPROVE.',
+          ]
+            .filter(Boolean)
+            .join(' '),
+        },
+      ]),
+    ),
+  ]),
+);
+
+export const JournalEntryPaths = {
+  ...domainJournalEntryPaths,
+  ...userJournalEntryPaths,
 };
