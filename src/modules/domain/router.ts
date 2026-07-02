@@ -49,6 +49,7 @@ import accountingPeriodRouter from './accountingPeriod/accountingPeriod.router.j
 import journalEntryRouter from './journalEntry/journalEntry.router.js';
 import journalEntryLineRouter from './journalEntryLine/journalEntryLine.router.js';
 import adminUserTypeRouter from './adminUserType/adminUserType.routes';
+import domainUserTypeRouter from './domainUserType/domainUserType.routes';
 import saleOrderRouter from './saleOrder/saleOrder.router.js';
 import weighBridgeRouter from './weighBridge/weighBridge.router.js';
 import accountCategoryRouter from './accountCategory/accountCategory.router.js';
@@ -127,6 +128,7 @@ domainRouter.use('/accounting-periods', accountingPeriodRouter);
 domainRouter.use('/journal-entries', journalEntryRouter);
 domainRouter.use('/journal-entry-lines', journalEntryLineRouter);
 domainRouter.use('/admin-user-types', adminUserTypeRouter);
+domainRouter.use('/domain-user-types', domainUserTypeRouter);
 domainRouter.use('/sale-orders', saleOrderRouter);
 domainRouter.use('/weigh-bridges', weighBridgeRouter);
 domainRouter.use('/account-categories', accountCategoryRouter);

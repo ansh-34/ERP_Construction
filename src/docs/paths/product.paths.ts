@@ -125,7 +125,7 @@ const buildProductPaths = (basePath: string, isUser: boolean) => {
         tags: [productsTag],
         summary: 'Get product by ID',
         description:
-          'Returns full product detail with all nested grades, std rates, inventories, and UOMs.',
+          'Returns full product detail with all nested grades, last purchase rates, inventories, and UOMs.',
         security: [{ bearerAuth: [] }],
         parameters: [
           {

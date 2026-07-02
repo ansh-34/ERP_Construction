@@ -9,6 +9,13 @@ export const RoleSchemas = {
         example: { en: 'Site Engineer', hi: 'साइट इंजीनियर' },
         additionalProperties: { type: 'string' },
       },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          "//new: Optional. Attaches the role to a DomainUserType mapped to this domain. Validated against the domain's mapped user types. Omit for a standalone role.",
+        example: 'SAFETY_OFFICER_90926',
+      },
       level: { type: 'integer', example: 3 },
     },
   },
@@ -23,6 +30,13 @@ export const RoleSchemas = {
         additionalProperties: { type: 'string' },
       },
       code: { type: 'string', example: 'SENIOR_SITE_ENGINEER' },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          '//new: Set to attach the role to a mapped DomainUserType (validated), or `null` to detach and make it standalone.',
+        example: 'SAFETY_OFFICER_90926',
+      },
       level: { type: 'integer', example: 4 },
       status: {
         type: 'string',
@@ -66,16 +80,63 @@ export const RoleSchemas = {
         format: 'uuid',
         example: 'c9a2f1e0-3b4d-4f5a-8e6c-1a2b3c4d5e6f',
       },
-      name: { type: 'string', example: 'Site Engineer' },
+      name: {
+        description:
+          'Localized JSON object, or a flat string when the `language` header is set.',
+        example: 'Site Engineer',
+      },
       code: { type: 'string', example: 'site_engineer' },
       searchText: { type: 'string', example: 'site engineer साइट इंजीनियर' },
       level: { type: 'integer', example: 3 },
+      modulePermissionCount: {
+        type: 'integer',
+        description: 'Number of modules this role has permissions on.',
+        example: 0,
+      },
+      usersCount: {
+        type: 'integer',
+        description: 'Number of users assigned this role.',
+        example: 0,
+      },
       domainId: {
         type: 'string',
         format: 'uuid',
         example: 'd1e2f3a4-b5c6-7890-1234-56789abcdef0',
       },
-      status: { type: 'string', example: 'active' },
+      adminId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        example: '1da16956-db58-4216-81f1-30ca54876913',
+      },
+      userTypeId: {
+        type: 'string',
+        format: 'uuid',
+        nullable: true,
+        description: 'Legacy global user-type FK; `null` in the new design.',
+        example: null,
+      },
+      userTypeCode: {
+        type: 'string',
+        nullable: true,
+        description: 'Legacy user-type code; `null` in the new design.',
+        example: null,
+      },
+      domainUserTypeCode: {
+        type: 'string',
+        nullable: true,
+        description:
+          '//new: The DomainUserType code this role is attached to, or `null` for a standalone role.',
+        example: 'SAFETY_OFFICER_90926',
+      },
+      userType: {
+        type: 'object',
+        nullable: true,
+        description:
+          'Legacy embedded user-type relation; `null` in the new design.',
+        example: null,
+      },
+      status: { type: 'string', example: 'ACTIVE' },
       isDeleted: { type: 'boolean', example: false },
       createdAt: {
         type: 'string',

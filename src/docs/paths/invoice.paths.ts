@@ -331,7 +331,11 @@ const buildInvoicePaths = (
       tags,
       summary: 'Generate invoices from Purchase Order',
       description:
-        'Generate invoices for a purchase order by assigning vendors from pricing rules.',
+        'Generate invoices for a purchase order by assigning vendors from pricing rules. ' +
+        '//new: As a side effect, this captures the last purchase rate per (product, grade, UOM, purchaseType) ' +
+        '— one row per line — recording the vendor price, currency, vendor, invoice, and purchase date. ' +
+        'An existing rate is only overwritten when the new invoice date is on/after the stored `lastPurchaseDate`. ' +
+        'These rates are readable via `GET /api/domain/last-purchase-rates` and surface on product/grade/inventory/report responses.',
       security: [{ bearerAuth: [] }],
       parameters: [
         {

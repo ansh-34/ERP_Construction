@@ -89,4 +89,58 @@ export const AccountCategorySchemas = {
       },
     },
   },
+
+  AccountCategoryCreateBody: {
+    type: 'object',
+    description:
+      'code and searchText are auto-generated from name — do not send them.',
+    required: ['name', 'categoryType', 'normalBalance'],
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required.',
+        example: { en: 'Cash And Bank' },
+      },
+      categoryType: {
+        type: 'string',
+        enum: ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'],
+        example: 'ASSET',
+      },
+      normalBalance: {
+        type: 'string',
+        enum: ['DEBIT', 'CREDIT'],
+        example: 'DEBIT',
+      },
+      parentId: { type: 'string', format: 'uuid' },
+      sortOrder: { type: 'integer', minimum: 0, example: 0 },
+      isPostingAllowed: { type: 'boolean' },
+      isSystem: { type: 'boolean' },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        default: 'ACTIVE',
+      },
+    },
+  },
+
+  AccountCategoryUpdateBody: {
+    type: 'object',
+    description: 'All fields optional.',
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required when sent.',
+        example: { en: 'Cash And Bank' },
+      },
+      categoryType: {
+        type: 'string',
+        enum: ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'],
+      },
+      normalBalance: { type: 'string', enum: ['DEBIT', 'CREDIT'] },
+      sortOrder: { type: 'integer', minimum: 0 },
+      isPostingAllowed: { type: 'boolean' },
+      isSystem: { type: 'boolean' },
+      status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+    },
+  },
 };

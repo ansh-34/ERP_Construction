@@ -62,8 +62,14 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'invalid transactionType' ||
       error.message === 'invalid userTypeCode' ||
       error.message === 'invalid system user type code' ||
+      error.message === 'invalid domainUserTypeCode' ||
       error.message === 'user type not found' ||
       error.message === 'user type code already exists' ||
+      error.message === 'user type does not belong to domain industry' ||
+      error.message === 'one or more user types not found' ||
+      error.message ===
+        'one or more user types already mapped to this domain' ||
+      error.message === 'user type already mapped to this domain' ||
       error.message === 'not found' ||
       error.message === 'unauthorized' ||
       error.message === 'task not completed' ||

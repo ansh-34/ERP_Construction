@@ -20,6 +20,7 @@ export const createRoleBodySchema = z.object({
   name: localizedName,
   code: z.string().min(1).optional(),
   userTypeCode: z.string().min(1).optional(),
+  domainUserTypeCode: z.string().min(1).optional(),
   level: z.number().optional(),
 });
 
@@ -27,6 +28,7 @@ export const updateRoleBodySchema = z.object({
   name: localizedName.optional(),
   code: z.string().min(1).optional(),
   userTypeCode: z.string().min(1).nullable().optional(),
+  domainUserTypeCode: z.string().min(1).nullable().optional(),
   level: z.number().optional(),
   status: statusFilterSchema.shape.status.optional(),
 });
@@ -48,6 +50,10 @@ export const listRolesQuerySchema = paginationQuerySchema
     searchKey: z.string().optional(),
     userTypeCode: z.string().optional(),
     userTypeId: z.string().uuid().optional(),
+    domainUserTypeCode: z.string().optional(),
+    standalone: z
+      .preprocess((v) => v === 'true' || v === true, z.boolean())
+      .optional(),
   });
 
 export const roleIdParamsSchema = idParamSchema;

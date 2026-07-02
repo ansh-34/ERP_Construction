@@ -41,6 +41,20 @@ export const RolePaths = {
           schema: { type: 'string' },
           description: 'Search across all language translations',
         },
+        {
+          in: 'query',
+          name: 'domainUserTypeCode',
+          schema: { type: 'string' },
+          description:
+            '//new: Filter roles belonging to a specific DomainUserType (by its user-type code, e.g. `SAFETY_OFFICER_90926`).',
+        },
+        {
+          in: 'query',
+          name: 'standalone',
+          schema: { type: 'boolean' },
+          description:
+            '//new: When `true`, returns only standalone roles (those with no `domainUserTypeCode`).',
+        },
       ],
       responses: {
         200: {
@@ -123,7 +137,7 @@ export const RolePaths = {
       tags: ['Roles'],
       summary: 'Create role',
       description:
-        'Create a new role. The `name` field accepts a JSON object with language codes as keys (e.g. `{ "en": "Manager", "hi": "प्रबंधक" }`). English (`en`) is required. The `code` is auto-generated from the English name.',
+        'Create a new role. The `name` field accepts a JSON object with language codes as keys (e.g. `{ "en": "Manager", "hi": "प्रबंधक" }`). English (`en`) is required. The `code` is auto-generated from the English name. //new: Pass an optional `domainUserTypeCode` to attach the role to a DomainUserType mapped to this domain; it is validated against the domain\'s mapped user types. Omit it to create a standalone role.',
       security: [{ bearerAuth: [] }],
       parameters: [languageHeader],
       requestBody: {
@@ -133,6 +147,7 @@ export const RolePaths = {
             schema: { $ref: '#/components/schemas/CreateRoleBody' },
             example: {
               name: { en: 'Site Engineer', hi: 'साइट इंजीनियर' },
+              domainUserTypeCode: 'SAFETY_OFFICER_90926',
               level: 3,
             },
           },
@@ -234,7 +249,7 @@ export const RolePaths = {
       tags: ['Roles'],
       summary: 'Update role',
       description:
-        'Update role fields. The `name` field accepts localized JSON (en required when provided). If `code` is provided, duplicates are checked.',
+        'Update role fields. The `name` field accepts localized JSON (en required when provided). If `code` is provided, duplicates are checked. //new: `domainUserTypeCode` can be set to re-attach the role to a mapped DomainUserType (validated), or `null` to detach it and make the role standalone.',
       security: [{ bearerAuth: [] }],
       parameters: [
         languageHeader,
@@ -253,6 +268,7 @@ export const RolePaths = {
             schema: { $ref: '#/components/schemas/UpdateRoleBody' },
             example: {
               name: { en: 'Senior Site Engineer', hi: 'वरिष्ठ साइट इंजीनियर' },
+              domainUserTypeCode: 'SAFETY_OFFICER_90926',
               level: 4,
             },
           },

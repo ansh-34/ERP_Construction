@@ -113,4 +113,61 @@ export const AccountSchemas = {
       },
     },
   },
+
+  AccountCreateBody: {
+    type: 'object',
+    description:
+      'code and searchText are auto-generated from name — do not send them.',
+    required: ['name', 'accountCategoryId'],
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required.',
+        example: { en: 'Cash In Hand' },
+      },
+      description: { type: 'string', example: 'Petty cash account' },
+      accountCategoryId: {
+        type: 'string',
+        format: 'uuid',
+        example: '21c70e4b-67cb-4dd7-baa0-7b40ce2ffb99',
+      },
+      parentId: { type: 'string', format: 'uuid' },
+      currencyId: { type: 'string', format: 'uuid' },
+      costCenterId: { type: 'string', format: 'uuid' },
+      projectId: { type: 'string', format: 'uuid' },
+      isCashOrBank: { type: 'boolean', example: true },
+      isPostingAllowed: { type: 'boolean' },
+      isSystem: { type: 'boolean' },
+      isActive: { type: 'boolean' },
+      sortOrder: { type: 'integer', minimum: 0, example: 0 },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        default: 'ACTIVE',
+      },
+    },
+  },
+
+  AccountUpdateBody: {
+    type: 'object',
+    description: 'All fields optional.',
+    properties: {
+      name: {
+        type: 'object',
+        description: 'Localized name. name.en is required when sent.',
+        example: { en: 'Cash In Hand' },
+      },
+      description: { type: 'string', example: 'Updated petty cash' },
+      accountCategoryId: { type: 'string', format: 'uuid' },
+      currencyId: { type: 'string', format: 'uuid' },
+      costCenterId: { type: 'string', format: 'uuid' },
+      projectId: { type: 'string', format: 'uuid' },
+      isCashOrBank: { type: 'boolean' },
+      isPostingAllowed: { type: 'boolean' },
+      isSystem: { type: 'boolean' },
+      isActive: { type: 'boolean', example: true },
+      sortOrder: { type: 'integer', minimum: 0 },
+      status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+    },
+  },
 };

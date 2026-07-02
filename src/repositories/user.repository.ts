@@ -188,7 +188,14 @@ export const UserRepository = {
           skills: true,
           minDayCharge: true,
           roleId: true,
-          role: { select: { id: true, name: true, code: true } },
+          role: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              domainUserTypeCode: true,
+            },
+          },
           status: true,
           createdAt: true,
         },

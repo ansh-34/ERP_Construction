@@ -6,6 +6,7 @@ import {
   UserRepository,
   RoleModulePermissionRepository,
   adminUserTypeRepository,
+  domainUserTypeRepository,
 } from '../../../repositories/index.js';
 import type { PaginationQuery } from '../../../utils/pagination.js';
 import { normalizePagination } from '../../../utils/pagination.js';
@@ -28,6 +29,7 @@ export const RoleService = {
       name: Record<string, string>;
       code?: string;
       userTypeCode?: string;
+      domainUserTypeCode?: string;
       level?: number;
     },
     langCode: string = 'en',
@@ -53,6 +55,21 @@ export const RoleService = {
       throw new Error('invalid userTypeCode');
     }
 
+    const domainUserTypeCode = data.domainUserTypeCode
+      ? data.domainUserTypeCode.toString().trim().toUpperCase()
+      : null;
+
+    const domainUserType = domainUserTypeCode
+      ? await domainUserTypeRepository.findByCodeAndDomain(
+          domainUserTypeCode,
+          domainId,
+        )
+      : null;
+
+    if (domainUserTypeCode && !domainUserType) {
+      throw new Error('invalid domainUserTypeCode');
+    }
+
     const existing = await RoleRepository.findActiveByCodeAndDomain(
       code,
       domainId,
@@ -70,6 +87,7 @@ export const RoleService = {
       adminId,
       userTypeId: userType?.id ?? null,
       userTypeCode: userType?.code ?? userTypeCode,
+      domainUserTypeCode: domainUserType?.userType?.code ?? null,
     });
 
     return {
@@ -203,6 +221,8 @@ export const RoleService = {
       searchKey?: string;
       userTypeCode?: string;
       userTypeId?: string;
+      domainUserTypeCode?: string;
+      standalone?: boolean;
     },
     langCode: string,
   ) {
@@ -217,6 +237,8 @@ export const RoleService = {
         searchKey: query.searchKey,
         userTypeCode: query.userTypeCode,
         userTypeId: query.userTypeId,
+        domainUserTypeCode: query.domainUserTypeCode,
+        standalone: query.standalone,
       },
     );
 
@@ -287,6 +309,7 @@ export const RoleService = {
       name?: Record<string, string>;
       code?: string;
       userTypeCode?: string | null;
+      domainUserTypeCode?: string | null;
       level?: number;
       status?: 'ACTIVE' | 'INACTIVE';
     },
@@ -338,6 +361,23 @@ export const RoleService = {
       throw new Error('invalid userTypeCode');
     }
 
+    const incomingDomainUserTypeCode =
+      typeof data.domainUserTypeCode === 'string'
+        ? data.domainUserTypeCode.toString().trim().toUpperCase()
+        : data.domainUserTypeCode;
+
+    const domainUserType =
+      typeof incomingDomainUserTypeCode === 'string'
+        ? await domainUserTypeRepository.findByCodeAndDomain(
+            incomingDomainUserTypeCode,
+            domainId,
+          )
+        : null;
+
+    if (typeof incomingDomainUserTypeCode === 'string' && !domainUserType) {
+      throw new Error('invalid domainUserTypeCode');
+    }
+
     const record = await RoleRepository.update(id, {
       ...data,
       ...(code ? { code } : {}),
@@ -347,6 +387,9 @@ export const RoleService = {
             userTypeId: userType?.id ?? null,
             userTypeCode: userType?.code ?? null,
           }
+        : {}),
+      ...(data.domainUserTypeCode !== undefined
+        ? { domainUserTypeCode: domainUserType?.userType?.code ?? null }
         : {}),
     });
 

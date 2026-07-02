@@ -17,17 +17,23 @@ export const ProductSchemas = {
       uoms: {
         type: 'array',
         description:
-          'Optional array of UOM assignments to create with the product.',
+          'Optional array of UOM assignments to create with the product. ' +
+          'Each item may be either a plain UOM UUID string or an object `{ id }`.',
         items: {
-          type: 'object',
-          required: ['id'],
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              example: '55555555-5555-5555-5555-555555555501',
+          oneOf: [
+            { type: 'string', format: 'uuid' },
+            {
+              type: 'object',
+              required: ['id'],
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  example: '55555555-5555-5555-5555-555555555501',
+                },
+              },
             },
-          },
+          ],
         },
       },
       grades: {
@@ -50,20 +56,16 @@ export const ProductSchemas = {
         enum: ['RAW_MATERIAL', 'FINISHED_PRODUCT'],
       },
       status: { type: 'string', example: 'inactive' },
-      uoms: {
+      uom: {
         type: 'array',
         description:
-          'Optional array of UOM assignments to associate with the product.',
+          'Optional array of UOM IDs to associate with the product. ' +
+          'NOTE: on update the key is `uom` (singular) and items are plain UUID strings — ' +
+          'unlike create, which uses `uoms`.',
         items: {
-          type: 'object',
-          required: ['id'],
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              example: '55555555-5555-5555-5555-555555555501',
-            },
-          },
+          type: 'string',
+          format: 'uuid',
+          example: '55555555-5555-5555-5555-555555555501',
         },
       },
       grades: {
@@ -441,6 +443,26 @@ export const ProductSchemas = {
     properties: {
       uomId: { type: 'string', format: 'uuid' },
       status: { type: 'string', default: 'active' },
+    },
+  },
+
+  // A product↔UOM assignment row, optionally with the resolved UOM embedded.
+  ProductUomObject: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      productId: { type: 'string', format: 'uuid' },
+      uomId: { type: 'string', format: 'uuid' },
+      domainId: { type: 'string', format: 'uuid' },
+      status: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        example: 'ACTIVE',
+      },
+      isDeleted: { type: 'boolean', example: false },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+      uom: { $ref: '#/components/schemas/UomObject' },
     },
   },
 

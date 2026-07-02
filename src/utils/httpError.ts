@@ -70,6 +70,7 @@ export function resolveHttpStatus(message: string): HttpStatus {
     message.includes('already been posted') ||
     message.includes('already been reversed') ||
     message.includes('already closed') ||
+    message.includes('already mapped') ||
     message.includes('overlap') ||
     message.includes('must be inside') ||
     message.includes('not generated yet') ||

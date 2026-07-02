@@ -62,6 +62,7 @@ import costCenterRouter from './costCenter/costCenter.router.js';
 import alertRouter from './alert/alert.routes.js';
 import notificationRouter from './notification/notification.routes.js';
 import reportRouter from './report/report.routes.js';
+import dashboardRouter from './dashboard/dashboard.router.js';
 
 const userRouter = Router();
 
@@ -69,6 +70,7 @@ userRouter.use('/auth', authRouter);
 userRouter.use('/onboarding', onboardingRouter);
 
 userRouter.use(authMiddleware);
+userRouter.use('/dashboard', dashboardRouter);
 userRouter.use('/language', languageRouter);
 userRouter.use('/currency', currencyRouter);
 userRouter.use('/locations', locationRouter);

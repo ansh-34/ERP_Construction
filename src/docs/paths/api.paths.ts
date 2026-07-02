@@ -55,6 +55,7 @@ import { GeneralLedgerPaths } from './generalLedger.paths.js';
 import { AccountBalancePaths } from './accountBalance.paths.js';
 import { JournalEntryPaths } from './journalEntry.paths.js';
 import { JournalEntryLinePaths } from './journalEntryLine.paths.js';
+import { DomainUserTypePaths } from './domainUserType.paths.js';
 
 export const ApiPaths = {
   ...HealthPaths,
@@ -114,4 +115,5 @@ export const ApiPaths = {
   ...AccountBalancePaths,
   ...JournalEntryPaths,
   ...JournalEntryLinePaths,
+  ...DomainUserTypePaths,
 };

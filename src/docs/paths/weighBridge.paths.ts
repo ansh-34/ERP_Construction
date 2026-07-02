@@ -95,6 +95,8 @@ const buildPaths = (base: string, tags: string[], listLangDefault: string) => ({
           'application/json': {
             schema: { $ref: '#/components/schemas/WeighBridgeCreateBody' },
             example: {
+              ticketNumber: 'WB-2026-001',
+              date: '2026-07-01T09:00:00.000Z',
               driverName: 'Rajesh Kumar',
               vehicleNo: 'GJ01AB1234',
               supplier: 'Steel Corp India',
@@ -106,6 +108,7 @@ const buildPaths = (base: string, tags: string[], listLangDefault: string) => ({
               operatorId: '91e4f3c9-2a20-4de4-9e00-8ccf2f2f1998',
               projectId: '88888888-8888-8888-8888-888888888801',
               remarks: 'First weighbridge entry',
+              status: 'ACTIVE',
             },
           },
         },
@@ -200,9 +203,20 @@ const buildPaths = (base: string, tags: string[], listLangDefault: string) => ({
           'application/json': {
             schema: { $ref: '#/components/schemas/WeighBridgeUpdateBody' },
             example: {
-              weighBridgeStatus: 'COMPLETED',
+              ticketNumber: 'WB-2026-001',
+              date: '2026-07-01T09:00:00.000Z',
+              driverName: 'Rajesh Kumar',
+              vehicleNo: 'GJ01AB1234',
+              supplier: 'Steel Corp India',
+              material: 'Iron Ore',
+              gateNoteNo: 'GN-2026-001',
+              tareWeight: '8500',
               grossWeight: '26500',
+              weighBridgeStatus: 'COMPLETED',
+              operatorId: '91e4f3c9-2a20-4de4-9e00-8ccf2f2f1998',
+              projectId: '88888888-8888-8888-8888-888888888801',
               remarks: 'Updated after recheck',
+              status: 'ACTIVE',
             },
           },
         },

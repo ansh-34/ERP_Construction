@@ -162,8 +162,12 @@ const buildPaths = (base: string, tags: string[]) => ({
             schema: { $ref: '#/components/schemas/SaleOrderCreateBody' },
             example: {
               customerId: 'a339bac0-d4cc-4468-a755-20a46ed06599',
+              ticketNumber: 'SO-2026-001',
+              date: '2026-07-01T09:00:00.000Z',
+              entryType: 'MANUAL',
               paymentType: 'CASH',
               orderStatus: 'PENDING',
+              status: 'ACTIVE',
               remarks: 'First order for this customer',
               products: [
                 {
@@ -273,7 +277,13 @@ const buildPaths = (base: string, tags: string[]) => ({
           'application/json': {
             schema: { $ref: '#/components/schemas/SaleOrderUpdateBody' },
             example: {
+              customerId: 'a339bac0-d4cc-4468-a755-20a46ed06599',
+              ticketNumber: 'SO-2026-001',
+              date: '2026-07-01T09:00:00.000Z',
+              entryType: 'MANUAL',
+              paymentType: 'CASH',
               orderStatus: 'INPROGRESS',
+              status: 'ACTIVE',
               remarks: 'Updated remark',
               products: [
                 {

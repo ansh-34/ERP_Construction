@@ -77,6 +77,93 @@ export const GrnSchemas = {
       updatedAt: { type: 'string', format: 'date-time' },
     },
   },
+  // Create GRN is a discriminated union on `referenceType` (INVOICE | PO | NA).
+  // Each variant carries a different reference + line-item shape.
+  CreateGrnBody: {
+    oneOf: [
+      { $ref: '#/components/schemas/CreateGrnFromInvoiceBody' },
+      { $ref: '#/components/schemas/CreateGrnFromPoBody' },
+      { $ref: '#/components/schemas/CreateGrnNaBody' },
+    ],
+    discriminator: { propertyName: 'referenceType' },
+  },
+  CreateGrnFromInvoiceBody: {
+    type: 'object',
+    required: ['referenceType', 'invoiceId', 'grnProducts'],
+    properties: {
+      referenceType: { type: 'string', enum: ['INVOICE'], example: 'INVOICE' },
+      invoiceId: { type: 'string', format: 'uuid' },
+      wbReference: { type: 'string', example: 'WB-456' },
+      grnProducts: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: ['productId', 'quantity'],
+          properties: {
+            productId: { type: 'string', format: 'uuid' },
+            quantity: { type: 'number', minimum: 0, example: 100 },
+          },
+        },
+      },
+    },
+  },
+  CreateGrnFromPoBody: {
+    type: 'object',
+    required: ['referenceType', 'purchaseOrderId', 'vendorId', 'grnProducts'],
+    properties: {
+      referenceType: { type: 'string', enum: ['PO'], example: 'PO' },
+      purchaseOrderId: { type: 'string', format: 'uuid' },
+      vendorId: { type: 'string', format: 'uuid' },
+      wbReference: { type: 'string', example: 'WB-456' },
+      grnProducts: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: ['poProductId', 'quantity', 'rate', 'currencyId'],
+          properties: {
+            poProductId: { type: 'string', format: 'uuid' },
+            quantity: { type: 'number', minimum: 0, example: 100 },
+            rate: { type: 'number', minimum: 0, example: 10 },
+            currencyId: { type: 'string', format: 'uuid' },
+          },
+        },
+      },
+    },
+  },
+  CreateGrnNaBody: {
+    type: 'object',
+    required: ['referenceType', 'vendorId', 'grnProducts'],
+    properties: {
+      referenceType: { type: 'string', enum: ['NA'], example: 'NA' },
+      vendorId: { type: 'string', format: 'uuid' },
+      projectId: { type: 'string', format: 'uuid' },
+      wbReference: { type: 'string', example: 'WB-456' },
+      grnProducts: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'object',
+          required: [
+            'productId',
+            'productGradeId',
+            'quantity',
+            'uomId',
+            'currencyId',
+          ],
+          properties: {
+            productId: { type: 'string', format: 'uuid' },
+            productGradeId: { type: 'string', format: 'uuid' },
+            quantity: { type: 'number', minimum: 0, example: 100 },
+            rate: { type: 'number', minimum: 0, default: 0, example: 10 },
+            uomId: { type: 'string', format: 'uuid' },
+            currencyId: { type: 'string', format: 'uuid' },
+          },
+        },
+      },
+    },
+  },
   CreateGrnProductBody: {
     type: 'object',
     required: ['productId', 'quantity'],

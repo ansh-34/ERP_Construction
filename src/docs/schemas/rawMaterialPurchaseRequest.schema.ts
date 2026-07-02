@@ -61,7 +61,6 @@ export const RawMaterialPurchaseRequestSchemas = {
       productGradeId: { type: 'string', format: 'uuid' },
       quantity: { type: 'number', minimum: 0 },
       uomId: { type: 'string', format: 'uuid' },
-      vendor: { type: 'string' },
       brand: { type: 'string' },
       documentId: { type: 'string', format: 'uuid' },
       requiredBy: { type: 'string', format: 'date-time' },
