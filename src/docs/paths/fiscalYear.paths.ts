@@ -22,6 +22,31 @@ const fiscalYearObject = {
     domainId: { type: 'string', format: 'uuid' },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
+    accountingPeriods: {
+      type: 'array',
+      description:
+        'Accounting periods created atomically with the fiscal year. Empty when none were supplied.',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          fiscalYearId: { type: 'string', format: 'uuid' },
+          name: { type: 'string', example: 'April 2026' },
+          periodNo: { type: 'integer', example: 1 },
+          startDate: {
+            type: 'string',
+            format: 'date',
+            example: '2026-04-01',
+          },
+          endDate: {
+            type: 'string',
+            format: 'date',
+            example: '2026-04-30',
+          },
+          isClosed: { type: 'boolean', example: false },
+        },
+      },
+    },
   },
 };
 
@@ -33,6 +58,30 @@ const createBody = {
     name: { type: 'string', maxLength: 100, example: 'FY 2026-2027' },
     startDate: { type: 'string', format: 'date', example: '2026-04-01' },
     endDate: { type: 'string', format: 'date', example: '2027-03-31' },
+    accountingPeriods: {
+      type: 'array',
+      description:
+        'Optional periods to create in the same transaction. fiscalYearId is assigned automatically.',
+      items: {
+        type: 'object',
+        required: ['name', 'periodNo', 'startDate', 'endDate'],
+        additionalProperties: false,
+        properties: {
+          name: { type: 'string', maxLength: 100, example: 'April 2026' },
+          periodNo: { type: 'integer', minimum: 1, maximum: 12, example: 1 },
+          startDate: {
+            type: 'string',
+            format: 'date',
+            example: '2026-04-01',
+          },
+          endDate: {
+            type: 'string',
+            format: 'date',
+            example: '2026-04-30',
+          },
+        },
+      },
+    },
   },
 };
 
@@ -40,7 +89,11 @@ const updateBody = {
   type: 'object',
   minProperties: 1,
   additionalProperties: false,
-  properties: createBody.properties,
+  properties: {
+    name: createBody.properties.name,
+    startDate: createBody.properties.startDate,
+    endDate: createBody.properties.endDate,
+  },
 };
 
 const singleResponse = (description: string) => ({
@@ -65,7 +118,7 @@ const FiscalYearDomainPaths = {
       tags: ['Fiscal Years'],
       summary: 'Create a fiscal year',
       description:
-        'Creates a non-overlapping fiscal year for the authenticated domain.',
+        'Creates a non-overlapping fiscal year and, when supplied, its accountingPeriods array in one transaction. Any period failure rolls back the fiscal year and all periods.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,

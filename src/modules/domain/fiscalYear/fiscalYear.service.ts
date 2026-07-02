@@ -4,12 +4,60 @@ import {
 } from '../../../repositories/index.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizePrismaError } from '../../../utils/prismaError.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
+
+type AccountingPeriodInput = {
+  name: string;
+  periodNo: number;
+  startDate: Date;
+  endDate: Date;
+};
 
 type FiscalYearInput = {
   name: string;
   startDate: Date;
   endDate: Date;
+  accountingPeriods?: AccountingPeriodInput[];
 };
+
+function validateAccountingPeriods(
+  periods: AccountingPeriodInput[],
+  fiscalYear: Pick<FiscalYearInput, 'startDate' | 'endDate'>,
+) {
+  const names = new Set<string>();
+  const periodNumbers = new Set<number>();
+  const sortedPeriods = [...periods].sort(
+    (left, right) => left.startDate.getTime() - right.startDate.getTime(),
+  );
+
+  for (const period of sortedPeriods) {
+    if (period.startDate >= period.endDate) {
+      throw new Error('Accounting period endDate must be after startDate');
+    }
+    if (
+      period.startDate < fiscalYear.startDate ||
+      period.endDate > fiscalYear.endDate
+    ) {
+      throw new Error('Accounting period dates must be inside the fiscal year');
+    }
+
+    const normalizedName = period.name.toLocaleLowerCase();
+    if (names.has(normalizedName)) {
+      throw new Error('Accounting period name already exists in request');
+    }
+    if (periodNumbers.has(period.periodNo)) {
+      throw new Error('Accounting period number already exists in request');
+    }
+    names.add(normalizedName);
+    periodNumbers.add(period.periodNo);
+  }
+
+  for (let index = 1; index < sortedPeriods.length; index += 1) {
+    if (sortedPeriods[index].startDate <= sortedPeriods[index - 1].endDate) {
+      throw new Error('Accounting period dates overlap in request');
+    }
+  }
+}
 
 async function assertNameAvailable(
   name: string,
@@ -47,12 +95,36 @@ export const FiscalYearService = {
         assertNoOverlap(domainId, dto.startDate, dto.endDate),
       ]);
 
-      return await fiscalYearRepository.create({
-        name: dto.name,
-        startDate: dto.startDate,
-        endDate: dto.endDate,
-        domainId,
-        adminId,
+      const accountingPeriods = dto.accountingPeriods ?? [];
+      validateAccountingPeriods(accountingPeriods, dto);
+
+      return await transaction(async (tx) => {
+        const fiscalYear = await fiscalYearRepository.create(
+          {
+            name: dto.name,
+            startDate: dto.startDate,
+            endDate: dto.endDate,
+            domainId,
+            adminId,
+          },
+          { transaction: tx },
+        );
+
+        const createdPeriods = await Promise.all(
+          accountingPeriods.map((period) =>
+            accountingPeriodRepository.create(
+              {
+                ...period,
+                fiscalYearId: fiscalYear.id,
+                domainId,
+                adminId,
+              },
+              { transaction: tx },
+            ),
+          ),
+        );
+
+        return { ...fiscalYear, accountingPeriods: createdPeriods };
       });
     } catch (error) {
       throw normalizePrismaError(error);

@@ -17,6 +17,7 @@ export const accountRepository = {
       accountCategoryId?: string;
       parentId?: string | null;
       isCashOrBank?: boolean;
+      isPostingAllowed?: boolean;
     },
   ) {
     const searchKey = filter?.searchKey?.trim() || '';
@@ -31,6 +32,9 @@ export const accountRepository = {
       ...(filter?.parentId !== undefined && { parentId: filter.parentId }),
       ...(filter?.isCashOrBank !== undefined && {
         isCashOrBank: filter.isCashOrBank,
+      }),
+      ...(filter?.isPostingAllowed !== undefined && {
+        isPostingAllowed: filter.isPostingAllowed,
       }),
       ...(searchKey && {
         searchText: { contains: searchKey, mode: 'insensitive' as const },

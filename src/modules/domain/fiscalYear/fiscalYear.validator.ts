@@ -26,10 +26,23 @@ const fiscalYearDates = {
   endDate: dateOnlySchema,
 };
 
+const accountingPeriodSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100),
+    periodNo: z.coerce.number().int().min(1).max(12),
+    startDate: dateOnlySchema,
+    endDate: dateOnlySchema,
+  })
+  .refine((data) => data.startDate < data.endDate, {
+    message: 'endDate must be after startDate',
+    path: ['endDate'],
+  });
+
 export const createFiscalYearBodySchema = z
   .object({
     name: z.string().trim().min(1).max(100),
     ...fiscalYearDates,
+    accountingPeriods: z.array(accountingPeriodSchema).optional(),
   })
   .refine((data) => data.startDate < data.endDate, {
     message: 'endDate must be after startDate',

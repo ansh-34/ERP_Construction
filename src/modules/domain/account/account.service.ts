@@ -121,6 +121,7 @@ export const AccountService = {
       accountCategoryId?: string;
       parentId?: string;
       isCashOrBank?: boolean;
+      isPostingAllowed?: boolean;
     },
   ) {
     const { offset, limit } = normalizePagination(query);
@@ -135,6 +136,7 @@ export const AccountService = {
         accountCategoryId: query.accountCategoryId,
         parentId: query.parentId,
         isCashOrBank: query.isCashOrBank,
+        isPostingAllowed: query.isPostingAllowed,
       },
     );
     return { data, pagination: { totalCount, offset, limit } };

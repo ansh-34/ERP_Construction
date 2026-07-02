@@ -1,5 +1,6 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import type { TransactionClient } from '../infra/database/prisma/transaction.js';
 
 const fiscalYearSelect = {
   id: true,
@@ -17,8 +18,12 @@ const fiscalYearSelect = {
 } satisfies Prisma.FiscalYearSelect;
 
 export const fiscalYearRepository = {
-  create(data: Prisma.FiscalYearUncheckedCreateInput) {
-    return prisma.fiscalYear.create({ data, select: fiscalYearSelect });
+  create(
+    data: Prisma.FiscalYearUncheckedCreateInput,
+    options: { transaction?: TransactionClient } = {},
+  ) {
+    const client = options.transaction ?? prisma;
+    return client.fiscalYear.create({ data, select: fiscalYearSelect });
   },
 
   findById(id: string, domainId: string) {

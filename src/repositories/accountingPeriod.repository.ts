@@ -1,5 +1,6 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import type { TransactionClient } from '../infra/database/prisma/transaction.js';
 
 const accountingPeriodSelect = {
   id: true,
@@ -19,8 +20,12 @@ const accountingPeriodSelect = {
 } satisfies Prisma.AccountingPeriodSelect;
 
 export const accountingPeriodRepository = {
-  create(data: Prisma.AccountingPeriodUncheckedCreateInput) {
-    return prisma.accountingPeriod.create({
+  create(
+    data: Prisma.AccountingPeriodUncheckedCreateInput,
+    options: { transaction?: TransactionClient } = {},
+  ) {
+    const client = options.transaction ?? prisma;
+    return client.accountingPeriod.create({
       data,
       select: accountingPeriodSelect,
     });

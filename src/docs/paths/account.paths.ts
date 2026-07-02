@@ -188,6 +188,15 @@ export const AccountPaths = {
             type: 'boolean',
           },
         },
+        {
+          in: 'query',
+          name: 'isPostingAllowed',
+          description:
+            'Use true to return only accounts that can be selected on journal entry lines.',
+          schema: {
+            type: 'boolean',
+          },
+        },
       ],
       responses: {
         '200': {
@@ -859,6 +868,15 @@ export const AccountPaths = {
         {
           in: 'query',
           name: 'isCashOrBank',
+          schema: {
+            type: 'boolean',
+          },
+        },
+        {
+          in: 'query',
+          name: 'isPostingAllowed',
+          description:
+            'Use true to return only accounts that can be selected on journal entry lines.',
           schema: {
             type: 'boolean',
           },
