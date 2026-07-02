@@ -412,6 +412,7 @@ export const journalEntryRepository = {
             lines: {
               where: { status: 'ACTIVE' },
               orderBy: { lineNo: 'asc' },
+              include: { account: { select: { path: true } } },
             },
           },
         });
@@ -423,30 +424,90 @@ export const journalEntryRepository = {
           );
         }
 
-        const claimed = await tx.journalEntry.updateMany({
-          where: {
-            id,
-            domainId,
-            adminId,
-            status: 'POSTED',
-            isDeleted: false,
-          },
-          data: { status: 'REVERSED', reversalDate: new Date() },
-        });
-        if (claimed.count !== 1) {
-          throw new Error('Journal entry has already been reversed');
+        // Decide where to post the reversal. Never rewrite a locked period: if
+        // the original fiscal year / period is closed, post the reversal into
+        // the current open period; otherwise mirror the original's period/date.
+        let reversalDate = journal.postingDate;
+        let reversalFiscalYearId = journal.fiscalYearId;
+        let reversalPeriodId = journal.accountingPeriodId;
+
+        const [origFiscalYear, origPeriod] = await Promise.all([
+          tx.fiscalYear.findFirst({
+            where: { id: journal.fiscalYearId, domainId },
+            select: { isClosed: true },
+          }),
+          tx.accountingPeriod.findFirst({
+            where: { id: journal.accountingPeriodId, domainId },
+            select: { isClosed: true },
+          }),
+        ]);
+
+        if (origFiscalYear?.isClosed || origPeriod?.isClosed) {
+          const today = new Date();
+          const openPeriod = await tx.accountingPeriod.findFirst({
+            where: {
+              domainId,
+              isClosed: false,
+              startDate: { lte: today },
+              endDate: { gte: today },
+            },
+            select: { id: true, fiscalYearId: true },
+          });
+          if (!openPeriod) {
+            throw new Error('No open accounting period to post the reversal');
+          }
+          const openFiscalYear = await tx.fiscalYear.findFirst({
+            where: { id: openPeriod.fiscalYearId, domainId },
+            select: { isClosed: true },
+          });
+          if (!openFiscalYear || openFiscalYear.isClosed) {
+            throw new Error('No open fiscal year to post the reversal');
+          }
+          reversalDate = today;
+          reversalFiscalYearId = openPeriod.fiscalYearId;
+          reversalPeriodId = openPeriod.id;
         }
 
-        const maxLineNo = journal.lines.reduce(
-          (maximum, line) => Math.max(maximum, line.lineNo),
-          0,
-        );
+        // Create the reversal as its own POSTED counter-voucher (linked back
+        // to the original via sourceDocumentId; original links here below).
+        const reversal = await tx.journalEntry.create({
+          data: {
+            voucherNo: `REV-${journal.voucherNo}`,
+            voucherType: 'Reversal',
+            transactionDate: reversalDate,
+            postingDate: reversalDate,
+            referenceNo: journal.referenceNo,
+            narration: `Reversal of ${journal.voucherNo}`,
+            totalDebit: journal.totalCredit,
+            totalCredit: journal.totalDebit,
+            currencyId: journal.currencyId,
+            exchangeRate: journal.exchangeRate,
+            status: 'POSTED',
+            entryType: 'AUTO',
+            sourceDocumentType: 'JOURNAL_REVERSAL',
+            sourceDocumentId: journal.id,
+            fiscalYearId: reversalFiscalYearId,
+            accountingPeriodId: reversalPeriodId,
+            vendorId: journal.vendorId,
+            customerId: journal.customerId,
+            costCenterId: journal.costCenterId,
+            projectId: journal.projectId,
+            domainId,
+            adminId,
+            createdBy: adminId,
+            postedBy: adminId,
+            postedAt: new Date(),
+          },
+        });
+
+        // Reversal lines = original ACTIVE lines with debit/credit swapped.
         const reversedLines = [];
-        for (const [index, line] of journal.lines.entries()) {
+        let lineNo = 1;
+        for (const line of journal.lines) {
           const reversedLine = await tx.journalEntryLine.create({
             data: {
-              journalEntryId: journal.id,
-              lineNo: maxLineNo + index + 1,
+              journalEntryId: reversal.id,
+              lineNo: lineNo++,
               accountId: line.accountId,
               debitAmount: line.creditAmount,
               creditAmount: line.debitAmount,
@@ -459,7 +520,7 @@ export const journalEntryRepository = {
               projectId: line.projectId,
               reconciledAmount: 0,
               isReconciled: false,
-              status: 'REVERSED',
+              status: 'ACTIVE',
               vendorId: line.vendorId,
               customerId: line.customerId,
               adminId,
@@ -471,23 +532,32 @@ export const journalEntryRepository = {
 
         await tx.generalLedgerEntry.createMany({
           data: reversedLines.map((line) => ({
-            journalEntryId: journal.id,
+            journalEntryId: reversal.id,
             journalEntryLineId: line.id,
             accountId: line.accountId,
-            transactionDate: journal.transactionDate,
-            postingDate: journal.postingDate,
-            fiscalYearId: journal.fiscalYearId,
-            accountingPeriodId: journal.accountingPeriodId,
+            transactionDate: reversal.transactionDate,
+            postingDate: reversal.postingDate,
+            fiscalYearId: reversal.fiscalYearId,
+            accountingPeriodId: reversal.accountingPeriodId,
             debitAmount: line.debitAmount,
             creditAmount: line.creditAmount,
             costCenterId: line.costCenterId,
             projectId: line.projectId,
-            sourceDocumentId: journal.sourceDocumentId,
-            sourceDocumentType: journal.sourceDocumentType,
+            sourceDocumentId: reversal.sourceDocumentId,
+            sourceDocumentType: reversal.sourceDocumentType,
             adminId,
             domainId,
           })),
         });
+
+        // Leaf account id -> materialized path ("rootId/.../leafId"), from the
+        // original lines (the reversed lines mirror them 1:1).
+        const accountPathById = new Map<string, string>();
+        for (const line of journal.lines) {
+          if (line.account?.path) {
+            accountPathById.set(line.accountId, line.account.path);
+          }
+        }
 
         const balanceChanges = new Map<
           string,
@@ -498,19 +568,45 @@ export const journalEntryRepository = {
             credit: Prisma.Decimal;
           }
         >();
-        for (const line of reversedLines) {
-          const key = `${line.accountId}:${line.costCenterId}`;
+        const applyChange = (
+          accountId: string,
+          costCenterId: string,
+          debit: Prisma.Decimal,
+          credit: Prisma.Decimal,
+        ) => {
+          const key = `${accountId}:${costCenterId}`;
           const current = balanceChanges.get(key);
           if (current) {
-            current.debit = current.debit.plus(line.debitAmount);
-            current.credit = current.credit.plus(line.creditAmount);
+            current.debit = current.debit.plus(debit);
+            current.credit = current.credit.plus(credit);
           } else {
-            balanceChanges.set(key, {
-              accountId: line.accountId,
-              costCenterId: line.costCenterId,
-              debit: line.debitAmount,
-              credit: line.creditAmount,
-            });
+            balanceChanges.set(key, { accountId, costCenterId, debit, credit });
+          }
+        };
+
+        for (const line of reversedLines) {
+          // The postable leaf account itself.
+          applyChange(
+            line.accountId,
+            line.costCenterId,
+            line.debitAmount,
+            line.creditAmount,
+          );
+          // Roll the same movement up to every ancestor account (parent, ...,
+          // root) so summary balances stay in sync. Ancestors are the path
+          // segments excluding the leaf's own id (the last segment).
+          const path = accountPathById.get(line.accountId);
+          if (path) {
+            const segments = path.split('/').filter(Boolean);
+            const ancestorIds = segments.slice(0, -1);
+            for (const ancestorId of ancestorIds) {
+              applyChange(
+                ancestorId,
+                line.costCenterId,
+                line.debitAmount,
+                line.creditAmount,
+              );
+            }
           }
         }
 
@@ -519,16 +615,16 @@ export const journalEntryRepository = {
             where: {
               domainId_fiscalYearId_accountingPeriodId_accountId_costCenterId: {
                 domainId,
-                fiscalYearId: journal.fiscalYearId,
-                accountingPeriodId: journal.accountingPeriodId,
+                fiscalYearId: reversal.fiscalYearId,
+                accountingPeriodId: reversal.accountingPeriodId,
                 accountId: change.accountId,
                 costCenterId: change.costCenterId,
               },
             },
             create: {
               accountId: change.accountId,
-              fiscalYearId: journal.fiscalYearId,
-              accountingPeriodId: journal.accountingPeriodId,
+              fiscalYearId: reversal.fiscalYearId,
+              accountingPeriodId: reversal.accountingPeriodId,
               costCenterId: change.costCenterId,
               periodDebit: change.debit,
               periodCredit: change.credit,
@@ -538,14 +634,14 @@ export const journalEntryRepository = {
               closingCredit: change.credit.greaterThan(change.debit)
                 ? change.credit.minus(change.debit)
                 : new Prisma.Decimal(0),
-              lastJournalEntryId: journal.id,
+              lastJournalEntryId: reversal.id,
               adminId,
               domainId,
             },
             update: {
               periodDebit: { increment: change.debit },
               periodCredit: { increment: change.credit },
-              lastJournalEntryId: journal.id,
+              lastJournalEntryId: reversal.id,
               adminId,
             },
           });
@@ -565,6 +661,28 @@ export const journalEntryRepository = {
                 : new Prisma.Decimal(0),
             },
           });
+        }
+
+        // Atomically flip the original to REVERSED and link the reversal. The
+        // WHERE status='POSTED' guard makes a concurrent double-reversal fail
+        // (count 0 → throw → the whole transaction, incl. the reversal, rolls
+        // back), so a journal can never be reversed twice.
+        const claimed = await tx.journalEntry.updateMany({
+          where: {
+            id,
+            domainId,
+            adminId,
+            status: 'POSTED',
+            isDeleted: false,
+          },
+          data: {
+            status: 'REVERSED',
+            reversalDate: new Date(),
+            reversalJournalId: reversal.id,
+          },
+        });
+        if (claimed.count !== 1) {
+          throw new Error('Journal entry has already been reversed');
         }
 
         return tx.journalEntry.findUniqueOrThrow({
