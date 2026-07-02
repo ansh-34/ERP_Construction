@@ -56,7 +56,9 @@ export const listAccountsQuerySchema = paginationQuerySchema
       .uuid('Invalid account category ID')
       .optional(),
     parentId: z.string().uuid('Invalid parent ID').optional(),
-    isCashOrBank: z.coerce.boolean().optional(),
+    isCashOrBank: z
+      .preprocess((v) => v === 'true' || v === true, z.boolean())
+      .optional(),
     isPostingAllowed: z
       .enum(['true', 'false'])
       .transform((value) => value === 'true')

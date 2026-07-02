@@ -9,7 +9,9 @@ const recipientType = z.enum(['DOMAIN', 'ADMIN', 'USER']);
 export const listNotificationQuery = paginationQuerySchema.extend({
   recipientType: recipientType.optional(),
   recipientId: z.string().trim().uuid().optional(),
-  isRead: z.coerce.boolean().optional(),
+  isRead: z
+    .preprocess((v) => v === 'true' || v === true, z.boolean())
+    .optional(),
 });
 
 export const notificationIdParams = idParamSchema;

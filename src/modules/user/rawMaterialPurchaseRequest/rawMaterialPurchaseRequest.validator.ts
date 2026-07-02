@@ -44,7 +44,10 @@ export const listRawMaterialPurchaseRequestsQuerySchema =
     productId: z.string().uuid().optional(),
     projectId: z.string().uuid().optional(),
     domainId: z.string().uuid().optional(),
-    isDeleted: z.coerce.boolean().optional().default(false),
+    isDeleted: z
+      .preprocess((v) => v === 'true' || v === true, z.boolean())
+      .optional()
+      .default(false),
   });
 
 export const rawMaterialPurchaseRequestIdParamsSchema = z.object({
@@ -75,7 +78,10 @@ export const listPurchaseOrdersQuerySchema = paginationQuerySchema.extend({
   orderStatus: z.string().optional(),
   projectId: z.string().uuid().optional(),
   domainId: z.string().uuid().optional(),
-  isDeleted: z.coerce.boolean().optional().default(false),
+  isDeleted: z
+    .preprocess((v) => v === 'true' || v === true, z.boolean())
+    .optional()
+    .default(false),
 });
 
 export const poIdParamsSchema = z.object({
