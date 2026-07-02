@@ -57,6 +57,10 @@ export const listAccountsQuerySchema = paginationQuerySchema
       .optional(),
     parentId: z.string().uuid('Invalid parent ID').optional(),
     isCashOrBank: z.coerce.boolean().optional(),
+    isPostingAllowed: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .optional(),
   });
 
 export const accountIdParamSchema = idParamSchema;
