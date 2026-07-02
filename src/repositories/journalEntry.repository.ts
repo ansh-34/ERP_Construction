@@ -574,8 +574,38 @@ export const journalEntryRepository = {
           reversedLines.push(reversedLine);
         }
 
-        await tx.generalLedgerEntry.createMany({
-          data: reversedLines.map((line) => ({
+        // Compute runningBalance per GL row (mirrors postDraft): the running
+        // balance is the account+costCenter's net (Σdebit − Σcredit) across all
+        // prior ledger rows plus this line, so account statements stay correct.
+        const runningBalances = new Map<string, Prisma.Decimal>();
+        const ledgerRows = [];
+        for (const line of reversedLines) {
+          const runningBalanceKey = `${line.accountId}:${line.costCenterId}`;
+          let previousBalance = runningBalances.get(runningBalanceKey);
+
+          if (previousBalance === undefined) {
+            const previousMovements = await tx.generalLedgerEntry.aggregate({
+              where: {
+                domainId,
+                adminId,
+                accountId: line.accountId,
+                costCenterId: line.costCenterId,
+              },
+              _sum: { debitAmount: true, creditAmount: true },
+            });
+            previousBalance = (
+              previousMovements._sum.debitAmount ?? new Prisma.Decimal(0)
+            ).minus(
+              previousMovements._sum.creditAmount ?? new Prisma.Decimal(0),
+            );
+          }
+
+          const runningBalance = previousBalance
+            .plus(line.debitAmount)
+            .minus(line.creditAmount);
+          runningBalances.set(runningBalanceKey, runningBalance);
+
+          ledgerRows.push({
             journalEntryId: reversal.id,
             journalEntryLineId: line.id,
             accountId: line.accountId,
@@ -585,14 +615,17 @@ export const journalEntryRepository = {
             accountingPeriodId: reversal.accountingPeriodId,
             debitAmount: line.debitAmount,
             creditAmount: line.creditAmount,
+            runningBalance,
             costCenterId: line.costCenterId,
             projectId: line.projectId,
             sourceDocumentId: reversal.sourceDocumentId,
             sourceDocumentType: reversal.sourceDocumentType,
             adminId,
             domainId,
-          })),
-        });
+          });
+        }
+
+        await tx.generalLedgerEntry.createMany({ data: ledgerRows });
 
         // Leaf account id -> materialized path ("rootId/.../leafId"), from the
         // original lines (the reversed lines mirror them 1:1).
