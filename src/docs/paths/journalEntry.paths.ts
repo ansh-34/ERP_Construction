@@ -60,7 +60,52 @@ const journalBody = {
     customerId: { type: 'string', format: 'uuid', nullable: true },
     costCenterId: { type: 'string', format: 'uuid' },
     projectId: { type: 'string', format: 'uuid' },
+    lines: {
+      type: 'array',
+      minItems: 2,
+      description:
+        'Optional journal lines created atomically with the DRAFT journal. When supplied, at least two lines with unique lineNo values are required.',
+      items: {
+        type: 'object',
+        required: ['lineNo', 'accountId', 'costCenterId', 'projectId'],
+        properties: {
+          lineNo: { type: 'integer', minimum: 1 },
+          accountId: { type: 'string', format: 'uuid' },
+          debitAmount: { type: 'number', minimum: 0, default: 0 },
+          creditAmount: { type: 'number', minimum: 0, default: 0 },
+          transactionCurrencyDebit: {
+            type: 'number',
+            minimum: 0,
+            default: 0,
+          },
+          transactionCurrencyCredit: {
+            type: 'number',
+            minimum: 0,
+            default: 0,
+          },
+          exchangeRate: { type: 'number', exclusiveMinimum: 0, default: 1 },
+          description: { type: 'string', nullable: true },
+          referenceNo: { type: 'string', nullable: true },
+          costCenterId: { type: 'string', format: 'uuid' },
+          projectId: { type: 'string', format: 'uuid' },
+          reconciledAmount: { type: 'number', minimum: 0, default: 0 },
+          isReconciled: { type: 'boolean', default: false },
+          vendorId: { type: 'string', format: 'uuid', nullable: true },
+          customerId: { type: 'string', format: 'uuid', nullable: true },
+        },
+      },
+    },
   },
+};
+
+const updateJournalProperties: Record<string, unknown> = {
+  ...journalBody.properties,
+};
+delete updateJournalProperties.lines;
+const updateJournalBody = {
+  type: 'object',
+  minProperties: 1,
+  properties: updateJournalProperties,
 };
 
 const response = (description: string) => ({
@@ -84,6 +129,8 @@ const domainJournalEntryPaths: Record<string, SwaggerPathItem> = {
     post: {
       tags: ['Journal Entries'],
       summary: 'Create a DRAFT journal entry',
+      description:
+        'Creates the JournalEntry header. When lines are supplied, at least two JournalEntryLine rows are created atomically and header totals are calculated from them.',
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -148,7 +195,7 @@ const domainJournalEntryPaths: Record<string, SwaggerPathItem> = {
       parameters: [id],
       requestBody: {
         required: true,
-        content: { 'application/json': { schema: journalBody } },
+        content: { 'application/json': { schema: updateJournalBody } },
       },
       responses: {
         200: response('Journal entry updated successfully'),

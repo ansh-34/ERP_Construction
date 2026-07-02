@@ -2,7 +2,11 @@ import type {
   JournalEntryType,
   JournalEntryStatus,
 } from '../../../infra/database/prisma/generated/prisma/client/enums.js';
-import { journalEntryRepository } from '../../../repositories/index.js';
+import {
+  journalEntryLineRepository,
+  journalEntryRepository,
+} from '../../../repositories/index.js';
+import { transaction } from '../../../infra/database/prisma/transaction.js';
 import { normalizePagination } from '../../../utils/pagination.js';
 import { normalizePrismaError } from '../../../utils/prismaError.js';
 
@@ -29,6 +33,28 @@ type JournalEntryInput = {
   customerId?: string | null;
   costCenterId: string;
   projectId: string;
+};
+
+type NestedJournalEntryLineInput = {
+  lineNo: number;
+  accountId: string;
+  debitAmount?: number;
+  creditAmount?: number;
+  transactionCurrencyDebit?: number;
+  transactionCurrencyCredit?: number;
+  exchangeRate?: number;
+  description?: string | null;
+  referenceNo?: string | null;
+  costCenterId: string;
+  projectId: string;
+  reconciledAmount?: number;
+  isReconciled?: boolean;
+  vendorId?: string | null;
+  customerId?: string | null;
+};
+
+type CreateJournalEntryInput = JournalEntryInput & {
+  lines?: NestedJournalEntryLineInput[];
 };
 
 async function validateContext(
@@ -90,8 +116,44 @@ async function validateContext(
   }
 }
 
+async function validateLineContext(
+  domainId: string,
+  adminId: string,
+  line: NestedJournalEntryLineInput,
+) {
+  const [account, project, costCenter, vendor, customer] = await Promise.all([
+    journalEntryLineRepository.findAccount(line.accountId, domainId, adminId),
+    journalEntryLineRepository.findProject(line.projectId, domainId, adminId),
+    journalEntryLineRepository.findCostCenter(
+      line.costCenterId,
+      domainId,
+      adminId,
+    ),
+    line.vendorId
+      ? journalEntryLineRepository.findVendor(line.vendorId, domainId)
+      : Promise.resolve(null),
+    line.customerId
+      ? journalEntryLineRepository.findCustomer(
+          line.customerId,
+          domainId,
+          adminId,
+        )
+      : Promise.resolve(null),
+  ]);
+
+  if (!account) throw new Error('Posting account not found');
+  if (!project) throw new Error('Project not found');
+  if (!costCenter) throw new Error('Cost center not found');
+  if (line.vendorId && !vendor) throw new Error('Vendor not found');
+  if (line.customerId && !customer) throw new Error('Customer not found');
+}
+
 export const JournalEntryService = {
-  async create(domainId: string, adminId: string, data: JournalEntryInput) {
+  async create(
+    domainId: string,
+    adminId: string,
+    data: CreateJournalEntryInput,
+  ) {
     try {
       if (
         await journalEntryRepository.findDuplicateVoucher(
@@ -104,17 +166,62 @@ export const JournalEntryService = {
       }
 
       await validateContext(domainId, adminId, data);
-      return await journalEntryRepository.create({
-        ...data,
-        totalDebit: data.totalDebit ?? 0,
-        totalCredit: data.totalCredit ?? 0,
-        exchangeRate: data.exchangeRate ?? 1,
-        status: 'DRAFT',
-        domainId,
-        adminId,
-        createdBy: adminId,
+      const { lines = [], ...journalData } = data;
+      await Promise.all(
+        lines.map((line) => validateLineContext(domainId, adminId, line)),
+      );
+
+      const totalDebit = lines.reduce(
+        (total, line) => total + (line.debitAmount ?? 0),
+        0,
+      );
+      const totalCredit = lines.reduce(
+        (total, line) => total + (line.creditAmount ?? 0),
+        0,
+      );
+
+      return await transaction(async (tx) => {
+        const journalEntry = await journalEntryRepository.create(
+          {
+            ...journalData,
+            totalDebit,
+            totalCredit,
+            exchangeRate: data.exchangeRate ?? 1,
+            status: 'DRAFT',
+            domainId,
+            adminId,
+            createdBy: adminId,
+          },
+          { transaction: tx },
+        );
+
+        const createdLines = [];
+        for (const line of lines) {
+          createdLines.push(
+            await journalEntryLineRepository.create(
+              {
+                ...line,
+                journalEntryId: journalEntry.id,
+                debitAmount: line.debitAmount ?? 0,
+                creditAmount: line.creditAmount ?? 0,
+                transactionCurrencyDebit: line.transactionCurrencyDebit ?? 0,
+                transactionCurrencyCredit: line.transactionCurrencyCredit ?? 0,
+                exchangeRate: line.exchangeRate ?? 1,
+                reconciledAmount: line.reconciledAmount ?? 0,
+                isReconciled: line.isReconciled ?? false,
+                status: 'ACTIVE',
+                domainId,
+                adminId,
+              },
+              { transaction: tx },
+            ),
+          );
+        }
+
+        return { ...journalEntry, lines: createdLines };
       });
     } catch (error) {
+      console.error('[JournalEntryService.create] Failed:', error);
       throw normalizePrismaError(error);
     }
   },

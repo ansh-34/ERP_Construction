@@ -33,10 +33,13 @@ export function normalizePrismaError(error: unknown): Error {
       error.message === 'Fiscal year not found' ||
       error.message === 'Accounting period not found' ||
       error.message === 'Currency not found' ||
+      error.message === 'Posting account not found' ||
       error.message === 'Project not found' ||
       error.message === 'Cost center not found' ||
       error.message === 'Vendor not found' ||
       error.message === 'Customer not found' ||
+      error.message === 'Journal entry cannot use a closed fiscal year' ||
+      error.message === 'Journal entry cannot use a closed accounting period' ||
       error.message === 'Transaction date must be inside the fiscal year' ||
       error.message === 'Posting date must be inside the accounting period' ||
       error.message === 'DRAFT journal entry not found' ||

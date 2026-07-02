@@ -1,9 +1,14 @@
 import { Prisma } from '@infra/database/prisma/generated/prisma/client/client';
 import prisma from '../infra/database/prisma/prisma.client.js';
+import type { TransactionClient } from '../infra/database/prisma/transaction.js';
 
 export const journalEntryLineRepository = {
-  create(data: Prisma.JournalEntryLineUncheckedCreateInput) {
-    return prisma.journalEntryLine.create({ data });
+  create(
+    data: Prisma.JournalEntryLineUncheckedCreateInput,
+    options: { transaction?: TransactionClient } = {},
+  ) {
+    const client = options.transaction ?? prisma;
+    return client.journalEntryLine.create({ data });
   },
 
   findById(id: string, domainId: string, adminId: string) {
