@@ -171,7 +171,7 @@ const domainJournalEntryPaths: Record<string, SwaggerPathItem> = {
       tags: ['Journal Entries'],
       summary: 'Post a DRAFT journal entry',
       description:
-        'Validates balanced active lines, creates GeneralLedgerEntry rows, and permanently changes the journal to POSTED.',
+        'Validates balanced active lines, creates GeneralLedgerEntry rows for leaf posting accounts with a signed running balance per account and cost center, rolls AccountBalance movements up to each leaf and every parent account in its materialized path, and permanently changes the journal to POSTED.',
       security: [{ bearerAuth: [] }],
       parameters: [id],
       responses: {

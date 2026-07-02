@@ -203,6 +203,7 @@ export const journalEntryRepository = {
               include: {
                 account: {
                   select: {
+                    path: true,
                     status: true,
                     isDeleted: true,
                     isActive: true,
@@ -296,8 +297,37 @@ export const journalEntryRepository = {
           throw new Error('Journal entry has already been posted');
         }
 
-        await tx.generalLedgerEntry.createMany({
-          data: journal.lines.map((line) => ({
+        const runningBalances = new Map<string, Prisma.Decimal>();
+        const ledgerRows = [];
+        for (const line of journal.lines) {
+          const runningBalanceKey = `${line.accountId}:${line.costCenterId}`;
+          let previousBalance = runningBalances.get(runningBalanceKey);
+
+          if (previousBalance === undefined) {
+            const previousMovements = await tx.generalLedgerEntry.aggregate({
+              where: {
+                domainId,
+                adminId,
+                accountId: line.accountId,
+                costCenterId: line.costCenterId,
+              },
+              _sum: {
+                debitAmount: true,
+                creditAmount: true,
+              },
+            });
+            previousBalance = (
+              previousMovements._sum.debitAmount ?? new Prisma.Decimal(0)
+            ).minus(
+              previousMovements._sum.creditAmount ?? new Prisma.Decimal(0),
+            );
+          }
+
+          const runningBalance = previousBalance
+            .plus(line.debitAmount)
+            .minus(line.creditAmount);
+          runningBalances.set(runningBalanceKey, runningBalance);
+          ledgerRows.push({
             journalEntryId: journal.id,
             journalEntryLineId: line.id,
             accountId: line.accountId,
@@ -307,13 +337,18 @@ export const journalEntryRepository = {
             accountingPeriodId: journal.accountingPeriodId,
             debitAmount: line.debitAmount,
             creditAmount: line.creditAmount,
+            runningBalance,
             costCenterId: line.costCenterId,
             projectId: line.projectId,
             sourceDocumentId: journal.sourceDocumentId,
             sourceDocumentType: journal.sourceDocumentType,
             adminId,
             domainId,
-          })),
+          });
+        }
+
+        await tx.generalLedgerEntry.createMany({
+          data: ledgerRows,
         });
 
         const balanceChanges = new Map<
@@ -326,18 +361,27 @@ export const journalEntryRepository = {
           }
         >();
         for (const line of journal.lines) {
-          const key = `${line.accountId}:${line.costCenterId}`;
-          const current = balanceChanges.get(key);
-          if (current) {
-            current.debit = current.debit.plus(line.debitAmount);
-            current.credit = current.credit.plus(line.creditAmount);
-          } else {
-            balanceChanges.set(key, {
-              accountId: line.accountId,
-              costCenterId: line.costCenterId,
-              debit: line.debitAmount,
-              credit: line.creditAmount,
-            });
+          const hierarchyAccountIds = [
+            ...new Set([
+              ...line.account.path.split('/').filter(Boolean),
+              line.accountId,
+            ]),
+          ];
+
+          for (const accountId of hierarchyAccountIds) {
+            const key = `${accountId}:${line.costCenterId}`;
+            const current = balanceChanges.get(key);
+            if (current) {
+              current.debit = current.debit.plus(line.debitAmount);
+              current.credit = current.credit.plus(line.creditAmount);
+            } else {
+              balanceChanges.set(key, {
+                accountId,
+                costCenterId: line.costCenterId,
+                debit: line.debitAmount,
+                credit: line.creditAmount,
+              });
+            }
           }
         }
 
