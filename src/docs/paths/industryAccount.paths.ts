@@ -180,25 +180,7 @@ export const IndustryAccountPaths = {
       ...auth,
       tags: ['SuperAdmin Industry Accounts'],
       summary: 'List industry accounts',
-      parameters: [
-        ...commonListParams,
-        {
-          in: 'query',
-          name: 'categoryId',
-          schema: { type: 'string', format: 'uuid' },
-        },
-        {
-          in: 'query',
-          name: 'parentId',
-          schema: { type: 'string', format: 'uuid' },
-        },
-        {
-          in: 'query',
-          name: 'isPostingAllowed',
-          schema: { type: 'boolean' },
-        },
-        { in: 'query', name: 'isCashOrBank', schema: { type: 'boolean' } },
-      ],
+      parameters: commonListParams,
       responses: {
         200: response('Industry accounts retrieved successfully'),
         ...errors,
@@ -230,6 +212,80 @@ export const IndustryAccountPaths = {
       summary: 'Delete a leaf industry account',
       parameters: [id],
       responses: { 200: response('Industry account deleted'), ...errors },
+    },
+  },
+  '/api/domain/industry-accounts': {
+    get: {
+      ...auth,
+      tags: ['Domain Industry Accounts'],
+      summary: 'List global industry account templates',
+      description:
+        'Read-only Domain access to IndustryAccount templates managed by SuperAdmin.',
+      parameters: commonListParams,
+      responses: {
+        200: response('Industry accounts retrieved successfully'),
+        ...errors,
+      },
+    },
+  },
+  '/api/user/industry-accounts': {
+    get: {
+      ...auth,
+      tags: ['User Industry Accounts'],
+      summary: 'List global industry account templates',
+      description:
+        'Read-only User access to IndustryAccount templates managed by SuperAdmin. Requires INDUSTRY_ACCOUNT READ permission.',
+      parameters: [
+        ...commonListParams,
+        {
+          in: 'query',
+          name: 'categoryId',
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'parentId',
+          schema: { type: 'string', format: 'uuid' },
+        },
+        {
+          in: 'query',
+          name: 'isPostingAllowed',
+          schema: { type: 'boolean' },
+        },
+        { in: 'query', name: 'isCashOrBank', schema: { type: 'boolean' } },
+      ],
+      responses: {
+        200: response('Industry accounts retrieved successfully'),
+        ...errors,
+      },
+    },
+  },
+  '/api/domain/industry-account-categories': {
+    get: {
+      ...auth,
+      tags: ['Domain Industry Account Categories'],
+      summary: 'List global industry account category templates',
+      description:
+        'Read-only Domain access to IndustryAccountCategory templates managed by SuperAdmin.',
+      parameters: commonListParams,
+      responses: {
+        200: response('Industry account categories retrieved successfully'),
+        ...errors,
+      },
+    },
+  },
+  '/api/user/industry-account-categories': {
+    get: {
+      ...auth,
+      tags: ['User Industry Account Categories'],
+      summary: 'List global industry account category templates',
+      description:
+        'Read-only User access to IndustryAccountCategory templates managed by SuperAdmin. Requires INDUSTRY_ACCOUNT_CATEGORY READ permission.',
+      parameters: commonListParams,
+      responses: {
+        200: response('Industry account categories retrieved successfully'),
+        ...errors,
+      },
     },
   },
 };
